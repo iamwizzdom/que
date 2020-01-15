@@ -155,6 +155,13 @@ abstract class Connect
     }
 
     /**
+     * @return mysqli|null
+     */
+    public function getConnection(): ?mysqli {
+        return $this->conn ?? null;
+    }
+
+    /**
      * @return bool
      */
     public function close(): bool
