@@ -1,3 +1,7 @@
+# Redirect HTTP
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
 RewriteEngine on
 
 #unless directory, remove trailing slash
@@ -14,7 +18,7 @@ RewriteCond %{THE_REQUEST} ^[A-Z]+\ /([^/]+/)*[^.#?\ ]+\.php([#?][^\ ]*)?\ HTTP/
 RewriteRule ^(([^/]+/)*[^.]+)\.php /$1 [R=301,L]
 
 Options -Indexes
-DirectoryIndex ^(.*)$ /app.route.php
+DirectoryIndex ^(.*)$ app.route.php
 
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
