@@ -388,25 +388,47 @@ class Composer
 
     /**
      * This will render your template using the smarty templating engine
+     * @param bool $returnAsString
+     * @return false|string
      */
-    public function renderWithSmarty() {
+    public function renderWithSmarty(bool $returnAsString = false) {
         $smarty = SmartyEngine::getInstance();
         $smarty->setTmpDir($this->tmpDir);
         $smarty->setCacheDir((APP_ROOT_PATH . "/cache/tmp/smarty"));
         $smarty->setTmpFileName($this->getTmpFileName());
         $smarty->setContext($this->getContext());
+
+        if ($returnAsString === true) {
+            ob_start();
+            $smarty->render();
+            $content = ob_get_contents();
+            if (ob_get_length()) ob_end_clean();
+            return $content;
+        }
+
         $smarty->render();
     }
 
     /**
      * This will render your template using the twig templating engine
+     * @param bool $returnAsString
+     * @return false|string
      */
-    public function renderWithTwig() {
+    public function renderWithTwig(bool $returnAsString = false) {
         $twig = TwigEngine::getInstance();
         $twig->setTmpDir($this->tmpDir);
         $twig->setCacheDir((APP_ROOT_PATH . "/cache/tmp/twig"));
         $twig->setTmpFileName($this->getTmpFileName());
         $twig->setContext($this->getContext());
+
+        if ($returnAsString === true) {
+            ob_start();
+            $twig->render();
+            $content = ob_get_contents();
+            if (ob_get_length()) ob_end_clean();
+            return $content;
+        }
+
         $twig->render();
     }
 
