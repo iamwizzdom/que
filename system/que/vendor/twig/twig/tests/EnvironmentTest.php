@@ -11,6 +11,8 @@ namespace Twig\Tests;
  * file that was distributed with this source code.
  */
 
+use function get_class;
+use LogicException;
 use PHPUnit\Framework\TestCase;
 use Twig\Cache\CacheInterface;
 use Twig\Cache\FilesystemCache;
@@ -112,7 +114,7 @@ class EnvironmentTest extends TestCase
         try {
             $twig->addGlobal('bar', 'bar');
             $this->fail();
-        } catch (\LogicException $e) {
+        } catch (LogicException $e) {
             $this->assertArrayNotHasKey('bar', $twig->getGlobals());
         }
 
@@ -124,7 +126,7 @@ class EnvironmentTest extends TestCase
         try {
             $twig->addGlobal('bar', 'bar');
             $this->fail();
-        } catch (\LogicException $e) {
+        } catch (LogicException $e) {
             $this->assertArrayNotHasKey('bar', $twig->getGlobals());
         }
 
@@ -137,7 +139,7 @@ class EnvironmentTest extends TestCase
         try {
             $twig->addGlobal('bar', 'bar');
             $this->fail();
-        } catch (\LogicException $e) {
+        } catch (LogicException $e) {
             $this->assertArrayNotHasKey('bar', $twig->getGlobals());
         }
 
@@ -147,7 +149,7 @@ class EnvironmentTest extends TestCase
         try {
             $twig->addGlobal('bar', 'bar');
             $this->fail();
-        } catch (\LogicException $e) {
+        } catch (LogicException $e) {
             $this->assertArrayNotHasKey('bar', $twig->getGlobals());
         }
     }
@@ -304,7 +306,7 @@ class EnvironmentTest extends TestCase
         $twig = new Environment($loader);
         $twig->addExtension($extension);
 
-        $this->assertInstanceOf(ExtensionInterface::class, $twig->getExtension(\get_class($extension)));
+        $this->assertInstanceOf(ExtensionInterface::class, $twig->getExtension(get_class($extension)));
         $this->assertTrue($twig->isTemplateFresh('page', time()));
     }
 
@@ -326,7 +328,7 @@ class EnvironmentTest extends TestCase
 
     public function testOverrideExtension()
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(LogicException::class);
         $this->expectExceptionMessage('Unable to register extension "Twig\Tests\EnvironmentTest_Extension" as it is already registered.');
 
         $twig = new Environment($this->createMock(LoaderInterface::class));

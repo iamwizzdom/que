@@ -1,19 +1,11 @@
 <?php
 
 use Twig\Environment;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Extension\SandboxExtension;
-use Twig\Markup;
-use Twig\Sandbox\SecurityError;
-use Twig\Sandbox\SecurityNotAllowedTagError;
-use Twig\Sandbox\SecurityNotAllowedFilterError;
-use Twig\Sandbox\SecurityNotAllowedFunctionError;
 use Twig\Source;
 use Twig\Template;
 
 /* module/view.html */
-class __TwigTemplate_8388736f79fc1090fc29e0a113c5fcd0e01d1d859eb2229798125808d20bc30e extends \Twig\Template
+class __TwigTemplate_8388736f79fc1090fc29e0a113c5fcd0e01d1d859eb2229798125808d20bc30e extends Template
 {
     private $source;
     private $macros = [];

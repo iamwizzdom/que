@@ -14,15 +14,15 @@ class Smarty_Internal_Method_AppendByRef
     /**
      * appends values to template variables by reference
      *
-     * @api  Smarty::appendByRef()
-     * @link http://www.smarty.net/docs/en/api.append.by.ref.tpl
-     *
-     * @param \Smarty_Internal_Data|\Smarty_Internal_Template|\Smarty $data
+     * @param \Smarty_Internal_Data|\Smarty_Internal_Template|Smarty $data
      * @param string                                                  $tpl_var the template variable name
      * @param mixed                                                   &$value  the referenced value to append
      * @param bool                                                    $merge   flag if array elements shall be merged
      *
-     * @return \Smarty_Internal_Data|\Smarty_Internal_Template|\Smarty
+     * @return \Smarty_Internal_Data|\Smarty_Internal_Template|Smarty
+     *@link http://www.smarty.net/docs/en/api.append.by.ref.tpl
+     *
+     * @api  Smarty::appendByRef()
      */
     public static function appendByRef(Smarty_Internal_Data $data, $tpl_var, &$value, $merge = false)
     {

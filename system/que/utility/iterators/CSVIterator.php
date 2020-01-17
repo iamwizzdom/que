@@ -8,9 +8,10 @@
 
 namespace que\utility\iterators;
 
+use Iterator;
 use RuntimeException;
 
-class CSVIterator implements \Iterator {
+class CSVIterator implements Iterator {
 
     /**
      * @var bool|resource

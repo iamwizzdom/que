@@ -23,10 +23,10 @@ class Smarty_Internal_Method_MustCompile
      * It does compare the timestamps of template source and the compiled templates and checks the force compile
      * configuration
      *
-     * @param \Smarty_Internal_Template $_template
+     * @param Smarty_Internal_Template $_template
      *
      * @return bool
-     * @throws \SmartyException
+     * @throws SmartyException
      */
     public function mustCompile(Smarty_Internal_Template $_template)
     {

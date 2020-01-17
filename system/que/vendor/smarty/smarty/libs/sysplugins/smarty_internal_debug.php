@@ -47,7 +47,7 @@ class Smarty_Internal_Debug extends Smarty_Internal_Data
     /**
      * Start logging template
      *
-     * @param \Smarty_Internal_Template $template template
+     * @param Smarty_Internal_Template $template template
      * @param null                      $mode     true: display   false: fetch  null: subtemplate
      */
     public function start_template(Smarty_Internal_Template $template, $mode = null)
@@ -64,7 +64,7 @@ class Smarty_Internal_Debug extends Smarty_Internal_Data
     /**
      * End logging of cache time
      *
-     * @param \Smarty_Internal_Template $template cached template
+     * @param Smarty_Internal_Template $template cached template
      */
     public function end_template(Smarty_Internal_Template $template)
     {
@@ -77,7 +77,7 @@ class Smarty_Internal_Debug extends Smarty_Internal_Data
     /**
      * Start logging of compile time
      *
-     * @param \Smarty_Internal_Template $template
+     * @param Smarty_Internal_Template $template
      */
     public function start_compile(Smarty_Internal_Template $template)
     {
@@ -107,7 +107,7 @@ class Smarty_Internal_Debug extends Smarty_Internal_Data
     /**
      * End logging of compile time
      *
-     * @param \Smarty_Internal_Template $template
+     * @param Smarty_Internal_Template $template
      */
     public function end_compile(Smarty_Internal_Template $template)
     {
@@ -126,7 +126,7 @@ class Smarty_Internal_Debug extends Smarty_Internal_Data
     /**
      * Start logging of render time
      *
-     * @param \Smarty_Internal_Template $template
+     * @param Smarty_Internal_Template $template
      */
     public function start_render(Smarty_Internal_Template $template)
     {
@@ -137,7 +137,7 @@ class Smarty_Internal_Debug extends Smarty_Internal_Data
     /**
      * End logging of compile time
      *
-     * @param \Smarty_Internal_Template $template
+     * @param Smarty_Internal_Template $template
      */
     public function end_render(Smarty_Internal_Template $template)
     {
@@ -149,7 +149,7 @@ class Smarty_Internal_Debug extends Smarty_Internal_Data
     /**
      * Start logging of cache time
      *
-     * @param \Smarty_Internal_Template $template cached template
+     * @param Smarty_Internal_Template $template cached template
      */
     public function start_cache(Smarty_Internal_Template $template)
     {
@@ -160,7 +160,7 @@ class Smarty_Internal_Debug extends Smarty_Internal_Data
     /**
      * End logging of cache time
      *
-     * @param \Smarty_Internal_Template $template cached template
+     * @param Smarty_Internal_Template $template cached template
      */
     public function end_cache(Smarty_Internal_Template $template)
     {
@@ -172,7 +172,7 @@ class Smarty_Internal_Debug extends Smarty_Internal_Data
     /**
      * Register template object
      *
-     * @param \Smarty_Internal_Template $template cached template
+     * @param Smarty_Internal_Template $template cached template
      */
     public function register_template(Smarty_Internal_Template $template)
     {
@@ -181,7 +181,7 @@ class Smarty_Internal_Debug extends Smarty_Internal_Data
     /**
      * Register data object
      *
-     * @param \Smarty_Data $data data object
+     * @param Smarty_Data $data data object
      */
     public static function register_data(Smarty_Data $data)
     {
@@ -193,8 +193,8 @@ class Smarty_Internal_Debug extends Smarty_Internal_Data
      * @param Smarty_Internal_Template|Smarty $obj object to debug
      * @param bool                            $full
      *
-     * @throws \Exception
-     * @throws \SmartyException
+     * @throws Exception
+     * @throws SmartyException
      */
     public function display_debug($obj, $full = false)
     {
@@ -348,7 +348,7 @@ class Smarty_Internal_Debug extends Smarty_Internal_Data
     /**
      * Return key into $template_data for template
      *
-     * @param \Smarty_Internal_Template $template template object
+     * @param Smarty_Internal_Template $template template object
      *
      * @return string key into $template_data
      */
@@ -380,7 +380,7 @@ class Smarty_Internal_Debug extends Smarty_Internal_Data
     /**
      * Ignore template
      *
-     * @param \Smarty_Internal_Template $template
+     * @param Smarty_Internal_Template $template
      */
     public function ignore(Smarty_Internal_Template $template)
     {

@@ -21,13 +21,13 @@ class Smarty_Internal_Method_UnregisterObject
     /**
      * Registers plugin to be used in templates
      *
+     * @param \Smarty_Internal_TemplateBase|Smarty_Internal_Template|\Smarty $obj
+     * @param string $object_name name of object
+     *
+     * @return \Smarty|Smarty_Internal_Template
+     *@link http://www.smarty.net/docs/en/api.unregister.object.tpl
+     *
      * @api  Smarty::unregisterObject()
-     * @link http://www.smarty.net/docs/en/api.unregister.object.tpl
-     *
-     * @param \Smarty_Internal_TemplateBase|\Smarty_Internal_Template|\Smarty $obj
-     * @param string                                                          $object_name name of object
-     *
-     * @return \Smarty|\Smarty_Internal_Template
      */
     public function unregisterObject(Smarty_Internal_TemplateBase $obj, $object_name)
     {

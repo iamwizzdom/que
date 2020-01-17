@@ -9,7 +9,6 @@
 namespace que\security\JWT;
 
 use \DateTime;
-use que\security\JWT\Base64Url;
 use que\security\JWT\Exceptions\InsecureTokenException;
 use que\security\JWT\Exceptions\UnsupportedAlgorithmException;
 use que\security\JWT\Exceptions\TokenExpiredException;

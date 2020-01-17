@@ -21,13 +21,13 @@ class Smarty_Internal_Method_SetDebugTemplate
     /**
      * set the debug template
      *
-     * @api Smarty::setDebugTemplate()
+     * @param \Smarty_Internal_TemplateBase|Smarty_Internal_Template|\Smarty $obj
+     * @param string $tpl_name
      *
-     * @param \Smarty_Internal_TemplateBase|\Smarty_Internal_Template|\Smarty $obj
-     * @param string                                                          $tpl_name
-     *
-     * @return \Smarty|\Smarty_Internal_Template
+     * @return \Smarty|Smarty_Internal_Template
      * @throws SmartyException if file is not readable
+     *@api Smarty::setDebugTemplate()
+     *
      */
     public function setDebugTemplate(Smarty_Internal_TemplateBase $obj, $tpl_name)
     {

@@ -21,17 +21,17 @@ class Smarty_Internal_Method_Append
     /**
      * appends values to template variables
      *
-     * @api  Smarty::append()
-     * @link http://www.smarty.net/docs/en/api.append.tpl
-     *
-     * @param \Smarty_Internal_Data|\Smarty_Internal_Template|\Smarty $data
+     * @param \Smarty_Internal_Data|\Smarty_Internal_Template|Smarty $data
      * @param array|string                                            $tpl_var the template variable name(s)
      * @param mixed                                                   $value   the value to append
      * @param bool                                                    $merge   flag if array elements shall be merged
      * @param bool                                                    $nocache if true any output of this variable will
      *                                                                         be not cached
      *
-     * @return \Smarty_Internal_Data|\Smarty_Internal_Template|\Smarty
+     * @return \Smarty_Internal_Data|\Smarty_Internal_Template|Smarty
+     *@api  Smarty::append()
+     * @link http://www.smarty.net/docs/en/api.append.tpl
+     *
      */
     public function append(Smarty_Internal_Data $data, $tpl_var, $value = null, $merge = false, $nocache = false)
     {

@@ -12,6 +12,7 @@
 
 namespace Twig\Node;
 
+use function count;
 use Twig\Compiler;
 
 /**
@@ -34,7 +35,7 @@ class IfNode extends Node
     public function compile(Compiler $compiler)
     {
         $compiler->addDebugInfo($this);
-        for ($i = 0, $count = \count($this->getNode('tests')); $i < $count; $i += 2) {
+        for ($i = 0, $count = count($this->getNode('tests')); $i < $count; $i += 2) {
             if ($i > 0) {
                 $compiler
                     ->outdent()

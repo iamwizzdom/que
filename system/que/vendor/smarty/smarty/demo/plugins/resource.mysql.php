@@ -24,28 +24,28 @@ class Smarty_Resource_Mysql extends Smarty_Resource_Custom
     /**
      * PDO instance
      *
-     * @var \PDO
+     * @var PDO
      */
     protected $db;
 
     /**
      * prepared fetch() statement
      *
-     * @var \PDOStatement
+     * @var PDOStatement
      */
     protected $fetch;
 
     /**
      * prepared fetchTimestamp() statement
      *
-     * @var \PDOStatement
+     * @var PDOStatement
      */
     protected $mtime;
 
     /**
      * Smarty_Resource_Mysql constructor.
      *
-     * @throws \SmartyException
+     * @throws SmartyException
      */
     public function __construct()
     {

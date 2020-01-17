@@ -28,7 +28,7 @@ class Smarty_Internal_Compile_Nocache extends Smarty_Internal_CompileBase
      * This tag does not generate compiled output. It only sets a compiler flag.
      *
      * @param array                                 $args     array with attributes from parser
-     * @param \Smarty_Internal_TemplateCompilerBase $compiler compiler object
+     * @param Smarty_Internal_TemplateCompilerBase $compiler compiler object
      *
      * @return bool
      */
@@ -57,7 +57,7 @@ class Smarty_Internal_Compile_Nocacheclose extends Smarty_Internal_CompileBase
      * This tag does not generate compiled output. It only sets a compiler flag.
      *
      * @param array                                 $args     array with attributes from parser
-     * @param \Smarty_Internal_TemplateCompilerBase $compiler compiler object
+     * @param Smarty_Internal_TemplateCompilerBase $compiler compiler object
      *
      * @return bool
      */

@@ -33,7 +33,7 @@ abstract class Smarty_Internal_ParseTree
     /**
      * Return buffer
      *
-     * @param \Smarty_Internal_Templateparser $parser
+     * @param Smarty_Internal_Templateparser $parser
      *
      * @return string buffer content
      */

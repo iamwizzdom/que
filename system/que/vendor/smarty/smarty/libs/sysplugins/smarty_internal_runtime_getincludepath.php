@@ -74,7 +74,7 @@ class Smarty_Internal_Runtime_GetIncludePath
     /**
      * Check if include path was updated
      *
-     * @param \Smarty $smarty
+     * @param Smarty $smarty
      *
      * @return bool
      */
@@ -98,7 +98,7 @@ class Smarty_Internal_Runtime_GetIncludePath
     /**
      * return array with include path directories
      *
-     * @param \Smarty $smarty
+     * @param Smarty $smarty
      *
      * @return array
      */
@@ -113,7 +113,7 @@ class Smarty_Internal_Runtime_GetIncludePath
      *
      * @param string[] $dirs
      * @param string   $file
-     * @param \Smarty  $smarty
+     * @param Smarty $smarty
      *
      * @return bool|string full filepath or false
      */

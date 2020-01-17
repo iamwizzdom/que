@@ -11,6 +11,19 @@
 
 namespace Twig\Node\Expression;
 
+use function array_key_exists;
+use Closure;
+use function count;
+use function get_class;
+use function is_array;
+use function is_int;
+use function is_object;
+use function is_string;
+use LogicException;
+use ReflectionClass;
+use ReflectionFunction;
+use ReflectionMethod;
+use ReflectionObject;
 use Twig\Compiler;
 use Twig\Error\SyntaxError;
 use Twig\Extension\ExtensionInterface;
@@ -26,19 +39,19 @@ abstract class CallExpression extends AbstractExpression
 
         $closingParenthesis = false;
         $isArray = false;
-        if (\is_string($callable) && false === strpos($callable, '::')) {
+        if (is_string($callable) && false === strpos($callable, '::')) {
             $compiler->raw($callable);
         } else {
             list($r, $callable) = $this->reflectCallable($callable);
-            if ($r instanceof \ReflectionMethod && \is_string($callable[0])) {
+            if ($r instanceof ReflectionMethod && is_string($callable[0])) {
                 if ($r->isStatic()) {
                     $compiler->raw(sprintf('%s::%s', $callable[0], $callable[1]));
                 } else {
                     $compiler->raw(sprintf('$this->env->getRuntime(\'%s\')->%s', $callable[0], $callable[1]));
                 }
-            } elseif ($r instanceof \ReflectionMethod && $callable[0] instanceof ExtensionInterface) {
+            } elseif ($r instanceof ReflectionMethod && $callable[0] instanceof ExtensionInterface) {
                 // For BC/FC with namespaced aliases
-                $class = (new \ReflectionClass(\get_class($callable[0])))->name;
+                $class = (new ReflectionClass(get_class($callable[0])))->name;
                 if (!$compiler->getEnvironment()->hasExtension($class)) {
                     // Compile a non-optimized call to trigger a \Twig\RuntimeError\RuntimeError, which cannot be a compile-time error
                     $compiler->raw(sprintf('$this->env->getExtension(\'%s\')', $class));
@@ -121,7 +134,7 @@ abstract class CallExpression extends AbstractExpression
         $parameters = [];
         $named = false;
         foreach ($arguments as $name => $node) {
-            if (!\is_int($name)) {
+            if (!is_int($name)) {
                 $named = true;
                 $name = $this->normalizeName($name);
             } elseif ($named) {
@@ -143,7 +156,7 @@ abstract class CallExpression extends AbstractExpression
                 $message = sprintf('Arbitrary positional arguments are not supported for %s "%s".', $callType, $callName);
             }
 
-            throw new \LogicException($message);
+            throw new LogicException($message);
         }
 
         list($callableParameters, $isPhpVariadic) = $this->getCallableParameters($callable, $isVariadic);
@@ -155,15 +168,15 @@ abstract class CallExpression extends AbstractExpression
         foreach ($callableParameters as $callableParameter) {
             $names[] = $name = $this->normalizeName($callableParameter->name);
 
-            if (\array_key_exists($name, $parameters)) {
-                if (\array_key_exists($pos, $parameters)) {
+            if (array_key_exists($name, $parameters)) {
+                if (array_key_exists($pos, $parameters)) {
                     throw new SyntaxError(sprintf('Argument "%s" is defined twice for %s "%s".', $name, $callType, $callName), $this->getTemplateLine(), $this->getSourceContext());
                 }
 
-                if (\count($missingArguments)) {
+                if (count($missingArguments)) {
                     throw new SyntaxError(sprintf(
                         'Argument "%s" could not be assigned for %s "%s(%s)" because it is mapped to an internal PHP function which cannot determine default value for optional argument%s "%s".',
-                        $name, $callType, $callName, implode(', ', $names), \count($missingArguments) > 1 ? 's' : '', implode('", "', $missingArguments)
+                        $name, $callType, $callName, implode(', ', $names), count($missingArguments) > 1 ? 's' : '', implode('", "', $missingArguments)
                     ), $this->getTemplateLine(), $this->getSourceContext());
                 }
 
@@ -171,7 +184,7 @@ abstract class CallExpression extends AbstractExpression
                 $arguments[] = $parameters[$name];
                 unset($parameters[$name]);
                 $optionalArguments = [];
-            } elseif (\array_key_exists($pos, $parameters)) {
+            } elseif (array_key_exists($pos, $parameters)) {
                 $arguments = array_merge($arguments, $optionalArguments);
                 $arguments[] = $parameters[$pos];
                 unset($parameters[$pos]);
@@ -193,7 +206,7 @@ abstract class CallExpression extends AbstractExpression
         if ($isVariadic) {
             $arbitraryArguments = $isPhpVariadic ? new VariadicExpression([], -1) : new ArrayExpression([], -1);
             foreach ($parameters as $key => $value) {
-                if (\is_int($key)) {
+                if (is_int($key)) {
                     $arbitraryArguments->addElement($value);
                 } else {
                     $arbitraryArguments->addElement($value, new ConstantExpression($key, -1));
@@ -219,7 +232,7 @@ abstract class CallExpression extends AbstractExpression
             throw new SyntaxError(
                 sprintf(
                     'Unknown argument%s "%s" for %s "%s(%s)".',
-                    \count($parameters) > 1 ? 's' : '', implode('", "', array_keys($parameters)), $callType, $callName, implode(', ', $names)
+                    count($parameters) > 1 ? 's' : '', implode('", "', array_keys($parameters)), $callType, $callName, implode(', ', $names)
                 ),
                 $unknownParameter ? $unknownParameter->getTemplateLine() : $this->getTemplateLine(),
                 $unknownParameter ? $unknownParameter->getSourceContext() : $this->getSourceContext()
@@ -266,11 +279,11 @@ abstract class CallExpression extends AbstractExpression
                 $isPhpVariadic = true;
             } else {
                 $callableName = $r->name;
-                if ($r instanceof \ReflectionMethod) {
+                if ($r instanceof ReflectionMethod) {
                     $callableName = $r->getDeclaringClass()->name.'::'.$callableName;
                 }
 
-                throw new \LogicException(sprintf('The last parameter of "%s" for %s "%s" must be an array with default value, eg. "array $arg = []".', $callableName, $this->getAttribute('type'), $this->getAttribute('name')));
+                throw new LogicException(sprintf('The last parameter of "%s" for %s "%s" must be an array with default value, eg. "array $arg = []".', $callableName, $this->getAttribute('type'), $this->getAttribute('name')));
             }
         }
 
@@ -283,27 +296,27 @@ abstract class CallExpression extends AbstractExpression
             return $this->reflector;
         }
 
-        if (\is_array($callable)) {
+        if (is_array($callable)) {
             if (!method_exists($callable[0], $callable[1])) {
                 // __call()
                 return [null, []];
             }
-            $r = new \ReflectionMethod($callable[0], $callable[1]);
-        } elseif (\is_object($callable) && !$callable instanceof \Closure) {
-            $r = new \ReflectionObject($callable);
+            $r = new ReflectionMethod($callable[0], $callable[1]);
+        } elseif (is_object($callable) && !$callable instanceof Closure) {
+            $r = new ReflectionObject($callable);
             $r = $r->getMethod('__invoke');
             $callable = [$callable, '__invoke'];
-        } elseif (\is_string($callable) && false !== $pos = strpos($callable, '::')) {
+        } elseif (is_string($callable) && false !== $pos = strpos($callable, '::')) {
             $class = substr($callable, 0, $pos);
             $method = substr($callable, $pos + 2);
             if (!method_exists($class, $method)) {
                 // __staticCall()
                 return [null, []];
             }
-            $r = new \ReflectionMethod($callable);
+            $r = new ReflectionMethod($callable);
             $callable = [$class, $method];
         } else {
-            $r = new \ReflectionFunction($callable);
+            $r = new ReflectionFunction($callable);
         }
 
         return $this->reflector = [$r, $callable];

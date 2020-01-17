@@ -21,13 +21,13 @@ class Smarty_Internal_Method_RegisterDefaultTemplateHandler
     /**
      * Register template default handler
      *
-     * @api Smarty::registerDefaultTemplateHandler()
+     * @param \Smarty_Internal_TemplateBase|Smarty_Internal_Template|\Smarty $obj
+     * @param callable $callback class/method name
      *
-     * @param \Smarty_Internal_TemplateBase|\Smarty_Internal_Template|\Smarty $obj
-     * @param callable                                                        $callback class/method name
-     *
-     * @return \Smarty|\Smarty_Internal_Template
+     * @return \Smarty|Smarty_Internal_Template
      * @throws SmartyException              if $callback is not callable
+     *@api Smarty::registerDefaultTemplateHandler()
+     *
      */
     public function registerDefaultTemplateHandler(Smarty_Internal_TemplateBase $obj, $callback)
     {
@@ -45,7 +45,7 @@ class Smarty_Internal_Method_RegisterDefaultTemplateHandler
      *
      * @param Smarty_Template_Source $source
      *
-     * @throws \SmartyException
+     * @throws SmartyException
      */
     public static function _getDefaultTemplate(Smarty_Template_Source $source)
     {

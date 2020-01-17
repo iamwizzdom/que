@@ -11,6 +11,8 @@
 //require "../../../app/config/config.php";
 //use que\permission\AccessLevelEnum;
 
+use que\common\time\Time;
+
 require "../../../app/app.settings.php";
 
 if (preg_match('/\[(.*?)\]/', "app_job.jobID[>=]", $matches)) {
@@ -57,5 +59,5 @@ if (preg_match('/\[(.*?)\]/', "app_job.jobID[>=]", $matches)) {
 //new Foo();
 
 
-echo \que\common\time\Time::getInstance()->time_ago(date("Y/m/d H:i:s",'1564582940'));
+echo Time::getInstance()->time_ago(date("Y/m/d H:i:s",'1564582940'));
 

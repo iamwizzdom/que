@@ -11,11 +11,15 @@ namespace Twig\Tests;
  * file that was distributed with this source code.
  */
 
+use FilesystemIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+
 class FilesystemHelper
 {
     public static function removeDir($dir)
     {
-        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST);
+        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST);
         foreach ($iterator as $filename => $fileInfo) {
             if ($fileInfo->isDir()) {
                 rmdir($filename);

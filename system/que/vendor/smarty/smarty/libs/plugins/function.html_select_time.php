@@ -18,11 +18,11 @@
  *
  * @param array                     $params parameters
  *
- * @param \Smarty_Internal_Template $template
+ * @param Smarty_Internal_Template $template
  *
  * @return string
  * @uses   smarty_make_timestamp()
- * @throws \SmartyException
+ * @throws SmartyException
  */
 function smarty_function_html_select_time($params, Smarty_Internal_Template $template)
 {

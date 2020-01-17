@@ -11,6 +11,10 @@
 
 namespace Twig\Cache;
 
+use function dirname;
+use function function_exists;
+use RuntimeException;
+
 /**
  * Implements a cache on the filesystem.
  *
@@ -49,16 +53,16 @@ class FilesystemCache implements CacheInterface
 
     public function write($key, $content)
     {
-        $dir = \dirname($key);
+        $dir = dirname($key);
         if (!is_dir($dir)) {
             if (false === @mkdir($dir, 0777, true)) {
                 clearstatcache(true, $dir);
                 if (!is_dir($dir)) {
-                    throw new \RuntimeException(sprintf('Unable to create the cache directory (%s).', $dir));
+                    throw new RuntimeException(sprintf('Unable to create the cache directory (%s).', $dir));
                 }
             }
         } elseif (!is_writable($dir)) {
-            throw new \RuntimeException(sprintf('Unable to write in the cache directory (%s).', $dir));
+            throw new RuntimeException(sprintf('Unable to write in the cache directory (%s).', $dir));
         }
 
         $tmpFile = tempnam($dir, basename($key));
@@ -67,9 +71,9 @@ class FilesystemCache implements CacheInterface
 
             if (self::FORCE_BYTECODE_INVALIDATION == ($this->options & self::FORCE_BYTECODE_INVALIDATION)) {
                 // Compile cached file into bytecode cache
-                if (\function_exists('opcache_invalidate') && filter_var(ini_get('opcache.enable'), FILTER_VALIDATE_BOOLEAN)) {
+                if (function_exists('opcache_invalidate') && filter_var(ini_get('opcache.enable'), FILTER_VALIDATE_BOOLEAN)) {
                     @opcache_invalidate($key, true);
-                } elseif (\function_exists('apc_compile_file')) {
+                } elseif (function_exists('apc_compile_file')) {
                     apc_compile_file($key);
                 }
             }
@@ -77,7 +81,7 @@ class FilesystemCache implements CacheInterface
             return;
         }
 
-        throw new \RuntimeException(sprintf('Failed to write cache file "%s".', $key));
+        throw new RuntimeException(sprintf('Failed to write cache file "%s".', $key));
     }
 
     public function getTimestamp($key)

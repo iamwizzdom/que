@@ -9,9 +9,10 @@
 namespace que\common\exception;
 
 
+use Exception;
 use Throwable;
 
-class AlertException extends \Exception
+class AlertException extends Exception
 {
 
     /**

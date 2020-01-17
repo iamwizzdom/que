@@ -1603,14 +1603,14 @@ class Smarty_Internal_Templateparser
     /**
      * template prefix array
      *
-     * @var \Smarty_Internal_ParseTree[]
+     * @var Smarty_Internal_ParseTree[]
      */
     public $template_prefix = array();
 
     /**
      * template prefix array
      *
-     * @var \Smarty_Internal_ParseTree[]
+     * @var Smarty_Internal_ParseTree[]
      */
     public $template_postfix = array();
 

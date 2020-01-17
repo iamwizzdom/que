@@ -21,13 +21,13 @@ class Smarty_Internal_Method_ClearConfig
     /**
      * clear a single or all config variables
      *
-     * @api  Smarty::clearConfig()
-     * @link http://www.smarty.net/docs/en/api.clear.config.tpl
-     *
-     * @param \Smarty_Internal_Data|\Smarty_Internal_Template|\Smarty $data
+     * @param \Smarty_Internal_Data|\Smarty_Internal_Template|Smarty $data
      * @param string|null                                             $name variable name or null
      *
-     * @return \Smarty_Internal_Data|\Smarty_Internal_Template|\Smarty
+     * @return \Smarty_Internal_Data|\Smarty_Internal_Template|Smarty
+     *@link http://www.smarty.net/docs/en/api.clear.config.tpl
+     *
+     * @api  Smarty::clearConfig()
      */
     public function clearConfig(Smarty_Internal_Data $data, $name = null)
     {

@@ -20,11 +20,11 @@ class Smarty_Internal_Compile_Private_Special_Variable extends Smarty_Internal_C
      * Compiles code for the special $smarty variables
      *
      * @param array                                 $args     array with attributes from parser
-     * @param \Smarty_Internal_TemplateCompilerBase $compiler compiler object
+     * @param Smarty_Internal_TemplateCompilerBase $compiler compiler object
      * @param                                       $parameter
      *
      * @return string compiled code
-     * @throws \SmartyCompilerException
+     * @throws SmartyCompilerException
      */
     public function compile($args, Smarty_Internal_TemplateCompilerBase $compiler, $parameter)
     {

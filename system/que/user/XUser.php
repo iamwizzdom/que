@@ -12,7 +12,6 @@ namespace que\user;
 use ArrayAccess;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
-use que\error\RuntimeError;
 use que\model\Model;
 
 class XUser implements ArrayAccess

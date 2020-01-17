@@ -11,6 +11,9 @@
 
 namespace Twig\NodeVisitor;
 
+use function in_array;
+use InvalidArgumentException;
+use function is_int;
 use Twig\Environment;
 use Twig\Node\BlockReferenceNode;
 use Twig\Node\Expression\BlockReferenceExpression;
@@ -53,8 +56,8 @@ final class OptimizerNodeVisitor extends AbstractNodeVisitor
      */
     public function __construct(int $optimizers = -1)
     {
-        if (!\is_int($optimizers) || $optimizers > (self::OPTIMIZE_FOR | self::OPTIMIZE_RAW_FILTER | self::OPTIMIZE_VAR_ACCESS)) {
-            throw new \InvalidArgumentException(sprintf('Optimizer mode "%s" is not valid.', $optimizers));
+        if (!is_int($optimizers) || $optimizers > (self::OPTIMIZE_FOR | self::OPTIMIZE_RAW_FILTER | self::OPTIMIZE_VAR_ACCESS)) {
+            throw new InvalidArgumentException(sprintf('Optimizer mode "%s" is not valid.', $optimizers));
         }
 
         $this->optimizers = $optimizers;
@@ -147,7 +150,7 @@ final class OptimizerNodeVisitor extends AbstractNodeVisitor
         }
 
         // optimize access to loop targets
-        elseif ($node instanceof NameExpression && \in_array($node->getAttribute('name'), $this->loopsTargets)) {
+        elseif ($node instanceof NameExpression && in_array($node->getAttribute('name'), $this->loopsTargets)) {
             $node->setAttribute('always_defined', true);
         }
 

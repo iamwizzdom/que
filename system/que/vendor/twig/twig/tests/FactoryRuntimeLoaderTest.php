@@ -12,6 +12,7 @@ namespace Twig\Tests;
  */
 
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Twig\RuntimeLoader\FactoryRuntimeLoader;
 
 class FactoryRuntimeLoaderTest extends TestCase
@@ -33,5 +34,5 @@ class FactoryRuntimeLoaderTest extends TestCase
 
 function getRuntime()
 {
-    return new \stdClass();
+    return new stdClass();
 }

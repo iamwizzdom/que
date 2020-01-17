@@ -9,9 +9,10 @@
 namespace que\common\exception;
 
 
+use Exception;
 use Throwable;
 
-class BulkException extends \Exception
+class BulkException extends Exception
 {
 
     /**

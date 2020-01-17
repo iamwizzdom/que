@@ -44,11 +44,11 @@ class Smarty_Internal_Compile_Extends extends Smarty_Internal_Compile_Shared_Inh
      * Compiles code for the {extends} tag extends: resource
      *
      * @param array                                 $args     array with attributes from parser
-     * @param \Smarty_Internal_TemplateCompilerBase $compiler compiler object
+     * @param Smarty_Internal_TemplateCompilerBase $compiler compiler object
      *
      * @return string compiled code
-     * @throws \SmartyCompilerException
-     * @throws \SmartyException
+     * @throws SmartyCompilerException
+     * @throws SmartyException
      */
     public function compile($args, Smarty_Internal_TemplateCompilerBase $compiler)
     {
@@ -92,11 +92,11 @@ class Smarty_Internal_Compile_Extends extends Smarty_Internal_Compile_Shared_Inh
     /**
      * Add code for inheritance endChild() method to end of template
      *
-     * @param \Smarty_Internal_TemplateCompilerBase $compiler
+     * @param Smarty_Internal_TemplateCompilerBase $compiler
      * @param null|string                           $template optional inheritance parent template
      *
-     * @throws \SmartyCompilerException
-     * @throws \SmartyException
+     * @throws SmartyCompilerException
+     * @throws SmartyException
      */
     private function compileEndChild(Smarty_Internal_TemplateCompilerBase $compiler, $template = null)
     {
@@ -119,11 +119,11 @@ class Smarty_Internal_Compile_Extends extends Smarty_Internal_Compile_Shared_Inh
     /**
      * Add code for including subtemplate to end of template
      *
-     * @param \Smarty_Internal_TemplateCompilerBase $compiler
+     * @param Smarty_Internal_TemplateCompilerBase $compiler
      * @param string                                $template subtemplate name
      *
-     * @throws \SmartyCompilerException
-     * @throws \SmartyException
+     * @throws SmartyCompilerException
+     * @throws SmartyException
      */
     private function compileInclude(Smarty_Internal_TemplateCompilerBase $compiler, $template)
     {
@@ -142,7 +142,7 @@ class Smarty_Internal_Compile_Extends extends Smarty_Internal_Compile_Shared_Inh
     /**
      * Create source code for {extends} from source components array
      *
-     * @param \Smarty_Internal_Template $template
+     * @param Smarty_Internal_Template $template
      *
      * @return string
      */

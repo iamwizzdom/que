@@ -21,11 +21,8 @@ class Smarty_Internal_Method_RegisterObject
     /**
      * Registers object to be used in templates
      *
-     * @api  Smarty::registerObject()
-     * @link http://www.smarty.net/docs/en/api.register.object.tpl
-     *
-     * @param \Smarty_Internal_TemplateBase|\Smarty_Internal_Template|\Smarty $obj
-     * @param string                                                          $object_name
+     * @param \Smarty_Internal_TemplateBase|Smarty_Internal_Template|\Smarty $obj
+     * @param string $object_name
      * @param object                                                          $object                     the
      *                                                                                                    referenced
      *                                                                                                    PHP
@@ -48,8 +45,11 @@ class Smarty_Internal_Method_RegisterObject
      * @param array                                                           $block_methods              list of
      *                                                                                                    block-methods
      *
-     * @return \Smarty|\Smarty_Internal_Template
-     * @throws \SmartyException
+     * @return \Smarty|Smarty_Internal_Template
+     * @throws SmartyException
+     *@api  Smarty::registerObject()
+     * @link http://www.smarty.net/docs/en/api.register.object.tpl
+     *
      */
     public function registerObject(
         Smarty_Internal_TemplateBase $obj,

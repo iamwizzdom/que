@@ -13,6 +13,7 @@ namespace Twig\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
+use stdClass;
 use Twig\RuntimeLoader\ContainerRuntimeLoader;
 
 class ContainerRuntimeLoaderTest extends TestCase
@@ -21,7 +22,7 @@ class ContainerRuntimeLoaderTest extends TestCase
     {
         $container = $this->createMock(ContainerInterface::class);
         $container->expects($this->once())->method('has')->with('stdClass')->willReturn(true);
-        $container->expects($this->once())->method('get')->with('stdClass')->willReturn(new \stdClass());
+        $container->expects($this->once())->method('get')->with('stdClass')->willReturn(new stdClass());
 
         $loader = new ContainerRuntimeLoader($container);
 

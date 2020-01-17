@@ -11,6 +11,7 @@
 
 namespace Twig;
 
+use function get_class;
 use Twig\Node\Expression\TestExpression;
 
 /**
@@ -38,7 +39,7 @@ class TwigTest
      */
     public function __construct(string $name, $callable = null, array $options = [])
     {
-        if (__CLASS__ !== \get_class($this)) {
+        if (__CLASS__ !== get_class($this)) {
             @trigger_error('Overriding '.__CLASS__.' is deprecated since Twig 2.4.0 and the class will be final in 3.0.', E_USER_DEPRECATED);
         }
 

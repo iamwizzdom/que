@@ -14,7 +14,7 @@ class Smarty_CacheResource_Apc extends Smarty_CacheResource_KeyValueStore
     /**
      * Smarty_CacheResource_Apc constructor.
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function __construct()
     {

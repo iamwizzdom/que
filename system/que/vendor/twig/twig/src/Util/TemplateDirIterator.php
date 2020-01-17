@@ -11,10 +11,12 @@
 
 namespace Twig\Util;
 
+use IteratorIterator;
+
 /**
  * @author Fabien Potencier <fabien@symfony.com>
  */
-class TemplateDirIterator extends \IteratorIterator
+class TemplateDirIterator extends IteratorIterator
 {
     public function current()
     {

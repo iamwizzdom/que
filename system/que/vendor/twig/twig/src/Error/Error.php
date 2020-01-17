@@ -11,8 +11,14 @@
 
 namespace Twig\Error;
 
+use Exception;
+use function get_class;
+use function is_object;
+use function is_string;
+use ReflectionObject;
 use Twig\Source;
 use Twig\Template;
+use Twig_Source;
 
 /**
  * Twig base exception.
@@ -36,7 +42,7 @@ use Twig\Template;
  *
  * @author Fabien Potencier <fabien@symfony.com>
  */
-class Error extends \Exception
+class Error extends Exception
 {
     private $lineno;
     private $name;
@@ -53,15 +59,15 @@ class Error extends \Exception
      * @param string             $message  The error message
      * @param int                $lineno   The template line where the error occurred
      * @param Source|string|null $source   The source context where the error occurred
-     * @param \Exception         $previous The previous exception
+     * @param Exception         $previous The previous exception
      */
-    public function __construct(string $message, int $lineno = -1, $source = null, \Exception $previous = null)
+    public function __construct(string $message, int $lineno = -1, $source = null, Exception $previous = null)
     {
         parent::__construct('', 0, $previous);
 
         if (null === $source) {
             $name = null;
-        } elseif (!$source instanceof Source && !$source instanceof \Twig_Source) {
+        } elseif (!$source instanceof Source && !$source instanceof Twig_Source) {
             @trigger_error(sprintf('Passing a string as a source to %s is deprecated since Twig 2.6.1; pass a Twig\Source instance instead.', __CLASS__), E_USER_DEPRECATED);
             $name = $source;
         } else {
@@ -170,7 +176,7 @@ class Error extends \Exception
         }
 
         if ($this->name) {
-            if (\is_string($this->name) || (\is_object($this->name) && method_exists($this->name, '__toString'))) {
+            if (is_string($this->name) || (is_object($this->name) && method_exists($this->name, '__toString'))) {
                 $name = sprintf('"%s"', $this->name);
             } else {
                 $name = json_encode($this->name);
@@ -198,12 +204,12 @@ class Error extends \Exception
 
         $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS | DEBUG_BACKTRACE_PROVIDE_OBJECT);
         foreach ($backtrace as $trace) {
-            if (isset($trace['object']) && $trace['object'] instanceof Template && 'Twig_Template' !== \get_class($trace['object'])) {
-                $currentClass = \get_class($trace['object']);
+            if (isset($trace['object']) && $trace['object'] instanceof Template && 'Twig_Template' !== get_class($trace['object'])) {
+                $currentClass = get_class($trace['object']);
                 $isEmbedContainer = 0 === strpos($templateClass, $currentClass);
                 if (null === $this->name || ($this->name == $trace['object']->getTemplateName() && !$isEmbedContainer)) {
                     $template = $trace['object'];
-                    $templateClass = \get_class($trace['object']);
+                    $templateClass = get_class($trace['object']);
                 }
             }
         }
@@ -224,7 +230,7 @@ class Error extends \Exception
             return;
         }
 
-        $r = new \ReflectionObject($template);
+        $r = new ReflectionObject($template);
         $file = $r->getFileName();
 
         $exceptions = [$e = $this];

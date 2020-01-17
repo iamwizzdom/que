@@ -88,7 +88,7 @@ abstract class Smarty_CacheResource_KeyValueStore extends Smarty_CacheResource
     /**
      * Read the cached template and process the header
      *
-     * @param \Smarty_Internal_Template $_smarty_tpl do not change variable name, is used by compiled template
+     * @param Smarty_Internal_Template $_smarty_tpl do not change variable name, is used by compiled template
      * @param Smarty_Template_Cached    $cached      cached object
      * @param boolean                   $update      flag if called because cache update
      *
@@ -200,7 +200,7 @@ abstract class Smarty_CacheResource_KeyValueStore extends Smarty_CacheResource
      * @param integer $exp_time      expiration time [being ignored]
      *
      * @return int number of cache files deleted [always -1]
-     * @throws \SmartyException
+     * @throws SmartyException
      * @uses   buildCachedFilepath() to generate the CacheID
      * @uses   invalidate() to mark CacheIDs parent chain as outdated
      * @uses   delete() to remove CacheID from cache
@@ -222,7 +222,7 @@ abstract class Smarty_CacheResource_KeyValueStore extends Smarty_CacheResource
      * @param string $resource_name template name
      *
      * @return string filepath of cache file
-     * @throws \SmartyException
+     * @throws SmartyException
      */
     protected function getTemplateUid(Smarty $smarty, $resource_name)
     {

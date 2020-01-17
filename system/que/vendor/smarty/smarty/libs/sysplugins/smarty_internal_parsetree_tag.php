@@ -28,7 +28,7 @@ class Smarty_Internal_ParseTree_Tag extends Smarty_Internal_ParseTree
     /**
      * Create parse tree buffer for Smarty tag
      *
-     * @param \Smarty_Internal_Templateparser $parser parser object
+     * @param Smarty_Internal_Templateparser $parser parser object
      * @param string                          $data   content
      */
     public function __construct(Smarty_Internal_Templateparser $parser, $data)
@@ -40,7 +40,7 @@ class Smarty_Internal_ParseTree_Tag extends Smarty_Internal_ParseTree
     /**
      * Return buffer content
      *
-     * @param \Smarty_Internal_Templateparser $parser
+     * @param Smarty_Internal_Templateparser $parser
      *
      * @return string content
      */
@@ -52,7 +52,7 @@ class Smarty_Internal_ParseTree_Tag extends Smarty_Internal_ParseTree
     /**
      * Return complied code that loads the evaluated output of buffer content into a temporary variable
      *
-     * @param \Smarty_Internal_Templateparser $parser
+     * @param Smarty_Internal_Templateparser $parser
      *
      * @return string template code
      */

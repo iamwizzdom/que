@@ -33,7 +33,7 @@ class Smarty_Internal_ParseTree_Dq extends Smarty_Internal_ParseTree
     /**
      * Append buffer to subtree
      *
-     * @param \Smarty_Internal_Templateparser $parser
+     * @param Smarty_Internal_Templateparser $parser
      * @param Smarty_Internal_ParseTree       $subtree parse tree buffer
      */
     public function append_subtree(Smarty_Internal_Templateparser $parser, Smarty_Internal_ParseTree $subtree)
@@ -69,7 +69,7 @@ class Smarty_Internal_ParseTree_Dq extends Smarty_Internal_ParseTree
     /**
      * Merge subtree buffer content together
      *
-     * @param \Smarty_Internal_Templateparser $parser
+     * @param Smarty_Internal_Templateparser $parser
      *
      * @return string compiled template code
      */

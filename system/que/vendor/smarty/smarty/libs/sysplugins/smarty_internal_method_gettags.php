@@ -24,12 +24,12 @@ class Smarty_Internal_Method_GetTags
      * @api  Smarty::getTags()
      * @link http://www.smarty.net/docs/en/api.get.tags.tpl
      *
-     * @param \Smarty_Internal_TemplateBase|\Smarty_Internal_Template|\Smarty $obj
+     * @param Smarty_Internal_TemplateBase|Smarty_Internal_Template|Smarty $obj
      * @param null|string|Smarty_Internal_Template                            $template
      *
      * @return array of tag/attributes
-     * @throws \Exception
-     * @throws \SmartyException
+     * @throws Exception
+     * @throws SmartyException
      */
     public function getTags(Smarty_Internal_TemplateBase $obj, $template = null)
     {

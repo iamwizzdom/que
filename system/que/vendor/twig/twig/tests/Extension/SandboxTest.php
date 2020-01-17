@@ -12,6 +12,7 @@ namespace Twig\Tests\Extension;
  */
 
 use PHPUnit\Framework\TestCase;
+use Throwable;
 use Twig\Environment;
 use Twig\Extension\SandboxExtension;
 use Twig\Loader\ArrayLoader;
@@ -311,7 +312,7 @@ EOF
         $e = null;
         try {
             $twig->load('1_include')->render(self::$params);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
         }
         if (null === $e) {
             $this->fail('An exception should be thrown for this test to be valid.');

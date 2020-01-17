@@ -11,7 +11,17 @@ namespace Twig\Tests\Extension;
  * file that was distributed with this source code.
  */
 
+use ArrayIterator;
+use ArrayObject;
+use function count;
+use function in_array;
+use function is_int;
+use Iterator;
+use IteratorAggregate;
+use LogicException;
 use PHPUnit\Framework\TestCase;
+use SimpleXMLElement;
+use stdClass;
 use Twig\Environment;
 use Twig\Error\RuntimeError;
 use Twig\Loader\LoaderInterface;
@@ -26,7 +36,7 @@ class CoreTest extends TestCase
         $env = new Environment($this->createMock(LoaderInterface::class));
 
         for ($i = 0; $i < 100; ++$i) {
-            $this->assertTrue(\in_array(twig_random($env, $value1, $value2), $expectedInArray, true)); // assertContains() would not consider the type
+            $this->assertTrue(in_array(twig_random($env, $value1, $value2), $expectedInArray, true)); // assertContains() would not consider the type
         }
     }
 
@@ -39,7 +49,7 @@ class CoreTest extends TestCase
             ],
             'Traversable' => [
                 ['apple', 'orange', 'citrus'],
-                new \ArrayObject(['apple', 'orange', 'citrus']),
+                new ArrayObject(['apple', 'orange', 'citrus']),
             ],
             'unicode string' => [
                 ['Ä', '€', 'é'],
@@ -85,7 +95,7 @@ class CoreTest extends TestCase
 
         for ($i = 0; $i < 100; ++$i) {
             $val = twig_random(new Environment($this->createMock(LoaderInterface::class)));
-            $this->assertTrue(\is_int($val) && $val >= 0 && $val <= $max);
+            $this->assertTrue(is_int($val) && $val >= 0 && $val <= $max);
         }
     }
 
@@ -94,7 +104,7 @@ class CoreTest extends TestCase
         $this->assertSame('', twig_random(new Environment($this->createMock(LoaderInterface::class)), ''));
         $this->assertSame('', twig_random(new Environment($this->createMock(LoaderInterface::class), ['charset' => null]), ''));
 
-        $instance = new \stdClass();
+        $instance = new stdClass();
         $this->assertSame($instance, twig_random(new Environment($this->createMock(LoaderInterface::class)), $instance));
     }
 
@@ -112,7 +122,7 @@ class CoreTest extends TestCase
         $text = iconv('UTF-8', 'ISO-8859-1', 'Äé');
         for ($i = 0; $i < 30; ++$i) {
             $rand = twig_random($twig, $text);
-            $this->assertTrue(\in_array(iconv('ISO-8859-1', 'UTF-8', $rand), ['Ä', 'é'], true));
+            $this->assertTrue(in_array(iconv('ISO-8859-1', 'UTF-8', $rand), ['Ä', 'é'], true));
         }
     }
 
@@ -190,7 +200,7 @@ class CoreTest extends TestCase
             [$keys, new CoreTestIteratorAggregate($array, $keys)],
             [$keys, new CoreTestIteratorAggregateAggregate($array, $keys)],
             [[], null],
-            [['a'], new \SimpleXMLElement('<xml><a></a></xml>')],
+            [['a'], new SimpleXMLElement('<xml><a></a></xml>')],
         ];
     }
 
@@ -218,7 +228,7 @@ class CoreTest extends TestCase
             [false, 4, new CoreTestIterator($array, $keys, true)],
             [false, 4, new CoreTestIteratorAggregateAggregate($array, $keys, true)],
             [false, 1, 1],
-            [true, 'b', new \SimpleXMLElement('<xml><a>b</a></xml>')],
+            [true, 'b', new SimpleXMLElement('<xml><a>b</a></xml>')],
         ];
     }
 
@@ -244,16 +254,16 @@ class CoreTest extends TestCase
             [[2, 3], [1, 2, 3, 4], 1, 2],
             [[2, 3], new CoreTestIterator($i, $keys, true), 1, 2],
             [['c' => 3, 'd' => 4], new CoreTestIteratorAggregate($i, $keys, true), 2, null, true],
-            [$i, new CoreTestIterator($i, $keys, true), 0, \count($keys) + 10, true],
-            [[], new CoreTestIterator($i, $keys, true), \count($keys) + 10],
+            [$i, new CoreTestIterator($i, $keys, true), 0, count($keys) + 10, true],
+            [[], new CoreTestIterator($i, $keys, true), count($keys) + 10],
             ['de', 'abcdef', 3, 2],
-            [[], new \SimpleXMLElement('<items><item>1</item><item>2</item></items>'), 3],
-            [[], new \ArrayIterator([1, 2]), 3],
+            [[], new SimpleXMLElement('<items><item>1</item><item>2</item></items>'), 3],
+            [[], new ArrayIterator([1, 2]), 3],
         ];
     }
 }
 
-final class CoreTestIteratorAggregate implements \IteratorAggregate
+final class CoreTestIteratorAggregate implements IteratorAggregate
 {
     private $iterator;
 
@@ -268,7 +278,7 @@ final class CoreTestIteratorAggregate implements \IteratorAggregate
     }
 }
 
-final class CoreTestIteratorAggregateAggregate implements \IteratorAggregate
+final class CoreTestIteratorAggregateAggregate implements IteratorAggregate
 {
     private $iterator;
 
@@ -283,7 +293,7 @@ final class CoreTestIteratorAggregateAggregate implements \IteratorAggregate
     }
 }
 
-final class CoreTestIterator implements \Iterator
+final class CoreTestIterator implements Iterator
 {
     private $position;
     private $array;
@@ -297,7 +307,7 @@ final class CoreTestIterator implements \Iterator
         $this->arrayKeys = $keys;
         $this->position = 0;
         $this->allowValueAccess = $allowValueAccess;
-        $this->maxPosition = false === $maxPosition ? \count($values) + 1 : $maxPosition;
+        $this->maxPosition = false === $maxPosition ? count($values) + 1 : $maxPosition;
     }
 
     public function rewind()
@@ -311,7 +321,7 @@ final class CoreTestIterator implements \Iterator
             return $this->array[$this->key()];
         }
 
-        throw new \LogicException('Code should only use the keys, not the values provided by iterator.');
+        throw new LogicException('Code should only use the keys, not the values provided by iterator.');
     }
 
     public function key()
@@ -323,7 +333,7 @@ final class CoreTestIterator implements \Iterator
     {
         ++$this->position;
         if ($this->position === $this->maxPosition) {
-            throw new \LogicException(sprintf('Code should not iterate beyond %d.', $this->maxPosition));
+            throw new LogicException(sprintf('Code should not iterate beyond %d.', $this->maxPosition));
         }
     }
 

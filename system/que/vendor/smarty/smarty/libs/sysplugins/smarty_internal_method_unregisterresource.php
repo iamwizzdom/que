@@ -21,13 +21,13 @@ class Smarty_Internal_Method_UnregisterResource
     /**
      * Registers a resource to fetch a template
      *
-     * @api  Smarty::unregisterResource()
-     * @link http://www.smarty.net/docs/en/api.unregister.resource.tpl
-     *
-     * @param \Smarty_Internal_TemplateBase|\Smarty_Internal_Template|\Smarty $obj
+     * @param \Smarty_Internal_TemplateBase|Smarty_Internal_Template|\Smarty $obj
      * @param string                                                          $type name of resource type
      *
-     * @return \Smarty|\Smarty_Internal_Template
+     * @return \Smarty|Smarty_Internal_Template
+     *@link http://www.smarty.net/docs/en/api.unregister.resource.tpl
+     *
+     * @api  Smarty::unregisterResource()
      */
     public function unregisterResource(Smarty_Internal_TemplateBase $obj, $type)
     {

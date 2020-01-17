@@ -11,6 +11,9 @@
 
 namespace Twig\NodeVisitor;
 
+use function count;
+use function get_class;
+use function in_array;
 use Twig\Environment;
 use Twig\Extension\EscaperExtension;
 use Twig\Node\AutoEscapeNode;
@@ -139,7 +142,7 @@ final class EscaperNodeVisitor extends AbstractNodeVisitor
             return $node;
         }
 
-        $class = \get_class($node);
+        $class = get_class($node);
 
         return new $class($this->getEscaperFilter($type, $expression), $node->getTemplateLine());
     }
@@ -178,13 +181,13 @@ final class EscaperNodeVisitor extends AbstractNodeVisitor
             $safe = $this->safeAnalysis->getSafe($expression);
         }
 
-        return \in_array($type, $safe) || \in_array('all', $safe);
+        return in_array($type, $safe) || in_array('all', $safe);
     }
 
     private function needEscaping(Environment $env)
     {
-        if (\count($this->statusStack)) {
-            return $this->statusStack[\count($this->statusStack) - 1];
+        if (count($this->statusStack)) {
+            return $this->statusStack[count($this->statusStack) - 1];
         }
 
         return $this->defaultStrategy ? $this->defaultStrategy : false;

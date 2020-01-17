@@ -85,7 +85,7 @@ class Smarty_Internal_Runtime_UpdateScope
      * Update variable in other scope
      *
      * @param array                     $tpl_vars template variable array
-     * @param \Smarty_Internal_Template $from
+     * @param Smarty_Internal_Template $from
      * @param string                    $varName  variable name
      */
     public function _updateVariableInOtherScope(&$tpl_vars, Smarty_Internal_Template $from, $varName)
@@ -101,7 +101,7 @@ class Smarty_Internal_Runtime_UpdateScope
     /**
      * Update variable in template local variable stack
      *
-     * @param \Smarty_Internal_Template $tpl
+     * @param Smarty_Internal_Template $tpl
      * @param string|null               $varName variable name or null for config variables
      */
     public function _updateVarStack(Smarty_Internal_Template $tpl, $varName)

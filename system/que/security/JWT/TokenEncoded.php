@@ -8,9 +8,6 @@
 
 namespace que\security\JWT;
 
-use que\security\JWT\Base64Url;
-use que\security\JWT\JWT;
-use que\security\JWT\Validation;
 use que\security\JWT\Exceptions\EmptyTokenException;
 
 /**

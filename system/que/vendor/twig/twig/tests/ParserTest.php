@@ -11,7 +11,10 @@ namespace Twig\Tests;
  * file that was distributed with this source code.
  */
 
+use function chr;
 use PHPUnit\Framework\TestCase;
+use ReflectionMethod;
+use ReflectionProperty;
 use Twig\Environment;
 use Twig\Error\SyntaxError;
 use Twig\Loader\LoaderInterface;
@@ -62,7 +65,7 @@ class ParserTest extends TestCase
     public function testFilterBodyNodes($input, $expected)
     {
         $parser = $this->getParser();
-        $m = new \ReflectionMethod($parser, 'filterBodyNodes');
+        $m = new ReflectionMethod($parser, 'filterBodyNodes');
         $m->setAccessible(true);
 
         $this->assertEquals($expected, $m->invoke($parser, $input));
@@ -95,7 +98,7 @@ class ParserTest extends TestCase
 
         $parser = $this->getParser();
 
-        $m = new \ReflectionMethod($parser, 'filterBodyNodes');
+        $m = new ReflectionMethod($parser, 'filterBodyNodes');
         $m->setAccessible(true);
 
         $m->invoke($parser, $input);
@@ -116,9 +119,9 @@ class ParserTest extends TestCase
     {
         $parser = $this->getParser();
 
-        $m = new \ReflectionMethod($parser, 'filterBodyNodes');
+        $m = new ReflectionMethod($parser, 'filterBodyNodes');
         $m->setAccessible(true);
-        $this->assertNull($m->invoke($parser, new TextNode(\chr(0xEF).\chr(0xBB).\chr(0xBF).$emptyNode, 1)));
+        $this->assertNull($m->invoke($parser, new TextNode(chr(0xEF). chr(0xBB). chr(0xBF).$emptyNode, 1)));
     }
 
     public function getFilterBodyNodesWithBOMData()
@@ -181,7 +184,7 @@ EOF
         $parser = new Parser(new Environment($this->createMock(LoaderInterface::class)));
         $parser->setParent(new Node());
 
-        $p = new \ReflectionProperty($parser, 'stream');
+        $p = new ReflectionProperty($parser, 'stream');
         $p->setAccessible(true);
         $p->setValue($parser, new TokenStream([]));
 

@@ -21,15 +21,15 @@ class Smarty_Internal_Method_GetTemplateVars
     /**
      * Returns a single or all template variables
      *
-     * @api  Smarty::getTemplateVars()
-     * @link http://www.smarty.net/docs/en/api.get.template.vars.tpl
-     *
-     * @param \Smarty_Internal_Data|\Smarty_Internal_Template|\Smarty $data
+     * @param Smarty_Internal_Data|Smarty_Internal_Template|Smarty $data
      * @param string                                                  $varName       variable name or null
-     * @param \Smarty_Internal_Data|\Smarty_Internal_Template|\Smarty $_ptr          optional pointer to data object
-     * @param bool                                                    $searchParents include parent templates?
+     * @param Smarty_Internal_Data|Smarty_Internal_Template|Smarty $_ptr          optional pointer to data object
+     * @param bool $searchParents include parent templates?
      *
      * @return mixed variable value or or array of variables
+     *@link http://www.smarty.net/docs/en/api.get.template.vars.tpl
+     *
+     * @api  Smarty::getTemplateVars()
      */
     public function getTemplateVars(
         Smarty_Internal_Data $data,
@@ -76,13 +76,13 @@ class Smarty_Internal_Method_GetTemplateVars
     /**
      * gets the object of a Smarty variable
      *
-     * @param \Smarty_Internal_Data|\Smarty_Internal_Template|\Smarty $data
+     * @param Smarty_Internal_Data|Smarty_Internal_Template|Smarty $data
      * @param string                                                  $varName       the name of the Smarty variable
-     * @param \Smarty_Internal_Data|\Smarty_Internal_Template|\Smarty $_ptr          optional pointer to data object
+     * @param Smarty_Internal_Data|Smarty_Internal_Template|Smarty $_ptr          optional pointer to data object
      * @param bool                                                    $searchParents search also in parent data
      * @param bool                                                    $errorEnable
      *
-     * @return \Smarty_Variable
+     * @return Smarty_Variable
      */
     public function _getVariable(
         Smarty_Internal_Data $data,

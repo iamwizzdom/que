@@ -28,8 +28,6 @@ class Smarty_Internal_Method_SetAutoloadFilters
     /**
      * Set autoload filters
      *
-     * @api Smarty::setAutoloadFilters()
-     *
      * @param \Smarty_Internal_TemplateBase|\Smarty_Internal_Template|\Smarty $obj
      * @param array                                                           $filters filters to load automatically
      * @param string                                                          $type    "pre", "output", … specify
@@ -39,7 +37,9 @@ class Smarty_Internal_Method_SetAutoloadFilters
      *                                                                                 appropriate types
      *
      * @return \Smarty|\Smarty_Internal_Template
-     * @throws \SmartyException
+     * @throws SmartyException
+     *@api Smarty::setAutoloadFilters()
+     *
      */
     public function setAutoloadFilters(Smarty_Internal_TemplateBase $obj, $filters, $type = null)
     {
@@ -61,7 +61,7 @@ class Smarty_Internal_Method_SetAutoloadFilters
      *
      * @param string $type
      *
-     * @throws \SmartyException
+     * @throws SmartyException
      */
     public function _checkFilterType($type)
     {

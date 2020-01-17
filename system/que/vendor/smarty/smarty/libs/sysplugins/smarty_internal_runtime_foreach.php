@@ -22,7 +22,7 @@ class Smarty_Internal_Runtime_Foreach
      *  - init item and key variables, named foreach property data if required
      *  - count total if required
      *
-     * @param \Smarty_Internal_Template $tpl
+     * @param Smarty_Internal_Template $tpl
      * @param mixed                     $from       values to loop over
      * @param string                    $item       variable name
      * @param bool                      $needTotal  flag if we need to count values
@@ -137,7 +137,7 @@ class Smarty_Internal_Runtime_Foreach
      *
      * will be called by {break n} or {continue n} for the required number of levels
      *
-     * @param \Smarty_Internal_Template $tpl
+     * @param Smarty_Internal_Template $tpl
      * @param int                       $levels number of levels
      */
     public function restore(Smarty_Internal_Template $tpl, $levels = 1)

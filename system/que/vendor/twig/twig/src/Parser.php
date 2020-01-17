@@ -12,6 +12,10 @@
 
 namespace Twig;
 
+use function chr;
+use function count;
+use function get_class;
+use function is_array;
 use Twig\Error\SyntaxError;
 use Twig\Node\BlockNode;
 use Twig\Node\BlockReferenceNode;
@@ -26,6 +30,7 @@ use Twig\Node\PrintNode;
 use Twig\Node\SpacelessNode;
 use Twig\Node\TextNode;
 use Twig\TokenParser\TokenParserInterface;
+use Twig_Node_BlockReference;
 
 /**
  * Default parser implementation.
@@ -157,7 +162,7 @@ class Parser
                             $this->stream->next();
                         }
 
-                        if (1 === \count($rv)) {
+                        if (1 === count($rv)) {
                             return $rv[0];
                         }
 
@@ -168,7 +173,7 @@ class Parser
                         if (null !== $test) {
                             $e = new SyntaxError(sprintf('Unexpected "%s" tag', $token->getValue()), $token->getLine(), $this->stream->getSourceContext());
 
-                            if (\is_array($test) && isset($test[0]) && $test[0] instanceof TokenParserInterface) {
+                            if (is_array($test) && isset($test[0]) && $test[0] instanceof TokenParserInterface) {
                                 $e->appendMessage(sprintf(' (expecting closing tag for the "%s" tag defined near line %s).', $test[0]->getTag(), $lineno));
                             }
                         } else {
@@ -193,7 +198,7 @@ class Parser
             }
         }
 
-        if (1 === \count($rv)) {
+        if (1 === count($rv)) {
             return $rv[0];
         }
 
@@ -207,7 +212,7 @@ class Parser
 
     public function peekBlockStack()
     {
-        return isset($this->blockStack[\count($this->blockStack) - 1]) ? $this->blockStack[\count($this->blockStack) - 1] : null;
+        return isset($this->blockStack[count($this->blockStack) - 1]) ? $this->blockStack[count($this->blockStack) - 1] : null;
     }
 
     public function popBlockStack()
@@ -262,7 +267,7 @@ class Parser
 
     public function hasTraits()
     {
-        return \count($this->traits) > 0;
+        return count($this->traits) > 0;
     }
 
     public function embedTemplate(ModuleNode $template)
@@ -280,12 +285,12 @@ class Parser
     public function getImportedSymbol($type, $alias)
     {
         // if the symbol does not exist in the current scope (0), try in the main/global scope (last index)
-        return $this->importedSymbols[0][$type][$alias] ?? ($this->importedSymbols[\count($this->importedSymbols) - 1][$type][$alias] ?? null);
+        return $this->importedSymbols[0][$type][$alias] ?? ($this->importedSymbols[count($this->importedSymbols) - 1][$type][$alias] ?? null);
     }
 
     public function isMainScope()
     {
-        return 1 === \count($this->importedSymbols);
+        return 1 === count($this->importedSymbols);
     }
 
     public function pushLocalScope()
@@ -341,7 +346,7 @@ class Parser
             // the "&& !$node instanceof SpacelessNode" part of the condition must be removed in 3.0
             (!$node instanceof TextNode && !$node instanceof BlockReferenceNode && ($node instanceof NodeOutputInterface && !$node instanceof SpacelessNode))
         ) {
-            if (false !== strpos((string) $node, \chr(0xEF).\chr(0xBB).\chr(0xBF))) {
+            if (false !== strpos((string) $node, chr(0xEF). chr(0xBB). chr(0xBF))) {
                 $t = substr($node->getAttribute('data'), 3);
                 if ('' === $t || ctype_space($t)) {
                     // bypass empty nodes starting with a BOM
@@ -366,7 +371,7 @@ class Parser
         // "block" tags that are not captured (see above) are only used for defining
         // the content of the block. In such a case, nesting it does not work as
         // expected as the definition is not part of the default template code flow.
-        if ($nested && ($node instanceof BlockReferenceNode || $node instanceof \Twig_Node_BlockReference)) {
+        if ($nested && ($node instanceof BlockReferenceNode || $node instanceof Twig_Node_BlockReference)) {
             //throw new SyntaxError('A block definition cannot be nested under non-capturing nodes.', $node->getTemplateLine(), $this->stream->getSourceContext());
             @trigger_error(sprintf('Nesting a block definition under a non-capturing node in "%s" at line %d is deprecated since Twig 2.5.0 and will become a syntax error in 3.0.', $this->stream->getSourceContext()->getName(), $node->getTemplateLine()), E_USER_DEPRECATED);
 
@@ -380,7 +385,7 @@ class Parser
 
         // here, $nested means "being at the root level of a child template"
         // we need to discard the wrapping "Twig_Node" for the "body" node
-        $nested = $nested || ('Twig_Node' !== \get_class($node) && Node::class !== \get_class($node));
+        $nested = $nested || ('Twig_Node' !== get_class($node) && Node::class !== get_class($node));
         foreach ($node as $k => $n) {
             if (null !== $n && null === $this->filterBodyNodes($n, $nested)) {
                 $node->removeNode($k);

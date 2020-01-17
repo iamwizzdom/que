@@ -11,7 +11,9 @@ namespace Twig\Tests;
  * file that was distributed with this source code.
  */
 
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Twig\Environment;
 use Twig\Extension\ExtensionInterface;
 use Twig\Loader\LoaderInterface;
@@ -23,7 +25,7 @@ class CustomExtensionTest extends TestCase
      */
     public function testGetInvalidOperators(ExtensionInterface $extension, $expectedExceptionMessage)
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage($expectedExceptionMessage);
 
         $env = new Environment($this->createMock(LoaderInterface::class));
@@ -34,7 +36,7 @@ class CustomExtensionTest extends TestCase
     public function provideInvalidExtensions()
     {
         return [
-            [new InvalidOperatorExtension(new \stdClass()), '"Twig\Tests\InvalidOperatorExtension::getOperators()" must return an array with operators, got "stdClass".'],
+            [new InvalidOperatorExtension(new stdClass()), '"Twig\Tests\InvalidOperatorExtension::getOperators()" must return an array with operators, got "stdClass".'],
             [new InvalidOperatorExtension([1, 2, 3]), '"Twig\Tests\InvalidOperatorExtension::getOperators()" must return an array of 2 elements, got 3.'],
         ];
     }

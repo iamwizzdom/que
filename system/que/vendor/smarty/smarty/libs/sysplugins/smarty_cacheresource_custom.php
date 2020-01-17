@@ -124,7 +124,7 @@ abstract class Smarty_CacheResource_Custom extends Smarty_CacheResource
     /**
      * Read the cached template and process the header
      *
-     * @param \Smarty_Internal_Template $_smarty_tpl do not change variable name, is used by compiled template
+     * @param Smarty_Internal_Template $_smarty_tpl do not change variable name, is used by compiled template
      * @param Smarty_Template_Cached    $cached      cached object
      * @param boolean                   $update      flag if called because cache update
      *
@@ -229,7 +229,7 @@ abstract class Smarty_CacheResource_Custom extends Smarty_CacheResource
      * @param integer $exp_time      expiration time (number of seconds, not timestamp)
      *
      * @return int number of cache files deleted
-     * @throws \SmartyException
+     * @throws SmartyException
      */
     public function clear(Smarty $smarty, $resource_name, $cache_id, $compile_id, $exp_time)
     {

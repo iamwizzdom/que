@@ -11,6 +11,8 @@
 
 namespace Twig;
 
+use function in_array;
+
 /**
  * Default autoescaping strategy based on file names.
  *
@@ -33,7 +35,7 @@ class FileExtensionEscapingStrategy
      */
     public static function guess($name)
     {
-        if (\in_array(substr($name, -1), ['/', '\\'])) {
+        if (in_array(substr($name, -1), ['/', '\\'])) {
             return 'html'; // return html for directories
         }
 

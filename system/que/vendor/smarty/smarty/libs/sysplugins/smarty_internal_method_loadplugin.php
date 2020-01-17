@@ -23,12 +23,12 @@ class Smarty_Internal_Method_LoadPlugin
      * class name format: Smarty_PluginType_PluginName
      * plugin filename format: plugintype.pluginname.php
      *
-     * @param \Smarty $smarty
+     * @param Smarty $smarty
      * @param string  $plugin_name class plugin name to load
      * @param bool    $check       check if already loaded
      *
      * @return bool|string
-     * @throws \SmartyException
+     * @throws SmartyException
      */
     public function loadPlugin(Smarty $smarty, $plugin_name, $check)
     {

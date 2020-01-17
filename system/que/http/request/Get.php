@@ -9,6 +9,7 @@
 namespace que\http\request;
 
 
+use ArrayAccess;
 use ArrayIterator;
 use Countable;
 use IteratorAggregate;
@@ -16,7 +17,7 @@ use JsonSerializable;
 use Serializable;
 use Traversable;
 
-class Get implements \ArrayAccess, Countable, JsonSerializable, IteratorAggregate, Serializable
+class Get implements ArrayAccess, Countable, JsonSerializable, IteratorAggregate, Serializable
 {
     /**
      * @var Get

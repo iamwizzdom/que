@@ -10,7 +10,6 @@ namespace que\http\network;
 
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
-use que\error\RuntimeError;
 use que\session\Session;
 
 class Redirect

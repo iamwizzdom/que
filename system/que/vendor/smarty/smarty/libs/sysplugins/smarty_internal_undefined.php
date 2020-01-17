@@ -31,7 +31,7 @@ class Smarty_Internal_Undefined
     /**
      * Wrapper for obsolete class Smarty_Internal_Runtime_ValidateCompiled
      *
-     * @param \Smarty_Internal_Template $tpl
+     * @param Smarty_Internal_Template $tpl
      * @param array                     $properties special template properties
      * @param bool                      $cache      flag if called from cache file
      *

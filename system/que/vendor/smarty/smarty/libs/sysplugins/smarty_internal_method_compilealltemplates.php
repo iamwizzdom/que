@@ -21,15 +21,15 @@ class Smarty_Internal_Method_CompileAllTemplates
     /**
      * Compile all template files
      *
-     * @api Smarty::compileAllTemplates()
-     *
-     * @param \Smarty $smarty        passed smarty object
+     * @param Smarty $smarty        passed smarty object
      * @param string  $extension     file extension
      * @param bool    $force_compile force all to recompile
      * @param int     $time_limit
      * @param int     $max_errors
      *
      * @return integer number of template files recompiled
+     *@api Smarty::compileAllTemplates()
+     *
      */
     public function compileAllTemplates(
         Smarty $smarty,
@@ -44,7 +44,7 @@ class Smarty_Internal_Method_CompileAllTemplates
     /**
      * Compile all template or config files
      *
-     * @param \Smarty $smarty
+     * @param Smarty $smarty
      * @param string  $extension     template file name extension
      * @param bool    $force_compile force all to recompile
      * @param int     $time_limit    set maximum execution time

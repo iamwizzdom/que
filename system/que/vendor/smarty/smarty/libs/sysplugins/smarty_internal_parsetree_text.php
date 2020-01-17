@@ -29,7 +29,7 @@ class Smarty_Internal_ParseTree_Text extends Smarty_Internal_ParseTree
     /**
      * Return buffer content
      *
-     * @param \Smarty_Internal_Templateparser $parser
+     * @param Smarty_Internal_Templateparser $parser
      *
      * @return string text
      */

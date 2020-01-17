@@ -11,6 +11,9 @@
 
 namespace Twig\Loader;
 
+use const DIRECTORY_SEPARATOR;
+use function is_array;
+use function strlen;
 use Twig\Error\LoaderError;
 use Twig\Source;
 
@@ -36,9 +39,9 @@ class FilesystemLoader implements LoaderInterface, ExistsLoaderInterface, Source
      */
     public function __construct($paths = [], string $rootPath = null)
     {
-        $this->rootPath = (null === $rootPath ? getcwd() : $rootPath).\DIRECTORY_SEPARATOR;
+        $this->rootPath = (null === $rootPath ? getcwd() : $rootPath). DIRECTORY_SEPARATOR;
         if (false !== $realPath = realpath($rootPath)) {
-            $this->rootPath = $realPath.\DIRECTORY_SEPARATOR;
+            $this->rootPath = $realPath. DIRECTORY_SEPARATOR;
         }
 
         if ($paths) {
@@ -78,7 +81,7 @@ class FilesystemLoader implements LoaderInterface, ExistsLoaderInterface, Source
      */
     public function setPaths($paths, $namespace = self::MAIN_NAMESPACE)
     {
-        if (!\is_array($paths)) {
+        if (!is_array($paths)) {
             $paths = [$paths];
         }
 
@@ -150,7 +153,7 @@ class FilesystemLoader implements LoaderInterface, ExistsLoaderInterface, Source
         if (null === ($path = $this->findTemplate($name)) || false === $path) {
             return '';
         }
-        $len = \strlen($this->rootPath);
+        $len = strlen($this->rootPath);
         if (0 === strncmp($this->rootPath, $path, $len)) {
             return substr($path, $len);
         }
@@ -296,7 +299,7 @@ class FilesystemLoader implements LoaderInterface, ExistsLoaderInterface, Source
     private function isAbsolutePath($file)
     {
         return strspn($file, '/\\', 0, 1)
-            || (\strlen($file) > 3 && ctype_alpha($file[0])
+            || (strlen($file) > 3 && ctype_alpha($file[0])
                 && ':' === $file[1]
                 && strspn($file, '/\\', 2, 1)
             )

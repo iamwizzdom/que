@@ -28,11 +28,11 @@ class Smarty_Internal_Compile_Private_Php extends Smarty_Internal_CompileBase
      * Compiles code for generating output from any expression
      *
      * @param array                                 $args      array with attributes from parser
-     * @param \Smarty_Internal_TemplateCompilerBase $compiler  compiler object
+     * @param Smarty_Internal_TemplateCompilerBase $compiler  compiler object
      * @param array                                 $parameter array with compilation parameter
      *
      * @return string
-     * @throws \SmartyException
+     * @throws SmartyException
      */
     public function compile($args, Smarty_Internal_TemplateCompilerBase $compiler, $parameter)
     {
@@ -130,7 +130,7 @@ class Smarty_Internal_Compile_Private_Php extends Smarty_Internal_CompileBase
      *
      * @param Smarty_Internal_Templatelexer $lex
      *
-     * @throws \SmartyCompilerException
+     * @throws SmartyCompilerException
      */
     public function parsePhp(Smarty_Internal_Templatelexer $lex)
     {

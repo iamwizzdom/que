@@ -17,7 +17,7 @@
  * @property Smarty_Template_Compiled             $compiled
  * @property Smarty_Template_Cached               $cached
  * @property Smarty_Internal_TemplateCompilerBase $compiler
- * @property mixed|\Smarty_Template_Cached        registered_plugins
+ * @property mixed|Smarty_Template_Cached registered_plugins
  *
  * The following methods will be dynamically loaded by the extension handler when they are called.
  * They are located in a corresponding Smarty_Internal_Method_xxxx class
@@ -133,7 +133,7 @@ class Smarty_Internal_Template extends Smarty_Internal_TemplateBase
      *
      * @param string                                                       $template_resource template resource string
      * @param Smarty                                                       $smarty            Smarty instance
-     * @param null|\Smarty_Internal_Template|\Smarty|\Smarty_Internal_Data $_parent           back pointer to parent
+     * @param null|Smarty_Internal_Template|Smarty|Smarty_Internal_Data $_parent           back pointer to parent
      *                                                                                        object with variables or
      *                                                                                        null
      * @param mixed                                                        $_cache_id         cache   id or null
@@ -143,7 +143,7 @@ class Smarty_Internal_Template extends Smarty_Internal_TemplateBase
      *                                                                                        seconds
      * @param bool                                                         $_isConfig
      *
-     * @throws \SmartyException
+     * @throws SmartyException
      */
     public function __construct(
         $template_resource,
@@ -179,8 +179,8 @@ class Smarty_Internal_Template extends Smarty_Internal_TemplateBase
      * @param null|bool $display          true: display, false: fetch null: sub-template
      *
      * @return string
-     * @throws \Exception
-     * @throws \SmartyException
+     * @throws Exception
+     * @throws SmartyException
      */
     public function render($no_output_filter = true, $display = null)
     {
@@ -272,8 +272,8 @@ class Smarty_Internal_Template extends Smarty_Internal_TemplateBase
      * @param string  $uid            file dependency uid
      * @param string  $content_func   function name
      *
-     * @throws \Exception
-     * @throws \SmartyException
+     * @throws Exception
+     * @throws SmartyException
      */
     public function _subTemplateRender(
         $template,
@@ -442,7 +442,7 @@ class Smarty_Internal_Template extends Smarty_Internal_TemplateBase
      *
      * @param array $plugins required plugins
      *
-     * @throws \SmartyException
+     * @throws SmartyException
      */
     public function _checkPlugins($plugins)
     {
@@ -476,12 +476,12 @@ class Smarty_Internal_Template extends Smarty_Internal_TemplateBase
      * - Decode saved properties from compiled template and cache files
      * - Check if compiled or cache file is valid
      *
-     * @param \Smarty_Internal_Template $tpl
+     * @param Smarty_Internal_Template $tpl
      * @param array                     $properties special template properties
      * @param bool                      $cache      flag if called from cache file
      *
      * @return bool flag if compiled or cache file is valid
-     * @throws \SmartyException
+     * @throws SmartyException
      */
     public function _decodeProperties(Smarty_Internal_Template $tpl, $properties, $cache = false)
     {
@@ -552,7 +552,7 @@ class Smarty_Internal_Template extends Smarty_Internal_TemplateBase
      * Compiles the template
      * If the template is not evaluated the compiled template is saved on disk
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function compileTemplateSource()
     {
@@ -575,7 +575,7 @@ class Smarty_Internal_Template extends Smarty_Internal_TemplateBase
      * Get unique template id
      *
      * @return string
-     * @throws \SmartyException
+     * @throws SmartyException
      */
     public function _getTemplateId()
     {
@@ -586,7 +586,7 @@ class Smarty_Internal_Template extends Smarty_Internal_TemplateBase
     /**
      * runtime error not matching capture tags
      *
-     * @throws \SmartyException
+     * @throws SmartyException
      */
     public function capture_error()
     {
@@ -640,7 +640,7 @@ class Smarty_Internal_Template extends Smarty_Internal_TemplateBase
     /**
      * Load compiler object
      *
-     * @throws \SmartyException
+     * @throws SmartyException
      */
     public function loadCompiler()
     {

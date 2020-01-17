@@ -24,11 +24,11 @@ class Smarty_Internal_Method_GetRegisteredObject
      * @api  Smarty::getRegisteredObject()
      * @link http://www.smarty.net/docs/en/api.get.registered.object.tpl
      *
-     * @param \Smarty_Internal_TemplateBase|\Smarty_Internal_Template|\Smarty $obj
+     * @param Smarty_Internal_TemplateBase|Smarty_Internal_Template|Smarty $obj
      * @param string                                                          $object_name object name
      *
      * @return object
-     * @throws \SmartyException if no such object is found
+     * @throws SmartyException if no such object is found
      */
     public function getRegisteredObject(Smarty_Internal_TemplateBase $obj, $object_name)
     {

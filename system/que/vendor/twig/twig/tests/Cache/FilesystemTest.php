@@ -11,7 +11,11 @@ namespace Twig\Tests\Cache;
  * file that was distributed with this source code.
  */
 
+use function defined;
+use function dirname;
+use function get_class;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 use Twig\Cache\FilesystemCache;
 use Twig\Tests\FilesystemHelper;
 
@@ -40,7 +44,7 @@ class FilesystemTest extends TestCase
     {
         $key = $this->directory.'/cache/cachefile.php';
 
-        $dir = \dirname($key);
+        $dir = dirname($key);
         @mkdir($dir, 0777, true);
         $this->assertDirectoryExists($dir);
         $this->assertFalse(class_exists($this->classname, false));
@@ -81,10 +85,10 @@ class FilesystemTest extends TestCase
 
     public function testWriteFailMkdir()
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Unable to create the cache directory');
 
-        if (\defined('PHP_WINDOWS_VERSION_BUILD')) {
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
             $this->markTestSkipped('Read-only directories not possible on Windows.');
         }
 
@@ -102,10 +106,10 @@ class FilesystemTest extends TestCase
 
     public function testWriteFailDirWritable()
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Unable to write in the cache directory');
 
-        if (\defined('PHP_WINDOWS_VERSION_BUILD')) {
+        if (defined('PHP_WINDOWS_VERSION_BUILD')) {
             $this->markTestSkipped('Read-only directories not possible on Windows.');
         }
 
@@ -125,7 +129,7 @@ class FilesystemTest extends TestCase
 
     public function testWriteFailWriteFile()
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Failed to write cache file');
 
         $key = $this->directory.'/cache/cachefile.php';
@@ -144,7 +148,7 @@ class FilesystemTest extends TestCase
     {
         $key = $this->directory.'/cache/cachefile.php';
 
-        $dir = \dirname($key);
+        $dir = dirname($key);
         @mkdir($dir, 0777, true);
         $this->assertDirectoryExists($dir);
 
@@ -168,7 +172,7 @@ class FilesystemTest extends TestCase
     public function testGenerateKey($expected, $input)
     {
         $cache = new FilesystemCache($input);
-        $this->assertRegExp($expected, $cache->generateKey('_test_', \get_class($this)));
+        $this->assertRegExp($expected, $cache->generateKey('_test_', get_class($this)));
     }
 
     public function provideDirectories()

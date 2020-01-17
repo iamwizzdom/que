@@ -69,14 +69,14 @@ class Smarty_Template_Source
     /**
      * The Components an extended template is made of
      *
-     * @var \Smarty_Template_Source[]
+     * @var Smarty_Template_Source[]
      */
     public $components = null;
 
     /**
      * Resource Handler
      *
-     * @var \Smarty_Resource
+     * @var Smarty_Resource
      */
     public $handler = null;
 
@@ -130,7 +130,7 @@ class Smarty_Template_Source
      * @param string $type     type of resource
      * @param string $name     resource name
      *
-     * @throws   \SmartyException
+     * @throws   SmartyException
      * @internal param \Smarty_Resource $handler Resource Handler this source object communicates with
      */
     public function __construct(Smarty $smarty, $resource, $type, $name)
@@ -204,7 +204,7 @@ class Smarty_Template_Source
      * Get source content
      *
      * @return string
-     * @throws \SmartyException
+     * @throws SmartyException
      */
     public function getContent()
     {

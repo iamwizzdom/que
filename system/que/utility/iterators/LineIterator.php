@@ -8,9 +8,10 @@
 
 namespace que\utility\iterators;
 
+use Iterator;
 use RuntimeException;
 
-class LineIterator implements \Iterator {
+class LineIterator implements Iterator {
 
     /**
      * @var bool|resource

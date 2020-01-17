@@ -11,6 +11,7 @@
 
 namespace Twig\TokenParser;
 
+use function count;
 use Twig\Error\SyntaxError;
 use Twig\Node\SetNode;
 use Twig\Token;
@@ -39,13 +40,13 @@ final class SetTokenParser extends AbstractTokenParser
 
             $stream->expect(/* Token::BLOCK_END_TYPE */ 3);
 
-            if (\count($names) !== \count($values)) {
+            if (count($names) !== count($values)) {
                 throw new SyntaxError('When using set, you must have the same number of variables and assignments.', $stream->getCurrent()->getLine(), $stream->getSourceContext());
             }
         } else {
             $capture = true;
 
-            if (\count($names) > 1) {
+            if (count($names) > 1) {
                 throw new SyntaxError('When using set with a block, you cannot have a multi-target.', $stream->getCurrent()->getLine(), $stream->getSourceContext());
             }
 

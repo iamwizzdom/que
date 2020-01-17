@@ -9,8 +9,6 @@
 namespace que\security\JWT;
 
 use \Exception;
-use que\security\JWT\Base64Url;
-use que\security\JWT\Validation;
 use que\security\JWT\Exceptions\SigningFailedException;
 use que\security\JWT\Exceptions\IntegrityViolationException;
 use que\security\JWT\Exceptions\UnsupportedAlgorithmException;

@@ -11,6 +11,8 @@ namespace Twig\Tests\Util;
  * file that was distributed with this source code.
  */
 
+use ArrayIterator;
+use IteratorAggregate;
 use PHPUnit\Framework\TestCase;
 use Twig\Environment;
 use Twig\Loader\LoaderInterface;
@@ -38,11 +40,11 @@ class DeprecationCollectorTest extends TestCase
     }
 }
 
-class Twig_Tests_Util_Iterator implements \IteratorAggregate
+class Twig_Tests_Util_Iterator implements IteratorAggregate
 {
     public function getIterator()
     {
-        return new \ArrayIterator([
+        return new ArrayIterator([
             'ok.twig' => '{{ foo }}',
             'deprec.twig' => '{{ deprec("foo") }}',
         ]);

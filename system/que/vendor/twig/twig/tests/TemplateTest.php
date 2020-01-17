@@ -11,7 +11,16 @@ namespace Twig\Tests;
  * file that was distributed with this source code.
  */
 
+use function array_key_exists;
+use ArrayAccess;
+use ArrayIterator;
+use ArrayObject;
+use BadMethodCallException;
+use Exception;
+use IteratorAggregate;
+use LogicException;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Twig\Environment;
 use Twig\Error\RuntimeError;
 use Twig\Extension\SandboxExtension;
@@ -25,11 +34,11 @@ class TemplateTest extends TestCase
 {
     public function testDisplayBlocksAcceptTemplateOnlyAsBlocks()
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(LogicException::class);
 
         $twig = new Environment($this->createMock(LoaderInterface::class));
         $template = new TemplateForTest($twig);
-        $template->displayBlock('foo', [], ['foo' => [new \stdClass(), 'foo']]);
+        $template->displayBlock('foo', [], ['foo' => [new stdClass(), 'foo']]);
     }
 
     /**
@@ -48,7 +57,7 @@ class TemplateTest extends TestCase
             'array' => ['foo' => 'foo'],
             'array_access' => new TemplateArrayAccessObject(),
             'magic_exception' => new TemplateMagicPropertyObjectWithException(),
-            'object' => new \stdClass(),
+            'object' => new stdClass(),
         ];
 
         try {
@@ -130,7 +139,7 @@ class TemplateTest extends TestCase
         $template = new TemplateForTest($twig, 'index.twig');
         try {
             $template->renderBlock('unknown', []);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             ob_end_clean();
 
             throw $e;
@@ -261,7 +270,7 @@ class TemplateTest extends TestCase
         ];
 
         $objectArray = new TemplateArrayAccessObject();
-        $arrayObject = new \ArrayObject($array);
+        $arrayObject = new ArrayObject($array);
         $stdObject = (object) $array;
         $magicPropertyObject = new TemplateMagicPropertyObject();
         $propertyObject = new TemplatePropertyObject();
@@ -309,7 +318,7 @@ class TemplateTest extends TestCase
         foreach ($testObjects as $testObject) {
             foreach ($basicTests as $test) {
                 // properties cannot be numbers
-                if (($testObject[0] instanceof \stdClass || $testObject[0] instanceof TemplatePropertyObject) && is_numeric($test[2])) {
+                if (($testObject[0] instanceof stdClass || $testObject[0] instanceof TemplatePropertyObject) && is_numeric($test[2])) {
                     continue;
                 }
 
@@ -448,7 +457,7 @@ class TemplateForTest extends Template
     }
 }
 
-class TemplateArrayAccessObject implements \ArrayAccess
+class TemplateArrayAccessObject implements ArrayAccess
 {
     protected $protected = 'protected';
 
@@ -467,12 +476,12 @@ class TemplateArrayAccessObject implements \ArrayAccess
 
     public function offsetExists($name)
     {
-        return \array_key_exists($name, $this->attributes);
+        return array_key_exists($name, $this->attributes);
     }
 
     public function offsetGet($name)
     {
-        return \array_key_exists($name, $this->attributes) ? $this->attributes[$name] : null;
+        return array_key_exists($name, $this->attributes) ? $this->attributes[$name] : null;
     }
 
     public function offsetSet($name, $value)
@@ -504,12 +513,12 @@ class TemplateMagicPropertyObject
 
     public function __isset($name)
     {
-        return \array_key_exists($name, $this->attributes);
+        return array_key_exists($name, $this->attributes);
     }
 
     public function __get($name)
     {
-        return \array_key_exists($name, $this->attributes) ? $this->attributes[$name] : null;
+        return array_key_exists($name, $this->attributes) ? $this->attributes[$name] : null;
     }
 }
 
@@ -517,7 +526,7 @@ class TemplateMagicPropertyObjectWithException
 {
     public function __isset($key)
     {
-        throw new \Exception('Hey! Don\'t try to isset me!');
+        throw new Exception('Hey! Don\'t try to isset me!');
     }
 }
 
@@ -534,15 +543,15 @@ class TemplatePropertyObject
     protected $protected = 'protected';
 }
 
-class TemplatePropertyObjectAndIterator extends TemplatePropertyObject implements \IteratorAggregate
+class TemplatePropertyObjectAndIterator extends TemplatePropertyObject implements IteratorAggregate
 {
     public function getIterator()
     {
-        return new \ArrayIterator(['foo', 'bar']);
+        return new ArrayIterator(['foo', 'bar']);
     }
 }
 
-class TemplatePropertyObjectAndArrayAccess extends TemplatePropertyObject implements \ArrayAccess
+class TemplatePropertyObjectAndArrayAccess extends TemplatePropertyObject implements ArrayAccess
 {
     private $data = [
         'defined' => 'defined',
@@ -556,7 +565,7 @@ class TemplatePropertyObjectAndArrayAccess extends TemplatePropertyObject implem
 
     public function offsetExists($offset)
     {
-        return \array_key_exists($offset, $this->data);
+        return array_key_exists($offset, $this->data);
     }
 
     public function offsetGet($offset)
@@ -695,7 +704,7 @@ class TemplateMethodAndPropObject
     }
 }
 
-class TemplateArrayAccess implements \ArrayAccess
+class TemplateArrayAccess implements ArrayAccess
 {
     public $vars = [
         'foo' => 'bar',
@@ -704,7 +713,7 @@ class TemplateArrayAccess implements \ArrayAccess
 
     public function offsetExists($offset)
     {
-        return \array_key_exists($offset, $this->children);
+        return array_key_exists($offset, $this->children);
     }
 
     public function offsetGet($offset)
@@ -735,6 +744,6 @@ class TemplateMagicMethodExceptionObject
 {
     public function __call($method, $arguments)
     {
-        throw new \BadMethodCallException(sprintf('Unknown method "%s".', $method));
+        throw new BadMethodCallException(sprintf('Unknown method "%s".', $method));
     }
 }

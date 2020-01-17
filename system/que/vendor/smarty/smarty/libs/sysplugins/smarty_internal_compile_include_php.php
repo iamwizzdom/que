@@ -44,11 +44,11 @@ class Smarty_Internal_Compile_Include_Php extends Smarty_Internal_CompileBase
      * Compiles code for the {include_php} tag
      *
      * @param array                                 $args     array with attributes from parser
-     * @param \Smarty_Internal_TemplateCompilerBase $compiler compiler object
+     * @param Smarty_Internal_TemplateCompilerBase $compiler compiler object
      *
      * @return string
-     * @throws \SmartyCompilerException
-     * @throws \SmartyException
+     * @throws SmartyCompilerException
+     * @throws SmartyException
      */
     public function compile($args, Smarty_Internal_TemplateCompilerBase $compiler)
     {

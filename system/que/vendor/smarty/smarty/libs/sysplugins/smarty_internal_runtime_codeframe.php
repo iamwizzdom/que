@@ -21,7 +21,7 @@ class Smarty_Internal_Runtime_CodeFrame
      * @param string                                $content   optional template content
      * @param string                                $functions compiled template function and block code
      * @param bool                                  $cache     flag for cache file
-     * @param \Smarty_Internal_TemplateCompilerBase $compiler
+     * @param Smarty_Internal_TemplateCompilerBase $compiler
      *
      * @return string
      */

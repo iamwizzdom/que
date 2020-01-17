@@ -23,11 +23,11 @@ class Smarty_Internal_Method_GetStreamVariable
      *
      * @api Smarty::getStreamVariable()
      *
-     * @param \Smarty_Internal_Data|\Smarty_Internal_Template|\Smarty $data
+     * @param Smarty_Internal_Data|Smarty_Internal_Template|Smarty $data
      * @param string                                                  $variable the stream of the variable
      *
      * @return mixed
-     * @throws \SmartyException
+     * @throws SmartyException
      */
     public function getStreamVariable(Smarty_Internal_Data $data, $variable)
     {

@@ -11,7 +11,9 @@ namespace Twig\Tests\Node\Expression;
  * file that was distributed with this source code.
  */
 
+use LogicException;
 use PHPUnit\Framework\TestCase;
+use ReflectionMethod;
 use Twig\Error\SyntaxError;
 use Twig\Node\Expression\CallExpression;
 
@@ -83,7 +85,7 @@ class CallTest extends TestCase
 
     public function testResolveArgumentsWithMissingParameterForArbitraryArguments()
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(LogicException::class);
         $this->expectExceptionMessage('The last parameter of "Twig\\Tests\\Node\\Expression\\CallTest::customFunctionWithArbitraryArguments" for function "foo" must be an array with default value, eg. "array $arg = []".');
 
         $node = new Node_Expression_Call([], ['type' => 'function', 'name' => 'foo', 'is_variadic' => true]);
@@ -100,7 +102,7 @@ class CallTest extends TestCase
 
     private function getArguments($call, $args)
     {
-        $m = new \ReflectionMethod($call, 'getArguments');
+        $m = new ReflectionMethod($call, 'getArguments');
         $m->setAccessible(true);
 
         return $m->invokeArgs($call, $args);
@@ -112,7 +114,7 @@ class CallTest extends TestCase
 
     public function testResolveArgumentsWithMissingParameterForArbitraryArgumentsOnFunction()
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(LogicException::class);
         $this->expectExceptionMessageRegExp('#^The last parameter of "Twig\\\\Tests\\\\Node\\\\Expression\\\\custom_Twig_Tests_Node_Expression_CallTest_function" for function "foo" must be an array with default value, eg\\. "array \\$arg \\= \\[\\]"\\.$#');
 
         $node = new Node_Expression_Call([], ['type' => 'function', 'name' => 'foo', 'is_variadic' => true]);
@@ -121,7 +123,7 @@ class CallTest extends TestCase
 
     public function testResolveArgumentsWithMissingParameterForArbitraryArgumentsOnObject()
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(LogicException::class);
         $this->expectExceptionMessageRegExp('#^The last parameter of "Twig\\\\Tests\\\\Node\\\\Expression\\\\CallableTestClass\\:\\:__invoke" for function "foo" must be an array with default value, eg\\. "array \\$arg \\= \\[\\]"\\.$#');
 
         $node = new Node_Expression_Call([], ['type' => 'function', 'name' => 'foo', 'is_variadic' => true]);

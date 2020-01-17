@@ -11,6 +11,16 @@
 
 namespace Symfony\Polyfill\Mbstring;
 
+use function chr;
+use function count;
+use function gettype;
+use function is_array;
+use function is_object;
+use function is_scalar;
+use function method_exists;
+use function ord;
+use function strlen;
+
 /**
  * Partial mbstring implementation in PHP, iconv based, UTF-8 centric.
  *
@@ -79,7 +89,7 @@ final class Mbstring
 
     public static function mb_convert_encoding($s, $toEncoding, $fromEncoding = null)
     {
-        if (\is_array($fromEncoding) || false !== strpos($fromEncoding, ',')) {
+        if (is_array($fromEncoding) || false !== strpos($fromEncoding, ',')) {
             $fromEncoding = self::mb_detect_encoding($s, $fromEncoding);
         } else {
             $fromEncoding = self::getEncoding($fromEncoding);
@@ -141,18 +151,18 @@ final class Mbstring
 
     public static function mb_decode_numericentity($s, $convmap, $encoding = null)
     {
-        if (null !== $s && !\is_scalar($s) && !(\is_object($s) && \method_exists($s, '__toString'))) {
-            trigger_error('mb_decode_numericentity() expects parameter 1 to be string, '.\gettype($s).' given', E_USER_WARNING);
+        if (null !== $s && !is_scalar($s) && !(is_object($s) && method_exists($s, '__toString'))) {
+            trigger_error('mb_decode_numericentity() expects parameter 1 to be string, '. gettype($s).' given', E_USER_WARNING);
 
             return null;
         }
 
-        if (!\is_array($convmap) || !$convmap) {
+        if (!is_array($convmap) || !$convmap) {
             return false;
         }
 
-        if (null !== $encoding && !\is_scalar($encoding)) {
-            trigger_error('mb_decode_numericentity() expects parameter 3 to be string, '.\gettype($s).' given', E_USER_WARNING);
+        if (null !== $encoding && !is_scalar($encoding)) {
+            trigger_error('mb_decode_numericentity() expects parameter 3 to be string, '. gettype($s).' given', E_USER_WARNING);
 
             return '';  // Instead of null (cf. mb_encode_numericentity).
         }
@@ -173,7 +183,7 @@ final class Mbstring
             $s = iconv($encoding, 'UTF-8//IGNORE', $s);
         }
 
-        $cnt = floor(\count($convmap) / 4) * 4;
+        $cnt = floor(count($convmap) / 4) * 4;
 
         for ($i = 0; $i < $cnt; $i += 4) {
             // collector_decode_htmlnumericentity ignores $convmap[$i + 3]
@@ -201,24 +211,24 @@ final class Mbstring
 
     public static function mb_encode_numericentity($s, $convmap, $encoding = null, $is_hex = false)
     {
-        if (null !== $s && !\is_scalar($s) && !(\is_object($s) && \method_exists($s, '__toString'))) {
-            trigger_error('mb_encode_numericentity() expects parameter 1 to be string, '.\gettype($s).' given', E_USER_WARNING);
+        if (null !== $s && !is_scalar($s) && !(is_object($s) && method_exists($s, '__toString'))) {
+            trigger_error('mb_encode_numericentity() expects parameter 1 to be string, '. gettype($s).' given', E_USER_WARNING);
 
             return null;
         }
 
-        if (!\is_array($convmap) || !$convmap) {
+        if (!is_array($convmap) || !$convmap) {
             return false;
         }
 
-        if (null !== $encoding && !\is_scalar($encoding)) {
-            trigger_error('mb_encode_numericentity() expects parameter 3 to be string, '.\gettype($s).' given', E_USER_WARNING);
+        if (null !== $encoding && !is_scalar($encoding)) {
+            trigger_error('mb_encode_numericentity() expects parameter 3 to be string, '. gettype($s).' given', E_USER_WARNING);
 
             return null;  // Instead of '' (cf. mb_decode_numericentity).
         }
 
-        if (null !== $is_hex && !\is_scalar($is_hex)) {
-            trigger_error('mb_encode_numericentity() expects parameter 4 to be boolean, '.\gettype($s).' given', E_USER_WARNING);
+        if (null !== $is_hex && !is_scalar($is_hex)) {
+            trigger_error('mb_encode_numericentity() expects parameter 4 to be boolean, '. gettype($s).' given', E_USER_WARNING);
 
             return null;
         }
@@ -241,9 +251,9 @@ final class Mbstring
 
         static $ulenMask = array("\xC0" => 2, "\xD0" => 2, "\xE0" => 3, "\xF0" => 4);
 
-        $cnt = floor(\count($convmap) / 4) * 4;
+        $cnt = floor(count($convmap) / 4) * 4;
         $i = 0;
-        $len = \strlen($s);
+        $len = strlen($s);
         $result = '';
 
         while ($i < $len) {
@@ -315,7 +325,7 @@ final class Mbstring
             static $ulenMask = array("\xC0" => 2, "\xD0" => 2, "\xE0" => 3, "\xF0" => 4);
 
             $i = 0;
-            $len = \strlen($s);
+            $len = strlen($s);
 
             while ($i < $len) {
                 $ulen = $s[$i] < "\x80" ? 1 : $ulenMask[$s[$i] & "\xF0"];
@@ -324,7 +334,7 @@ final class Mbstring
 
                 if (isset($map[$uchr])) {
                     $uchr = $map[$uchr];
-                    $nlen = \strlen($uchr);
+                    $nlen = strlen($uchr);
 
                     if ($nlen == $ulen) {
                         $nlen = $i;
@@ -414,7 +424,7 @@ final class Mbstring
         if (null === $encodingList) {
             $encodingList = self::$encodingList;
         } else {
-            if (!\is_array($encodingList)) {
+            if (!is_array($encodingList)) {
                 $encodingList = array_map('trim', explode(',', $encodingList));
             }
             $encodingList = array_map('strtoupper', $encodingList);
@@ -451,7 +461,7 @@ final class Mbstring
             return self::$encodingList;
         }
 
-        if (!\is_array($encodingList)) {
+        if (!is_array($encodingList)) {
             $encodingList = array_map('trim', explode(',', $encodingList));
         }
         $encodingList = array_map('strtoupper', $encodingList);
@@ -478,7 +488,7 @@ final class Mbstring
     {
         $encoding = self::getEncoding($encoding);
         if ('CP850' === $encoding || 'ASCII' === $encoding) {
-            return \strlen($s);
+            return strlen($s);
         }
 
         return @iconv_strlen($s, $encoding);
@@ -526,8 +536,8 @@ final class Mbstring
 
     public static function mb_str_split($string, $split_length = 1, $encoding = null)
     {
-        if (null !== $string && !\is_scalar($string) && !(\is_object($string) && \method_exists($string, '__toString'))) {
-            trigger_error('mb_str_split() expects parameter 1 to be string, '.\gettype($string).' given', E_USER_WARNING);
+        if (null !== $string && !is_scalar($string) && !(is_object($string) && method_exists($string, '__toString'))) {
+            trigger_error('mb_str_split() expects parameter 1 to be string, '. gettype($string).' given', E_USER_WARNING);
 
             return null;
         }
@@ -718,13 +728,13 @@ final class Mbstring
     public static function mb_chr($code, $encoding = null)
     {
         if (0x80 > $code %= 0x200000) {
-            $s = \chr($code);
+            $s = chr($code);
         } elseif (0x800 > $code) {
-            $s = \chr(0xC0 | $code >> 6).\chr(0x80 | $code & 0x3F);
+            $s = chr(0xC0 | $code >> 6). chr(0x80 | $code & 0x3F);
         } elseif (0x10000 > $code) {
-            $s = \chr(0xE0 | $code >> 12).\chr(0x80 | $code >> 6 & 0x3F).\chr(0x80 | $code & 0x3F);
+            $s = chr(0xE0 | $code >> 12). chr(0x80 | $code >> 6 & 0x3F). chr(0x80 | $code & 0x3F);
         } else {
-            $s = \chr(0xF0 | $code >> 18).\chr(0x80 | $code >> 12 & 0x3F).\chr(0x80 | $code >> 6 & 0x3F).\chr(0x80 | $code & 0x3F);
+            $s = chr(0xF0 | $code >> 18). chr(0x80 | $code >> 12 & 0x3F). chr(0x80 | $code >> 6 & 0x3F). chr(0x80 | $code & 0x3F);
         }
 
         if ('UTF-8' !== $encoding = self::getEncoding($encoding)) {
@@ -740,8 +750,8 @@ final class Mbstring
             $s = mb_convert_encoding($s, 'UTF-8', $encoding);
         }
 
-        if (1 === \strlen($s)) {
-            return \ord($s);
+        if (1 === strlen($s)) {
+            return ord($s);
         }
 
         $code = ($s = unpack('C*', substr($s, 0, 4))) ? $s[1] : 0;
@@ -778,7 +788,7 @@ final class Mbstring
 
         while (isset($m[$i])) {
             if (0x80 > $m[$i]) {
-                $entities .= \chr($m[$i++]);
+                $entities .= chr($m[$i++]);
                 continue;
             }
             if (0xF0 <= $m[$i]) {

@@ -11,6 +11,7 @@
 
 namespace Twig\Extension;
 
+use LogicException;
 use Twig\NodeVisitor\NodeVisitorInterface;
 use Twig\TokenParser\TokenParserInterface;
 use Twig\TwigFilter;
@@ -35,7 +36,7 @@ final class StagingExtension extends AbstractExtension
     public function addFunction(TwigFunction $function)
     {
         if (isset($this->functions[$function->getName()])) {
-            throw new \LogicException(sprintf('Function "%s" is already registered.', $function->getName()));
+            throw new LogicException(sprintf('Function "%s" is already registered.', $function->getName()));
         }
 
         $this->functions[$function->getName()] = $function;
@@ -49,7 +50,7 @@ final class StagingExtension extends AbstractExtension
     public function addFilter(TwigFilter $filter)
     {
         if (isset($this->filters[$filter->getName()])) {
-            throw new \LogicException(sprintf('Filter "%s" is already registered.', $filter->getName()));
+            throw new LogicException(sprintf('Filter "%s" is already registered.', $filter->getName()));
         }
 
         $this->filters[$filter->getName()] = $filter;
@@ -73,7 +74,7 @@ final class StagingExtension extends AbstractExtension
     public function addTokenParser(TokenParserInterface $parser)
     {
         if (isset($this->tokenParsers[$parser->getTag()])) {
-            throw new \LogicException(sprintf('Tag "%s" is already registered.', $parser->getTag()));
+            throw new LogicException(sprintf('Tag "%s" is already registered.', $parser->getTag()));
         }
 
         $this->tokenParsers[$parser->getTag()] = $parser;
@@ -87,7 +88,7 @@ final class StagingExtension extends AbstractExtension
     public function addTest(TwigTest $test)
     {
         if (isset($this->tests[$test->getName()])) {
-            throw new \LogicException(sprintf('Test "%s" is already registered.', $test->getName()));
+            throw new LogicException(sprintf('Test "%s" is already registered.', $test->getName()));
         }
 
         $this->tests[$test->getName()] = $test;
