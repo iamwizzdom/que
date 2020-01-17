@@ -59,6 +59,7 @@ abstract class RuntimeError
                 'title' => sprintf("%s Error", APP_NAME),
                 'message' => $error_level == E_USER_NOTICE ? $error_message :
                     "Something unexpected happened, please contact webmaster.",
+                'code' => $http_code,
                 'backtrace' => false,
             ];
 
@@ -71,6 +72,7 @@ abstract class RuntimeError
                 'level' => $error_level,
                 'file' => $error_file,
                 'line' => $error_line,
+                'code' => $http_code,
                 'context' => !empty($error_context) ? $error_context : []
             ];
 
@@ -88,7 +90,7 @@ abstract class RuntimeError
 
             $error = array_merge($error, [
                 'status' => false,
-                'code' => $error_level
+                'code' => $http_code
             ]);
 
             echo json_encode($error, JSON_PRETTY_PRINT);
@@ -99,8 +101,8 @@ abstract class RuntimeError
 
             $txt = "Title: {$error['title']}\nMessage: {$error['message']}";
 
-            if (isset($error['file']) && isset($error['line'])) {
-                $txt .= "\nFile: {$error['file']}\nLine: {$error['line']}";
+            if (isset($error['file']) && isset($error['line']) && isset($error['code'])) {
+                $txt .= "\nFile: {$error['file']}\nLine: {$error['line']}\nCode: {$error['code']}";
             }
 
             $image->setImageTxt($txt);
@@ -109,6 +111,8 @@ abstract class RuntimeError
 
         } else {
             $smarty = self::getSmarty();
+
+            $error['message'] = nl2br($error['message']);
 
             $smarty->assign("header", APP_TEMP_HEADER);
             $smarty->assign("data", $error);

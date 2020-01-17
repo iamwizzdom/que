@@ -10,6 +10,7 @@ namespace que\session;
 
 use Memcache;
 use que\session\type\Files;
+use que\session\type\QueKip;
 use Redis;
 use que\session\type\Memcached as Memcached;
 use que\session\type\Redis as RedisCache;
@@ -73,6 +74,13 @@ class Session
      */
     public function getRedis(): RedisCache {
         return RedisCache::getInstance(self::getSessionID());
+    }
+
+    /**
+     * @return QueKip
+     */
+    public function getQueKip(): QueKip {
+        return QueKip::getInstance(self::getSessionID());
     }
 
 }

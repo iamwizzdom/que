@@ -25,15 +25,15 @@ class QueRuntimeException extends RuntimeException
     private $http_code;
 
     /**
-     * RuntimeErrorException constructor.
+     * QueRuntimeException constructor.
      * @param string $message
      * @param string $title
      * @param int $code
-     * @param bool $http_code
+     * @param int $http_code
      * @param Throwable|null $previous
      */
     public function __construct(string $message = "", string $title = "", int $code = 0,
-                                bool $http_code = HTTP_INTERNAL_ERROR_CODE,
+                                int $http_code = HTTP_INTERNAL_ERROR_CODE,
                                 Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);

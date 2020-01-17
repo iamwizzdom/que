@@ -10,6 +10,7 @@ namespace que\user;
 
 
 use ArrayAccess;
+use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use que\model\Model;
 use que\session\Session;
@@ -60,14 +61,14 @@ class User extends State implements ArrayAccess
 
         if (!self::isLoggedIn())
             throw new QueRuntimeException("Trying to get a user instance when you're not logged in.",
-                "User Error", E_USER_ERROR);
+                "User Error", E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace(), 1));
 
         if (!isset(self::$instance)) {
 
             self::$state = self::get_state();
 
             if (!self::is_equal_state()) {
-                self::logout(vsprintf("Your connection state expired due to access from (IP::%s) using " .
+                self::logout(vsprintf("Your connection state got corrupted due to access from (IP::%s) using " .
                     "%s browser at %s with %s system. Please re-login or change password to avoid possible hijack", [
                     self::getLastIP(),
                     self::getLastBrowser()['browser'] ?? 'unknown',
@@ -98,7 +99,7 @@ class User extends State implements ArrayAccess
     public function getModel(): Model
     {
         if (!isset(self::$model))
-            self::$model = new Model(self::$user, 'app_user');
+            self::$model = new Model(self::$user, CONFIG['db_table']['user']['name']);
         return self::$model;
     }
 
@@ -165,11 +166,9 @@ class User extends State implements ArrayAccess
 
         if (empty($columnsToUpdate)) return false;
 
-        $columnsToUpdate['modifiedBy'] = $this->getValue('userID');
-
-        $update = db()->update('app_user', $columnsToUpdate, [
+        $update = db()->update(CONFIG['db_table']['user']['name'], $columnsToUpdate, [
             'AND' => [
-                'userID' => self::$user->{'userID'}
+                CONFIG['db_table']['user']['primary_key'] => self::$user->{CONFIG['db_table']['user']['primary_key']}
             ]
         ]);
 
@@ -239,7 +238,8 @@ class User extends State implements ArrayAccess
             session_regenerate_id(true);
         }
 
-        $user = db()->find('app_user', 'userID', self::$state['data']->userID ?? 0);
+        $user = db()->find(CONFIG['db_table']['user']['name'], CONFIG['db_table']['user']['primary_key'],
+            self::$state['data']->{CONFIG['db_table']['user']['primary_key']} ?? 0);
 
         if ($user->isSuccessful()) {
             $userData = $user->getQueryResponseArray(0);
@@ -288,7 +288,8 @@ class User extends State implements ArrayAccess
         $redirect_to = $redirect_to ?? (current_route()->isRequireLogIn() ? APP_HOME_PAGE : current_uri());
         $message = $message ?? sprintf("Good bye, see you soon. Log-out successful (IP::%s)", self::getLastIP());
         self::flush();
-        if (current_route()->getType() != 'web') throw new QueRuntimeException($message, "User Error", E_USER_ERROR);
+        if (current_route()->getType() != 'web') throw new QueRuntimeException($message, "User Error", E_USER_ERROR,
+            0, PreviousException::getInstance(debug_backtrace()));
         else http()->redirect()->setUrl($redirect_to)->setHeader($message, SUCCESS)->initiate();
 
     }

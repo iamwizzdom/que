@@ -13,11 +13,11 @@ use que\security\CSRF;
 use que\security\JWT\JWT;
 use que\security\JWT\TokenEncoded;
 
-class RouteDetector
+class RouteInspector
 {
 
     /**
-     * @var RouteDetector
+     * @var RouteInspector
      */
     private static $instance;
 
@@ -54,9 +54,9 @@ class RouteDetector
     }
 
     /**
-     * @return RouteDetector
+     * @return RouteInspector
      */
-    public static function getInstance(): RouteDetector
+    public static function getInstance(): RouteInspector
     {
         if (!isset(self::$instance))
             self::$instance = new self;

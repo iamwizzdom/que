@@ -223,7 +223,8 @@ class ImageGenerator
         $shadow = ImageColorAllocate($image, $r + 128, $g + 128, $b + 128);
         $tb = imagettfbbox(17, 0, $this->font, $this->image_txt);
         $x = ceil(($this->lx - $tb[2]) / 2);
-        $y = ceil(($this->ly - $tb[5]) / 2.2);
+        $y = ceil(($this->ly - $tb[5]) / 2.5);
+
         imagettftext($image, $this->font_size, 0, $x, $y, $shadow, $this->font, $this->image_txt);
         imagettftext($image, $this->font_size, 0.1, $x, $y, $color, $this->font, $this->image_txt);
 

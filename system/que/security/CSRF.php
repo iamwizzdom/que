@@ -73,7 +73,7 @@ class CSRF
         try {
             $this->session->add("csrf-token", "csrf:" .
                 wordwrap(str_shuffle(unique_id(40) . session_id() .
-                    (is_logged_in() ? user('userID') : '')), 4, ":", true));
+                    (is_logged_in() ? user(CONFIG['db_table']['user']['primary_key']) : '')), 4, ":", true));
         } catch (Exception $exception) {
         }
         return $this;

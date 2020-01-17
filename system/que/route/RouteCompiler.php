@@ -31,7 +31,7 @@ class RouteCompiler
 
         $routeEntries = Route::getRouteEntries();
 
-        $routeDetector = RouteDetector::getInstance();
+        $routeDetector = RouteInspector::getInstance();
 
         $routeDetector->setUriTokens($uriTokens = self::tokenizeUri(Route::getRequestUri()));
 
@@ -63,7 +63,7 @@ class RouteCompiler
 
                     if ($routeEntry instanceof RouteEntry) {
 
-                        $args = RouteDetector::getRouteArgs($routeEntry->getUri());
+                        $args = RouteInspector::getRouteArgs($routeEntry->getUri());
 
                         foreach ($args as $arg) {
                             $key = array_search('{' . $arg . '}', $routeEntry->uriTokens);
@@ -83,9 +83,15 @@ class RouteCompiler
                 else throw new RouteException($error, "Route Error", HTTP_NOT_FOUND_CODE);
             }
 
-            if ($routeEntry->isRequireLogIn() === true && !is_logged_in())
-                throw new RouteException("You don't have access to the current route, log in and try again.",
-                    "Access denied", E_USER_NOTICE);
+            if ($routeEntry->isRequireLogIn() === true && !is_logged_in()) {
+                if (!is_null($routeEntry->getLoginUrl())) {
+                    http()->redirect()->setHeader(sprintf("You don't have access to this route (%s), log in and try again.",
+                        current_url()), WARNING)->setUrl($routeEntry->getLoginUrl())->initiate();
+                } else {
+                    throw new RouteException("You don't have access to the current route, log in and try again.",
+                        "Access denied", E_USER_NOTICE);
+                }
+            }
 
             self::setUriArgs($routeArgs);
             self::setCurrentRoute($routeEntry);

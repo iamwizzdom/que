@@ -91,9 +91,8 @@ abstract class FileBase
 
         if (empty($dir)) return;
 
-        if (!is_dir("{$this->uploadDir}/{$dir}"))
-            if (!mkdir("{$this->uploadDir}/{$dir}", 0777, true))
-                throw new QueException("Directory [{$dir}] Doest Not Exist", "File Upload");
+        if (!is_dir("{$this->uploadDir}/{$dir}") && !mkdir("{$this->uploadDir}/{$dir}", 0777, true))
+            throw new QueException("Directory [{$dir}] Doest Not Exist", "File Upload");
 
         if ($this->checkDir("{$this->uploadDir}/{$dir}")) $this->uploadDir = "{$this->uploadDir}/{$dir}";
         else throw new QueException("Directory Not Writable", "File Upload");

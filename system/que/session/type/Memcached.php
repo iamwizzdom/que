@@ -8,6 +8,7 @@
 
 namespace que\session\type;
 
+use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 
 class Memcached
@@ -42,13 +43,19 @@ class Memcached
 
         if (!isset($this->memcached)) {
 
-            $this->memcached = new \Memcache();
-
             $host = CONFIG['session']['memcached']['host'] ?? "127.0.0.1";
             $port = CONFIG['session']['memcached']['port'] ?? 11211;
+            $enable = CONFIG['session']['memcached']['enable'] ?? false;
+
+            if (!$enable)
+                throw new QueRuntimeException("Can't use memcached, memcached is disabled from config", "Session Error",
+                    E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace(), 2));
+
+            $this->memcached = new \Memcache();
 
             if (!$this->memcached->addserver($host, $port))
-                throw new QueRuntimeException("Unable to connect to memcached", "Session Error", E_USER_ERROR);
+                throw new QueRuntimeException("Unable to connect to memcached", "Session Error",
+                    E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace(), 2));
         }
 
         $this->fetch_data();

@@ -8,6 +8,7 @@
 
 namespace que\http\network;
 
+use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use que\error\RuntimeError;
 use que\session\Session;
@@ -108,13 +109,13 @@ class Redirect
                 if (!is_array($header)) {
                     throw new QueRuntimeException("The HTTP setHeaderArray method ' .
                             'expects its parameter to be an array list with a 'message' and 'status' index",
-                        "Http redirect error", E_USER_ERROR);
+                        "Http redirect error", E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace()));
                 }
 
                 if (!isset($header['message']) || !isset($header['status'])) {
                     throw new QueRuntimeException("The HTTP setHeaderArray method ' .
                             'expects its parameter to be an array list with a 'message' and 'status' index",
-                        "Http redirect error", E_USER_ERROR);
+                        "Http redirect error", E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace()));
                 }
 
                 Session::getInstance()->getFiles()->_get()['http']['http-alert'][] = $header;

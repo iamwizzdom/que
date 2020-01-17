@@ -42,6 +42,11 @@ class RouteEntry
     private $requireLogIn = false;
 
     /**
+     * @var string
+     */
+    private $loginUrl = "";
+
+    /**
      * @var bool
      */
     private $requireCSRFAuth = CSRF;
@@ -146,10 +151,20 @@ class RouteEntry
 
     /**
      * @param bool $requireLogIn
+     * @param string|null $loginUrl
      */
-    public function setRequireLogIn(bool $requireLogIn)
+    public function setRequireLogIn(bool $requireLogIn, string $loginUrl = null)
     {
         $this->requireLogIn = $requireLogIn;
+        $this->loginUrl = $loginUrl;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLoginUrl(): string
+    {
+        return $this->loginUrl;
     }
 
     /**

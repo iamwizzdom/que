@@ -1,4 +1,27 @@
-<!DOCTYPE html>
+<?php
+/* Smarty version 3.1.33, created on 2020-01-16 01:22:08
+  from 'C:\xampp\htdocs\personal\que\system\que\error\tmp\error.html' */
+
+/* @var Smarty_Internal_Template $_smarty_tpl */
+if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
+  'version' => '3.1.33',
+  'unifunc' => 'content_5e1facb03c1ba6_60745924',
+  'has_nocache_code' => false,
+  'file_dependency' => 
+  array (
+    'e3a7c67da68f572136ec8f179962589cf48f7972' => 
+    array (
+      0 => 'C:\\xampp\\htdocs\\personal\\que\\system\\que\\error\\tmp\\error.html',
+      1 => 1579129235,
+      2 => 'file',
+    ),
+  ),
+  'includes' => 
+  array (
+  ),
+),false)) {
+function content_5e1facb03c1ba6_60745924 (Smarty_Internal_Template $_smarty_tpl) {
+?><!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -106,27 +129,34 @@
 
         <div class="m-alert__text">
 
-            <h2>{$data.title}</h2>
+            <h2><?php echo $_smarty_tpl->tpl_vars['data']->value['title'];?>
+</h2>
 
-            <span>{$data.message}</span>
+            <span><?php echo $_smarty_tpl->tpl_vars['data']->value['message'];?>
+</span>
 
         </div>
 
     </div>
 
-    {if $data.backtrace === true}
+    <?php if ($_smarty_tpl->tpl_vars['data']->value['backtrace'] === true) {?>
 
     <div class="alert alert-info">
         <h3>Back Trace</h3>
         <hr>
-        {if !empty($data.level)}<p><b>Error Level:</b> {$data.level}</p>{/if}
-        {if !empty($data.file)}<p><b>Error File:</b> {$data.file}</p>{/if}
-        {if !empty($data.line)}<p><b>Error Line:</b> {$data.line}</p>{/if}
-        {if !empty($data.context)}<p><b>Error Context:</b> {debug_print($data.context)}</p>{/if}
+        <?php if (!empty($_smarty_tpl->tpl_vars['data']->value['level'])) {?><p><b>Error Level:</b> <?php echo $_smarty_tpl->tpl_vars['data']->value['level'];?>
+</p><?php }?>
+        <?php if (!empty($_smarty_tpl->tpl_vars['data']->value['file'])) {?><p><b>Error File:</b> <?php echo $_smarty_tpl->tpl_vars['data']->value['file'];?>
+</p><?php }?>
+        <?php if (!empty($_smarty_tpl->tpl_vars['data']->value['line'])) {?><p><b>Error Line:</b> <?php echo $_smarty_tpl->tpl_vars['data']->value['line'];?>
+</p><?php }?>
+        <?php if (!empty($_smarty_tpl->tpl_vars['data']->value['context'])) {?><p><b>Error Context:</b> <?php echo debug_print($_smarty_tpl->tpl_vars['data']->value['context']);?>
+</p><?php }?>
     </div>
 
-    {/if}
+    <?php }?>
 </div>
 
 </body>
-</html>
+</html><?php }
+}

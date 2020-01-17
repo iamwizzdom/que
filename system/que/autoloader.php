@@ -56,7 +56,7 @@ class CacheAutoload
      * file, where CacheAutoload stores a cache of all file paths
      * @var string
      */
-    private static $cache_file_path = APP_ROOT_PATH . "/cache/autoload.json";
+    private static $cache_file_path = QUE_PATH . "/cache/autoload.json";
 
     /**
      * This method adds more file paths to the $cache

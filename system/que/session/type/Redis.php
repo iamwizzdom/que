@@ -8,8 +8,8 @@
 
 namespace que\session\type;
 
+use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
-use que\error\RuntimeError;
 
 class Redis
 {
@@ -36,13 +36,19 @@ class Redis
 
         if (!isset($this->redis)) {
 
-            $this->redis = new \Redis();
-
             $host = CONFIG['session']['redis']['host'] ?? "127.0.0.1";
             $port = CONFIG['session']['redis']['port'] ?? 6379;
+            $enable = CONFIG['session']['redis']['enable'] ?? false;
+
+            if (!$enable)
+                throw new QueRuntimeException("Can't use redis, redis is disabled from config", "Session Error",
+                    E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace(), 2));
+
+            $this->redis = new \Redis();
 
             if (!$this->redis->connect($host, $port))
-                throw new QueRuntimeException("Unable to connect to redis", "Session Error", E_USER_ERROR);
+                throw new QueRuntimeException("Unable to connect to redis", "Session Error",
+                    E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace(), 2));
 
         }
 

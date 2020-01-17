@@ -9,6 +9,7 @@
 namespace que\user;
 
 
+use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use que\session\Session;
 
@@ -20,31 +21,54 @@ abstract class State
     private static $state = [
         'files' => [],
         'memcached' => [],
-        'redis' => []
+        'redis' => [],
+        'quekip' => []
+    ];
+
+    /**
+     * @var array
+     */
+    private static $enabled = [
+        'memcached' => CONFIG['session']['memcached']['enable'] ?? false,
+        'redis' => CONFIG['session']['redis']['enable'] ?? false
     ];
 
     /**
      * @param array $state
      */
-    protected static function set_state(array $state): void {
+    protected static function set_state(array $state): void
+    {
 
         if (!isset($state['uid'])) throw new QueRuntimeException(
-            "Trying to set state without a 'uid' key. Your state must have a unique id", "State Error");
+            "Trying to set state without a 'uid' key. Your state must have a unique id",
+            "State Error", E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace()));
 
         Session::getInstance()->getFiles()->_get()['session']['user'] = $state;
-        ($memcached = Session::getInstance()->getMemcached())->set('user', $state);
-        ($redis = Session::getInstance()->getRedis())->set('user', $state);
 
         self::$state['files'] = &Session::getInstance()->getFiles()->_get()['session']['user'];
-        self::$state['memcached'] = $memcached->get('user');
-        self::$state['redis'] = $redis->get('user');
+
+        if (self::$enabled['memcached'] === true) {
+            ($memcached = Session::getInstance()->getMemcached())->set('user', $state);
+            self::$state['memcached'] = $memcached->get('user');
+        }
+
+        if (self::$enabled['redis'] === true) {
+            ($redis = Session::getInstance()->getRedis())->set('user', $state);
+            self::$state['redis'] = $redis->get('user');
+        }
+
+        if (self::$enabled['memcached'] !== true && self::$enabled['redis'] !== true) {
+            ($quekip = Session::getInstance()->getQueKip())->set('user', $state);
+            self::$state['quekip'] = $quekip->get('user');
+        }
 
     }
 
     /**
      * @return array|null
      */
-    protected static function &get_state(): ?array {
+    protected static function &get_state(): ?array
+    {
         self::resolve_state();
         return self::$state['files'];
     }
@@ -52,65 +76,130 @@ abstract class State
     /**
      * @return array
      */
-    protected static function &get_state_all(): array {
+    protected static function &get_state_all(): array
+    {
         return self::$state;
     }
 
-    protected static function flush(): void {
+    protected static function flush(): void
+    {
         unset(Session::getInstance()->getFiles()->_get()['session']);
-        Session::getInstance()->getMemcached()->delete('user');
-        Session::getInstance()->getRedis()->del('user');
-        self::$state['files'] = self::$state['memcached'] = self::$state['redis'] = [];
+        if (self::$enabled['memcached'] === true) Session::getInstance()->getMemcached()->delete('user');
+        if (self::$enabled['redis'] === true) Session::getInstance()->getRedis()->del('user');
+        if (self::$enabled['memcached'] !== true && self::$enabled['redis'] !== true)
+            Session::getInstance()->getQueKip()->unset('user');
+
+        self::$state['files'] = self::$state['memcached'] = self::$state['redis'] = self::$state['quekip'] = [];
     }
 
-    private static function resolve_state(): void {
+    private static function resolve_state(): void
+    {
 
         if (!empty(self::$state['files']) && !empty(self::$state['memcached']) && !empty(self::$state['redis'])) return;
 
-        $memcached = Session::getInstance()->getMemcached();
-        $redis = Session::getInstance()->getRedis();
+        $memcached = $redis = $quekip = null;
+
+        if (self::$enabled['memcached'] === true) {
+            $memcached = Session::getInstance()->getMemcached();
+        }
+
+        if (self::$enabled['redis'] === true) {
+            $redis = Session::getInstance()->getRedis();
+        }
+
+        if (self::$enabled['memcached'] !== true && self::$enabled['redis'] !== true)
+            $quekip = Session::getInstance()->getQueKip();
 
         if (!isset(Session::getInstance()->getFiles()->_get()['session']['user'])) {
 
-            Session::getInstance()->getFiles()->_get()['session']['user'] = (
-                $memcached->get('user') ?: $redis->get('user')
-            );
+            $user = null;
+
+            if (!is_null($memcached)) {
+                $user = $memcached->get('user');
+            }
+
+            if (is_null($user) && !is_null($redis)) {
+                $user = $redis->get('user');
+            }
+
+            if (is_null($user) && !is_null($quekip)) {
+                $user = $quekip->get('user');
+            }
+
+            Session::getInstance()->getFiles()->_get()['session']['user'] = $user;
 
         }
 
         self::$state['files'] = &Session::getInstance()->getFiles()->_get()['session']['user'];
 
-        if (!$memcached->get('user')) $memcached->set('user', self::$state['files']);
+        if (!is_null($memcached)) {
 
-        self::$state['memcached'] = $memcached->get('user');
+            if (!$memcached->get('user')) $memcached->set('user', self::$state['files']);
+            self::$state['memcached'] = $memcached->get('user');
+        }
 
-        if (!$redis->get('user')) $redis->set('user', self::$state['files']);
+        if (!is_null($redis)) {
 
-        self::$state['redis'] = $redis->get('user');
+            if (!$redis->get('user')) $redis->set('user', self::$state['files']);
+            self::$state['redis'] = $redis->get('user');
+        }
+
+        if (!is_null($quekip)) {
+
+            if (!$quekip->get('user')) $quekip->set('user', self::$state['files']);
+            self::$state['quekip'] = $quekip->get('user');
+        }
     }
 
     /**
      * @return bool
      */
-    protected static function is_equal_state(): bool {
+    protected static function is_equal_state(): bool
+    {
 
-        self::resolve_state();
+        if (
+            !(
+                isset(self::$state['files']['uid']) ||
+                (
+                    (self::$enabled['memcached'] === true && isset(self::$state['memcached']['uid'])) ||
+                    (self::$enabled['redis'] === true && isset(self::$state['redis']['uid']))
+                )
+            )
+        ) return false;
 
-        if (!(isset(self::$state['files']['uid']) &&
-            isset(self::$state['memcached']['uid']) &&
-            isset(self::$state['redis']['uid'])))
-            return false;
+        if (self::$enabled['memcached'] === true && self::$enabled['redis'] === true) {
 
-        return (self::$state['files']['uid'] == self::$state['memcached']['uid'] &&
-            self::$state['files']['uid'] == self::$state['redis']['uid']);
+            return (self::$state['files']['uid'] == self::$state['memcached']['uid'] &&
+                self::$state['files']['uid'] == self::$state['redis']['uid']);
+        }
+
+        if (self::$enabled['memcached'] === true) {
+
+            return (self::$state['files']['uid'] == self::$state['memcached']['uid']);
+        }
+
+        if (self::$enabled['redis'] === true) {
+
+            return (self::$state['files']['uid'] == self::$state['redis']['uid']);
+        }
+
+        if (isset(self::$state['quekip']['uid'])) {
+
+            return (self::$state['files']['uid'] == self::$state['quekip']['uid']);
+        }
+
+        return false;
     }
 
     /**
      * @return bool
      */
-    protected static function has_active_state(): bool {
+    protected static function has_active_state(): bool
+    {
         return Session::getInstance()->getFiles()->get(['session' => 'user']) ||
-            Session::getInstance()->getMemcached()->get('user') ||
-            Session::getInstance()->getRedis()->get('user');
+            (self::$enabled['memcached'] === true && Session::getInstance()->getMemcached()->get('user')) ||
+            (self::$enabled['redis'] === true && Session::getInstance()->getRedis()->get('user')) ||
+            ((self::$enabled['memcached'] !== true && self::$enabled['redis'] !== true) &&
+                Session::getInstance()->getQueKip()->get('user'));
     }
 }

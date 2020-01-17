@@ -12,6 +12,7 @@ use Closure;
 use que\common\exception\RouteException;
 use que\error\RuntimeError;
 use que\route\structure\RouteEntry;
+use que\route\structure\RouteImplementEnum;
 
 class RouteRegistrar
 {
@@ -124,6 +125,7 @@ class RouteRegistrar
         call_user_func($callback, $entry);
 
         $entry->setType('api');
+        $entry->setImplement(RouteImplementEnum::IMPLEMENT_API);
 
         array_push($this->queue, $entry);
 
@@ -141,6 +143,7 @@ class RouteRegistrar
         call_user_func($callback, $entry);
 
         $entry->setType('resource');
+        $entry->setImplement(RouteImplementEnum::IMPLEMENT_RESOURCE);
 
         array_push($this->queue, $entry);
 

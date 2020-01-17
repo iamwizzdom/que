@@ -91,7 +91,7 @@ final class Route extends RouteCompiler
 
             //check if JWT is required
             if ($route->isRequireJWTAuth() === true) try {
-                RouteDetector::validateJWT($http);
+                RouteInspector::validateJWT($http);
             } catch (Exception $e) {
                 throw new RouteException($e->getMessage());
             }
@@ -109,19 +109,19 @@ final class Route extends RouteCompiler
                         if (!class_exists($module, true))
                             throw new RouteException(sprintf(
                                 "Sorry, the module (%s) bound to the current " .
-                                "route (%s) does not exist", $module, current_url()));
+                                "route \n(%s) does not exist\n", $module, current_url()));
 
                         $implement = class_implements($module, true);
 
                         if (!$implement)
                             throw new RouteException(sprintf(
                                 "Sorry, the module (%s) bound to the current " .
-                                "route (%s) does not implement a valid interface", $module, current_url()));
+                                "route \n(%s) does not implement a valid interface\n", $module, current_url()));
 
                         if (!isset($implement['que\common\structure\Add']))
                             throw new RouteException(sprintf(
                                 "Sorry, the module (%s) bound to the current " .
-                                "route (%s) implements the wrong interface (%s)",
+                                "route \n(%s) implements the wrong interface (%s)\n",
                                 $module, current_url(), implode(', ', $implement)));
 
                         $instance = new $module();
@@ -134,7 +134,7 @@ final class Route extends RouteCompiler
                             if ($route->isRequireCSRFAuth() === true) CSRF::getInstance()->generateToken();
                             $instance->{"onLoad"}($http->_server()->get("URI_ARGS"));
                         } else {
-                            if ($route->isRequireCSRFAuth() === true) RouteDetector::validateCSRF();
+                            if ($route->isRequireCSRFAuth() === true) RouteInspector::validateCSRF();
                             $instance->{"onReceive"}($http->_server()->get("URI_ARGS"));
                         }
 
@@ -146,7 +146,7 @@ final class Route extends RouteCompiler
                         if (!class_exists($module, true))
                             throw new RouteException(sprintf(
                                 "Sorry, the module (%s) bound to the current " .
-                                "route (%s) does not exist", $module, current_url()));
+                                "route \n(%s) does not exist\n", $module, current_url()));
 
                         $implement = class_implements($module, true);
 
@@ -158,7 +158,7 @@ final class Route extends RouteCompiler
                         if (!isset($implement['que\common\structure\Edit']))
                             throw new RouteException(sprintf(
                                 "Sorry, the module (%s) bound to the current " .
-                                "route (%s) implements the wrong interface (%s)",
+                                "route \n(%s) implements the wrong interface (%s)\n",
                                 $module, current_url(), implode(', ', $implement)));
 
                         $instance = new $module();
@@ -173,7 +173,7 @@ final class Route extends RouteCompiler
                             if ($route->isRequireCSRFAuth() === true) CSRF::getInstance()->generateToken();
                             $instance->{"onLoad"}($args, $instance->{"info"}($args));
                         } else {
-                            if ($route->isRequireCSRFAuth() === true) RouteDetector::validateCSRF();
+                            if ($route->isRequireCSRFAuth() === true) RouteInspector::validateCSRF();
                             $instance->{"onReceive"}($args, $instance->{"info"}($args));
                         }
 
@@ -185,25 +185,25 @@ final class Route extends RouteCompiler
                         if (!class_exists($module, true))
                             throw new RouteException(sprintf(
                                 "Sorry, the module (%s) bound to the current " .
-                                "route (%s) does not exist", $module, current_url()));
+                                "route \n(%s) does not exist\n", $module, current_url()));
 
                         $implement = class_implements($module, true);
 
                         if (!$implement)
                             throw new RouteException(sprintf(
                                 "Sorry, the module (%s) bound to the current " .
-                                "route (%s) does not implement a valid interface", $module, current_url()));
+                                "route \n(%s) does not implement a valid interface\n", $module, current_url()));
 
                         if (!isset($implement['que\common\structure\Info']))
                             throw new RouteException(sprintf(
                                 "Sorry, the module (%s) bound to the current " .
-                                "route (%s) implements the wrong interface (%s)",
+                                "route \n(%s) implements the wrong interface (%s)\n",
                                 $module, current_url(), implode(', ', $implement)));
 
                         $instance = new $module();
 
                         if (isset($implement['que\security\permission\RoutePermission']) && !$instance->hasPermission($route))
-                            throw new RouteException(sprintf("You dont have permission to the current route (%s)", current_url()),
+                            throw new RouteException(sprintf("You dont have permission to the current route \n(%s)\n", current_url()),
                                 "Access denied", E_USER_NOTICE);
 
                         $args = $http->_server()->get("URI_ARGS");
@@ -212,7 +212,7 @@ final class Route extends RouteCompiler
                             if ($route->isRequireCSRFAuth() === true) CSRF::getInstance()->generateToken();
                             $instance->{"onLoad"}($args, $instance->{"info"}($args));
                         } else {
-                            if ($route->isRequireCSRFAuth() === true) RouteDetector::validateCSRF();
+                            if ($route->isRequireCSRFAuth() === true) RouteInspector::validateCSRF();
                             $instance->{"onReceive"}($args, $instance->{"info"}($args));
                         }
 
@@ -224,7 +224,7 @@ final class Route extends RouteCompiler
                         if (!class_exists($module, true))
                             throw new RouteException(sprintf(
                                 "Sorry, the module (%s) bound to the current " .
-                                "route (%s) does not exist", $module, current_url()));
+                                "route \n(%s) does not exist\n", $module, current_url()));
 
                         $implement = class_implements($module, true);
 
@@ -236,7 +236,7 @@ final class Route extends RouteCompiler
                         if (!isset($implement['que\common\structure\Page']))
                             throw new RouteException(sprintf(
                                 "Sorry, the module (%s) bound to the current " .
-                                "route (%s) implements the wrong interface (%s)",
+                                "route \n(%s) implements the wrong interface (%s)\n",
                                 $module, current_url(), implode(', ', $implement)));
 
                         $instance = new $module();
@@ -257,11 +257,11 @@ final class Route extends RouteCompiler
                                 $http->http_response_code(HTTP_INTERNAL_ERROR_CODE);
 
                                 throw new RouteException(sprintf(
-                                    "Sorry, the current route (%s) does not support (%s request).",
+                                    "Sorry, the current route (%s)\n does not support (%s request).\n",
                                     current_url(), $method));
                             }
 
-                            if ($route->isRequireCSRFAuth() === true) RouteDetector::validateCSRF();
+                            if ($route->isRequireCSRFAuth() === true) RouteInspector::validateCSRF();
                             $instance->{"onReceive"}($http->_server()->get("URI_ARGS"));
                         }
 
@@ -271,12 +271,12 @@ final class Route extends RouteCompiler
                     default:
                         throw new RouteException(sprintf(
                             "Sorry, the module bound to the current " .
-                            "route (%s) does not implement a valid interface", current_url()));
+                            "route \n(%s) does not implement a valid interface\n", current_url()));
                         break;
                 }
 
             } else throw new RouteException(sprintf(
-                "Sorry, the current route (%s) is not bound to a module", current_url()));
+                "Sorry, the current route (%s)\n is not bound to a module", current_url()));
 
         } catch (RouteException $e) {
 
@@ -304,7 +304,7 @@ final class Route extends RouteCompiler
 
             //check if JWT is required
             if ($route->isRequireJWTAuth() === true) try {
-                RouteDetector::validateJWT($http);
+                RouteInspector::validateJWT($http);
             } catch (Exception $e) {
                 throw new RouteException($e->getMessage());
             }
@@ -314,19 +314,19 @@ final class Route extends RouteCompiler
                 if (!class_exists($module, true))
                     throw new RouteException(sprintf(
                         "Sorry, the module (%s) bound to the current " .
-                        "route (%s) does not exist", $module, current_url()));
+                        "route \n(%s) does not exist\n", $module, current_url()));
 
                 $implement = class_implements($module, true);
 
                 if (!$implement)
                     throw new RouteException(sprintf(
                         "Sorry, the module (%s) bound to the current " .
-                        "route (%s) does not implement a valid interface", $module, current_url()));
+                        "route \n(%s) does not implement a valid interface\n", $module, current_url()));
 
                 if (!isset($implement['que\common\structure\Api']))
                     throw new RouteException(sprintf(
                         "Sorry, the module (%s) bound to the current " .
-                        "route (%s) implements the wrong interface (%s)",
+                        "route (%s)\n implements the wrong interface (%s)\n",
                         $module, $route->getUri(), implode(', ', $implement)));
 
                 $instance = new $module();
@@ -336,7 +336,7 @@ final class Route extends RouteCompiler
                         "Access denied", E_USER_NOTICE);
 
                 if ($route->isRequireCSRFAuth() === true) {
-                    RouteDetector::validateCSRF();
+                    RouteInspector::validateCSRF();
                     header("X-Xsrf-Token: " . CSRF::getInstance()->getToken());
                     header("X-Track-Token: " . Track::generateToken());
                 }
@@ -377,7 +377,7 @@ final class Route extends RouteCompiler
 
             //check if JWT is required
             if ($route->isRequireJWTAuth() === true) try {
-                RouteDetector::validateJWT($http);
+                RouteInspector::validateJWT($http);
             } catch (Exception $e) {
                 throw new RouteException($e->getMessage());
             }
@@ -387,19 +387,19 @@ final class Route extends RouteCompiler
                 if (!class_exists($module, true))
                     throw new RouteException(sprintf(
                         "Sorry, the module (%s) bound to the current " .
-                        "route (%s) does not exist", $module, current_url()));
+                        "route \n(%s) does not exist\n", $module, current_url()));
 
                 $implement = class_implements($module, true);
 
                 if (!$implement)
                     throw new RouteException(sprintf(
                         "Sorry, the module (%s) bound to the current " .
-                        "route (%s) does not implement a valid interface", $module, current_url()));
+                        "route (%s)\n does not implement a valid interface\n", $module, current_url()));
 
                 if (!isset($implement['que\common\structure\Resource']))
                     throw new RouteException(sprintf(
                         "Sorry, the module (%s) bound to the current " .
-                        "route (%s) implements the wrong interface (%s)",
+                        "route (%s) \nimplements the wrong interface (%s)\n",
                         $module, current_url(), implode(', ', $implement)));
 
                 $instance = new $module();
@@ -409,7 +409,7 @@ final class Route extends RouteCompiler
                         "Access denied", E_USER_NOTICE);
 
                 if ($route->isRequireCSRFAuth() === true) {
-                    RouteDetector::validateCSRF();
+                    RouteInspector::validateCSRF();
                     header("X-Xsrf-Token: " . CSRF::getInstance()->getToken());
                     header("X-Track-Token: " . Track::generateToken());
                 }
@@ -451,7 +451,7 @@ final class Route extends RouteCompiler
             if (implode('--', $uriTokens) === implode('--', $routeEntry->uriTokens)) return $routeEntry;
             else {
 
-                $routeArgs = RouteDetector::getRouteArgs($routeEntry->getUri());
+                $routeArgs = RouteInspector::getRouteArgs($routeEntry->getUri());
 
                 $matches = 0;
 
@@ -468,10 +468,10 @@ final class Route extends RouteCompiler
 
                     $uriArgValue = $uriTokens[$key];
 
-                    if (isset($routeArgList[0]) && strcmp($routeArgList[0], current(RouteDetector::getRouteArgs($uriArgValue))) == 0) $matches++;
+                    if (isset($routeArgList[0]) && strcmp($routeArgList[0], current(RouteInspector::getRouteArgs($uriArgValue))) == 0) $matches++;
                     elseif (isset($routeArgList[1]) && strcmp($routeArgList[1], "any") != 0) {
                         try {
-                            RouteDetector::validateArgDataType($routeArgList[1], $uriArgValue);
+                            RouteInspector::validateArgDataType($routeArgList[1], $uriArgValue);
                             $uriTokens[$key] = '--';
                             $matches++;
                         } catch (RouteException $e) {

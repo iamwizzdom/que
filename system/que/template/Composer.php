@@ -7,9 +7,9 @@
  */
 namespace que\template;
 
+use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use que\common\validate\Track;
-use que\error\RuntimeError;
 use que\route\Route;
 use que\security\CSRF;
 use que\session\Session;
@@ -168,7 +168,8 @@ class Composer
     public function alert($type, $title, $message): AlertButton {
 
         if ($type !== ALERT_SUCCESS && $type !== ALERT_ERROR && $type !== ALERT_WARNING)
-            throw new QueRuntimeException("You passed an invalid alert type", 'Composer error', E_USER_ERROR);
+            throw new QueRuntimeException("You passed an invalid alert type", 'Composer error',
+                E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace()));
 
         if ($type === ALERT_SUCCESS) {
             $this->alert['success'] = [
@@ -394,7 +395,7 @@ class Composer
     public function renderWithSmarty(bool $returnAsString = false) {
         $smarty = SmartyEngine::getInstance();
         $smarty->setTmpDir($this->tmpDir);
-        $smarty->setCacheDir((APP_ROOT_PATH . "/cache/tmp/smarty"));
+        $smarty->setCacheDir((QUE_PATH . "/cache/tmp/smarty"));
         $smarty->setTmpFileName($this->getTmpFileName());
         $smarty->setContext($this->getContext());
 
@@ -417,7 +418,7 @@ class Composer
     public function renderWithTwig(bool $returnAsString = false) {
         $twig = TwigEngine::getInstance();
         $twig->setTmpDir($this->tmpDir);
-        $twig->setCacheDir((APP_ROOT_PATH . "/cache/tmp/twig"));
+        $twig->setCacheDir((QUE_PATH . "/cache/tmp/twig"));
         $twig->setTmpFileName($this->getTmpFileName());
         $twig->setContext($this->getContext());
 

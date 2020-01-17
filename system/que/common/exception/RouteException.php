@@ -13,21 +13,6 @@ class RouteException extends Exception
      */
     private $title;
 
-    /**
-     * @var string
-     */
-    private $trace;
-
-    /**
-     * @var string
-     */
-    private $traceAsString;
-
-    /**
-     * @var Throwable
-     */
-    private $previous;
-
     public function __construct($message = "", $title = "Route Error", $code = 0, Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);

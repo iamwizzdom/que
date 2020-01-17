@@ -8,6 +8,8 @@
 
 namespace que\database\mysql;
 
+use que\common\exception\PreviousException;
+use que\common\exception\QueRuntimeException;
 use que\template\Pagination;
 
 class Query extends Connect
@@ -153,6 +155,105 @@ class Query extends Connect
     }
 
     /**
+     * @param bool $testMode
+     * @return bool
+     */
+    public function transStart(bool $testMode = false): bool {
+        if (!$this->isTransEnabled()) return false;
+        return $this->transBegin($testMode);
+    }
+
+    /**
+     * @param bool $testMode
+     * @return bool
+     */
+    public function transBegin(bool $testMode = false): bool {
+
+        if (!$this->isTransEnabled()) return false;
+        elseif ($this->getTransDepth() > 0) {
+            $this->transDepth++;
+            return false;
+        }
+
+        $this->setTransSuccessful(($testMode === true));
+
+        if ($this->trans_begin()) {
+            $this->setTransSuccessful(true);
+            $this->transDepth++;
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @return bool
+     */
+    public function transComplete(): bool {
+        if (!$this->isTransEnabled()) return false;
+
+        if (!$this->isTransSuccessful()) {
+            $this->transRollBack();
+            return false;
+        }
+        return $this->transCommit();
+    }
+
+    /**
+     * @return bool
+     */
+    public function transCommit(): bool {
+        if (!$this->isTransEnabled() || $this->getTransDepth() <= 0) return false;
+        elseif ($this->getTransDepth() > 1 || $this->commit()) {
+            $this->transDepth--;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @return bool
+     */
+    public function transRollBack(): bool {
+        if (!$this->isTransEnabled() || $this->getTransDepth() <= 0) return false;
+        elseif ($this->getTransDepth() > 1 || $this->rollback()) {
+            $this->transDepth--;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @return bool
+     */
+    private function trans_begin(): bool {
+        return $this->connect()->begin_transaction() ?:
+            $this->connect()->query('START TRANSACTION') == true;
+    }
+
+    /**
+     * @return bool
+     */
+    private function commit(): bool {
+        if ($this->connect()->commit()) {
+            $this->connect()->autocommit(true);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @return bool
+     */
+    private function rollback(): bool {
+        if ($this->connect()->rollback()) {
+            $this->connect()->autocommit(true);
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * @param string $table
      * @param array $column
      * @return MySQL_Handler
@@ -164,8 +265,29 @@ class Query extends Connect
             null, null, null, self::INSERT);
         $connect = $this->connect();
         $result = $connect->query($sql);
+
+        $error = $connect->error;
+        $errorCode = $connect->errno;
+
+        if (!$result) {
+
+            if ($this->getTransDepth() > 0) $this->setTransSuccessful(false);
+
+            while ($this->getTransDepth() !== 0) {
+                $depth = $this->getTransDepth();
+                $this->transComplete();
+                if ($depth === $this->getTransDepth()) break;
+            }
+
+            if ($this->isDebug()) {
+                throw new QueRuntimeException("Error: {$error} \nSQL: '{$sql}'\n",
+                    "Database Error", E_USER_ERROR, 0,
+                    PreviousException::getInstance(debug_backtrace()));
+            }
+        }
+
         return new MySQL_Handler(($result === true ? $connect->insert_id : null),
-            ($result === true ? true : false), $connect->error, $sql, $table);
+            ($result === true), $error, $errorCode, $sql, $table);
     }
 
     /**
@@ -179,7 +301,28 @@ class Query extends Connect
             null, null, null, self::DELETE);
         $connect = $this->connect();
         $result = $connect->query($sql);
-        return new MySQL_Handler(null, ($result === true ? true : false), $connect->error, $sql, $table);
+
+        $error = $connect->error;
+        $errorCode = $connect->errno;
+
+        if (!$result) {
+
+            if ($this->getTransDepth() > 0) $this->setTransSuccessful(false);
+
+            while ($this->getTransDepth() !== 0) {
+                $depth = $this->getTransDepth();
+                $this->transComplete();
+                if ($depth === $this->getTransDepth()) break;
+            }
+
+            if ($this->isDebug()) {
+                throw new QueRuntimeException("Error: {$error} \nSQL: '{$sql}'\n",
+                    "Database Error", E_USER_ERROR, 0,
+                    PreviousException::getInstance(debug_backtrace()));
+            }
+        }
+
+        return new MySQL_Handler(null, ($result === true), $error, $errorCode, $sql, $table);
     }
 
     /**
@@ -194,8 +337,29 @@ class Query extends Connect
             null, null, self::SELECT);
         $connect = $this->connect();
         $result = $connect->query($sql);
-        $check = (is_object($result) && $result->num_rows > 0);
-        return new MySQL_Handler(($check ? $result->num_rows : null), ($check ? true : false), $connect->error, $sql, $table);
+        $status = ($result && $result->num_rows > 0);
+
+        $error = $connect->error;
+        $errorCode = $connect->errno;
+
+        if (!$result) {
+
+            if ($this->getTransDepth() > 0) $this->setTransSuccessful(false);
+
+            while ($this->getTransDepth() !== 0) {
+                $depth = $this->getTransDepth();
+                $this->transComplete();
+                if ($depth === $this->getTransDepth()) break;
+            }
+
+            if ($this->isDebug()) {
+                throw new QueRuntimeException("Error: {$error} \nSQL: '{$sql}'\n",
+                    "Database Error", E_USER_ERROR, 0,
+                    PreviousException::getInstance(debug_backtrace()));
+            }
+        }
+
+        return new MySQL_Handler(($status ? $result->num_rows : null), $status, $error, $errorCode, $sql, $table);
     }
 
     /**
@@ -300,13 +464,33 @@ class Query extends Connect
 
         $connect = $this->connect(); $result = $connect->query($sql);
 
-        $output = []; $success = ($result && $result->num_rows > 0);
+        $output = []; $status = ($result && $result->num_rows > 0);
 
-        if ($success)
+        if ($status)
             while ($row = $result->fetch_object())
                 $output[] = $this->filter_object($row);
 
-        return new MySQL_Handler($output, $success, $connect->error, $sql, $table);
+        $error = $connect->error;
+        $errorCode = $connect->errno;
+
+        if (!$result) {
+
+            if ($this->getTransDepth() > 0) $this->setTransSuccessful(false);
+
+            while ($this->getTransDepth() !== 0) {
+                $depth = $this->getTransDepth();
+                $this->transComplete();
+                if ($depth === $this->getTransDepth()) break;
+            }
+
+            if ($this->isDebug()) {
+                throw new QueRuntimeException("Error: {$error} \nSQL: '{$sql}'\n",
+                    "Database Error", E_USER_ERROR, 0,
+                    PreviousException::getInstance(debug_backtrace()));
+            }
+        }
+
+        return new MySQL_Handler($output, $status, $error, $errorCode, $sql, $table);
     }
 
     /**
@@ -330,7 +514,7 @@ class Query extends Connect
             $result = $connect->query($count_sql);
 
             $count = new MySQL_Handler(($result ? $result->fetch_assoc()['total'] : null),
-                ($result ? true : false), $connect->error, $count_sql, $this->get_table_name($sql));
+                ($result ? true : false), $connect->error, $connect->errno, $count_sql, $this->get_table_name($sql));
             $totalPages = ceil(($totalRecord = ($count->isSuccessful() ? $count->getQueryResponse() : 0)) / $this->getRecordPerPage());
 
             if ($totalPages && $this->getPage() > $totalPages) {
@@ -368,13 +552,33 @@ class Query extends Connect
         }
 
         $result = $connect->query($sql);
-        $output = []; $success = ($result && $result->num_rows > 0);
+        $output = []; $status = ($result && $result->num_rows > 0);
 
-        if ($success)
+        if ($status)
             while ($row = $result->fetch_object())
                 $output[] = $this->filter_object($row);
 
-        return new MySQL_Handler($output, $success, $connect->error, $sql, $this->get_table_name($sql));
+        $error = $connect->error;
+        $errorCode = $connect->errno;
+
+        if (!$result) {
+
+            if ($this->getTransDepth() > 0) $this->setTransSuccessful(false);
+
+            while ($this->getTransDepth() !== 0) {
+                $depth = $this->getTransDepth();
+                $this->transComplete();
+                if ($depth === $this->getTransDepth()) break;
+            }
+
+            if ($this->isDebug()) {
+                throw new QueRuntimeException("Error: {$error} \nSQL: '{$sql}'\n",
+                    "Database Error", E_USER_ERROR, 0,
+                    PreviousException::getInstance(debug_backtrace()));
+            }
+        }
+
+        return new MySQL_Handler($output, $status, $error, $errorCode, $sql, $this->get_table_name($sql));
     }
 
     /**
@@ -385,7 +589,28 @@ class Query extends Connect
     {
         $connect = $this->connect();
         $result = $connect->query($sql);
-        return new MySQL_Handler(null, ($result === true ? true : false), $connect->error, $sql, $this->get_table_name($sql));
+
+        $error = $connect->error;
+        $errorCode = $connect->errno;
+
+        if (!$result) {
+
+            if ($this->getTransDepth() > 0) $this->setTransSuccessful(false);
+
+            while ($this->getTransDepth() !== 0) {
+                $depth = $this->getTransDepth();
+                $this->transComplete();
+                if ($depth === $this->getTransDepth()) break;
+            }
+
+            if ($this->isDebug()) {
+                throw new QueRuntimeException("Error: {$error} \nSQL: '{$sql}'\n",
+                    "Database Error", E_USER_ERROR, 0,
+                    PreviousException::getInstance(debug_backtrace()));
+            }
+        }
+
+        return new MySQL_Handler(null, ($result === true), $error, $errorCode, $sql, $this->get_table_name($sql));
     }
 
     /**
@@ -396,9 +621,30 @@ class Query extends Connect
     {
         $connect = $this->connect();
         $result = $connect->query($sql);
-        $success = ($result && $result->num_rows > 0);
-        return new MySQL_Handler(($success ? $this->filter_object($result->fetch_object()) : null),
-            ($success ? true : false), $connect->error, $sql, $this->get_table_name($sql));
+        $status = ($result && $result->num_rows > 0);
+
+        $error = $connect->error;
+        $errorCode = $connect->errno;
+
+        if (!$result) {
+
+            if ($this->getTransDepth() > 0) $this->setTransSuccessful(false);
+
+            while ($this->getTransDepth() !== 0) {
+                $depth = $this->getTransDepth();
+                $this->transComplete();
+                if ($depth === $this->getTransDepth()) break;
+            }
+
+            if ($this->isDebug()) {
+                throw new QueRuntimeException("Error: {$error} \nSQL: '{$sql}'\n",
+                    "Database Error", E_USER_ERROR, 0,
+                    PreviousException::getInstance(debug_backtrace()));
+            }
+        }
+
+        return new MySQL_Handler(($status ? $this->filter_object($result->fetch_object()) : null),
+            $status, $error, $errorCode, $sql, $this->get_table_name($sql));
     }
 
     /**
@@ -414,7 +660,28 @@ class Query extends Connect
             null, null, self::UPDATE);
         $connect = $this->connect();
         $result = $connect->query($sql);
-        return new MySQL_Handler(null, ($result === true ? true : false), $connect->error, $sql, $table);
+
+        $error = $connect->error;
+        $errorCode = $connect->errno;
+
+        if (!$result) {
+
+            if ($this->getTransDepth() > 0) $this->setTransSuccessful(false);
+
+            while ($this->getTransDepth() !== 0) {
+                $depth = $this->getTransDepth();
+                $this->transComplete();
+                if ($depth === $this->getTransDepth()) break;
+            }
+
+            if ($this->isDebug()) {
+                throw new QueRuntimeException("Error: {$error} \nSQL: '{$sql}'\n",
+                    "Database Error", E_USER_ERROR, 0,
+                    PreviousException::getInstance(debug_backtrace()));
+            }
+        }
+
+        return new MySQL_Handler(null, ($result === true), $error, $errorCode, $sql, $table);
     }
 
     /**
@@ -435,9 +702,30 @@ class Query extends Connect
         $connect = $this->connect();
         $result = $connect->query($sql);
         $assoc = ['total' => 0];
-        $check = $result && ($assoc = $result->fetch_assoc());
-        return new MySQL_Handler(($check ? $result->num_rows > 1 && $result->num_rows > $assoc['total'] ?
-            $result->num_rows : $assoc['total'] : 0), $check, $connect->error, $sql, $table);
+        $status = $result && ($assoc = $result->fetch_assoc());
+
+        $error = $connect->error;
+        $errorCode = $connect->errno;
+
+        if (!$result) {
+
+            if ($this->getTransDepth() > 0) $this->setTransSuccessful(false);
+
+            while ($this->getTransDepth() !== 0) {
+                $depth = $this->getTransDepth();
+                $this->transComplete();
+                if ($depth === $this->getTransDepth()) break;
+            }
+
+            if ($this->isDebug()) {
+                throw new QueRuntimeException("Error: {$error} \nSQL: '{$sql}'\n",
+                    "Database Error", E_USER_ERROR, 0,
+                    PreviousException::getInstance(debug_backtrace()));
+            }
+        }
+
+        return new MySQL_Handler(($status ? $result->num_rows > 1 && $result->num_rows > $assoc['total'] ?
+            $result->num_rows : $assoc['total'] : 0), $status, $error, $errorCode, $sql, $table);
     }
 
     /**
@@ -458,8 +746,29 @@ class Query extends Connect
         $connect = $this->connect();
         $result = $connect->query($sql);
         $assoc = ['total' => 0];
-        $check = $result && ($assoc = $result->fetch_assoc());
-        return new MySQL_Handler(($check ? $assoc['total'] : 0), $check, $connect->error, $sql, $table);
+        $status = $result && ($assoc = $result->fetch_assoc());
+
+        $error = $connect->error;
+        $errorCode = $connect->errno;
+
+        if (!$result) {
+
+            if ($this->getTransDepth() > 0) $this->setTransSuccessful(false);
+
+            while ($this->getTransDepth() !== 0) {
+                $depth = $this->getTransDepth();
+                $this->transComplete();
+                if ($depth === $this->getTransDepth()) break;
+            }
+
+            if ($this->isDebug()) {
+                throw new QueRuntimeException("Error: {$error} \nSQL: '{$sql}'\n",
+                    "Database Error", E_USER_ERROR, 0,
+                    PreviousException::getInstance(debug_backtrace()));
+            }
+        }
+
+        return new MySQL_Handler(($status ? $assoc['total'] : 0), $status, $error, $errorCode, $sql, $table);
     }
 
     /**
@@ -480,8 +789,29 @@ class Query extends Connect
         $connect = $this->connect();
         $result = $connect->query($sql);
         $assoc = ['total' => 0];
-        $check = $result && ($assoc = $result->fetch_assoc());
-        return new MySQL_Handler(($check ? $assoc['total'] : 0), $check, $connect->error, $sql, $table);
+        $status = $result && ($assoc = $result->fetch_assoc());
+
+        $error = $connect->error;
+        $errorCode = $connect->errno;
+
+        if (!$result) {
+
+            if ($this->getTransDepth() > 0) $this->setTransSuccessful(false);
+
+            while ($this->getTransDepth() !== 0) {
+                $depth = $this->getTransDepth();
+                $this->transComplete();
+                if ($depth === $this->getTransDepth()) break;
+            }
+
+            if ($this->isDebug()) {
+                throw new QueRuntimeException("Error: {$error} \nSQL: '{$sql}'\n",
+                    "Database Error", E_USER_ERROR, 0,
+                    PreviousException::getInstance(debug_backtrace()));
+            }
+        }
+
+        return new MySQL_Handler(($status ? $assoc['total'] : 0), $status, $error, $errorCode, $sql, $table);
     }
 
     /**
@@ -533,7 +863,7 @@ class Query extends Connect
                     foreach ($column as $key => $value) {
                         if (empty($key)) continue;
                         $columns .= (empty($columns) ? '' : ', ') . $key;
-                        $values .= (empty($values) ? '' : ", ") . ($value === null ? "null" : "'" . $value . "'");
+                        $values .= ((empty($values) ? '' : ", ") . "'{$value}'");
                     }
                 }
 
@@ -566,7 +896,7 @@ class Query extends Connect
 
                     foreach ($column as $keys => $values) {
                         if (empty($keys)) continue;
-                        $updateColumn .= (empty($updateColumn) ? '' : ', ') . $keys . " = " . ($values === null ? "null" : "'" . $values . "'");
+                        $updateColumn .= ((empty($updateColumn) ? '' : ', ') . "{$keys} = '{$values}'");
                     }
                 }
 
@@ -617,7 +947,7 @@ class Query extends Connect
         if (is_array($order_by))
             $query .= " ORDER BY " . key($order_by) . " " . current($order_by);
 
-        if (is_numeric($limit)) $query .= " LIMIT " . $limit;
+        if (is_numeric($limit)) $query .= " LIMIT {$limit}";
         elseif (is_array($limit))
             $query .= " LIMIT " . ($limit[0] <= 0 ? 0 : $limit[0]) . ', ' . ($limit[1] <= 0 ? 1 : $limit[1]);
 
@@ -717,7 +1047,7 @@ class Query extends Connect
 
         }
 
-        $column_value = $column_value === null ? "null" : (str_contains($column_value, '(') ? $column_value : "'{$column_value}'");
+        $column_value = (!is_null($column_value) && str_contains($column_value, '(') ? $column_value : "'{$column_value}'");
 
         $col_operator = $this->getOperator($table_column) ?: '=';
         $table_column = $this->stripOperator($table_column) ?: $table_column;
@@ -814,8 +1144,10 @@ class Query extends Connect
      */
     private function filter_array(array $data): array
     {
-        foreach ($data as $key => $value)
-            $data[$key] = ($value === null ? null : addslashes($value));
+        foreach ($data as $key => $value) {
+            if (is_null($value)) continue;
+            $data[$key] = addslashes($value);
+        }
         return $data;
     }
 
@@ -825,8 +1157,11 @@ class Query extends Connect
      */
     private function filter_object(object $data): object
     {
-        foreach ($data as $key => $value)
+        foreach ($data as $key => $value) {
+            if (is_null($value)) continue;
             $data->{$key} = stripslashes($value);
+            $data->{$key} = $this->escape_string($data->{$key});
+        }
         return $data;
     }
 }

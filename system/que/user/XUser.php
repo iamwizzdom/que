@@ -10,6 +10,7 @@ namespace que\user;
 
 
 use ArrayAccess;
+use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use que\error\RuntimeError;
 use que\model\Model;
@@ -56,7 +57,7 @@ class XUser implements ArrayAccess
      * @return Model
      */
     public function getModel(): Model {
-        return new Model($this->user, 'app_user');
+        return new Model($this->user, CONFIG['db_table']['user']['name']);
     }
 
     public function update(array $columns) {
@@ -70,9 +71,9 @@ class XUser implements ArrayAccess
 
         if (empty($columnsToUpdate)) return false;
 
-        $update = db()->update('app_user', $columnsToUpdate, [
+        $update = db()->update(CONFIG['db_table']['user']['name'], $columnsToUpdate, [
             'AND' => [
-                'userID' => $this->user->{'userID'}
+                CONFIG['db_table']['user']['primary_key'] => $this->user->{CONFIG['db_table']['user']['primary_key']}
             ]
         ]);
 
@@ -88,11 +89,12 @@ class XUser implements ArrayAccess
      */
     public function isMe(): bool {
 
-        if (!isset($this->user->userID))
-            throw new QueRuntimeException("The key 'userID' was not found in the present user object", "User Error", E_USER_ERROR);
+        if (!isset($this->user->{CONFIG['db_table']['user']['primary_key']}))
+            throw new QueRuntimeException("The key " . CONFIG['db_table']['user']['primary_key'] . " was not found in the present user object",
+                "User Error", E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace()));
         
-        return User::isLoggedIn() && User::getInstance()->getModel()->get('userID')->is(
-            $this->getValue('userID')
+        return User::isLoggedIn() && User::getInstance()->getModel()->get(CONFIG['db_table']['user']['primary_key'])->is(
+            $this->getValue(CONFIG['db_table']['user']['primary_key'])
         );
     }
 
@@ -103,7 +105,7 @@ class XUser implements ArrayAccess
      */
     public static function getUser(int $userID, string $dataType = null)
     {
-        $user = db()->find('app_user', 'userID', $userID);
+        $user = db()->find(CONFIG['db_table']['user']['name'], CONFIG['db_table']['user']['primary_key'], $userID);
 
         if (!$user->isSuccessful()) return null;
 

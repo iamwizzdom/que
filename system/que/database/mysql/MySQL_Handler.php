@@ -37,6 +37,11 @@ class MySQL_Handler
     /**
      * @var int
      */
+    private $query_error_code = 0;
+
+    /**
+     * @var int
+     */
     private $response_size = 0;
 
     /**
@@ -45,21 +50,23 @@ class MySQL_Handler
     private $query_string = "";
 
     /**
-     * SQL_Handler constructor.
+     * MySQL_Handler constructor.
      * @param $query_response
      * @param bool $query_status
      * @param string $query_error
+     * @param int $query_error_code
      * @param string $query_string
      * @param string $table
      */
     public function __construct($query_response, bool $query_status,
-                                string $query_error, string $query_string, string $table)
+                                string $query_error, ?int $query_error_code, string $query_string, string $table)
     {
         $this->setTable($table);
         $this->setSuccessful($query_status);
         $this->setQueryResponse($query_response);
         $this->setResponseSize($query_response);
         $this->setQueryError($query_error);
+        $this->setQueryErrorCode($query_error_code);
         $this->setQueryString($query_string);
     }
 
@@ -151,6 +158,22 @@ class MySQL_Handler
     private function setQueryError(string $query_error)
     {
         $this->query_error = $query_error;
+    }
+
+    /**
+     * @return int
+     */
+    public function getQueryErrorCode(): ?int
+    {
+        return $this->query_error_code;
+    }
+
+    /**
+     * @param int $query_error_code
+     */
+    private function setQueryErrorCode(?int $query_error_code): void
+    {
+        $this->query_error_code = $query_error_code ?? 0;
     }
 
     /**

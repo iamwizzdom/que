@@ -5,6 +5,7 @@ namespace que\template;
 
 
 use Exception;
+use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use Smarty;
 
@@ -146,7 +147,8 @@ class SmartyEngine
         try {
             $this->smarty->display($this->getTmpFileName());
         } catch (Exception $e) {
-            throw new QueRuntimeException($e->getMessage(), "Que Templating Error");
+            throw new QueRuntimeException($e->getMessage(), "Que Templating Error",
+                E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace(), 1));
         }
     }
 }
