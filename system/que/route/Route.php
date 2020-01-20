@@ -35,8 +35,6 @@ final class Route extends RouteCompiler
         self::resolve();
 
         self::render();
-
-        db()->close();
     }
 
     private static function render() {
