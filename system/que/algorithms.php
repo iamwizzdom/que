@@ -10,7 +10,7 @@ use que\utility\pattern\heap\Heap;
  * @param int $times
  * @return array
  *
- * @modifier [Wisdom Emenike](https://github.com/i_am_wizzdom)
+ * @modifier [Wisdom Emenike](https://github.com/iamwizzdom)
  */
 function fisher_yates_shuffle(array $init_arr, int $times = 1)
 {
