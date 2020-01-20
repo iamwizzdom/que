@@ -9,7 +9,6 @@ require 'app.settings.php';
 Route::register()->web(function (RouteEntry $entry) {
     $entry->setUri('/');
     $entry->setRequireCSRFAuth(false);
-    $entry->setRequireLogIn(true);
     $entry->setModule('View');
     $entry->setImplement(RouteImplementEnum::IMPLEMENT_PAGE);
 });
