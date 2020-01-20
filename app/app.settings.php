@@ -1,6 +1,7 @@
 <?php
 
 session_start();
+ob_start();
 
 require 'config/config.php';
 

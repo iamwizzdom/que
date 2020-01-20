@@ -80,6 +80,10 @@ class Composer
      */
     private $script =[];
 
+    protected function __construct()
+    {
+    }
+
     private function __clone()
     {
         // TODO: Implement __clone() method.
@@ -96,7 +100,7 @@ class Composer
     public static function getInstance()
     {
         if (!isset(self::$instance))
-            self::$instance = new self;
+            self::$instance = new self();
         return self::$instance;
     }
 
@@ -412,7 +416,6 @@ class Composer
         $smarty->setContext($this->getContext());
 
         if ($returnAsString === true) {
-            ob_start();
             $smarty->render();
             $content = ob_get_contents();
             if (ob_get_length()) ob_end_clean();
@@ -435,7 +438,6 @@ class Composer
         $twig->setContext($this->getContext());
 
         if ($returnAsString === true) {
-            ob_start();
             $twig->render();
             $content = ob_get_contents();
             if (ob_get_length()) ob_end_clean();
