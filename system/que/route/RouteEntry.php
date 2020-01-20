@@ -162,7 +162,7 @@ class RouteEntry
     /**
      * @return string
      */
-    public function getLoginUrl(): string
+    public function getLoginUrl(): ?string
     {
         return $this->loginUrl;
     }

@@ -127,9 +127,9 @@ abstract class RuntimeError
             }
 
             $smarty->addTemplateDir($tmp_dir);
-            $smarty->setCompileDir(APP_ROOT_PATH . "/cache/tmp/smarty/compile_dir/");
-            $smarty->setConfigDir(APP_ROOT_PATH . "/cache/tmp/smarty/config_dir/");
-            $smarty->setCacheDir(APP_ROOT_PATH . "/cache/tmp/smarty/cache_dir/");
+            $smarty->setCompileDir(QUE_PATH . "/cache/tmp/smarty/compile_dir/");
+            $smarty->setConfigDir(QUE_PATH . "/cache/tmp/smarty/config_dir/");
+            $smarty->setCacheDir(QUE_PATH . "/cache/tmp/smarty/cache_dir/");
             $smarty->setCacheLifetime(1);
 
             try {
