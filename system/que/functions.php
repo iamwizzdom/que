@@ -176,6 +176,18 @@ function str_start_from(string $haystack, string $needle) {
 }
 
 /**
+ * This function will return a substring of
+ * @param string $haystack
+ * ending at the first occurrence of
+ * @param string $needle
+ * @return bool|string
+ */
+function str_end_from(string $haystack, string $needle) {
+    if (($pos = strpos($haystack, $needle)) === false) return $haystack;
+    return substr($haystack, 0, ($pos + strlen($needle)));
+}
+
+/**
  * @param string $string
  * @param string $needle
  * @return int
@@ -1594,27 +1606,14 @@ function base_url(string $url = null): string
         }
     }
 
-    $base = "";
-
     if (str_contains((\http()->_server()['REQUEST_URI_ORIGINAL']
         ?: \http()->_server()['REQUEST_URI']) ?: '',
         APP_ROOT_FOLDER . '/' . APP_FOLDER)) {
 
-        $route = current_route();
+        $base = str_end_from((\http()->_server()['REQUEST_URI_ORIGINAL']
+            ?: \http()->_server()['REQUEST_URI']) ?: '', APP_ROOT_FOLDER . '/' . APP_FOLDER);
 
-        if (!empty($route) && strlen($route->getUri()) > 0) {
-
-            $arr = str_tokenize($route->getUri(), '/');
-            if (isset($arr[0])) unset($arr[0]);
-            array_callback($arr, function ($value) {
-                return '..';
-            });
-
-            $base = implode("/", $arr);
-
-        }
-
-        return $isNull ? (!empty($base) ? $base : '') : (!empty($base) ? "{$base}/{$url}" : $url);
+        $url = ($isNull ? (!empty($base) ? $base : '') : (!empty($base) ? "{$base}/{$url}" : $url));
     }
 
     return server_protocol() . preg_replace("/\/\//", "/", $isNull ? $host : "{$host}/{$url}");
