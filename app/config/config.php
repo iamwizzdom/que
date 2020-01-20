@@ -117,9 +117,6 @@ define('CONFIG', [
 
 define('APP_HOME_PAGE', '/'); // Your app home page url
 
-define('APP_TIME', time());
-define('APP_YEAR', date('Y'));
-
 define("JWT_KEY", sha1("")); // Your JWT key
 define("APP_SALT", sha1("")); // Your app salt key
 

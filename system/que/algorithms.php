@@ -1,5 +1,6 @@
 <?php
 
+use que\common\exception\QueRuntimeException;
 use que\utility\pattern\heap\Heap;
 
 /**
@@ -7,23 +8,22 @@ use que\utility\pattern\heap\Heap;
  *
  * @param array $init_arr
  * @param int $times
- * @return array|bool
+ * @return array
+ *
+ * @modifier [Wisdom Emenike](https://github.com/i_am_wizzdom)
  */
 function fisher_yates_shuffle(array $init_arr, int $times = 1)
 {
-    if (is_array($init_arr)) {
-        for ($v = 0; $v < $times; $v++) {
-            $n = count($init_arr);
-            $keys = array_keys($init_arr);
-            $l = count($keys);
-            for ($i = ($n - 1); $i >= 1; $i--) {
-                $j = $keys[mt_rand(0, ($l - 1))];
-                list($init_arr[$j], $init_arr[$keys[$i]]) = array($init_arr[$keys[$i]], $init_arr[$j]);
-            }
+    for ($v = 0; $v < $times; $v++) {
+        $n = count($init_arr);
+        $keys = array_keys($init_arr);
+        $l = count($keys);
+        for ($i = ($n - 1); $i >= 1; $i--) {
+            $j = $keys[mt_rand(0, ($l - 1))];
+            list($init_arr[$j], $init_arr[$keys[$i]]) = array($init_arr[$keys[$i]], $init_arr[$j]);
         }
-        return $init_arr;
     }
-    return false;
+    return $init_arr;
 }
 
 /**
@@ -57,6 +57,7 @@ function bubble_sort(array $arr, bool $reverse = false): array
 
 /**
  * This is a simple insertion sort algorithm
+ *
  * @param array $init_arr
  * @return array
  */
@@ -75,7 +76,7 @@ function insertion_sort(array $init_arr)
 }
 
 /**
- * A recursive binary search function.
+ * A recursive binary search algorithm.
  * It returns location of x in given array otherwise -1
  *
  * @param array $arr
@@ -88,10 +89,10 @@ function insertion_sort(array $init_arr)
 function binary_search(array $arr, int $left, int $right, $search)
 {
     if (!is_numeric_array($arr))
-        throw new RunTimeException("binary_search expects a numeric array");
+        throw new QueRuntimeException("binary_search expects a numeric array");
 
     if ($right < $left)
-        throw new RunTimeException("binary_search expects right to be greater than left");
+        throw new QueRuntimeException("binary_search expects right to be greater than left");
 
     if ($right >= $left) {
 
@@ -186,6 +187,7 @@ function merge_sort(array $array)
 
 /**
  * This is a heap sort algorithm for sorting a Heap object
+ *
  * @param Heap $heap
  * @return array
  */

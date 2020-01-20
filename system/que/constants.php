@@ -336,3 +336,6 @@ const TIME_LOCK_CAPTCHA = 300; // 5 mins
 const TIMEOUT_DEFAULT = 3600; // 1hr
 const TIMEOUT_TRACK = 3600; // 1hr
 const TIMEOUT_LOCK_LOGIN = 300; // 5 mins
+
+define('APP_TIME', time());
+define('APP_YEAR', date('Y'));
