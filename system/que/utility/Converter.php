@@ -70,39 +70,32 @@ class Converter
 
     /**
      * @param int $countryID
-     * @param string $default
-     * @return string
+     * @return array
      */
-    public function convertCountry(int $countryID, string $default = 'All countries'): string
+    public function convertCountry(int $countryID): array
     {
-        $country = db()->select(CONFIG['db_table']['country']['name'], '*', [
+        $country = db()->select((CONFIG['db_table']['country']['name'] ?? 'countries'), '*', [
             'AND' => [
-                CONFIG['db_table']['country']['primary_key'] => $countryID,
-                CONFIG['db_table_status_key'] => STATE_ACTIVE
+                (CONFIG['db_table']['country']['primary_key'] ?? 'id') => $countryID,
+                (CONFIG['db_table_status_key'] ?? 'is_active') => STATE_ACTIVE
             ]
         ]);
-        return ($country->isSuccessful() ?
-            $country->getQueryResponseWithModel(0)->get('countryName')->getValue() : $default);
+        return ($country->isSuccessful() ? $country->getQueryResponseArray(0) : []);
     }
 
     /**
-     * @param int $countryID
      * @param int $stateID
-     * @param string $default
-     * @return string
+     * @return array
      */
-    public function convertState(int $countryID, int $stateID,
-                                 string $default = 'All states'): string
+    public function convertState(int $stateID): array
     {
-        $state = db()->select(CONFIG['db_table']['state']['name'], '*', [
+        $state = db()->select((CONFIG['db_table']['state']['name'] ?? 'states'), '*', [
             'AND' => [
-                CONFIG['db_table']['country']['primary_key'] => $countryID,
-                CONFIG['db_table']['state']['primary_key'] => $stateID,
-                CONFIG['db_table_status_key'] => STATE_ACTIVE
+                (CONFIG['db_table']['state']['primary_key'] ?? 'id') => $stateID,
+                (CONFIG['db_table_status_key'] ?? 'is_active') => STATE_ACTIVE
             ]
         ]);
-        return ($state->isSuccessful() ?
-            $state->getQueryResponseWithModel(0)->get('stateName')->getValue() : $default);
+        return ($state->isSuccessful() ? $state->getQueryResponseArray(0) : []);
     }
 
     /**
@@ -111,35 +104,26 @@ class Converter
      */
     public function convertLanguage(int $languageID): array
     {
-        $language = db()->select(CONFIG['db_table']['language']['name'], '*', [
+        $language = db()->select((CONFIG['db_table']['language']['name'] ?? 'languages'), '*', [
             'AND' => [
-                CONFIG['db_table']['language']['primary_key'] => $languageID,
-                CONFIG['db_table_status_key'] => STATE_ACTIVE
+                (CONFIG['db_table']['language']['primary_key'] ?? 'id') => $languageID,
+                (CONFIG['db_table_status_key'] ?? 'is_active') => STATE_ACTIVE
             ]
         ]);
 
-        return (
-        $language->isSuccessful() ?
-            $language->getQueryResponseArray(0) :
-            []
-        );
+        return ($language->isSuccessful() ? $language->getQueryResponseArray(0) : []);
     }
 
     /**
-     * @param int $countryID
-     * @param int $stateID
      * @param int $areaID
      * @return array
      */
-    public function convertArea(int $countryID, int $stateID,
-                                int $areaID): array
+    public function convertArea(int $areaID): array
     {
-        $area = db()->select(CONFIG['db_table']['area']['name'], '*', [
+        $area = db()->select((CONFIG['db_table']['area']['name'] ?? 'areas'), '*', [
             'AND' => [
-                CONFIG['db_table']['country']['primary_key'] => $countryID,
-                CONFIG['db_table']['state']['primary_key'] => $stateID,
-                CONFIG['db_table']['area']['primary_key'] => $areaID,
-                CONFIG['db_table_status_key'] => STATE_ACTIVE
+                (CONFIG['db_table']['area']['primary_key'] ?? 'id') => $areaID,
+                (CONFIG['db_table_status_key'] ?? 'is_active') => STATE_ACTIVE
             ]
         ]);
         return ($area->isSuccessful() ? $area->getQueryResponseArray(0) : []);

@@ -99,7 +99,7 @@ class User extends State implements ArrayAccess
     public function getModel(): Model
     {
         if (!isset(self::$model))
-            self::$model = new Model(self::$user, CONFIG['db_table']['user']['name']);
+            self::$model = new Model(self::$user, (CONFIG['db_table']['user']['name'] ?? 'users'));
         return self::$model;
     }
 
@@ -166,9 +166,11 @@ class User extends State implements ArrayAccess
 
         if (empty($columnsToUpdate)) return false;
 
-        $update = db()->update(CONFIG['db_table']['user']['name'], $columnsToUpdate, [
+        $primaryKey = (CONFIG['db_table']['user']['primary_key'] ?? 'id');
+
+        $update = db()->update((CONFIG['db_table']['user']['name'] ?? 'users'), $columnsToUpdate, [
             'AND' => [
-                CONFIG['db_table']['user']['primary_key'] => self::$user->{CONFIG['db_table']['user']['primary_key']}
+                $primaryKey => self::$user->{$primaryKey}
             ]
         ]);
 
@@ -238,8 +240,10 @@ class User extends State implements ArrayAccess
             session_regenerate_id(true);
         }
 
-        $user = db()->find(CONFIG['db_table']['user']['name'], CONFIG['db_table']['user']['primary_key'],
-            self::$state['data']->{CONFIG['db_table']['user']['primary_key']} ?? 0);
+        $primaryKey = (CONFIG['db_table']['user']['primary_key'] ?? 'id');
+
+        $user = db()->find((CONFIG['db_table']['user']['name'] ?? 'users'), $primaryKey,
+            self::$state['data']->{$primaryKey} ?? 0);
 
         if ($user->isSuccessful()) {
             $userData = $user->getQueryResponseArray(0);
