@@ -50,8 +50,12 @@ class Menu
 
                 if (!is_array($menu)) continue;
 
-                if (!isset($menu['title']) || !isset($menu['href']) ||
-                    (isset($menu['disable']) && $menu['disable'] === true)) continue;
+                if (!isset($menu['title']) || !isset($menu['href'])) {
+                    @$this->filter($menu);
+                    continue;
+                }
+
+                if (isset($menu['disable']) && $menu['disable'] === true) continue;
 
                 if (str_contains($menu['href'], $host = server_host()))
                     $menu['href'] = str_start_from($menu['href'], $host);
