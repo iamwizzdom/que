@@ -312,8 +312,8 @@ class Composer
         foreach ($this->tmp_module_suffix as $suffix) {
             $js = "js/module/{$module}{$suffix}";
             $css = "css/module/{$module}{$suffix}";
-            if (file_exists($this->tmpDir . $js)) $files['js'][] = $js;
-            elseif (file_exists($this->tmpDir . $css)) $files['css'][] = $css;
+            if (file_exists($this->tmpDir . $js)) $files['js'][] = str_start_from($js, 'js/');
+            elseif (file_exists($this->tmpDir . $css)) $files['css'][] = str_start_from($css, 'css/');
         }
         return $files;
     }
@@ -355,22 +355,34 @@ class Composer
             $route->getTitle() : $tmpHeader['app_title']);
 
         $css = (!$ignoreDefaultConfig ? array_merge(APP_TEMP_CSS, $this->getCss()) : $this->getCss());
-        $script = (!$ignoreDefaultConfig ? array_merge(APP_TEMP_SCRIPT, $this->getScript()) : $this->getScript());
+        $js = (!$ignoreDefaultConfig ? array_merge(APP_TEMP_SCRIPT, $this->getScript()) : $this->getScript());
 
         $module_files = $this->get_tmp_module_files();
-        $script = array_merge($script, $module_files['js']);
+        $js = array_merge($js, $module_files['js']);
         $css = array_merge($css, $module_files['css']);
 
-        array_callback($script, function ($value) {
-            return base_url((!str_starts_with($value, 'template') ? "template/{$value}" : $value));
+        array_callback($js, function ($uri) {
+
+            if (str_starts_with($uri, '/')) {
+                $uri = str_start_from($uri, '/');
+                $uri = "template/{$uri}";
+            } else $uri = "template/js/{$uri}";
+
+            return base_url($uri);
         });
 
-        array_callback($css, function ($value) {
-            return base_url((!str_starts_with($value, 'template') ? "template/{$value}" : $value));
+        array_callback($css, function ($uri) {
+
+            if (str_starts_with($uri, '/')) {
+                $uri = str_start_from($uri, '/');
+                $uri = "template/{$uri}";
+            } else $uri = "template/css/{$uri}";
+
+            return base_url($uri);
         });
 
         $this->css($css);
-        $this->script($script);
+        $this->script($js);
         $this->form('track', Track::generateToken());
         $this->form('csrf', (CSRF === true ? CSRF::getInstance()->getToken() : ""));
         $this->header((!$ignoreDefaultConfig ? array_merge($tmpHeader, $this->getHeader()) : $this->getHeader()));
