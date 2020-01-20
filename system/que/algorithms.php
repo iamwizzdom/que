@@ -17,9 +17,8 @@ function fisher_yates_shuffle(array $init_arr, int $repeat = 1)
     for ($v = 0; $v < $repeat; $v++) {
         $n = count($init_arr);
         $keys = array_keys($init_arr);
-        $l = count($keys);
         for ($i = ($n - 1); $i >= 1; $i--) {
-            $j = $keys[mt_rand(0, ($l - 1))];
+            $j = $keys[mt_rand(0, ($n - 1))];
             list($init_arr[$j], $init_arr[$keys[$i]]) = array($init_arr[$keys[$i]], $init_arr[$j]);
         }
     }
