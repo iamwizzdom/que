@@ -55,7 +55,10 @@ class Menu
                     continue;
                 }
 
-                if (isset($menu['disable']) && $menu['disable'] === true) continue;
+                if (isset($menu['disable']) && $menu['disable'] === true) {
+                    unset($menus[$key]);
+                    continue;
+                }
 
                 if (str_contains($menu['href'], $host = server_host()))
                     $menu['href'] = str_start_from($menu['href'], $host);
