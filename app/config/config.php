@@ -111,29 +111,25 @@ define('CONFIG', [
         'user' => [
             'name' => '', // Your app user table name
             'primary_key' => '', // Your app user table primary key name
-            'status_key' => 'is_active' // Your table column for managing record status
         ],
         'country' => [
             'name' => '', // Your app user table name
             'primary_key' => '', // Your app user table primary key name
-            'status_key' => 'is_active' // Your table column for managing record status
         ],
         'state' => [
             'name' => '', // Your app user table name
             'primary_key' => '', // Your app user table primary key name
-            'status_key' => 'is_active' // Your table column for managing record status
         ],
         'area' => [
             'name' => '', // Your app user table name
             'primary_key' => '', // Your app user table primary key name
-            'status_key' => 'is_active' // Your table column for managing record status
         ],
         'language' => [
             'name' => '', // Your app user table name
             'primary_key' => '', // Your app user table primary key name
-            'status_key' => 'is_active' // Your table column for managing record status
         ]
-    ]
+    ],
+    'db_table_status_key' => 'is_active' // Your table column name for managing record status
 ]);
 
 define('APP_HOME_PAGE', '/'); // Your app home page url

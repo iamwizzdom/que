@@ -78,7 +78,7 @@ class Converter
         $country = db()->select(CONFIG['db_table']['country']['name'], '*', [
             'AND' => [
                 CONFIG['db_table']['country']['primary_key'] => $countryID,
-                CONFIG['db_table']['country']['status_key'] => STATE_ACTIVE
+                CONFIG['db_table_status_key'] => STATE_ACTIVE
             ]
         ]);
         return ($country->isSuccessful() ?
@@ -98,7 +98,7 @@ class Converter
             'AND' => [
                 CONFIG['db_table']['country']['primary_key'] => $countryID,
                 CONFIG['db_table']['state']['primary_key'] => $stateID,
-                CONFIG['db_table']['state']['status_key'] => STATE_ACTIVE
+                CONFIG['db_table_status_key'] => STATE_ACTIVE
             ]
         ]);
         return ($state->isSuccessful() ?
@@ -114,7 +114,7 @@ class Converter
         $language = db()->select(CONFIG['db_table']['language']['name'], '*', [
             'AND' => [
                 CONFIG['db_table']['language']['primary_key'] => $languageID,
-                CONFIG['db_table']['language']['status_key'] => STATE_ACTIVE
+                CONFIG['db_table_status_key'] => STATE_ACTIVE
             ]
         ]);
 
@@ -139,7 +139,7 @@ class Converter
                 CONFIG['db_table']['country']['primary_key'] => $countryID,
                 CONFIG['db_table']['state']['primary_key'] => $stateID,
                 CONFIG['db_table']['area']['primary_key'] => $areaID,
-                CONFIG['db_table']['area']['status_key'] => STATE_ACTIVE
+                CONFIG['db_table_status_key'] => STATE_ACTIVE
             ]
         ]);
         return ($area->isSuccessful() ? $area->getQueryResponseArray(0) : []);

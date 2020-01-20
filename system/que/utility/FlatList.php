@@ -436,7 +436,7 @@ class FlatList
     {
         $countries = (Query::getInstance())->select(CONFIG['db_table']['country']['name'], '*', [
             'AND' => [
-                CONFIG['db_table']['country']['status_key'] => STATE_ACTIVE
+                CONFIG['db_table_status_key'] => STATE_ACTIVE
             ]
         ]);
         return ($countries->isSuccessful() ? $countries->getQueryResponseArray(0) : []);
@@ -451,7 +451,7 @@ class FlatList
         $states = (Query::getInstance())->select(CONFIG['db_table']['state']['name'], '*', [
             'AND' => [
                 CONFIG['db_table']['country']['primary_key'] => $countryID,
-                CONFIG['db_table']['state']['status_key'] => STATE_ACTIVE
+                CONFIG['db_table_status_key'] => STATE_ACTIVE
             ]
         ]);
         return ($states->isSuccessful() ? $states->getQueryResponseArray(0) : []);
@@ -466,7 +466,7 @@ class FlatList
         $states = (Query::getInstance())->select(CONFIG['db_table']['area']['name'], '*', [
             'AND' => [
                 CONFIG['db_table']['state']['primary_key'] => $stateID,
-                CONFIG['db_table']['area']['status_key'] => STATE_ACTIVE
+                CONFIG['db_table_status_key'] => STATE_ACTIVE
             ]
         ]);
         return ($states->isSuccessful() ? $states->getQueryResponseArray(0) : []);
@@ -479,7 +479,7 @@ class FlatList
     {
         $language = (Query::getInstance())->select(CONFIG['db_table']['language']['name'], '*', [
             'AND' => [
-                CONFIG['db_table']['language']['status_key'] => STATE_ACTIVE
+                CONFIG['db_table_status_key'] => STATE_ACTIVE
             ]
         ]);
         return ($language->isSuccessful() ? $language->getQueryResponseArray(0) : []);
