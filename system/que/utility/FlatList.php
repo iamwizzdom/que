@@ -46,31 +46,10 @@ class FlatList
      */
     public function countries(): array
     {
-
-        $list = [
-            0 => [
-                'countryID' => 0,
-                'countryName' => '--- Please Select ---',
-                'countryNameKey' => 'allCountries',
-                'countryDialCode' => 00,
-                'iso' => '--',
-                'iso3' => '---',
-                'currencyName' => null,
-                'currencyCode' => null,
-                'currencySymbol' => null
-            ]
-        ];
-
+        $list = [];
         $countries = $this->getCountries();
-        if ($countries !== false)
-            foreach ($countries as $country)
-                $list[] = array_exclude(object_to_array($country), [
-                    'dateAdded',
-                    'dateModified',
-                    'modifiedBy',
-                    'countryStatus',
-                    'isActive'
-                ]);
+        foreach ($countries as $country)
+            $list[] = object_to_array($country);
         return $list;
     }
 
@@ -80,25 +59,10 @@ class FlatList
      */
     public function states($countryID): array
     {
-        $list = [
-            0 => [
-                'stateID' => 0,
-                'countryID' => 0,
-                'stateName' => '--- Please Select ---',
-                'stateNameKey' => 'allStates',
-                'iso3166-2' => '---'
-            ]
-        ];
+        $list = [];
         $states = $this->getStates($countryID);
-        if ($states !== false)
-            foreach ($states as $state)
-                $list[] = array_exclude(object_to_array($state), [
-                    'dateAdded',
-                    'dateModified',
-                    'modifiedBy',
-                    'stateStatus',
-                    'isActive'
-                ]);
+        foreach ($states as $state)
+            $list[] = object_to_array($state);
         return $list;
     }
 
@@ -107,24 +71,10 @@ class FlatList
      */
     public function languages(): array
     {
-
-        $list = [
-            0 => [
-                'languageID' => 0,
-                'languageName' => '--- Please Select ---',
-                'languageNativeName' => 'allLanguages',
-            ]
-        ];
-
+        $list = [];
         $languages = $this->getLanguages();
-        if ($languages !== false)
-            foreach ($languages as $language)
-                $list[] = array_exclude(object_to_array($language), [
-                    'dateAdded',
-                    'dateModified',
-                    'modifiedBy',
-                    'isActive'
-                ]);
+        foreach ($languages as $language)
+            $list[] = object_to_array($language);
         return $list;
     }
 
@@ -134,11 +84,10 @@ class FlatList
      */
     public function areas($stateID): array
     {
-        $list = [0 => 'All areas'];
+        $list = [];
         $areas = $this->getAreas($stateID);
-        if ($areas !== false)
-            foreach ($areas as $area)
-                $list[$area->areaID] = $area->areaName;
+        foreach ($areas as $area)
+            $list[$area->areaID] = $area->areaName;
         return $list;
     }
 
@@ -481,58 +430,58 @@ class FlatList
     }
 
     /**
-     * @return bool|mixed|null
+     * @return array
      */
     private function getCountries()
     {
-        $countries = (Query::getInstance())->select('app_country', '*', [
+        $countries = (Query::getInstance())->select(CONFIG['db_table']['country']['name'], '*', [
             'AND' => [
-                'isActive' => STATE_ACTIVE
+                CONFIG['db_table']['country']['status_key'] => STATE_ACTIVE
             ]
         ]);
-        return ($countries->isSuccessful() ? $countries->getQueryResponse() : false);
+        return ($countries->isSuccessful() ? $countries->getQueryResponseArray(0) : []);
     }
 
     /**
      * @param int $countryID
-     * @return bool|mixed|null
+     * @return array
      */
     private function getStates(int $countryID)
     {
-        $states = (Query::getInstance())->select('app_state', '*', [
+        $states = (Query::getInstance())->select(CONFIG['db_table']['state']['name'], '*', [
             'AND' => [
-                'countryID' => $countryID,
-                'isActive' => STATE_ACTIVE
+                CONFIG['db_table']['country']['primary_key'] => $countryID,
+                CONFIG['db_table']['state']['status_key'] => STATE_ACTIVE
             ]
         ]);
-        return ($states->isSuccessful() ? $states->getQueryResponse() : false);
+        return ($states->isSuccessful() ? $states->getQueryResponseArray(0) : []);
     }
 
     /**
      * @param int $stateID
-     * @return bool|mixed|null
+     * @return array
      */
     private function getAreas(int $stateID)
     {
-        $states = (Query::getInstance())->select('app_area', '*', [
+        $states = (Query::getInstance())->select(CONFIG['db_table']['area']['name'], '*', [
             'AND' => [
-                'stateID' => $stateID,
-                'isActive' => STATE_ACTIVE
+                CONFIG['db_table']['state']['primary_key'] => $stateID,
+                CONFIG['db_table']['area']['status_key'] => STATE_ACTIVE
             ]
         ]);
-        return ($states->isSuccessful() ? $states->getQueryResponse() : false);
+        return ($states->isSuccessful() ? $states->getQueryResponseArray(0) : []);
     }
 
     /**
-     * @return bool|mixed|null
+     * @return array
      */
     private function getLanguages()
     {
-        $language = (Query::getInstance())->select('app_language', '*', [
+        $language = (Query::getInstance())->select(CONFIG['db_table']['language']['name'], '*', [
             'AND' => [
-                'isActive' => STATE_ACTIVE
+                CONFIG['db_table']['language']['status_key'] => STATE_ACTIVE
             ]
         ]);
-        return ($language->isSuccessful() ? $language->getQueryResponse() : false);
+        return ($language->isSuccessful() ? $language->getQueryResponseArray(0) : []);
     }
 }

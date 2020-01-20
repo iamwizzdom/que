@@ -253,7 +253,7 @@ class Condition
         if (!(db()->check($table, [
             'AND' => ($considerIsActive === true ? [
                 $column => $this->getValue(),
-                'isActive' => STATE_ACTIVE
+                CONFIG['db_table']['user']['status_key'] => STATE_ACTIVE
             ] : [
                 $column => $this->getValue()
             ])
@@ -274,7 +274,7 @@ class Condition
         if ((db()->check($table, [
             'AND' => ($considerIsActive === true ? [
                 $column => $this->getValue(),
-                'isActive' => STATE_ACTIVE
+                CONFIG['db_table']['user']['status_key'] => STATE_ACTIVE
             ] : [
                 $column => $this->getValue()
             ])

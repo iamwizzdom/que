@@ -75,10 +75,10 @@ class Converter
      */
     public function convertCountry(int $countryID, string $default = 'All countries'): string
     {
-        $country = db()->select('app_country', '*', [
+        $country = db()->select(CONFIG['db_table']['country']['name'], '*', [
             'AND' => [
-                'countryID' => $countryID,
-                'isActive' => STATE_ACTIVE
+                CONFIG['db_table']['country']['primary_key'] => $countryID,
+                CONFIG['db_table']['country']['status_key'] => STATE_ACTIVE
             ]
         ]);
         return ($country->isSuccessful() ?
@@ -94,11 +94,11 @@ class Converter
     public function convertState(int $countryID, int $stateID,
                                  string $default = 'All states'): string
     {
-        $state = db()->select('app_state', '*', [
+        $state = db()->select(CONFIG['db_table']['state']['name'], '*', [
             'AND' => [
-                'countryID' => $countryID,
-                'stateID' => $stateID,
-                'isActive' => STATE_ACTIVE
+                CONFIG['db_table']['country']['primary_key'] => $countryID,
+                CONFIG['db_table']['state']['primary_key'] => $stateID,
+                CONFIG['db_table']['state']['status_key'] => STATE_ACTIVE
             ]
         ]);
         return ($state->isSuccessful() ?
@@ -111,26 +111,17 @@ class Converter
      */
     public function convertLanguage(int $languageID): array
     {
-        $language = db()->select('app_language', '*', [
+        $language = db()->select(CONFIG['db_table']['language']['name'], '*', [
             'AND' => [
-                'languageID' => $languageID,
-                'isActive' => STATE_ACTIVE
+                CONFIG['db_table']['language']['primary_key'] => $languageID,
+                CONFIG['db_table']['language']['status_key'] => STATE_ACTIVE
             ]
         ]);
 
         return (
         $language->isSuccessful() ?
-            array_extract_by_keys(
-                $language->getQueryResponseArray(0),
-                [
-                    'languageName',
-                    'languageNativeName'
-                ]
-            ) :
-            [
-                'languageName' => 'Unknown',
-                'languageNativeName' => 'Unknown',
-            ]
+            $language->getQueryResponseArray(0) :
+            []
         );
     }
 
@@ -138,22 +129,20 @@ class Converter
      * @param int $countryID
      * @param int $stateID
      * @param int $areaID
-     * @param string $default
-     * @return string
+     * @return array
      */
     public function convertArea(int $countryID, int $stateID,
-                                int $areaID, string $default = 'All areas'): string
+                                int $areaID): array
     {
-        $area = db()->select('app_area', '*', [
+        $area = db()->select(CONFIG['db_table']['area']['name'], '*', [
             'AND' => [
-                'countryID' => $countryID,
-                'stateID' => $stateID,
-                'areaID' => $areaID,
-                'isActive' => STATE_ACTIVE
+                CONFIG['db_table']['country']['primary_key'] => $countryID,
+                CONFIG['db_table']['state']['primary_key'] => $stateID,
+                CONFIG['db_table']['area']['primary_key'] => $areaID,
+                CONFIG['db_table']['area']['status_key'] => STATE_ACTIVE
             ]
         ]);
-        return ($area->isSuccessful() ?
-            $area->getQueryResponseWithModel(0)->get('areaName')->getValue() : $default);
+        return ($area->isSuccessful() ? $area->getQueryResponseArray(0) : []);
     }
 
     /**

@@ -6,25 +6,25 @@ define('LIVE', false); // Set to [bool](true) in production mode otherwise [bool
 ini_set('display_errors', LIVE ? 'off' : 'on');
 error_reporting(LIVE ? 0 : E_ALL);
 define('APP_SCHEME', ($_SERVER['HTTPS'] ?? 'off') == 'on' ? "https" : 'http');
-define('APP_ROOT_PATH', 'C:\xampp\htdocs\personal\que'); // Your app root path
-define('APP_ROOT_FOLDER', 'que'); // Your app root folder name
-define('APP_FOLDER', 'app'); // Your app folder name
-define('APP_PATH', APP_ROOT_PATH . "/app");
+define('APP_ROOT_PATH', ''); // Your app root path
+define('APP_ROOT_FOLDER', ''); // Your app root folder name
+define('APP_FOLDER', ''); // Your app folder name
+define('APP_PATH', APP_ROOT_PATH . "/" . APP_FOLDER);
 define('QUE_PATH', APP_ROOT_PATH . '/system/que');
 define('APP_HOST', APP_SCHEME . "://" . ($_SERVER['HTTP_HOST'] ?? 'localhost'));
 define('APP_HOST_FOLDER', APP_SCHEME . "://" . ($_SERVER['HTTP_HOST'] ?? 'localhost'));
 define('APP_TITLE', ''); // Your app title
 define('APP_NAME', ''); // Your app name
 define('APP_DESC', ""); // Your app description
-define('APP_FAV_ICON', 'template/asset/image/favicon.png');
-define('APP_ICON', 'template/assets/image/icon.png');
-define('APP_LOGO_WHITE', 'template/asset/image/logo-white.png');
-define('APP_LOGO_BLACK', 'template/asset/image/logo-black.png');
-define('APP_LOGO_LARGE', '/template/asset/image/logo-large.png');
-define('APP_LOGO', '/template/asset/image/logo-large.png');
-define('APP_EMAIL_BG', '/template/asset/image/mail-cover.png');
+define('APP_FAV_ICON', '');
+define('APP_ICON', '');
+define('APP_LOGO_WHITE', '');
+define('APP_LOGO_BLACK', '');
+define('APP_LOGO_LARGE', '');
+define('APP_LOGO', '');
+define('APP_EMAIL_BG', '');
 define('APP_ROBOTS', 'index, follow');
-define('APP_KEYWORDS', 'SEO keywords');
+define('APP_KEYWORDS', ''); // SEO keywords separated by comma ','
 define('APP_DOMAIN', APP_HOST);
 
 /**
@@ -110,7 +110,28 @@ define('CONFIG', [
     'db_table' => [
         'user' => [
             'name' => '', // Your app user table name
-            'primary_key' => '' // Your app user table primary key name
+            'primary_key' => '', // Your app user table primary key name
+            'status_key' => 'is_active' // Your table column for managing record status
+        ],
+        'country' => [
+            'name' => '', // Your app user table name
+            'primary_key' => '', // Your app user table primary key name
+            'status_key' => 'is_active' // Your table column for managing record status
+        ],
+        'state' => [
+            'name' => '', // Your app user table name
+            'primary_key' => '', // Your app user table primary key name
+            'status_key' => 'is_active' // Your table column for managing record status
+        ],
+        'area' => [
+            'name' => '', // Your app user table name
+            'primary_key' => '', // Your app user table primary key name
+            'status_key' => 'is_active' // Your table column for managing record status
+        ],
+        'language' => [
+            'name' => '', // Your app user table name
+            'primary_key' => '', // Your app user table primary key name
+            'status_key' => 'is_active' // Your table column for managing record status
         ]
     ]
 ]);
@@ -155,9 +176,9 @@ define('APP_TEMP_HEADER', [
 ]);
 
 define('APP_TEMP_CSS', [
-    'css/style.css?e='
+    // Your default template css files
 ]);
 
 define('APP_TEMP_SCRIPT', [
-    'js/theme.js?e='
+    // Your default template js files
 ]);
