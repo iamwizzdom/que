@@ -24,10 +24,10 @@ final class Route extends RouteCompiler
 
         $uri = self::getRequestUri();
 
-        if (str_contains($uri, APP_ROOT_FOLDER . '/' . APP_FOLDER)) {
+        if (str_contains($uri, APP_ROOT_FOLDER)) {
             http()->_server()->add('REQUEST_URI_ORIGINAL', $uri);
             http()->_server()->add('REQUEST_URI', $uri = str_start_from($uri,
-                APP_ROOT_FOLDER . '/' . APP_FOLDER));
+                APP_ROOT_FOLDER));
         }
         
         self::compile();

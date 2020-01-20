@@ -36,6 +36,6 @@ class View extends Manager implements Page
     {
         // TODO: Implement setTemplate() method.
         $composer->setTmpFileName('module/view.html');
-        $composer->prepare()->renderWithTwig();
+        $composer->prepare()->renderWithSmarty();
     }
 }

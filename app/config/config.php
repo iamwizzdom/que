@@ -6,13 +6,13 @@ define('LIVE', false); // Set to [bool](true) in production mode otherwise [bool
 ini_set('display_errors', LIVE ? 'off' : 'on');
 error_reporting(LIVE ? 0 : E_ALL);
 define('APP_SCHEME', ($_SERVER['HTTPS'] ?? 'off') == 'on' ? "https" : 'http');
-define('APP_ROOT_PATH', ''); // Your app root path
-define('APP_ROOT_FOLDER', ''); // Your app root folder name
-define('APP_FOLDER', ''); // Your app folder name
-define('APP_PATH', APP_ROOT_PATH . "/" . APP_FOLDER);
+define('APP_ROOT_PATH', 'C:\xampp\htdocs\personal\que'); // Your app root path
+define('APP_ROOT_FOLDER', 'que'); // Your app root folder name
+define('APP_FOLDER', 'app'); // Your app folder name
+define('APP_PATH', APP_ROOT_PATH . "/app");
 define('QUE_PATH', APP_ROOT_PATH . '/system/que');
 define('APP_HOST', APP_SCHEME . "://" . ($_SERVER['HTTP_HOST'] ?? 'localhost'));
-define('APP_HOST_FOLDER', APP_SCHEME . "://" . ($_SERVER['HTTP_HOST'] ?? 'localhost') . "/" . APP_FOLDER);
+define('APP_HOST_FOLDER', APP_SCHEME . "://" . ($_SERVER['HTTP_HOST'] ?? 'localhost'));
 define('APP_TITLE', ''); // Your app title
 define('APP_NAME', ''); // Your app name
 define('APP_DESC', ""); // Your app description
@@ -151,13 +151,13 @@ define('APP_TEMP_HEADER', [
     'app_keywords' => APP_KEYWORDS,
     'app_robots' => APP_ROBOTS,
     'app_url' => APP_DOMAIN,
-    'year' => APP_YEAR
+    'year' => '2018'
 ]);
 
 define('APP_TEMP_CSS', [
-    'css/style.css?e=' . APP_TIME
+    'css/style.css?e='
 ]);
 
 define('APP_TEMP_SCRIPT', [
-    'js/theme.js?e=' . APP_TIME
+    'js/theme.js?e='
 ]);

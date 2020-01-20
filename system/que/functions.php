@@ -1608,12 +1608,14 @@ function base_url(string $url = null): string
 
     if (str_contains((\http()->_server()['REQUEST_URI_ORIGINAL']
         ?: \http()->_server()['REQUEST_URI']) ?: '',
-        APP_ROOT_FOLDER . '/' . APP_FOLDER)) {
+        APP_ROOT_FOLDER)) {
 
         $base = str_end_from((\http()->_server()['REQUEST_URI_ORIGINAL']
-            ?: \http()->_server()['REQUEST_URI']) ?: '', APP_ROOT_FOLDER . '/' . APP_FOLDER);
+            ?: \http()->_server()['REQUEST_URI']) ?: '', APP_ROOT_FOLDER);
 
-        $url = ($isNull ? (!empty($base) ? $base : '') : (!empty($base) ? "{$base}/{$url}" : $url));
+        if (!empty(APP_FOLDER)) $base .= ('/' . APP_FOLDER);
+
+        $host .= "/{$base}";
     }
 
     return server_protocol() . preg_replace("/\/\//", "/", $isNull ? $host : "{$host}/{$url}");

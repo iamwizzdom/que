@@ -18,7 +18,7 @@ RewriteCond %{THE_REQUEST} ^[A-Z]+\ /([^/]+/)*[^.#?\ ]+\.php([#?][^\ ]*)?\ HTTP/
 RewriteRule ^(([^/]+/)*[^.]+)\.php /$1 [R=301,L]
 
 Options -Indexes
-DirectoryIndex ^(.*)$ app.route.php
+DirectoryIndex ^(.*)$ app/app.route.php
 
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
@@ -39,6 +39,6 @@ DirectoryIndex ^(.*)$ app.route.php
     # Handle Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteRule ^ app.route.php [L]
+    RewriteRule ^ app/app.route.php [L]
 
 </IfModule>
