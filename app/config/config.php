@@ -113,20 +113,20 @@ define('CONFIG', [
             'primary_key' => '', // Your app user table primary key name
         ],
         'country' => [
-            'name' => '', // Your app user table name
-            'primary_key' => '', // Your app user table primary key name
+            'name' => '', // Your app country table name
+            'primary_key' => '', // Your app country table primary key name
         ],
         'state' => [
-            'name' => '', // Your app user table name
-            'primary_key' => '', // Your app user table primary key name
+            'name' => '', // Your app state table name
+            'primary_key' => '', // Your app state table primary key name
         ],
         'area' => [
-            'name' => '', // Your app user table name
-            'primary_key' => '', // Your app user table primary key name
+            'name' => '', // Your app local govt area table name
+            'primary_key' => '', // Your app local govt area table primary key name
         ],
         'language' => [
-            'name' => '', // Your app user table name
-            'primary_key' => '', // Your app user table primary key name
+            'name' => '', // Your app language table name
+            'primary_key' => '', // Your app language table primary key name
         ]
     ],
     'db_table_status_key' => 'is_active' // Your table column name for managing record status
