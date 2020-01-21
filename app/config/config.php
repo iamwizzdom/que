@@ -6,9 +6,9 @@ define('LIVE', false); // Set to [bool](true) in production mode otherwise [bool
 ini_set('display_errors', LIVE ? 'off' : 'on');
 error_reporting(LIVE ? 0 : E_ALL);
 define('APP_SCHEME', ($_SERVER['HTTPS'] ?? 'off') == 'on' ? "https" : 'http');
-define('APP_ROOT_PATH', ''); // Your app root path
-define('APP_ROOT_FOLDER', ''); // Your app root folder name
-define('APP_FOLDER', ''); // Your app folder name
+define('APP_ROOT_PATH', dirname(__DIR__, 2)); // Your app root path
+define('APP_ROOT_FOLDER', 'que'); // Your app root folder name
+define('APP_FOLDER', 'app'); // Your app folder name
 define('APP_PATH', APP_ROOT_PATH . "/" . APP_FOLDER);
 define('QUE_PATH', APP_ROOT_PATH . '/system/que');
 define('APP_HOST', APP_SCHEME . "://" . ($_SERVER['HTTP_HOST'] ?? 'localhost'));
