@@ -55,6 +55,7 @@ const HTTP_NOT_FOUND_CODE = 404;
 const HTTP_ERROR_CODE = 401;
 const HTTP_WARNING_CODE = 403;
 const HTTP_SUCCESS_CODE = 200;
+const HTTP_UNAUTHORIZED_CODE = 419;
 
 /**
  * System state constants

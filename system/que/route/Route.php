@@ -89,7 +89,7 @@ final class Route extends RouteCompiler
             if ($route->isRequireJWTAuth() === true) try {
                 RouteInspector::validateJWT($http);
             } catch (Exception $e) {
-                throw new RouteException($e->getMessage());
+                throw new RouteException($e->getMessage(), "JWT Auth Error");
             }
 
             if (!empty($module = $route->getModule())) {
@@ -302,7 +302,7 @@ final class Route extends RouteCompiler
             if ($route->isRequireJWTAuth() === true) try {
                 RouteInspector::validateJWT($http);
             } catch (Exception $e) {
-                throw new RouteException($e->getMessage());
+                throw new RouteException($e->getMessage(), "JWT Auth Error");
             }
 
             if (!empty($module = $route->getModule())) {
@@ -375,7 +375,7 @@ final class Route extends RouteCompiler
             if ($route->isRequireJWTAuth() === true) try {
                 RouteInspector::validateJWT($http);
             } catch (Exception $e) {
-                throw new RouteException($e->getMessage());
+                throw new RouteException($e->getMessage(), "JWT Auth Error");
             }
 
             if (!empty($module = $route->getModule())) {

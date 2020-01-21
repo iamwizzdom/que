@@ -259,7 +259,7 @@ class RouteInspector
             )) {
 
                 CSRF::getInstance()->generateToken();
-                http()->http_response_code(HTTP_INTERNAL_ERROR_CODE);
+                http()->http_response_code(HTTP_UNAUTHORIZED_CODE);
                 throw new RouteException("Cross-site request forgery (CSRF) are forbidden",
                     "Route Error", E_USER_NOTICE);
 
@@ -281,6 +281,7 @@ class RouteInspector
             $http->_server()->offsetSet("JWT_PAYLOAD", $tokenDecoded->getPayload());
             $http->_server()->offsetSet("JWT_HEADER", $tokenDecoded->getHeader());
         } catch (Exception $e) {
+            $http->http_response_code(HTTP_UNAUTHORIZED_CODE);
             throw $e;
         }
     }
