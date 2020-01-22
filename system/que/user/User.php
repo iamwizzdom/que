@@ -231,8 +231,13 @@ class User extends State implements ArrayAccess
     private static function regenerate()
     {
 
-        $memcached = Session::getInstance()->getMemcached();
-        $redis = Session::getInstance()->getRedis();
+        $memcached = $redis = null;
+
+        if ((CONFIG['session']['memcached']['enable'] ?? false) === true)
+            $memcached = Session::getInstance()->getMemcached();
+
+        if ((CONFIG['session']['redis']['enable'] ?? false) === true)
+            $redis = Session::getInstance()->getRedis();
 
         if (!@session_regenerate_id(true)) { // change session ID for the current session and invalidate old session ID
             // Give it some time to regenerate session ID
@@ -251,8 +256,12 @@ class User extends State implements ArrayAccess
                 self::$user->{$key} = $value;
         }
 
-        $memcached->reset_session_id(Session::getSessionID());
-        $redis->reset_session_id(Session::getSessionID());
+        if (!is_null($memcached))
+            $memcached->reset_session_id(Session::getSessionID());
+
+        if (!is_null($redis))
+            $redis->reset_session_id(Session::getSessionID());
+
         self::updateState();
     }
 
