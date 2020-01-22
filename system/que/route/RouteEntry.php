@@ -44,7 +44,7 @@ class RouteEntry
     /**
      * @var string
      */
-    private $loginUrl = "";
+    private $loginUrl = null;
 
     /**
      * @var bool

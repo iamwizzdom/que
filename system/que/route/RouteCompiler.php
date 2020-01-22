@@ -84,7 +84,7 @@ class RouteCompiler
             }
 
             if ($routeEntry->isRequireLogIn() === true && !is_logged_in()) {
-                if (!is_null($routeEntry->getLoginUrl())) {
+                if (!empty($routeEntry->getLoginUrl())) {
                     http()->redirect()->setHeader(sprintf("You don't have access to this route (%s), log in and try again.",
                         current_url()), WARNING)->setUrl($routeEntry->getLoginUrl())->initiate();
                 } else {
