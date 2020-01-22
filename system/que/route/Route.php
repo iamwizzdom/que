@@ -47,10 +47,10 @@ final class Route extends RouteCompiler
             $path = APP_PATH . $uri;
 
             if (str_contains($path, "#"))
-                $path = str_end_at($path, '#');
+                $path = substr($path, 0, strpos($path, "#"));
 
             if (str_contains($path, "?"))
-                $path = str_end_at($path, '?');
+                $path = substr($path, 0, strpos($path, "?"));
 
             if (is_file($path)) {
                 header("Content-type:" . mime_type_from_filename($path));

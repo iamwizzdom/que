@@ -184,7 +184,7 @@ function str_start_from(string $haystack, string $needle) {
  */
 function str_end_at(string $haystack, string $needle) {
     if (($pos = strpos($haystack, $needle)) === false) return $haystack;
-    return substr($haystack, 0, $pos);
+    return substr($haystack, 0, ($pos + strlen($needle)));
 }
 
 /**
@@ -1606,8 +1606,9 @@ function base_url(string $url = null): string
         }
     }
 
+    $uri = (((\http()->_server()['REQUEST_URI_ORIGINAL'] ?: \http()->_server()['REQUEST_URI'])) ?: '');
 
-    $host .= "/" . (((\http()->_server()['REQUEST_URI_ORIGINAL'] ?: \http()->_server()['REQUEST_URI'])) ?: '');
+    if (str_contains($uri, APP_ROOT_FOLDER)) $host .= ("/" . str_end_at($uri, APP_ROOT_FOLDER));
 
     return server_protocol() . preg_replace("/\/\//", "/", $isNull ? $host : "{$host}/{$url}");
 }

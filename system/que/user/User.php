@@ -170,7 +170,7 @@ class User extends State implements ArrayAccess
 
         $update = db()->update((CONFIG['db_table']['user']['name'] ?? 'users'), $columnsToUpdate, [
             'AND' => [
-                $primaryKey => self::$user->{$primaryKey}
+                $primaryKey => $this->getValue($primaryKey, 0)
             ]
         ]);
 

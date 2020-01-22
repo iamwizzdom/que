@@ -74,7 +74,7 @@ class XUser implements ArrayAccess
 
         $update = db()->update((CONFIG['db_table']['user']['name'] ?? 'user'), $columnsToUpdate, [
             'AND' => [
-                $primaryKey => $this->user->{$primaryKey}
+                $primaryKey => $this->getValue($primaryKey, 0)
             ]
         ]);
 
