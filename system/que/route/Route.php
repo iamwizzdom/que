@@ -12,6 +12,10 @@ use Exception;
 use que\common\exception\RouteException;
 use que\common\validate\Track;
 use que\error\RuntimeError;
+use que\http\output\response\Html;
+use que\http\output\response\Json;
+use que\http\output\response\Jsonp;
+use que\http\output\response\Plain;
 use que\route\structure\RouteEntry;
 use que\route\structure\RouteImplementEnum;
 use que\security\CSRF;
@@ -20,21 +24,38 @@ use que\template\Composer;
 final class Route extends RouteCompiler
 {
 
+    private static $method = "GET";
+
     public static function init() {
 
-        $uri = self::getRequestUri();
+        try {
 
-        if (str_contains($uri, APP_ROOT_FOLDER)) {
-            http()->_server()->add('REQUEST_URI_ORIGINAL', $uri);
-            http()->_server()->add('REQUEST_URI', $uri = str_start_from($uri,
-                APP_ROOT_FOLDER));
+            $uri = self::getRequestUri();
+
+            if (str_contains($uri, APP_ROOT_FOLDER)) {
+                http()->_server()->add('REQUEST_URI_ORIGINAL', $uri);
+                http()->_server()->add('REQUEST_URI', $uri = str_start_from($uri,
+                    APP_ROOT_FOLDER));
+            }
+
+            self::$method = $method = strtoupper(http()->_server()->get("REQUEST_METHOD"));
+
+            if (!($method === 'GET' || $method === 'POST')) {
+                http()->http_response_code(HTTP_FORBIDDEN_METHOD_CODE);
+                throw new RouteException("Sorry, ({$method} request) is an unsupported request method");
+            }
+
+            self::compile();
+
+            self::resolve();
+
+            self::render();
+
+        } catch (RouteException $e) {
+
+            RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(), $e->getTitle(),
+                $e->getCode() == HTTP_NOT_FOUND_CODE ? HTTP_NOT_FOUND_CODE : HTTP_INTERNAL_ERROR_CODE);
         }
-        
-        self::compile();
-
-        self::resolve();
-
-        self::render();
     }
 
     private static function render() {
@@ -64,7 +85,7 @@ final class Route extends RouteCompiler
         } catch (RouteException $e) {
 
             RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(), $e->getTitle(),
-                $e->getCode() == HTTP_NOT_FOUND_CODE ? HTTP_NOT_FOUND_CODE : HTTP_ERROR_CODE);
+                $e->getCode() == HTTP_NOT_FOUND_CODE ? HTTP_NOT_FOUND_CODE : HTTP_INTERNAL_ERROR_CODE);
 
         }
 
@@ -94,11 +115,6 @@ final class Route extends RouteCompiler
 
             if (!empty($module = $route->getModule())) {
 
-                $method = $http->_server()->get("REQUEST_METHOD");
-
-                if (!($method === 'GET' || $method === 'POST'))
-                    throw new RouteException("Sorry, ({$method} request) is an unsupported request method");
-
                 switch ($route->getImplement()) {
                     case RouteImplementEnum::IMPLEMENT_ADD:
 
@@ -126,7 +142,7 @@ final class Route extends RouteCompiler
                             throw new RouteException(sprintf("You dont have permission to the current route (%s)", current_url()),
                                 "Access denied", E_USER_NOTICE);
 
-                        if ($method === "GET") {
+                        if (self::$method === "GET") {
                             if ($route->isRequireCSRFAuth() === true) CSRF::getInstance()->generateToken();
                             $instance->{"onLoad"}($http->_server()->get("URI_ARGS"));
                         } else {
@@ -165,7 +181,7 @@ final class Route extends RouteCompiler
 
                         $args = $http->_server()->get("URI_ARGS");
 
-                        if ($method === "GET") {
+                        if (self::$method === "GET") {
                             if ($route->isRequireCSRFAuth() === true) CSRF::getInstance()->generateToken();
                             $instance->{"onLoad"}($args, $instance->{"info"}($args));
                         } else {
@@ -204,7 +220,7 @@ final class Route extends RouteCompiler
 
                         $args = $http->_server()->get("URI_ARGS");
 
-                        if ($method === "GET") {
+                        if (self::$method === "GET") {
                             if ($route->isRequireCSRFAuth() === true) CSRF::getInstance()->generateToken();
                             $instance->{"onLoad"}($args, $instance->{"info"}($args));
                         } else {
@@ -241,7 +257,7 @@ final class Route extends RouteCompiler
                             throw new RouteException(sprintf("You dont have permission to the current route (%s)", current_url()),
                                 "Access denied", E_USER_NOTICE);
 
-                        if ($method === "GET") {
+                        if (self::$method === "GET") {
 
                             if ($route->isRequireCSRFAuth() === true) CSRF::getInstance()->generateToken();
                             $instance->{"onLoad"}($http->_server()->get("URI_ARGS"));
@@ -250,11 +266,11 @@ final class Route extends RouteCompiler
 
                             if (!isset($implement['que\common\structure\Receiver'])) {
 
-                                $http->http_response_code(HTTP_INTERNAL_ERROR_CODE);
+                                $http->http_response_code(HTTP_FORBIDDEN_METHOD_CODE);
 
                                 throw new RouteException(sprintf(
                                     "Sorry, the current route (%s)\n does not support (%s request).\n",
-                                    current_url(), $method));
+                                    current_url(), self::$method));
                             }
 
                             if ($route->isRequireCSRFAuth() === true) RouteInspector::validateCSRF();
@@ -277,7 +293,7 @@ final class Route extends RouteCompiler
         } catch (RouteException $e) {
 
             RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(),
-                method_exists($e, 'getTitle') ? $e->getTitle() ?: "Route Error" : "Route Error", HTTP_ERROR_CODE);
+                method_exists($e, 'getTitle') ? $e->getTitle() ?: "Route Error" : "Route Error", HTTP_UNAUTHORIZED_CODE);
 
         }
     }
@@ -292,7 +308,6 @@ final class Route extends RouteCompiler
         header('Access-Control-Allow-Methods: POST, GET');
         header('Cache-Control: no-cache, must-revalidate');
         header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-        header("Content-Type: application/json");
 
         try {
 
@@ -339,10 +354,27 @@ final class Route extends RouteCompiler
 
                 $response = $instance->{"process"}($http->_server()->get("URI_ARGS"));
 
-                if (isset($response['code']))
-                    $http->http_response_code($response['code']);
+                if ($response instanceof Json) {
+                    header("Content-Type: application/json");
+                    echo $response->getJson();
+                } elseif ($response instanceof Jsonp) {
+                    header("Content-Type: " . mime_type_from_extension('js'));
+                    echo $response->getJsonp();
+                } elseif ($response instanceof Html) {
+                    header("Content-Type: " . mime_type_from_extension('html'));
+                    echo $response->getHtml();
+                } elseif ($response instanceof Plain) {
+                    header("Content-Type: " . mime_type_from_extension('txt'));
+                    echo $response->getData();
+                } elseif (is_array($response)) {
+                    header("Content-Type: application/json");
+                    if (isset($response['code'])) $http->http_response_code($response['code']);
+                    echo json_encode($response, JSON_PRETTY_PRINT);
+                } else {
 
-                echo json_encode($response, JSON_PRETTY_PRINT);
+                    throw new RouteException(sprintf(
+                        "Sorry, the module bound to the current route (%s) did not return a valid response", current_url()));
+                }
 
             } else throw new RouteException(sprintf(
                 "Sorry, the current route (%s) is not bound to a module", current_url()));
@@ -350,7 +382,7 @@ final class Route extends RouteCompiler
         } catch (RouteException $e) {
 
             RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(),
-                method_exists($e, 'getTitle') ? $e->getTitle() ?: "Route Error" : "Route Error", HTTP_ERROR_CODE);
+                method_exists($e, 'getTitle') ? $e->getTitle() ?: "Route Error" : "Route Error", HTTP_UNAUTHORIZED_CODE);
 
         }
 
@@ -418,7 +450,7 @@ final class Route extends RouteCompiler
         } catch (RouteException $e) {
 
             RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(),
-                method_exists($e, 'getTitle') ? $e->getTitle() ?: "Route Error" : "Route Error", HTTP_ERROR_CODE);
+                method_exists($e, 'getTitle') ? $e->getTitle() ?: "Route Error" : "Route Error", HTTP_UNAUTHORIZED_CODE);
 
         }
 

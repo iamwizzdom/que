@@ -11,6 +11,7 @@ namespace que\http;
 
 use que\http\network\Redirect;
 use que\http\curl\CurlRequest;
+use que\http\output\HttpResponse;
 use que\http\request\Files;
 use que\http\request\Get;
 use que\http\request\Header;
@@ -124,6 +125,13 @@ class Http
      */
     public function _header(): Header {
         return Header::getInstance();
+    }
+
+    /**
+     * @return HttpResponse
+     */
+    public function output(): HttpResponse {
+        return HttpResponse::getInstance();
     }
 
 }

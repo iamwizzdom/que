@@ -99,7 +99,7 @@ class RouteCompiler
         } catch (RouteException $e) {
             RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(), $e->getLine(),
                 $e->getTrace(), $e->getTitle(), $e->getCode() == HTTP_NOT_FOUND_CODE ?
-                    HTTP_NOT_FOUND_CODE : HTTP_ERROR_CODE);
+                    HTTP_NOT_FOUND_CODE : HTTP_UNAUTHORIZED_CODE);
         }
     }
 
