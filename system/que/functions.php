@@ -1563,7 +1563,7 @@ function current_route()
  */
 function current_uri(): string
 {
-    return http()->_server()["REQUEST_URI"];
+    return (((\http()->_server()['REQUEST_URI_ORIGINAL'] ?: \http()->_server()['REQUEST_URI'])) ?: '');
 }
 
 /**
@@ -1606,15 +1606,8 @@ function base_url(string $url = null): string
         }
     }
 
-    if (str_contains((\http()->_server()['REQUEST_URI_ORIGINAL']
-        ?: \http()->_server()['REQUEST_URI']) ?: '',
-        APP_ROOT_FOLDER)) {
 
-        $base = str_end_at((\http()->_server()['REQUEST_URI_ORIGINAL']
-            ?: \http()->_server()['REQUEST_URI']) ?: '', APP_ROOT_FOLDER);
-
-        $host .= "/{$base}";
-    }
+    $host .= "/" . (((\http()->_server()['REQUEST_URI_ORIGINAL'] ?: \http()->_server()['REQUEST_URI'])) ?: '');
 
     return server_protocol() . preg_replace("/\/\//", "/", $isNull ? $host : "{$host}/{$url}");
 }

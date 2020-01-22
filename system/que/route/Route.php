@@ -34,8 +34,7 @@ final class Route extends RouteCompiler
 
             if (str_contains($uri, APP_ROOT_FOLDER)) {
                 http()->_server()->add('REQUEST_URI_ORIGINAL', $uri);
-                http()->_server()->add('REQUEST_URI', $uri = str_start_from($uri,
-                    APP_ROOT_FOLDER));
+                http()->_server()->add('REQUEST_URI', $uri = str_start_from($uri, APP_ROOT_FOLDER));
             }
 
             self::$method = $method = strtoupper(http()->_server()->get("REQUEST_METHOD"));
