@@ -54,7 +54,8 @@ final class Route extends RouteCompiler
 
             if (is_file($path)) {
                 header("Content-type:" . mime_type_from_filename($path));
-                readgzfile($path);
+                $limit = 0;
+                while (readgzfile($path) === false && $limit < MAX_RETRY) $limit++;
                 return;
             }
 
