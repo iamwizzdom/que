@@ -1405,6 +1405,19 @@ function user(string $key = null)
 }
 
 /**
+ * @param string $url
+ * @param array $header
+ * @param array $data
+ */
+function redirect(string $url, array $header = [], array $data = []) {
+    $redirect = \http()->redirect();
+    $redirect->setUrl($url);
+    if (!empty($header)) $redirect->setHeaderArray($header);
+    if (!empty($data)) foreach ($data as $key => $value) $redirect->setData($key, $value);
+    $redirect->initiate();
+}
+
+/**
  * Determines the mimetype of a file by looking at its extension.
  *
  * @param string $filename
