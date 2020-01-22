@@ -182,9 +182,9 @@ function str_start_from(string $haystack, string $needle) {
  * @param string $needle
  * @return bool|string
  */
-function str_end_from(string $haystack, string $needle) {
+function str_end_at(string $haystack, string $needle) {
     if (($pos = strpos($haystack, $needle)) === false) return $haystack;
-    return substr($haystack, 0, ($pos + strlen($needle)));
+    return substr($haystack, 0, $pos);
 }
 
 /**
@@ -1610,10 +1610,8 @@ function base_url(string $url = null): string
         ?: \http()->_server()['REQUEST_URI']) ?: '',
         APP_ROOT_FOLDER)) {
 
-        $base = str_end_from((\http()->_server()['REQUEST_URI_ORIGINAL']
+        $base = str_end_at((\http()->_server()['REQUEST_URI_ORIGINAL']
             ?: \http()->_server()['REQUEST_URI']) ?: '', APP_ROOT_FOLDER);
-
-        if (!empty(APP_FOLDER)) $base .= ('/' . APP_FOLDER);
 
         $host .= "/{$base}";
     }

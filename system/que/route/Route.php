@@ -45,6 +45,20 @@ final class Route extends RouteCompiler
                 throw new RouteException("Sorry, ({$method} request) is an unsupported request method");
             }
 
+            $path = APP_PATH . $uri;
+
+            if (str_contains($path, "#"))
+                $path = str_end_at($path, '#');
+
+            if (str_contains($path, "?"))
+                $path = str_end_at($path, '?');
+
+            if (is_file($path)) {
+                header("Content-type:" . mime_type_from_filename($path));
+                readgzfile($path);
+                return;
+            }
+
             self::compile();
 
             self::resolve();

@@ -8,8 +8,7 @@ error_reporting(LIVE ? 0 : E_ALL);
 define('APP_SCHEME', ($_SERVER['HTTPS'] ?? 'off') == 'on' ? "https" : 'http');
 define('APP_ROOT_PATH', dirname(__DIR__, 2)); // Your app root path
 define('APP_ROOT_FOLDER', 'que'); // Your app root folder name
-define('APP_FOLDER', 'app'); // Your app folder name
-define('APP_PATH', APP_ROOT_PATH . "/" . APP_FOLDER);
+define('APP_PATH', APP_ROOT_PATH . "/app");
 define('QUE_PATH', APP_ROOT_PATH . '/system/que');
 define('APP_HOST', APP_SCHEME . "://" . ($_SERVER['HTTP_HOST'] ?? 'localhost'));
 define('APP_HOST_FOLDER', APP_SCHEME . "://" . ($_SERVER['HTTP_HOST'] ?? 'localhost'));
