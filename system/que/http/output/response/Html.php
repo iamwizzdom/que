@@ -46,10 +46,12 @@ class Html
 
     /**
      * @param string $data
+     * @return Html
      */
-    public function setData(string $data): void
+    public function setData(string $data): Html
     {
         $this->data = $data;
+        return $this;
     }
 
     /**

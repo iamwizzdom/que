@@ -56,10 +56,12 @@ class Json
 
     /**
      * @param int $option
+     * @return Json
      */
-    public function setOption(int $option): void
+    public function setOption(int $option): Json
     {
         $this->option = $option;
+        return $this;
     }
 
     /**
@@ -72,10 +74,12 @@ class Json
 
     /**
      * @param int $depth
+     * @return Json
      */
-    public function setDepth(int $depth): void
+    public function setDepth(int $depth): Json
     {
         $this->depth = $depth;
+        return $this;
     }
 
     /**
@@ -88,10 +92,12 @@ class Json
 
     /**
      * @param array $data
+     * @return Json
      */
-    public function setData(array $data): void
+    public function setData(array $data): Json
     {
         $this->data = $data;
+        return $this;
     }
 
     /**

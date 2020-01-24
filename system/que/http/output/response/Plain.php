@@ -24,10 +24,12 @@ class Plain
 
     /**
      * @param string $data
+     * @return Plain
      */
-    public function setData(string $data): void
+    public function setData(string $data): Plain
     {
         $this->data = $data;
+        return $this;
     }
 
     /**

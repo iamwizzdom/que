@@ -62,10 +62,12 @@ class Jsonp
 
     /**
      * @param int $option
+     * @return Jsonp
      */
-    public function setOption(int $option): void
+    public function setOption(int $option): Jsonp
     {
         $this->option = $option;
+        return $this;
     }
 
     /**
@@ -78,10 +80,12 @@ class Jsonp
 
     /**
      * @param int $depth
+     * @return Jsonp
      */
-    public function setDepth(int $depth): void
+    public function setDepth(int $depth): Jsonp
     {
         $this->depth = $depth;
+        return $this;
     }
 
     /**
@@ -94,10 +98,12 @@ class Jsonp
 
     /**
      * @param string $callback
+     * @return Jsonp
      */
-    public function setCallback(string $callback): void
+    public function setCallback(string $callback): Jsonp
     {
         $this->callback = $callback;
+        return $this;
     }
 
     /**
@@ -110,10 +116,12 @@ class Jsonp
 
     /**
      * @param array $data
+     * @return Jsonp
      */
-    public function setData(array $data): void
+    public function setData(array $data): Jsonp
     {
         $this->data = $data;
+        return $this;
     }
 
     /**
