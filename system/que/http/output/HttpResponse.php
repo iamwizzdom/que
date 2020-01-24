@@ -51,13 +51,17 @@ class HttpResponse
      * @param array $data
      * @param int $status
      * @param array $headers
+     * @param bool $replaceHeaders
+     * @param int $jsonOption
+     * @param int $jsonDepth
      * @return Json
      */
-    public function json(array $data, int $status = HTTP_SUCCESS_CODE, array $headers = []): Json {
+    public function json(array $data, int $status = HTTP_SUCCESS_CODE, array $headers = [],
+                         bool $replaceHeaders = true, int $jsonOption = 0, int $jsonDepth = 512): Json {
         if (!isset($data['code'])) $data['code'] = $status;
         http()->http_response_code($data['code']);
-        foreach ($headers as $header) header($header, true);
-        return new Json($data);
+        foreach ($headers as $header) header($header, $replaceHeaders);
+        return new Json($data, $jsonOption, $jsonDepth);
     }
 
     /**
@@ -65,13 +69,17 @@ class HttpResponse
      * @param array $data
      * @param int $status
      * @param array $headers
+     * @param bool $replaceHeaders
+     * @param int $jsonOption
+     * @param int $jsonDepth
      * @return Jsonp
      */
-    public function jsonp(string $callback, array $data, int $status = HTTP_SUCCESS_CODE, array $headers = []): Jsonp {
+    public function jsonp(string $callback, array $data, int $status = HTTP_SUCCESS_CODE, array $headers = [],
+                          bool $replaceHeaders = true, int $jsonOption = 0, int $jsonDepth = 512): Jsonp {
         if (!isset($data['code'])) $data['code'] = $status;
         http()->http_response_code($data['code']);
-        foreach ($headers as $header) header($header, true);
-        return new Jsonp($callback, $data);
+        foreach ($headers as $header) header($header, $replaceHeaders);
+        return new Jsonp($callback, $data, $jsonOption, $jsonDepth);
     }
 
     /**

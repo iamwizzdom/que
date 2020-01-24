@@ -370,10 +370,14 @@ final class Route extends RouteCompiler
 
                 if ($response instanceof Json) {
                     header("Content-Type: application/json");
-                    echo $response->getJson();
+                    $data = $response->getJson();
+                    if (!$data) throw new RouteException("Failed to output response");
+                    echo $data;
                 } elseif ($response instanceof Jsonp) {
                     header("Content-Type: " . mime_type_from_extension('js'));
-                    echo $response->getJsonp();
+                    $data = $response->getJsonp();
+                    if (!$data) throw new RouteException("Failed to output response");
+                    echo $data;
                 } elseif ($response instanceof Html) {
                     header("Content-Type: " . mime_type_from_extension('html'));
                     echo $response->getHtml();
@@ -381,9 +385,26 @@ final class Route extends RouteCompiler
                     header("Content-Type: " . mime_type_from_extension('txt'));
                     echo $response->getData();
                 } elseif (is_array($response)) {
+
                     header("Content-Type: application/json");
                     if (isset($response['code'])) $http->http_response_code($response['code']);
-                    echo json_encode($response, JSON_PRETTY_PRINT);
+
+                    $option = 0; $depth = 512;
+
+                    if (isset($response['option'])) {
+                        $option = $response['option'];
+                        unset($response['option']);
+                    }
+
+                    if (isset($response['depth'])) {
+                        $depth = $response['depth'];
+                        unset($response['depth']);
+                    }
+
+                    $data = json_encode($response, $option, $depth);
+                    if (!$data) throw new RouteException("Failed to output response");
+                    echo $data;
+
                 } else {
 
                     throw new RouteException(sprintf(

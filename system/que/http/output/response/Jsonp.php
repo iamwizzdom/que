@@ -28,23 +28,76 @@ class Jsonp
     ];
 
     /**
+     * @var int
+     */
+    private $option;
+
+    /**
+     * @var int
+     */
+    private $depth;
+
+    /**
      * Jsonp constructor.
      * @param string $callback
      * @param array $data
+     * @param int $option
+     * @param int $depth
      */
-    public function __construct(string $callback, array $data)
+    public function __construct(string $callback, array $data, int $option = 0, int $depth = 512)
     {
         $this->callback = $callback;
+        $this->option = $option;
+        $this->depth = $depth;
         $this->data = array_merge($this->data, $data);
     }
 
     /**
+     * @return int
+     */
+    public function getOption(): int
+    {
+        return $this->option;
+    }
+
+    /**
      * @param int $option
+     */
+    public function setOption(int $option): void
+    {
+        $this->option = $option;
+    }
+
+    /**
+     * @return int
+     */
+    public function getDepth(): int
+    {
+        return $this->depth;
+    }
+
+    /**
      * @param int $depth
+     */
+    public function setDepth(int $depth): void
+    {
+        $this->depth = $depth;
+    }
+
+    /**
      * @return string
      */
-    public function getJsonp(int $option = JSON_PRETTY_PRINT, int $depth = 512) {
-        return "{$this->callback}(" . json_encode($this->data, $option, $depth) . ");";
+    public function getCallback(): string
+    {
+        return $this->callback;
+    }
+
+    /**
+     * @param string $callback
+     */
+    public function setCallback(string $callback): void
+    {
+        $this->callback = $callback;
     }
 
     /**
@@ -53,5 +106,22 @@ class Jsonp
     public function getData(): array
     {
         return $this->data;
+    }
+
+    /**
+     * @param array $data
+     */
+    public function setData(array $data): void
+    {
+        $this->data = $data;
+    }
+
+    /**
+     * @return false|string
+     */
+    public function getJsonp() {
+        $json = json_encode($this->data, $this->option, $this->depth);
+        if ($json) return "{$this->callback}({$json});";
+        return $json;
     }
 }

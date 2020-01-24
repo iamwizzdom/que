@@ -45,6 +45,14 @@ class Html
     }
 
     /**
+     * @param string $data
+     */
+    public function setData(string $data): void
+    {
+        $this->data = $data;
+    }
+
+    /**
      * @return string
      */
     public function getData(): string
