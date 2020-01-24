@@ -34,7 +34,7 @@
  * @property   Smarty_Internal_Method_RegisterFilter     $registerFilter
  * @property   Smarty_Internal_Method_RegisterObject     $registerObject
  * @property   Smarty_Internal_Method_RegisterPlugin     $registerPlugin
- * @property   mixed|Smarty_Template_Cached configLoad
+ * @property   mixed|\Smarty_Template_Cached             configLoad
  */
 class Smarty_Internal_Extension_Handler
 {
@@ -57,7 +57,7 @@ class Smarty_Internal_Extension_Handler
     /**
      * Call external Method
      *
-     * @param Smarty_Internal_Data $data
+     * @param \Smarty_Internal_Data $data
      * @param string                $name external method names
      * @param array                 $args argument array
      *

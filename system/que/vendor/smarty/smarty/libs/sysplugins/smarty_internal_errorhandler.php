@@ -53,11 +53,11 @@ class Smarty_Internal_ErrorHandler
     }
 
     /**
-     * RuntimeError Handler to mute expected messages
+     * Error Handler to mute expected messages
      *
      * @link http://php.net/set_error_handler
      *
-     * @param integer $errno RuntimeError level
+     * @param integer $errno Error level
      * @param         $errstr
      * @param         $errfile
      * @param         $errline

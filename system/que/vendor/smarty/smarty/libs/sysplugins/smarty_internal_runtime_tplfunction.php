@@ -12,12 +12,12 @@ class Smarty_Internal_Runtime_TplFunction
     /**
      * Call template function
      *
-     * @param Smarty_Internal_Template $tpl     template object
+     * @param \Smarty_Internal_Template $tpl     template object
      * @param string                    $name    template function name
      * @param array                     $params  parameter array
      * @param bool                      $nocache true if called nocache
      *
-     * @throws SmartyException
+     * @throws \SmartyException
      */
     public function callTemplateFunction(Smarty_Internal_Template $tpl, $name, $params, $nocache)
     {
@@ -53,7 +53,7 @@ class Smarty_Internal_Runtime_TplFunction
     /**
      * Register template functions defined by template
      *
-     * @param Smarty|Smarty_Internal_Template|Smarty_Internal_TemplateBase $obj
+     * @param \Smarty|\Smarty_Internal_Template|\Smarty_Internal_TemplateBase $obj
      * @param array                                                           $tplFunctions source information array of
      *                                                                                      template functions defined
      *                                                                                      in template
@@ -76,7 +76,7 @@ class Smarty_Internal_Runtime_TplFunction
     /**
      * Return source parameter array for single or all template functions
      *
-     * @param Smarty_Internal_Template $tpl  template object
+     * @param \Smarty_Internal_Template $tpl  template object
      * @param null|string               $name template function name
      *
      * @return array|bool|mixed
@@ -151,7 +151,7 @@ class Smarty_Internal_Runtime_TplFunction
     /**
      * Save current template variables on stack
      *
-     * @param Smarty_Internal_Template $tpl
+     * @param \Smarty_Internal_Template $tpl
      * @param string                    $name stack name
      */
     public function saveTemplateVariables(Smarty_Internal_Template $tpl, $name)
@@ -163,7 +163,7 @@ class Smarty_Internal_Runtime_TplFunction
     /**
      * Restore saved variables into template objects
      *
-     * @param Smarty_Internal_Template $tpl
+     * @param \Smarty_Internal_Template $tpl
      * @param string                    $name stack name
      */
     public function restoreTemplateVariables(Smarty_Internal_Template $tpl, $name)

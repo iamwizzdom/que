@@ -32,7 +32,7 @@ class Smarty_Internal_Method_LoadFilter
      *
      * @link http://www.smarty.net/docs/en/api.load.filter.tpl
      *
-     * @param Smarty_Internal_TemplateBase|Smarty_Internal_Template|Smarty $obj
+     * @param \Smarty_Internal_TemplateBase|\Smarty_Internal_Template|\Smarty $obj
      * @param string                                                          $type filter type
      * @param string                                                          $name filter name
      *
@@ -66,7 +66,7 @@ class Smarty_Internal_Method_LoadFilter
      *
      * @param string $type
      *
-     * @throws SmartyException
+     * @throws \SmartyException
      */
     public function _checkFilterType($type)
     {

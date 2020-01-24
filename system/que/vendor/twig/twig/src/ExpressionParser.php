@@ -12,11 +12,6 @@
 
 namespace Twig;
 
-use function count;
-use function get_class;
-use function in_array;
-use function is_bool;
-use ReflectionClass;
 use Twig\Error\SyntaxError;
 use Twig\Node\Expression\AbstractExpression;
 use Twig\Node\Expression\ArrayExpression;
@@ -263,8 +258,8 @@ class ExpressionParser
                 } elseif (isset($this->unaryOperators[$token->getValue()])) {
                     $class = $this->unaryOperators[$token->getValue()]['class'];
 
-                    $ref = new ReflectionClass($class);
-                    if (!(in_array($ref->getName(), [NegUnary::class, PosUnary::class, 'Twig_Node_Expression_Unary_Neg', 'Twig_Node_Expression_Unary_Pos'])
+                    $ref = new \ReflectionClass($class);
+                    if (!(\in_array($ref->getName(), [NegUnary::class, PosUnary::class, 'Twig_Node_Expression_Unary_Neg', 'Twig_Node_Expression_Unary_Pos'])
                         || $ref->isSubclassOf(NegUnary::class) || $ref->isSubclassOf(PosUnary::class)
                         || $ref->isSubclassOf('Twig_Node_Expression_Unary_Neg') || $ref->isSubclassOf('Twig_Node_Expression_Unary_Pos'))
                     ) {
@@ -416,7 +411,7 @@ class ExpressionParser
         switch ($name) {
             case 'parent':
                 $this->parseArguments();
-                if (!count($this->parser->getBlockStack())) {
+                if (!\count($this->parser->getBlockStack())) {
                     throw new SyntaxError('Calling "parent" outside a block is forbidden.', $line, $this->parser->getStream()->getSourceContext());
                 }
 
@@ -427,18 +422,18 @@ class ExpressionParser
                 return new ParentExpression($this->parser->peekBlockStack(), $line);
             case 'block':
                 $args = $this->parseArguments();
-                if (count($args) < 1) {
+                if (\count($args) < 1) {
                     throw new SyntaxError('The "block" function takes one argument (the block name).', $line, $this->parser->getStream()->getSourceContext());
                 }
 
-                return new BlockReferenceExpression($args->getNode(0), count($args) > 1 ? $args->getNode(1) : null, $line);
+                return new BlockReferenceExpression($args->getNode(0), \count($args) > 1 ? $args->getNode(1) : null, $line);
             case 'attribute':
                 $args = $this->parseArguments();
-                if (count($args) < 2) {
+                if (\count($args) < 2) {
                     throw new SyntaxError('The "attribute" function takes at least two arguments (the variable and the attributes).', $line, $this->parser->getStream()->getSourceContext());
                 }
 
-                return new GetAttrExpression($args->getNode(0), $args->getNode(1), count($args) > 2 ? $args->getNode(2) : null, Template::ANY_CALL, $line);
+                return new GetAttrExpression($args->getNode(0), $args->getNode(1), \count($args) > 2 ? $args->getNode(2) : null, Template::ANY_CALL, $line);
             default:
                 if (null !== $alias = $this->parser->getImportedSymbol('function', $name)) {
                     $arguments = new ArrayExpression([], $line);
@@ -601,7 +596,7 @@ class ExpressionParser
             $name = null;
             if ($namedArguments && $token = $stream->nextIf(/* Token::OPERATOR_TYPE */ 8, '=')) {
                 if (!$value instanceof NameExpression) {
-                    throw new SyntaxError(sprintf('A parameter name must be a string, "%s" given.', get_class($value)), $token->getLine(), $stream->getSourceContext());
+                    throw new SyntaxError(sprintf('A parameter name must be a string, "%s" given.', \get_class($value)), $token->getLine(), $stream->getSourceContext());
                 }
                 $name = $value->getAttribute('name');
 
@@ -648,7 +643,7 @@ class ExpressionParser
                 $stream->expect(/* Token::NAME_TYPE */ 5, null, 'Only variables can be assigned to');
             }
             $value = $token->getValue();
-            if (in_array(strtolower($value), ['true', 'false', 'none', 'null'])) {
+            if (\in_array(strtolower($value), ['true', 'false', 'none', 'null'])) {
                 throw new SyntaxError(sprintf('You cannot assign a value to "%s".', $value), $token->getLine(), $stream->getSourceContext());
             }
             $targets[] = new AssignNameExpression($value, $token->getLine());
@@ -730,7 +725,7 @@ class ExpressionParser
             $stream = $this->parser->getStream();
             $message = sprintf('Twig Test "%s" is deprecated', $test->getName());
 
-            if (!is_bool($test->getDeprecatedVersion())) {
+            if (!\is_bool($test->getDeprecatedVersion())) {
                 $message .= sprintf(' since version %s', $test->getDeprecatedVersion());
             }
             if ($test->getAlternative()) {
@@ -756,7 +751,7 @@ class ExpressionParser
 
         if ($function->isDeprecated()) {
             $message = sprintf('Twig Function "%s" is deprecated', $function->getName());
-            if (!is_bool($function->getDeprecatedVersion())) {
+            if (!\is_bool($function->getDeprecatedVersion())) {
                 $message .= sprintf(' since version %s', $function->getDeprecatedVersion());
             }
             if ($function->getAlternative()) {
@@ -782,7 +777,7 @@ class ExpressionParser
 
         if ($filter->isDeprecated()) {
             $message = sprintf('Twig Filter "%s" is deprecated', $filter->getName());
-            if (!is_bool($filter->getDeprecatedVersion())) {
+            if (!\is_bool($filter->getDeprecatedVersion())) {
                 $message .= sprintf(' since version %s', $filter->getDeprecatedVersion());
             }
             if ($filter->getAlternative()) {

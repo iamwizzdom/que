@@ -80,7 +80,7 @@ class Smarty_Internal_SmartyTemplateCompiler extends Smarty_Internal_TemplateCom
      * @param bool  $isTemplateSource
      *
      * @return bool true if compiling succeeded, false if it failed
-     * @throws SmartyCompilerException
+     * @throws \SmartyCompilerException
      */
     protected function doCompile($_content, $isTemplateSource = false)
     {

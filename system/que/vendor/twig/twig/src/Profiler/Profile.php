@@ -11,17 +11,12 @@
 
 namespace Twig\Profiler;
 
-use ArrayIterator;
-use function get_class;
-use IteratorAggregate;
-use Serializable;
-
 /**
  * @author Fabien Potencier <fabien@symfony.com>
  *
  * @final since Twig 2.4.0
  */
-class Profile implements IteratorAggregate, Serializable
+class Profile implements \IteratorAggregate, \Serializable
 {
     const ROOT = 'ROOT';
     const BLOCK = 'block';
@@ -37,7 +32,7 @@ class Profile implements IteratorAggregate, Serializable
 
     public function __construct(string $template = 'main', string $type = self::ROOT, string $name = 'main')
     {
-        if (__CLASS__ !== get_class($this)) {
+        if (__CLASS__ !== \get_class($this)) {
             @trigger_error('Overriding '.__CLASS__.' is deprecated since Twig 2.4.0 and the class will be final in 3.0.', E_USER_DEPRECATED);
         }
 
@@ -164,7 +159,7 @@ class Profile implements IteratorAggregate, Serializable
 
     public function getIterator()
     {
-        return new ArrayIterator($this->profiles);
+        return new \ArrayIterator($this->profiles);
     }
 
     public function serialize()

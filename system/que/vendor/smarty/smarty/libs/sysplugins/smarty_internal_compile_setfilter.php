@@ -20,7 +20,7 @@ class Smarty_Internal_Compile_Setfilter extends Smarty_Internal_CompileBase
      * Compiles code for setfilter tag
      *
      * @param array                                 $args      array with attributes from parser
-     * @param Smarty_Internal_TemplateCompilerBase $compiler  compiler object
+     * @param \Smarty_Internal_TemplateCompilerBase $compiler  compiler object
      * @param array                                 $parameter array with compilation parameter
      *
      * @return string compiled code
@@ -48,7 +48,7 @@ class Smarty_Internal_Compile_Setfilterclose extends Smarty_Internal_CompileBase
      * This tag does not generate compiled output. It resets variable filter.
      *
      * @param array                                 $args     array with attributes from parser
-     * @param Smarty_Internal_TemplateCompilerBase $compiler compiler object
+     * @param \Smarty_Internal_TemplateCompilerBase $compiler compiler object
      *
      * @return string compiled code
      */

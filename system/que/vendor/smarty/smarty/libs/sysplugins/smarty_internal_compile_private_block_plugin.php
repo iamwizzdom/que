@@ -35,14 +35,14 @@ class Smarty_Internal_Compile_Private_Block_Plugin extends Smarty_Internal_Compi
      * Compiles code for the execution of block plugin
      *
      * @param array                                 $args      array with attributes from parser
-     * @param Smarty_Internal_TemplateCompilerBase $compiler  compiler object
+     * @param \Smarty_Internal_TemplateCompilerBase $compiler  compiler object
      * @param array                                 $parameter array with compilation parameter
      * @param string                                $tag       name of block plugin
      * @param string                                $function  PHP function name
      *
      * @return string compiled code
-     * @throws SmartyCompilerException
-     * @throws SmartyException
+     * @throws \SmartyCompilerException
+     * @throws \SmartyException
      */
     public function compile($args, Smarty_Internal_TemplateCompilerBase $compiler, $parameter, $tag, $function = null)
     {
@@ -102,7 +102,7 @@ class Smarty_Internal_Compile_Private_Block_Plugin extends Smarty_Internal_Compi
     /**
      * Setup callback and parameter array
      *
-     * @param Smarty_Internal_TemplateCompilerBase $compiler
+     * @param \Smarty_Internal_TemplateCompilerBase $compiler
      * @param array                                 $_attr attributes
      * @param string                                $tag
      * @param string                                $function

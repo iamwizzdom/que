@@ -11,7 +11,6 @@
 
 namespace Twig\NodeVisitor;
 
-use function in_array;
 use Twig\Environment;
 use Twig\Node\Expression\BlockReferenceExpression;
 use Twig\Node\Expression\ConditionalExpression;
@@ -46,7 +45,7 @@ final class SafeAnalysisNodeVisitor extends AbstractNodeVisitor
                 continue;
             }
 
-            if (in_array('html_attr', $bucket['value'])) {
+            if (\in_array('html_attr', $bucket['value'])) {
                 $bucket['value'][] = 'html';
             }
 
@@ -123,7 +122,7 @@ final class SafeAnalysisNodeVisitor extends AbstractNodeVisitor
             }
         } elseif ($node instanceof GetAttrExpression && $node->getNode('node') instanceof NameExpression) {
             $name = $node->getNode('node')->getAttribute('name');
-            if (in_array($name, $this->safeVars)) {
+            if (\in_array($name, $this->safeVars)) {
                 $this->setSafe($node, ['all']);
             } else {
                 $this->setSafe($node, []);
@@ -141,11 +140,11 @@ final class SafeAnalysisNodeVisitor extends AbstractNodeVisitor
             return [];
         }
 
-        if (in_array('all', $a)) {
+        if (\in_array('all', $a)) {
             return $b;
         }
 
-        if (in_array('all', $b)) {
+        if (\in_array('all', $b)) {
             return $a;
         }
 

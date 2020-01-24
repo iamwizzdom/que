@@ -23,7 +23,7 @@ class Smarty_Internal_Method_GetDebugTemplate
      *
      * @api Smarty::getDebugTemplate()
      *
-     * @param Smarty_Internal_TemplateBase|Smarty_Internal_Template|Smarty $obj
+     * @param \Smarty_Internal_TemplateBase|\Smarty_Internal_Template|\Smarty $obj
      *
      * @return string
      */

@@ -262,7 +262,7 @@ class Smarty_Internal_Configfilelexer
                     $yymatches = array_filter($yymatches);
                 }
                 if (empty($yymatches)) {
-                    throw new Exception('RuntimeError: lexing failed because a rule matched' .
+                    throw new Exception('Error: lexing failed because a rule matched' .
                                         ' an empty string.  Input "' . substr(
                                             $this->data,
                                             $this->counter,
@@ -362,7 +362,7 @@ class Smarty_Internal_Configfilelexer
                     $yymatches = array_filter($yymatches);
                 }
                 if (empty($yymatches)) {
-                    throw new Exception('RuntimeError: lexing failed because a rule matched' .
+                    throw new Exception('Error: lexing failed because a rule matched' .
                                         ' an empty string.  Input "' . substr(
                                             $this->data,
                                             $this->counter,
@@ -479,7 +479,7 @@ class Smarty_Internal_Configfilelexer
                     $yymatches = array_filter($yymatches);
                 }
                 if (empty($yymatches)) {
-                    throw new Exception('RuntimeError: lexing failed because a rule matched' .
+                    throw new Exception('Error: lexing failed because a rule matched' .
                                         ' an empty string.  Input "' . substr(
                                             $this->data,
                                             $this->counter,
@@ -541,7 +541,7 @@ class Smarty_Internal_Configfilelexer
                     $yymatches = array_filter($yymatches);
                 }
                 if (empty($yymatches)) {
-                    throw new Exception('RuntimeError: lexing failed because a rule matched' .
+                    throw new Exception('Error: lexing failed because a rule matched' .
                                         ' an empty string.  Input "' . substr(
                                             $this->data,
                                             $this->counter,
@@ -613,7 +613,7 @@ class Smarty_Internal_Configfilelexer
                     $yymatches = array_filter($yymatches);
                 }
                 if (empty($yymatches)) {
-                    throw new Exception('RuntimeError: lexing failed because a rule matched' .
+                    throw new Exception('Error: lexing failed because a rule matched' .
                                         ' an empty string.  Input "' . substr(
                                             $this->data,
                                             $this->counter,
@@ -680,7 +680,7 @@ class Smarty_Internal_Configfilelexer
                     $yymatches = array_filter($yymatches);
                 }
                 if (empty($yymatches)) {
-                    throw new Exception('RuntimeError: lexing failed because a rule matched' .
+                    throw new Exception('Error: lexing failed because a rule matched' .
                                         ' an empty string.  Input "' . substr(
                                             $this->data,
                                             $this->counter,

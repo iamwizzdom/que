@@ -74,9 +74,9 @@ class Smarty_Internal_Compile_Private_ForeachSection extends Smarty_Internal_Com
      * Scan sources for used tag attributes
      *
      * @param array                                 $attributes
-     * @param Smarty_Internal_TemplateCompilerBase $compiler
+     * @param \Smarty_Internal_TemplateCompilerBase $compiler
      *
-     * @throws SmartyException
+     * @throws \SmartyException
      */
     public function scanForProperties($attributes, Smarty_Internal_TemplateCompilerBase $compiler)
     {
@@ -152,7 +152,7 @@ class Smarty_Internal_Compile_Private_ForeachSection extends Smarty_Internal_Com
     /**
      * Find matches in template source
      *
-     * @param Smarty_Internal_TemplateCompilerBase $compiler
+     * @param \Smarty_Internal_TemplateCompilerBase $compiler
      */
     public function matchTemplateSource(Smarty_Internal_TemplateCompilerBase $compiler)
     {
@@ -162,9 +162,9 @@ class Smarty_Internal_Compile_Private_ForeachSection extends Smarty_Internal_Com
     /**
      * Find matches in all parent template source
      *
-     * @param Smarty_Internal_TemplateCompilerBase $compiler
+     * @param \Smarty_Internal_TemplateCompilerBase $compiler
      *
-     * @throws SmartyException
+     * @throws \SmartyException
      */
     public function matchParentTemplateSource(Smarty_Internal_TemplateCompilerBase $compiler)
     {
@@ -195,7 +195,7 @@ class Smarty_Internal_Compile_Private_ForeachSection extends Smarty_Internal_Com
     /**
      * Find matches in {block} tag source
      *
-     * @param Smarty_Internal_TemplateCompilerBase $compiler
+     * @param \Smarty_Internal_TemplateCompilerBase $compiler
      */
     public function matchBlockSource(Smarty_Internal_TemplateCompilerBase $compiler)
     {
@@ -205,11 +205,11 @@ class Smarty_Internal_Compile_Private_ForeachSection extends Smarty_Internal_Com
      * Compiles code for the {$smarty.foreach.xxx} or {$smarty.section.xxx}tag
      *
      * @param array                                 $args      array with attributes from parser
-     * @param Smarty_Internal_TemplateCompilerBase $compiler  compiler object
+     * @param \Smarty_Internal_TemplateCompilerBase $compiler  compiler object
      * @param array                                 $parameter array with compilation parameter
      *
      * @return string compiled code
-     * @throws SmartyCompilerException
+     * @throws \SmartyCompilerException
      */
     public function compileSpecialVariable($args, Smarty_Internal_TemplateCompilerBase $compiler, $parameter)
     {

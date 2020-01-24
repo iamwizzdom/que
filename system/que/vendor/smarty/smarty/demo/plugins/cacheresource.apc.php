@@ -14,13 +14,13 @@ class Smarty_CacheResource_Apc extends Smarty_CacheResource_KeyValueStore
     /**
      * Smarty_CacheResource_Apc constructor.
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function __construct()
     {
         // test if APC is present
         if (!function_exists('apc_cache_info')) {
-            throw new Exception('APC Template Caching RuntimeError: APC is not installed');
+            throw new Exception('APC Template Caching Error: APC is not installed');
         }
     }
 

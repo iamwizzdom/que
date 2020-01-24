@@ -11,10 +11,6 @@
 
 namespace Symfony\Polyfill\Ctype;
 
-use function chr;
-use function is_int;
-use function is_string;
-
 /**
  * Ctype implementation through regex.
  *
@@ -37,7 +33,7 @@ final class Ctype
     {
         $text = self::convert_int_to_char_for_ctype($text);
 
-        return is_string($text) && '' !== $text && !preg_match('/[^A-Za-z0-9]/', $text);
+        return \is_string($text) && '' !== $text && !preg_match('/[^A-Za-z0-9]/', $text);
     }
 
     /**
@@ -53,7 +49,7 @@ final class Ctype
     {
         $text = self::convert_int_to_char_for_ctype($text);
 
-        return is_string($text) && '' !== $text && !preg_match('/[^A-Za-z]/', $text);
+        return \is_string($text) && '' !== $text && !preg_match('/[^A-Za-z]/', $text);
     }
 
     /**
@@ -69,7 +65,7 @@ final class Ctype
     {
         $text = self::convert_int_to_char_for_ctype($text);
 
-        return is_string($text) && '' !== $text && !preg_match('/[^\x00-\x1f\x7f]/', $text);
+        return \is_string($text) && '' !== $text && !preg_match('/[^\x00-\x1f\x7f]/', $text);
     }
 
     /**
@@ -85,7 +81,7 @@ final class Ctype
     {
         $text = self::convert_int_to_char_for_ctype($text);
 
-        return is_string($text) && '' !== $text && !preg_match('/[^0-9]/', $text);
+        return \is_string($text) && '' !== $text && !preg_match('/[^0-9]/', $text);
     }
 
     /**
@@ -101,7 +97,7 @@ final class Ctype
     {
         $text = self::convert_int_to_char_for_ctype($text);
 
-        return is_string($text) && '' !== $text && !preg_match('/[^!-~]/', $text);
+        return \is_string($text) && '' !== $text && !preg_match('/[^!-~]/', $text);
     }
 
     /**
@@ -117,7 +113,7 @@ final class Ctype
     {
         $text = self::convert_int_to_char_for_ctype($text);
 
-        return is_string($text) && '' !== $text && !preg_match('/[^a-z]/', $text);
+        return \is_string($text) && '' !== $text && !preg_match('/[^a-z]/', $text);
     }
 
     /**
@@ -133,7 +129,7 @@ final class Ctype
     {
         $text = self::convert_int_to_char_for_ctype($text);
 
-        return is_string($text) && '' !== $text && !preg_match('/[^ -~]/', $text);
+        return \is_string($text) && '' !== $text && !preg_match('/[^ -~]/', $text);
     }
 
     /**
@@ -149,7 +145,7 @@ final class Ctype
     {
         $text = self::convert_int_to_char_for_ctype($text);
 
-        return is_string($text) && '' !== $text && !preg_match('/[^!-\/\:-@\[-`\{-~]/', $text);
+        return \is_string($text) && '' !== $text && !preg_match('/[^!-\/\:-@\[-`\{-~]/', $text);
     }
 
     /**
@@ -165,7 +161,7 @@ final class Ctype
     {
         $text = self::convert_int_to_char_for_ctype($text);
 
-        return is_string($text) && '' !== $text && !preg_match('/[^\s]/', $text);
+        return \is_string($text) && '' !== $text && !preg_match('/[^\s]/', $text);
     }
 
     /**
@@ -181,7 +177,7 @@ final class Ctype
     {
         $text = self::convert_int_to_char_for_ctype($text);
 
-        return is_string($text) && '' !== $text && !preg_match('/[^A-Z]/', $text);
+        return \is_string($text) && '' !== $text && !preg_match('/[^A-Z]/', $text);
     }
 
     /**
@@ -197,7 +193,7 @@ final class Ctype
     {
         $text = self::convert_int_to_char_for_ctype($text);
 
-        return is_string($text) && '' !== $text && !preg_match('/[^A-Fa-f0-9]/', $text);
+        return \is_string($text) && '' !== $text && !preg_match('/[^A-Fa-f0-9]/', $text);
     }
 
     /**
@@ -214,7 +210,7 @@ final class Ctype
      */
     private static function convert_int_to_char_for_ctype($int)
     {
-        if (!is_int($int)) {
+        if (!\is_int($int)) {
             return $int;
         }
 
@@ -226,6 +222,6 @@ final class Ctype
             $int += 256;
         }
 
-        return chr($int);
+        return \chr($int);
     }
 }

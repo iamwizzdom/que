@@ -12,9 +12,6 @@
 
 namespace Twig;
 
-use function count;
-use LogicException;
-use function strlen;
 use Twig\Error\SyntaxError;
 
 /**
@@ -47,7 +44,7 @@ class Lexer
     const STATE_INTERPOLATION = 4;
 
     const REGEX_NAME = '/[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*/A';
-    const REGEX_NUMBER = '/[0-9]+(?:\.[0-9]+)?/A';
+    const REGEX_NUMBER = '/[0-9]+(?:\.[0-9]+)?([Ee][\+\-][0-9]+)?/A';
     const REGEX_STRING = '/"([^#"\\\\]*(?:\\\\.[^#"\\\\]*)*)"|\'([^\'\\\\]*(?:\\\\.[^\'\\\\]*)*)\'/As';
     const REGEX_DQ_STRING_DELIM = '/"/A';
     const REGEX_DQ_STRING_PART = '/[^#"\\\\]*(?:(?:\\\\.|#(?!\{))[^#"\\\\]*)*/As';
@@ -162,7 +159,7 @@ class Lexer
         $this->code = str_replace(["\r\n", "\r"], "\n", $source->getCode());
         $this->cursor = 0;
         $this->lineno = 1;
-        $this->end = strlen($this->code);
+        $this->end = \strlen($this->code);
         $this->tokens = [];
         $this->state = self::STATE_DATA;
         $this->states = [];
@@ -212,7 +209,7 @@ class Lexer
     private function lexData()
     {
         // if no matches are left we return the rest of the template as simple text token
-        if ($this->position == count($this->positions[0]) - 1) {
+        if ($this->position == \count($this->positions[0]) - 1) {
             $this->pushToken(/* Token::TEXT_TYPE */ 0, substr($this->code, $this->cursor));
             $this->cursor = $this->end;
 
@@ -222,7 +219,7 @@ class Lexer
         // Find the first token after the current cursor
         $position = $this->positions[0][++$this->position];
         while ($position[1] < $this->cursor) {
-            if ($this->position == count($this->positions[0]) - 1) {
+            if ($this->position == \count($this->positions[0]) - 1) {
                 return;
             }
             $position = $this->positions[0][++$this->position];
@@ -409,7 +406,7 @@ class Lexer
             $this->pushToken(/* Token::INTERPOLATION_START_TYPE */ 10);
             $this->moveCursor($match[0]);
             $this->pushState(self::STATE_INTERPOLATION);
-        } elseif (preg_match(self::REGEX_DQ_STRING_PART, $this->code, $match, 0, $this->cursor) && strlen($match[0]) > 0) {
+        } elseif (preg_match(self::REGEX_DQ_STRING_PART, $this->code, $match, 0, $this->cursor) && \strlen($match[0]) > 0) {
             $this->pushToken(/* Token::STRING_TYPE */ 7, stripcslashes($match[0]));
             $this->moveCursor($match[0]);
         } elseif (preg_match(self::REGEX_DQ_STRING_DELIM, $this->code, $match, 0, $this->cursor)) {
@@ -451,7 +448,7 @@ class Lexer
 
     private function moveCursor($text)
     {
-        $this->cursor += strlen($text);
+        $this->cursor += \strlen($text);
         $this->lineno += substr_count($text, "\n");
     }
 
@@ -493,8 +490,8 @@ class Lexer
 
     private function popState()
     {
-        if (0 === count($this->states)) {
-            throw new LogicException('Cannot pop state without a previous state.');
+        if (0 === \count($this->states)) {
+            throw new \LogicException('Cannot pop state without a previous state.');
         }
 
         $this->state = array_pop($this->states);

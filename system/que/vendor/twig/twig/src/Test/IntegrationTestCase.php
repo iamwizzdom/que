@@ -11,14 +11,7 @@
 
 namespace Twig\Test;
 
-use Exception;
-use function get_class;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use ReflectionProperty;
-use function strlen;
 use Twig\Environment;
 use Twig\Error\Error;
 use Twig\Extension\ExtensionInterface;
@@ -103,7 +96,7 @@ abstract class IntegrationTestCase extends TestCase
         $fixturesDir = realpath($this->getFixturesDir());
         $tests = [];
 
-        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($fixturesDir), RecursiveIteratorIterator::LEAVES_ONLY) as $file) {
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($fixturesDir), \RecursiveIteratorIterator::LEAVES_ONLY) as $file) {
             if (!preg_match('/\.test$/', $file)) {
                 continue;
             }
@@ -129,7 +122,7 @@ abstract class IntegrationTestCase extends TestCase
                 $exception = false;
                 preg_match_all('/--DATA--(.*?)(?:--CONFIG--(.*?))?--EXPECT--(.*?)(?=\-\-DATA\-\-|$)/s', $test, $outputs, PREG_SET_ORDER);
             } else {
-                throw new InvalidArgumentException(sprintf('Test "%s" is not valid.', str_replace($fixturesDir.'/', '', $file)));
+                throw new \InvalidArgumentException(sprintf('Test "%s" is not valid.', str_replace($fixturesDir.'/', '', $file)));
             }
 
             $tests[] = [str_replace($fixturesDir.'/', '', $file), $message, $condition, $templates, $exception, $outputs, $deprecation];
@@ -191,7 +184,7 @@ abstract class IntegrationTestCase extends TestCase
             }
 
             // avoid using the same PHP class name for different cases
-            $p = new ReflectionProperty($twig, 'templateClassPrefix');
+            $p = new \ReflectionProperty($twig, 'templateClassPrefix');
             $p->setAccessible(true);
             $p->setValue($twig, '__TwigTemplate_'.hash('sha256', uniqid(mt_rand(), true), false).'_');
 
@@ -208,17 +201,17 @@ abstract class IntegrationTestCase extends TestCase
                 });
 
                 $template = $twig->load('index.twig');
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 if (false !== $exception) {
                     $message = $e->getMessage();
-                    $this->assertSame(trim($exception), trim(sprintf('%s: %s', get_class($e), $message)));
-                    $last = substr($message, strlen($message) - 1);
+                    $this->assertSame(trim($exception), trim(sprintf('%s: %s', \get_class($e), $message)));
+                    $last = substr($message, \strlen($message) - 1);
                     $this->assertTrue('.' === $last || '?' === $last, 'Exception message must end with a dot or a question mark.');
 
                     return;
                 }
 
-                throw new Error(sprintf('%s: %s', get_class($e), $e->getMessage()), -1, null, $e);
+                throw new Error(sprintf('%s: %s', \get_class($e), $e->getMessage()), -1, null, $e);
             } finally {
                 restore_error_handler();
             }
@@ -227,16 +220,16 @@ abstract class IntegrationTestCase extends TestCase
 
             try {
                 $output = trim($template->render(eval($match[1].';')), "\n ");
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 if (false !== $exception) {
-                    $this->assertSame(trim($exception), trim(sprintf('%s: %s', get_class($e), $e->getMessage())));
+                    $this->assertSame(trim($exception), trim(sprintf('%s: %s', \get_class($e), $e->getMessage())));
 
                     return;
                 }
 
-                $e = new Error(sprintf('%s: %s', get_class($e), $e->getMessage()), -1, null, $e);
+                $e = new Error(sprintf('%s: %s', \get_class($e), $e->getMessage()), -1, null, $e);
 
-                $output = trim(sprintf('%s: %s', get_class($e), $e->getMessage()));
+                $output = trim(sprintf('%s: %s', \get_class($e), $e->getMessage()));
             }
 
             if (false !== $exception) {

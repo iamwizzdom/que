@@ -1,10 +1,23 @@
+* 2.12.3 (2019-12-28)
+
+ * fixed Symfony 5.0 support for the HTML extra extension
+ * fixed number formatter in Intl extra extension when using a formatter prototype
+
+* 2.12.2 (2019-11-11)
+
+ * added supported for exponential numbers
+
+* 2.12.1 (2019-10-17)
+
+ * added the String extension in the "extra" repositories: "u" filter
+
 * 2.12.0 (2019-10-05)
 
  * added the spaceship operator ("<=>"), useful when using an arrow function in the "sort" filter
  * added support for an "arrow" function on the "sort" filter
  * added the CssInliner extension in the "extra" repositories: "inline_css"
    filter
- * added the Inky extension  in the "extra" repositories: "inky_to_html" filter
+ * added the Inky extension in the "extra" repositories: "inky_to_html" filter
  * added Intl extension in the "extra" repositories: "country_name",
    "currency_name", "currency_symbol", "language_name", "locale_name",
    "timezone_name", "format_currency", "format_number",
@@ -278,9 +291,14 @@
  * improved the performance of the filesystem loader
  * removed features that were deprecated in 1.x
 
-* 1.42.4 (2019-XX-XX)
+* 1.42.5 (2019-XX-XX)
 
  * n/a
+
+* 1.42.4 (2019-11-11)
+
+ * optimized "block('foo') ?? 'bar"
+ * added supported for exponential numbers
 
 * 1.42.3 (2019-08-24)
 

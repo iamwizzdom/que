@@ -21,16 +21,16 @@ class Smarty_Internal_Method_RegisterClass
     /**
      * Registers static classes to be used in templates
      *
-     * @param \Smarty_Internal_TemplateBase|Smarty_Internal_Template|\Smarty $obj
-     * @param string $class_name
+     * @api  Smarty::registerClass()
+     * @link http://www.smarty.net/docs/en/api.register.class.tpl
+     *
+     * @param \Smarty_Internal_TemplateBase|\Smarty_Internal_Template|\Smarty $obj
+     * @param string                                                          $class_name
      * @param string                                                          $class_impl the referenced PHP class to
      *                                                                                    register
      *
-     * @return \Smarty|Smarty_Internal_Template
-     * @throws SmartyException
-     *@link http://www.smarty.net/docs/en/api.register.class.tpl
-     *
-     * @api  Smarty::registerClass()
+     * @return \Smarty|\Smarty_Internal_Template
+     * @throws \SmartyException
      */
     public function registerClass(Smarty_Internal_TemplateBase $obj, $class_name, $class_impl)
     {

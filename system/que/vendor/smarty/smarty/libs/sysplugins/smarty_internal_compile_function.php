@@ -44,10 +44,10 @@ class Smarty_Internal_Compile_Function extends Smarty_Internal_CompileBase
      * Compiles code for the {function} tag
      *
      * @param array                                 $args     array with attributes from parser
-     * @param Smarty_Internal_TemplateCompilerBase $compiler compiler object
+     * @param \Smarty_Internal_TemplateCompilerBase $compiler compiler object
      *
      * @return bool true
-     * @throws SmartyCompilerException
+     * @throws \SmartyCompilerException
      */
     public function compile($args, Smarty_Internal_TemplateCompilerBase $compiler)
     {
@@ -91,7 +91,7 @@ class Smarty_Internal_Compile_Functionclose extends Smarty_Internal_CompileBase
      * Compiles code for the {/function} tag
      *
      * @param array                                        $args     array with attributes from parser
-     * @param object|Smarty_Internal_TemplateCompilerBase $compiler compiler object
+     * @param object|\Smarty_Internal_TemplateCompilerBase $compiler compiler object
      *
      * @return bool true
      */

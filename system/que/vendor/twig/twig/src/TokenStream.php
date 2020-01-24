@@ -12,7 +12,6 @@
 
 namespace Twig;
 
-use function array_slice;
 use Twig\Error\SyntaxError;
 
 /**
@@ -39,7 +38,7 @@ final class TokenStream
 
     public function injectTokens(array $tokens)
     {
-        $this->tokens = array_merge(array_slice($this->tokens, 0, $this->current), $tokens, array_slice($this->tokens, $this->current));
+        $this->tokens = array_merge(\array_slice($this->tokens, 0, $this->current), $tokens, \array_slice($this->tokens, $this->current));
     }
 
     /**

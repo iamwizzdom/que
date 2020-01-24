@@ -12,8 +12,6 @@
 
 namespace Composer\Autoload;
 
-use InvalidArgumentException;
-
 /**
  * ClassLoader implements a PSR-0, PSR-4 and classmap class loader.
  *
@@ -153,7 +151,7 @@ class ClassLoader
      * @param array|string $paths   The PSR-4 base directories
      * @param bool         $prepend Whether to prepend the directories
      *
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
     public function addPsr4($prefix, $paths, $prepend = false)
     {
@@ -174,7 +172,7 @@ class ClassLoader
             // Register directories for a new namespace.
             $length = strlen($prefix);
             if ('\\' !== $prefix[$length - 1]) {
-                throw new InvalidArgumentException("A non-empty PSR-4 prefix must end with a namespace separator.");
+                throw new \InvalidArgumentException("A non-empty PSR-4 prefix must end with a namespace separator.");
             }
             $this->prefixLengthsPsr4[$prefix[0]][$prefix] = $length;
             $this->prefixDirsPsr4[$prefix] = (array) $paths;
@@ -216,7 +214,7 @@ class ClassLoader
      * @param string       $prefix The prefix/namespace, with trailing '\\'
      * @param array|string $paths  The PSR-4 base directories
      *
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
     public function setPsr4($prefix, $paths)
     {
@@ -225,7 +223,7 @@ class ClassLoader
         } else {
             $length = strlen($prefix);
             if ('\\' !== $prefix[$length - 1]) {
-                throw new InvalidArgumentException("A non-empty PSR-4 prefix must end with a namespace separator.");
+                throw new \InvalidArgumentException("A non-empty PSR-4 prefix must end with a namespace separator.");
             }
             $this->prefixLengthsPsr4[$prefix[0]][$prefix] = $length;
             $this->prefixDirsPsr4[$prefix] = (array) $paths;
@@ -281,7 +279,7 @@ class ClassLoader
      */
     public function setApcuPrefix($apcuPrefix)
     {
-        $this->apcuPrefix = function_exists('apcu_fetch') && ini_get('apc.enabled') ? $apcuPrefix : null;
+        $this->apcuPrefix = function_exists('apcu_fetch') && filter_var(ini_get('apc.enabled'), FILTER_VALIDATE_BOOLEAN) ? $apcuPrefix : null;
     }
 
     /**
@@ -379,7 +377,7 @@ class ClassLoader
             $subPath = $class;
             while (false !== $lastPos = strrpos($subPath, '\\')) {
                 $subPath = substr($subPath, 0, $lastPos);
-                $search = $subPath.'\\';
+                $search = $subPath . '\\';
                 if (isset($this->prefixDirsPsr4[$search])) {
                     $pathEnd = DIRECTORY_SEPARATOR . substr($logicalPathPsr4, $lastPos + 1);
                     foreach ($this->prefixDirsPsr4[$search] as $dir) {

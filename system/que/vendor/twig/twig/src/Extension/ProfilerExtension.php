@@ -11,8 +11,6 @@
 
 namespace Twig\Extension;
 
-use function count;
-use function get_class;
 use Twig\Profiler\NodeVisitor\ProfilerNodeVisitor;
 use Twig\Profiler\Profile;
 
@@ -36,14 +34,14 @@ class ProfilerExtension extends AbstractExtension
         $profile->leave();
         array_shift($this->actives);
 
-        if (1 === count($this->actives)) {
+        if (1 === \count($this->actives)) {
             $this->actives[0]->leave();
         }
     }
 
     public function getNodeVisitors()
     {
-        return [new ProfilerNodeVisitor(get_class($this))];
+        return [new ProfilerNodeVisitor(\get_class($this))];
     }
 }
 

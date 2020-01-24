@@ -88,7 +88,7 @@ class Smarty_Internal_CacheResource_File extends Smarty_CacheResource
     /**
      * Read the cached template and process its header
      *
-     * @param Smarty_Internal_Template $_smarty_tpl do not change variable name, is used by compiled template
+     * @param \Smarty_Internal_Template $_smarty_tpl do not change variable name, is used by compiled template
      * @param Smarty_Template_Cached    $cached      cached object
      * @param bool                      $update      flag if called because cache update
      *
@@ -115,7 +115,7 @@ class Smarty_Internal_CacheResource_File extends Smarty_CacheResource
      * @param string                   $content   content to cache
      *
      * @return bool success
-     * @throws SmartyException
+     * @throws \SmartyException
      */
     public function writeCachedContent(Smarty_Internal_Template $_template, $content)
     {

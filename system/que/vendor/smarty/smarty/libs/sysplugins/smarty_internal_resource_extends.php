@@ -40,7 +40,7 @@ class Smarty_Internal_Resource_Extends extends Smarty_Resource
         $smarty = &$source->smarty;
         $exists = true;
         foreach ($components as $component) {
-            /* @var Smarty_Template_Source $_s */
+            /* @var \Smarty_Template_Source $_s */
             $_s = Smarty_Template_Source::load(null, $smarty, $component);
             if ($_s->type === 'php') {
                 throw new SmartyException("Resource type {$_s->type} cannot be used with the extends resource type");
@@ -68,7 +68,7 @@ class Smarty_Internal_Resource_Extends extends Smarty_Resource
     public function populateTimestamp(Smarty_Template_Source $source)
     {
         $source->exists = true;
-        /* @var Smarty_Template_Source $_s */
+        /* @var \Smarty_Template_Source $_s */
         foreach ($source->components as $_s) {
             $source->exists = $source->exists && $_s->exists;
         }
@@ -90,7 +90,7 @@ class Smarty_Internal_Resource_Extends extends Smarty_Resource
         }
         $_components = array_reverse($source->components);
         $_content = '';
-        /* @var Smarty_Template_Source $_s */
+        /* @var \Smarty_Template_Source $_s */
         foreach ($_components as $_s) {
             // read content
             $_content .= $_s->getContent();

@@ -21,13 +21,13 @@ class Smarty_Internal_Method_SetDefaultModifiers
     /**
      * Set default modifiers
      *
-     * @param \Smarty_Internal_TemplateBase|Smarty_Internal_Template|\Smarty $obj
-     * @param array|string $modifiers modifier or list of modifiers
+     * @api Smarty::setDefaultModifiers()
+     *
+     * @param \Smarty_Internal_TemplateBase|\Smarty_Internal_Template|\Smarty $obj
+     * @param array|string                                                    $modifiers modifier or list of modifiers
      *                                                                                   to set
      *
-     * @return \Smarty|Smarty_Internal_Template
-     *@api Smarty::setDefaultModifiers()
-     *
+     * @return \Smarty|\Smarty_Internal_Template
      */
     public function setDefaultModifiers(Smarty_Internal_TemplateBase $obj, $modifiers)
     {

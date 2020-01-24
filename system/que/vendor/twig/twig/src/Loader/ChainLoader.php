@@ -11,7 +11,6 @@
 
 namespace Twig\Loader;
 
-use function get_class;
 use Twig\Error\LoaderError;
 
 /**
@@ -92,7 +91,7 @@ final class ChainLoader implements LoaderInterface, ExistsLoaderInterface, Sourc
             try {
                 return $loader->getCacheKey($name);
             } catch (LoaderError $e) {
-                $exceptions[] = get_class($loader).': '.$e->getMessage();
+                $exceptions[] = \get_class($loader).': '.$e->getMessage();
             }
         }
 
@@ -110,7 +109,7 @@ final class ChainLoader implements LoaderInterface, ExistsLoaderInterface, Sourc
             try {
                 return $loader->isFresh($name, $time);
             } catch (LoaderError $e) {
-                $exceptions[] = get_class($loader).': '.$e->getMessage();
+                $exceptions[] = \get_class($loader).': '.$e->getMessage();
             }
         }
 

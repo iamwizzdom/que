@@ -12,9 +12,6 @@
 
 namespace Twig\Node;
 
-use function count;
-use function get_class;
-use LogicException;
 use Twig\Compiler;
 use Twig\Node\Expression\AbstractExpression;
 use Twig\Node\Expression\ConstantExpression;
@@ -35,7 +32,7 @@ class ModuleNode extends Node
 {
     public function __construct(Node $body, AbstractExpression $parent = null, Node $blocks, Node $macros, Node $traits, $embeddedTemplates, Source $source)
     {
-        if (__CLASS__ !== get_class($this)) {
+        if (__CLASS__ !== \get_class($this)) {
             @trigger_error('Overriding '.__CLASS__.' is deprecated since Twig 2.4.0 and the class will be final in 3.0.', E_USER_DEPRECATED);
         }
 
@@ -189,7 +186,7 @@ class ModuleNode extends Node
             $compiler->write("\$this->parent = false;\n\n");
         }
 
-        $countTraits = count($this->getNode('traits'));
+        $countTraits = \count($this->getNode('traits'));
         if ($countTraits) {
             // traits
             foreach ($this->getNode('traits') as $i => $trait) {
@@ -383,7 +380,7 @@ class ModuleNode extends Node
         //
         // Put another way, a template can be used as a trait if it
         // only contains blocks and use statements.
-        $traitable = !$this->hasNode('parent') && 0 === count($this->getNode('macros'));
+        $traitable = !$this->hasNode('parent') && 0 === \count($this->getNode('macros'));
         if ($traitable) {
             if ($this->getNode('body') instanceof BodyNode) {
                 $nodes = $this->getNode('body')->getNode(0);
@@ -391,12 +388,12 @@ class ModuleNode extends Node
                 $nodes = $this->getNode('body');
             }
 
-            if (!count($nodes)) {
+            if (!\count($nodes)) {
                 $nodes = new Node([$nodes]);
             }
 
             foreach ($nodes as $node) {
-                if (!count($node)) {
+                if (!\count($node)) {
                     continue;
                 }
 
@@ -467,7 +464,7 @@ class ModuleNode extends Node
                 ->raw(");\n")
             ;
         } else {
-            throw new LogicException('Trait templates can only be constant nodes.');
+            throw new \LogicException('Trait templates can only be constant nodes.');
         }
     }
 }

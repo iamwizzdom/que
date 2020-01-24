@@ -12,8 +12,6 @@
 
 namespace Twig\Error;
 
-use function strlen;
-
 /**
  * \Exception thrown when a syntax error occurs during lexing or parsing of a template.
  *
@@ -32,7 +30,7 @@ class SyntaxError extends Error
         $alternatives = [];
         foreach ($items as $item) {
             $lev = levenshtein($name, $item);
-            if ($lev <= strlen($name) / 3 || false !== strpos($item, $name)) {
+            if ($lev <= \strlen($name) / 3 || false !== strpos($item, $name)) {
                 $alternatives[$item] = $lev;
             }
         }

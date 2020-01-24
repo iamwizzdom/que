@@ -12,12 +12,6 @@
 
 namespace Twig;
 
-use function is_array;
-use function is_bool;
-use function is_float;
-use function is_int;
-use LogicException;
-use function strlen;
 use Twig\Node\Node;
 
 /**
@@ -146,7 +140,7 @@ class Compiler
      */
     public function repr($value)
     {
-        if (is_int($value) || is_float($value)) {
+        if (\is_int($value) || \is_float($value)) {
             if (false !== $locale = setlocale(LC_NUMERIC, '0')) {
                 setlocale(LC_NUMERIC, 'C');
             }
@@ -158,9 +152,9 @@ class Compiler
             }
         } elseif (null === $value) {
             $this->raw('null');
-        } elseif (is_bool($value)) {
+        } elseif (\is_bool($value)) {
             $this->raw($value ? 'true' : 'false');
-        } elseif (is_array($value)) {
+        } elseif (\is_array($value)) {
             $this->raw('array(');
             $first = true;
             foreach ($value as $key => $v) {
@@ -191,7 +185,7 @@ class Compiler
             $this->write(sprintf("// line %d\n", $node->getTemplateLine()));
 
             $this->sourceLine += substr_count($this->source, "\n", $this->sourceOffset);
-            $this->sourceOffset = strlen($this->source);
+            $this->sourceOffset = \strlen($this->source);
             $this->debugInfo[$this->sourceLine] = $node->getTemplateLine();
 
             $this->lastLine = $node->getTemplateLine();
@@ -228,13 +222,13 @@ class Compiler
      *
      * @return $this
      *
-     * @throws LogicException When trying to outdent too much so the indentation would become negative
+     * @throws \LogicException When trying to outdent too much so the indentation would become negative
      */
     public function outdent($step = 1)
     {
         // can't outdent by more steps than the current indentation level
         if ($this->indentation < $step) {
-            throw new LogicException('Unable to call outdent() as the indentation would become negative.');
+            throw new \LogicException('Unable to call outdent() as the indentation would become negative.');
         }
 
         $this->indentation -= $step;

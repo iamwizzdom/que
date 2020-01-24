@@ -12,7 +12,7 @@ class Smarty_Internal_Runtime_UpdateCache
     /**
      * check client side cache
      *
-     * @param Smarty_Template_Cached $cached
+     * @param \Smarty_Template_Cached  $cached
      * @param Smarty_Internal_Template $_template
      * @param string                   $content
      */
@@ -23,11 +23,11 @@ class Smarty_Internal_Runtime_UpdateCache
     /**
      * Cache was invalid , so render from compiled and write to cache
      *
-     * @param Smarty_Template_Cached $cached
-     * @param Smarty_Internal_Template $_template
+     * @param \Smarty_Template_Cached   $cached
+     * @param \Smarty_Internal_Template $_template
      * @param                           $no_output_filter
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function updateCache(Smarty_Template_Cached $cached, Smarty_Internal_Template $_template, $no_output_filter)
     {
@@ -58,11 +58,11 @@ class Smarty_Internal_Runtime_UpdateCache
     /**
      * Sanitize content and write it to cache resource
      *
-     * @param Smarty_Template_Cached $cached
+     * @param \Smarty_Template_Cached  $cached
      * @param Smarty_Internal_Template $_template
      * @param bool                     $no_output_filter
      *
-     * @throws SmartyException
+     * @throws \SmartyException
      */
     public function removeNoCacheHash(
         Smarty_Template_Cached $cached,

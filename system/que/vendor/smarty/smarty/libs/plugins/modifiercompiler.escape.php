@@ -18,7 +18,7 @@
  * @param Smarty_Internal_TemplateCompilerBase $compiler
  *
  * @return string with compiled code
- * @throws SmartyException
+ * @throws \SmartyException
  */
 function smarty_modifiercompiler_escape($params, Smarty_Internal_TemplateCompilerBase $compiler)
 {

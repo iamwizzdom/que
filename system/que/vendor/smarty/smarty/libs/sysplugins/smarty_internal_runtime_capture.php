@@ -54,7 +54,7 @@ class Smarty_Internal_Runtime_Capture
     /**
      * Open capture section
      *
-     * @param Smarty_Internal_Template $_template
+     * @param \Smarty_Internal_Template $_template
      * @param string                    $buffer capture name
      * @param string                    $assign variable name
      * @param string                    $append variable name
@@ -76,7 +76,7 @@ class Smarty_Internal_Runtime_Capture
     /**
      * Register callbacks in template class
      *
-     * @param Smarty_Internal_Template $_template
+     * @param \Smarty_Internal_Template $_template
      */
     private function register(Smarty_Internal_Template $_template)
     {
@@ -95,7 +95,7 @@ class Smarty_Internal_Runtime_Capture
     /**
      * Start render callback
      *
-     * @param Smarty_Internal_Template $_template
+     * @param \Smarty_Internal_Template $_template
      */
     public function startRender(Smarty_Internal_Template $_template)
     {
@@ -106,9 +106,9 @@ class Smarty_Internal_Runtime_Capture
     /**
      * Close capture section
      *
-     * @param Smarty_Internal_Template $_template
+     * @param \Smarty_Internal_Template $_template
      *
-     * @throws SmartyException
+     * @throws \SmartyException
      */
     public function close(Smarty_Internal_Template $_template)
     {
@@ -128,11 +128,11 @@ class Smarty_Internal_Runtime_Capture
     }
 
     /**
-     * RuntimeError exception on not matching {capture}{/capture}
+     * Error exception on not matching {capture}{/capture}
      *
-     * @param Smarty_Internal_Template $_template
+     * @param \Smarty_Internal_Template $_template
      *
-     * @throws SmartyException
+     * @throws \SmartyException
      */
     public function error(Smarty_Internal_Template $_template)
     {
@@ -142,7 +142,7 @@ class Smarty_Internal_Runtime_Capture
     /**
      * Return content of named capture buffer by key or as array
      *
-     * @param Smarty_Internal_Template $_template
+     * @param \Smarty_Internal_Template $_template
      * @param string|null               $name
      *
      * @return string|string[]|null
@@ -159,9 +159,9 @@ class Smarty_Internal_Runtime_Capture
     /**
      * End render callback
      *
-     * @param Smarty_Internal_Template $_template
+     * @param \Smarty_Internal_Template $_template
      *
-     * @throws SmartyException
+     * @throws \SmartyException
      */
     public function endRender(Smarty_Internal_Template $_template)
     {

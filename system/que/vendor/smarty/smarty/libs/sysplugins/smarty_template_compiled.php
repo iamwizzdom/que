@@ -201,7 +201,7 @@ class Smarty_Template_Compiled extends Smarty_Template_Resource_Base
      * @param string                   $code      compiled code
      *
      * @return bool success
-     * @throws SmartyException
+     * @throws \SmartyException
      */
     public function write(Smarty_Internal_Template $_template, $code)
     {
@@ -237,7 +237,7 @@ class Smarty_Template_Compiled extends Smarty_Template_Resource_Base
      * Load fresh compiled template by including the PHP file
      * HHVM requires a work around because of a PHP incompatibility
      *
-     * @param Smarty_Internal_Template $_smarty_tpl do not change variable name, is used by compiled template
+     * @param \Smarty_Internal_Template $_smarty_tpl do not change variable name, is used by compiled template
      */
     private function loadCompiledTemplate(Smarty_Internal_Template $_smarty_tpl)
     {

@@ -99,7 +99,7 @@ class Smarty_CacheResource_Pdo extends Smarty_CacheResource_Custom
     protected $fetchTimestampColumns = 'modified';
 
     /**
-     * @var PDO
+     * @var \PDO
      */
     protected $pdo;
 
@@ -120,7 +120,7 @@ class Smarty_CacheResource_Pdo extends Smarty_CacheResource_Custom
      * @param string $table    : table (or view) name
      * @param string $database : optional - if table is located in another db
      *
-     * @throws SmartyException
+     * @throws \SmartyException
      */
     public function __construct(PDO $pdo, $table, $database = null)
     {
@@ -159,7 +159,7 @@ class Smarty_CacheResource_Pdo extends Smarty_CacheResource_Custom
      * @param string|null $compile_id compile id
      *
      * @access protected
-     * @return PDOStatement
+     * @return \PDOStatement
      */
     protected function getFetchStatement($columns, $id, $cache_id = null, $compile_id = null)
     {

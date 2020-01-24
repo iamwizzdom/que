@@ -11,7 +11,6 @@
 
 namespace Twig\Extension;
 
-use function is_object;
 use Twig\NodeVisitor\SandboxNodeVisitor;
 use Twig\Sandbox\SecurityNotAllowedMethodError;
 use Twig\Sandbox\SecurityNotAllowedPropertyError;
@@ -108,7 +107,7 @@ final class SandboxExtension extends AbstractExtension
 
     public function ensureToStringAllowed($obj, int $lineno = -1, Source $source = null)
     {
-        if ($this->isSandboxed() && is_object($obj) && method_exists($obj, '__toString')) {
+        if ($this->isSandboxed() && \is_object($obj) && method_exists($obj, '__toString')) {
             try {
                 $this->policy->checkMethodAllowed($obj, '__toString');
             } catch (SecurityNotAllowedMethodError $e) {

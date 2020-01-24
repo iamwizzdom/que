@@ -504,7 +504,7 @@ class Smarty_Security
      * @param null|bool $isConfig
      *
      * @return bool true if directory is trusted
-     * @throws SmartyException if directory is not trusted
+     * @throws \SmartyException if directory is not trusted
      */
     public function isTrustedResourceDir($filepath, $isConfig = null)
     {
@@ -627,7 +627,7 @@ class Smarty_Security
      * @param array  $dirs valid directories
      *
      * @return array|bool
-     * @throws SmartyException
+     * @throws \SmartyException
      */
     private function _checkDir($filepath, $dirs)
     {
@@ -657,11 +657,11 @@ class Smarty_Security
     /**
      * Loads security class and enables security
      *
-     * @param Smarty $smarty
+     * @param \Smarty                $smarty
      * @param string|Smarty_Security $security_class if a string is used, it must be class-name
      *
-     * @return Smarty current Smarty instance for chaining
-     * @throws SmartyException when an invalid class name is provided
+     * @return \Smarty current Smarty instance for chaining
+     * @throws \SmartyException when an invalid class name is provided
      */
     public static function enableSecurity(Smarty $smarty, $security_class)
     {
@@ -711,7 +711,7 @@ class Smarty_Security
     /**
      * Register callback functions call at start/end of template rendering
      *
-     * @param Smarty_Internal_Template $template
+     * @param \Smarty_Internal_Template $template
      */
     public function registerCallBacks(Smarty_Internal_Template $template)
     {

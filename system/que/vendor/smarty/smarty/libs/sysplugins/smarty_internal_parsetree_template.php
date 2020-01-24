@@ -35,7 +35,7 @@ class Smarty_Internal_ParseTree_Template extends Smarty_Internal_ParseTree
     /**
      * Append buffer to subtree
      *
-     * @param Smarty_Internal_Templateparser $parser
+     * @param \Smarty_Internal_Templateparser $parser
      * @param Smarty_Internal_ParseTree       $subtree
      */
     public function append_subtree(Smarty_Internal_Templateparser $parser, Smarty_Internal_ParseTree $subtree)
@@ -52,8 +52,8 @@ class Smarty_Internal_ParseTree_Template extends Smarty_Internal_ParseTree
     /**
      * Append array to subtree
      *
-     * @param Smarty_Internal_Templateparser $parser
-     * @param Smarty_Internal_ParseTree[] $array
+     * @param \Smarty_Internal_Templateparser $parser
+     * @param \Smarty_Internal_ParseTree[]    $array
      */
     public function append_array(Smarty_Internal_Templateparser $parser, $array = array())
     {
@@ -65,8 +65,8 @@ class Smarty_Internal_ParseTree_Template extends Smarty_Internal_ParseTree
     /**
      * Prepend array to subtree
      *
-     * @param Smarty_Internal_Templateparser $parser
-     * @param Smarty_Internal_ParseTree[] $array
+     * @param \Smarty_Internal_Templateparser $parser
+     * @param \Smarty_Internal_ParseTree[]    $array
      */
     public function prepend_array(Smarty_Internal_Templateparser $parser, $array = array())
     {
@@ -78,7 +78,7 @@ class Smarty_Internal_ParseTree_Template extends Smarty_Internal_ParseTree
     /**
      * Sanitize and merge subtree buffers together
      *
-     * @param Smarty_Internal_Templateparser $parser
+     * @param \Smarty_Internal_Templateparser $parser
      *
      * @return string template code content
      */

@@ -44,11 +44,11 @@ class Smarty_Internal_Compile_Insert extends Smarty_Internal_CompileBase
      * Compiles code for the {insert} tag
      *
      * @param array                                 $args     array with attributes from parser
-     * @param Smarty_Internal_TemplateCompilerBase $compiler compiler object
+     * @param \Smarty_Internal_TemplateCompilerBase $compiler compiler object
      *
      * @return string compiled code
-     * @throws SmartyCompilerException
-     * @throws SmartyException
+     * @throws \SmartyCompilerException
+     * @throws \SmartyException
      */
     public function compile($args, Smarty_Internal_TemplateCompilerBase $compiler)
     {
@@ -151,6 +151,7 @@ class Smarty_Internal_Compile_Insert extends Smarty_Internal_CompileBase
                 $_output .= "echo {$_function}({$_params},\$_smarty_tpl);?>";
             }
         }
+        $compiler->template->compiled->has_nocache_code = true;
         return $_output;
     }
 }

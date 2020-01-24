@@ -21,19 +21,19 @@ class Smarty_Internal_Method_RegisterPlugin
     /**
      * Registers plugin to be used in templates
      *
-     * @param \Smarty_Internal_TemplateBase|Smarty_Internal_Template|\Smarty $obj
-     * @param string $type plugin type
+     * @api  Smarty::registerPlugin()
+     * @link http://www.smarty.net/docs/en/api.register.plugin.tpl
+     *
+     * @param \Smarty_Internal_TemplateBase|\Smarty_Internal_Template|\Smarty $obj
+     * @param string                                                          $type       plugin type
      * @param string                                                          $name       name of template tag
      * @param callback                                                        $callback   PHP callback to register
      * @param bool                                                            $cacheable  if true (default) this
      *                                                                                    function is cache able
      * @param mixed                                                           $cache_attr caching attributes if any
      *
-     * @return \Smarty|Smarty_Internal_Template
+     * @return \Smarty|\Smarty_Internal_Template
      * @throws SmartyException              when the plugin tag is invalid
-     *@api  Smarty::registerPlugin()
-     * @link http://www.smarty.net/docs/en/api.register.plugin.tpl
-     *
      */
     public function registerPlugin(
         Smarty_Internal_TemplateBase $obj,

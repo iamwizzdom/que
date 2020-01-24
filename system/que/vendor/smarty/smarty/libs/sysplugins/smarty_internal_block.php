@@ -82,7 +82,7 @@ class Smarty_Internal_Block
     /**
      * Compiled block code overloaded by {block} class
      *
-     * @param Smarty_Internal_Template $tpl
+     * @param \Smarty_Internal_Template $tpl
      */
     public function callBlock(Smarty_Internal_Template $tpl)
     {

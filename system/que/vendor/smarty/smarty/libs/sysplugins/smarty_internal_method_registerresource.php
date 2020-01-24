@@ -21,8 +21,11 @@ class Smarty_Internal_Method_RegisterResource
     /**
      * Registers a resource to fetch a template
      *
-     * @param \Smarty_Internal_TemplateBase|Smarty_Internal_Template|\Smarty $obj
-     * @param string $name name of resource type
+     * @api  Smarty::registerResource()
+     * @link http://www.smarty.net/docs/en/api.register.resource.tpl
+     *
+     * @param \Smarty_Internal_TemplateBase|\Smarty_Internal_Template|\Smarty $obj
+     * @param string                                                          $name             name of resource type
      * @param Smarty_Resource|array                                           $resource_handler or instance of
      *                                                                                          Smarty_Resource,
      *                                                                                          or array of
@@ -31,10 +34,7 @@ class Smarty_Internal_Method_RegisterResource
      *                                                                                          resource
      *                                                                                          (deprecated)
      *
-     * @return \Smarty|Smarty_Internal_Template
-     *@api  Smarty::registerResource()
-     * @link http://www.smarty.net/docs/en/api.register.resource.tpl
-     *
+     * @return \Smarty|\Smarty_Internal_Template
      */
     public function registerResource(Smarty_Internal_TemplateBase $obj, $name, $resource_handler)
     {

@@ -25,29 +25,29 @@
 class Smarty_CacheResource_Mysql extends Smarty_CacheResource_Custom
 {
     /**
-     * @var PDO
+     * @var \PDO
      */
     protected $db;
 
     /**
-     * @var PDOStatement
+     * @var \PDOStatement
      */
     protected $fetch;
 
     /**
-     * @var PDOStatement
+     * @var \PDOStatement
      */
     protected $fetchTimestamp;
 
     /**
-     * @var PDOStatement
+     * @var \PDOStatement
      */
     protected $save;
 
     /**
      * Smarty_CacheResource_Mysql constructor.
      *
-     * @throws SmartyException
+     * @throws \SmartyException
      */
     public function __construct()
     {

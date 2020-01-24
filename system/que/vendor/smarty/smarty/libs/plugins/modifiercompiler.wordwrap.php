@@ -15,10 +15,10 @@
  * @author Uwe Tews
  *
  * @param array                                 $params parameters
- * @param Smarty_Internal_TemplateCompilerBase $compiler
+ * @param \Smarty_Internal_TemplateCompilerBase $compiler
  *
  * @return string with compiled code
- * @throws SmartyException
+ * @throws \SmartyException
  */
 function smarty_modifiercompiler_wordwrap($params, Smarty_Internal_TemplateCompilerBase $compiler)
 {

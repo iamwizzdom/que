@@ -11,9 +11,6 @@
 
 namespace Twig;
 
-use function func_get_args;
-use Throwable;
-
 /**
  * Exposes a template to userland.
  *
@@ -45,7 +42,7 @@ final class TemplateWrapper
     {
         // using func_get_args() allows to not expose the blocks argument
         // as it should only be used by internal code
-        return $this->template->render($context, func_get_args()[1] ?? []);
+        return $this->template->render($context, \func_get_args()[1] ?? []);
     }
 
     /**
@@ -57,7 +54,7 @@ final class TemplateWrapper
     {
         // using func_get_args() allows to not expose the blocks argument
         // as it should only be used by internal code
-        $this->template->display($context, func_get_args()[1] ?? []);
+        $this->template->display($context, \func_get_args()[1] ?? []);
     }
 
     /**
@@ -102,7 +99,7 @@ final class TemplateWrapper
         }
         try {
             $this->template->displayBlock($name, $context);
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             while (ob_get_level() > $level) {
                 ob_end_clean();
             }

@@ -12,19 +12,6 @@
 
 namespace Twig\Node;
 
-use function array_key_exists;
-use ArrayIterator;
-use function count;
-use Countable;
-use function func_get_arg;
-use function func_num_args;
-use function get_class;
-use function gettype;
-use InvalidArgumentException;
-use function is_object;
-use IteratorAggregate;
-use LogicException;
-use function strlen;
 use Twig\Compiler;
 use Twig\Source;
 
@@ -33,7 +20,7 @@ use Twig\Source;
  *
  * @author Fabien Potencier <fabien@symfony.com>
  */
-class Node implements Countable, IteratorAggregate
+class Node implements \Countable, \IteratorAggregate
 {
     protected $nodes;
     protected $attributes;
@@ -53,7 +40,7 @@ class Node implements Countable, IteratorAggregate
     {
         foreach ($nodes as $name => $node) {
             if (!$node instanceof self) {
-                throw new InvalidArgumentException(sprintf('Using "%s" for the value of node "%s" of "%s" is not supported. You must pass a \Twig\Node\Node instance.', is_object($node) ? get_class($node) : (null === $node ? 'null' : gettype($node)), $name, get_class($this)));
+                throw new \InvalidArgumentException(sprintf('Using "%s" for the value of node "%s" of "%s" is not supported. You must pass a \Twig\Node\Node instance.', \is_object($node) ? \get_class($node) : (null === $node ? 'null' : \gettype($node)), $name, \get_class($this)));
             }
         }
         $this->nodes = $nodes;
@@ -69,11 +56,11 @@ class Node implements Countable, IteratorAggregate
             $attributes[] = sprintf('%s: %s', $name, str_replace("\n", '', var_export($value, true)));
         }
 
-        $repr = [get_class($this).'('.implode(', ', $attributes)];
+        $repr = [\get_class($this).'('.implode(', ', $attributes)];
 
-        if (count($this->nodes)) {
+        if (\count($this->nodes)) {
             foreach ($this->nodes as $name => $node) {
-                $len = strlen($name) + 4;
+                $len = \strlen($name) + 4;
                 $noderepr = [];
                 foreach (explode("\n", (string) $node) as $line) {
                     $noderepr[] = str_repeat(' ', $len).$line;
@@ -112,7 +99,7 @@ class Node implements Countable, IteratorAggregate
      */
     public function hasAttribute($name)
     {
-        return array_key_exists($name, $this->attributes);
+        return \array_key_exists($name, $this->attributes);
     }
 
     /**
@@ -120,8 +107,8 @@ class Node implements Countable, IteratorAggregate
      */
     public function getAttribute($name)
     {
-        if (!array_key_exists($name, $this->attributes)) {
-            throw new LogicException(sprintf('Attribute "%s" does not exist for Node "%s".', $name, get_class($this)));
+        if (!\array_key_exists($name, $this->attributes)) {
+            throw new \LogicException(sprintf('Attribute "%s" does not exist for Node "%s".', $name, \get_class($this)));
         }
 
         return $this->attributes[$name];
@@ -155,7 +142,7 @@ class Node implements Countable, IteratorAggregate
     public function getNode($name)
     {
         if (!isset($this->nodes[$name])) {
-            throw new LogicException(sprintf('Node "%s" does not exist for Node "%s".', $name, get_class($this)));
+            throw new \LogicException(sprintf('Node "%s" does not exist for Node "%s".', $name, \get_class($this)));
         }
 
         return $this->nodes[$name];
@@ -173,12 +160,12 @@ class Node implements Countable, IteratorAggregate
 
     public function count()
     {
-        return count($this->nodes);
+        return \count($this->nodes);
     }
 
     public function getIterator()
     {
-        return new ArrayIterator($this->nodes);
+        return new \ArrayIterator($this->nodes);
     }
 
     /**
@@ -186,7 +173,7 @@ class Node implements Countable, IteratorAggregate
      */
     public function setTemplateName($name/*, $triggerDeprecation = true */)
     {
-        $triggerDeprecation = 2 > func_num_args() || func_get_arg(1);
+        $triggerDeprecation = 2 > \func_num_args() || \func_get_arg(1);
         if ($triggerDeprecation) {
             @trigger_error('The '.__METHOD__.' method is deprecated since version 2.8 and will be removed in 3.0. Use setSourceContext() instead.', E_USER_DEPRECATED);
         }

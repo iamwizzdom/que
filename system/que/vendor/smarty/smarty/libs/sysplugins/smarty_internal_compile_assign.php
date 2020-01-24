@@ -39,11 +39,11 @@ class Smarty_Internal_Compile_Assign extends Smarty_Internal_CompileBase
      * Compiles code for the {assign} tag
      *
      * @param array                                 $args      array with attributes from parser
-     * @param Smarty_Internal_TemplateCompilerBase $compiler  compiler object
+     * @param \Smarty_Internal_TemplateCompilerBase $compiler  compiler object
      * @param array                                 $parameter array with compilation parameter
      *
      * @return string compiled code
-     * @throws SmartyCompilerException
+     * @throws \SmartyCompilerException
      */
     public function compile($args, Smarty_Internal_TemplateCompilerBase $compiler, $parameter)
     {

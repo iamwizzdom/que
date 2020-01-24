@@ -23,7 +23,7 @@ class Smarty_Internal_Method_GetDefaultModifiers
      *
      * @api Smarty::getDefaultModifiers()
      *
-     * @param Smarty_Internal_TemplateBase|Smarty_Internal_Template|Smarty $obj
+     * @param \Smarty_Internal_TemplateBase|\Smarty_Internal_Template|\Smarty $obj
      *
      * @return array list of default modifiers
      */

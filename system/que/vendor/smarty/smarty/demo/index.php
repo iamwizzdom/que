@@ -1,6 +1,6 @@
 <?php
 /**
- * Example Applications
+ * Example Application
  *
  * @package Example-application
  */

@@ -37,10 +37,10 @@
  *
  * @param array                     $params parameters
  *
- * @param Smarty_Internal_Template $template
+ * @param \Smarty_Internal_Template $template
  *
  * @return string
- * @throws SmartyException
+ * @throws \SmartyException
  */
 function smarty_function_html_select_date($params, Smarty_Internal_Template $template)
 {

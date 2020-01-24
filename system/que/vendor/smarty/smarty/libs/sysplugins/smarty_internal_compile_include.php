@@ -71,9 +71,9 @@ class Smarty_Internal_Compile_Include extends Smarty_Internal_CompileBase
      * @param Smarty_Internal_SmartyTemplateCompiler $compiler compiler object
      *
      * @return string
-     * @throws Exception
-     * @throws SmartyCompilerException
-     * @throws SmartyException
+     * @throws \Exception
+     * @throws \SmartyCompilerException
+     * @throws \SmartyException
      */
     public function compile($args, Smarty_Internal_SmartyTemplateCompiler $compiler)
     {
@@ -280,13 +280,13 @@ class Smarty_Internal_Compile_Include extends Smarty_Internal_CompileBase
     /**
      * Compile inline sub template
      *
-     * @param Smarty_Internal_SmartyTemplateCompiler $compiler
-     * @param Smarty_Internal_Template $tpl
+     * @param \Smarty_Internal_SmartyTemplateCompiler $compiler
+     * @param \Smarty_Internal_Template               $tpl
      * @param string                                  $t_hash
      *
      * @return bool
-     * @throws Exception
-     * @throws SmartyException
+     * @throws \Exception
+     * @throws \SmartyException
      */
     public function compileInlineTemplate(
         Smarty_Internal_SmartyTemplateCompiler $compiler,

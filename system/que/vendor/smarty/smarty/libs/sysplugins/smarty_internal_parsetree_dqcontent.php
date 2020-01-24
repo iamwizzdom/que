@@ -31,7 +31,7 @@ class Smarty_Internal_ParseTree_DqContent extends Smarty_Internal_ParseTree
     /**
      * Return content as double quoted string
      *
-     * @param Smarty_Internal_Templateparser $parser
+     * @param \Smarty_Internal_Templateparser $parser
      *
      * @return string doubled quoted string
      */

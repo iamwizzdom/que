@@ -921,7 +921,7 @@ class Smarty_Internal_Configfileparser
                 if ($this->yyTraceFILE) {
                     fprintf(
                         $this->yyTraceFILE,
-                        "%sSyntax RuntimeError!\n",
+                        "%sSyntax Error!\n",
                         $this->yyTracePrompt
                     );
                 }

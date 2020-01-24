@@ -11,14 +11,6 @@
 
 namespace Twig;
 
-use function array_key_exists;
-use function count;
-use Exception;
-use function func_get_arg;
-use function func_num_args;
-use function is_array;
-use function is_string;
-use LogicException;
 use Twig\Cache\CacheInterface;
 use Twig\Cache\FilesystemCache;
 use Twig\Cache\NullCache;
@@ -46,11 +38,11 @@ use Twig\TokenParser\TokenParserInterface;
  */
 class Environment
 {
-    const VERSION = '2.12.0';
-    const VERSION_ID = 21200;
+    const VERSION = '2.12.3';
+    const VERSION_ID = 21203;
     const MAJOR_VERSION = 2;
     const MINOR_VERSION = 12;
-    const RELEASE_VERSION = 0;
+    const RELEASE_VERSION = 3;
     const EXTRA_VERSION = '';
 
     private $charset;
@@ -145,7 +137,7 @@ class Environment
      */
     public function getBaseTemplateClass()
     {
-        if (1 > func_num_args() || func_get_arg(0)) {
+        if (1 > \func_num_args() || \func_get_arg(0)) {
             @trigger_error('The '.__METHOD__.' is deprecated since Twig 2.7.0.', E_USER_DEPRECATED);
         }
 
@@ -270,7 +262,7 @@ class Environment
      */
     public function setCache($cache)
     {
-        if (is_string($cache)) {
+        if (\is_string($cache)) {
             $this->originalCache = $cache;
             $this->cache = new FilesystemCache($cache);
         } elseif (false === $cache) {
@@ -279,7 +271,7 @@ class Environment
         } elseif ($cache instanceof CacheInterface) {
             $this->originalCache = $this->cache = $cache;
         } else {
-            throw new LogicException(sprintf('Cache can only be a string, false, or a \Twig\Cache\CacheInterface implementation.'));
+            throw new \LogicException(sprintf('Cache can only be a string, false, or a \Twig\Cache\CacheInterface implementation.'));
         }
     }
 
@@ -443,7 +435,7 @@ class Environment
      *
      * This method should not be used as a generic way to load templates.
      *
-     * @param string $template The template name
+     * @param string $template The template source
      * @param string $name     An optional name of the template to be used in error messages
      *
      * @return TemplateWrapper A template instance representing the given template name
@@ -505,7 +497,7 @@ class Environment
      */
     public function resolveTemplate($names)
     {
-        if (!is_array($names)) {
+        if (!\is_array($names)) {
             $names = [$names];
         }
 
@@ -520,7 +512,7 @@ class Environment
             try {
                 return $this->loadTemplate($name);
             } catch (LoaderError $e) {
-                if (1 === count($names)) {
+                if (1 === \count($names)) {
                     throw $e;
                 }
             }
@@ -604,7 +596,7 @@ class Environment
         } catch (Error $e) {
             $e->setSourceContext($source);
             throw $e;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             throw new SyntaxError(sprintf('An exception has been thrown during the compilation of a template ("%s").', $e->getMessage()), -1, $source, $e);
         }
     }
@@ -911,8 +903,8 @@ class Environment
      */
     public function addGlobal($name, $value)
     {
-        if ($this->extensionSet->isInitialized() && !array_key_exists($name, $this->getGlobals())) {
-            throw new LogicException(sprintf('Unable to add global "%s" as the runtime or the extensions have already been initialized.', $name));
+        if ($this->extensionSet->isInitialized() && !\array_key_exists($name, $this->getGlobals())) {
+            throw new \LogicException(sprintf('Unable to add global "%s" as the runtime or the extensions have already been initialized.', $name));
         }
 
         if (null !== $this->resolvedGlobals) {
@@ -954,7 +946,7 @@ class Environment
         // we don't use array_merge as the context being generally
         // bigger than globals, this code is faster.
         foreach ($this->getGlobals() as $key => $value) {
-            if (!array_key_exists($key, $context)) {
+            if (!\array_key_exists($key, $context)) {
                 $context[$key] = $value;
             }
         }

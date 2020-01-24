@@ -28,11 +28,11 @@
  *
  * @param array                     $params parameters
  *
- * @param Smarty_Internal_Template $template
+ * @param \Smarty_Internal_Template $template
  *
  * @return string
  * @uses   smarty_function_escape_special_chars()
- * @throws SmartyException
+ * @throws \SmartyException
  */
 function smarty_function_html_options($params, Smarty_Internal_Template $template)
 {

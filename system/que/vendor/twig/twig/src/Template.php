@@ -12,11 +12,6 @@
 
 namespace Twig;
 
-use Exception;
-use function get_class;
-use function is_array;
-use LogicException;
-use Throwable;
 use Twig\Error\Error;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -181,7 +176,7 @@ abstract class Template
 
         // avoid RCEs when sandbox is enabled
         if (null !== $template && !$template instanceof self) {
-            throw new LogicException('A block must be a method on a \Twig\Template instance.');
+            throw new \LogicException('A block must be a method on a \Twig\Template instance.');
         }
 
         if (null !== $template) {
@@ -192,14 +187,14 @@ abstract class Template
                     $e->setSourceContext($template->getSourceContext());
                 }
 
-                // this is mostly useful for \Twig\RuntimeError\LoaderError exceptions
-                // see \Twig\RuntimeError\LoaderError
+                // this is mostly useful for \Twig\Error\LoaderError exceptions
+                // see \Twig\Error\LoaderError
                 if (-1 === $e->getTemplateLine()) {
                     $e->guess();
                 }
 
                 throw $e;
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 $e = new RuntimeError(sprintf('An exception has been thrown during the rendering of a template ("%s").', $e->getMessage()), -1, $template->getSourceContext(), $e);
                 $e->guess();
 
@@ -320,7 +315,7 @@ abstract class Template
     protected function loadTemplate($template, $templateName = null, $line = null, $index = null)
     {
         try {
-            if (is_array($template)) {
+            if (\is_array($template)) {
                 return $this->env->resolveTemplate($template);
             }
 
@@ -329,7 +324,7 @@ abstract class Template
             }
 
             if ($template === $this->getTemplateName()) {
-                $class = get_class($this);
+                $class = \get_class($this);
                 if (false !== $pos = strrpos($class, '___', -1)) {
                     $class = substr($class, 0, $pos);
                 }
@@ -395,7 +390,7 @@ abstract class Template
         }
         try {
             $this->display($context);
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             while (ob_get_level() > $level) {
                 ob_end_clean();
             }
@@ -415,14 +410,14 @@ abstract class Template
                 $e->setSourceContext($this->getSourceContext());
             }
 
-            // this is mostly useful for \Twig\RuntimeError\LoaderError exceptions
-            // see \Twig\RuntimeError\LoaderError
+            // this is mostly useful for \Twig\Error\LoaderError exceptions
+            // see \Twig\Error\LoaderError
             if (-1 === $e->getTemplateLine()) {
                 $e->guess();
             }
 
             throw $e;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $e = new RuntimeError(sprintf('An exception has been thrown during the rendering of a template ("%s").', $e->getMessage()), -1, $this->getSourceContext(), $e);
             $e->guess();
 

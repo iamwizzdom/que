@@ -30,7 +30,7 @@
  *
  * @return string content re-formatted
  * @author Monte Ohrt <monte at ohrt dot com>
- * @throws SmartyException
+ * @throws \SmartyException
  */
 function smarty_block_textformat($params, $content, Smarty_Internal_Template $template, &$repeat)
 {

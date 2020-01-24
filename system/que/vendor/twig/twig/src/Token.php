@@ -12,11 +12,6 @@
 
 namespace Twig;
 
-use function in_array;
-use function is_array;
-use function is_int;
-use LogicException;
-
 /**
  * Represents a Token.
  *
@@ -75,14 +70,14 @@ final class Token
      */
     public function test($type, $values = null)
     {
-        if (null === $values && !is_int($type)) {
+        if (null === $values && !\is_int($type)) {
             $values = $type;
             $type = self::NAME_TYPE;
         }
 
         return ($this->type === $type) && (
             null === $values ||
-            (is_array($values) && in_array($this->value, $values)) ||
+            (\is_array($values) && \in_array($this->value, $values)) ||
             $this->value == $values
         );
     }
@@ -165,7 +160,7 @@ final class Token
                 $name = 'ARROW_TYPE';
                 break;
             default:
-                throw new LogicException(sprintf('Token of type "%s" does not exist.', $type));
+                throw new \LogicException(sprintf('Token of type "%s" does not exist.', $type));
         }
 
         return $short ? $name : 'Twig\Token::'.$name;
@@ -210,7 +205,7 @@ final class Token
             case self::ARROW_TYPE:
                 return 'arrow function';
             default:
-                throw new LogicException(sprintf('Token of type "%s" does not exist.', $type));
+                throw new \LogicException(sprintf('Token of type "%s" does not exist.', $type));
         }
     }
 }

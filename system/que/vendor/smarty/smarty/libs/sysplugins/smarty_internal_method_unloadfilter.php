@@ -18,12 +18,12 @@ class Smarty_Internal_Method_UnloadFilter extends Smarty_Internal_Method_LoadFil
      *
      * @link http://www.smarty.net/docs/en/api.unload.filter.tpl
      *
-     * @param Smarty_Internal_TemplateBase|Smarty_Internal_Template|Smarty $obj
+     * @param \Smarty_Internal_TemplateBase|\Smarty_Internal_Template|\Smarty $obj
      * @param string                                                          $type filter type
      * @param string                                                          $name filter name
      *
      * @return Smarty_Internal_TemplateBase
-     * @throws SmartyException
+     * @throws \SmartyException
      */
     public function unloadFilter(Smarty_Internal_TemplateBase $obj, $type, $name)
     {

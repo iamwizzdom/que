@@ -11,15 +11,12 @@
 
 namespace Twig;
 
-use Countable;
-use JsonSerializable;
-
 /**
  * Marks a content as safe.
  *
  * @author Fabien Potencier <fabien@symfony.com>
  */
-class Markup implements Countable, JsonSerializable
+class Markup implements \Countable, \JsonSerializable
 {
     private $content;
     private $charset;

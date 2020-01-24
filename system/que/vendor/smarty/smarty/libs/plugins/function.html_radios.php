@@ -40,7 +40,7 @@
  *
  * @return string
  * @uses    smarty_function_escape_special_chars()
- * @throws SmartyException
+ * @throws \SmartyException
  */
 function smarty_function_html_radios($params, Smarty_Internal_Template $template)
 {
