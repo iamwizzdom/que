@@ -387,17 +387,19 @@ final class Route extends RouteCompiler
                 } elseif (is_array($response)) {
 
                     header("Content-Type: application/json");
-                    if (isset($response['code'])) $http->http_response_code($response['code']);
+
+                    if (isset($response['code']) && is_numeric($response['code']))
+                        $http->http_response_code(intval($response['code']));
 
                     $option = 0; $depth = 512;
 
-                    if (isset($response['option'])) {
-                        $option = $response['option'];
+                    if (isset($response['option']) && is_numeric($response['option'])) {
+                        $option = intval($response['option']);
                         unset($response['option']);
                     }
 
-                    if (isset($response['depth'])) {
-                        $depth = $response['depth'];
+                    if (isset($response['depth']) && is_numeric($response['depth'])) {
+                        $depth = intval($response['depth']);
                         unset($response['depth']);
                     }
 
