@@ -30,11 +30,17 @@ final class Route extends RouteCompiler
 
         try {
 
+            ob_start();
+
             $uri = self::getRequestUri();
 
-            if (str_contains($uri, APP_ROOT_FOLDER)) {
+            if (in_array(APP_ROOT_FOLDER, $uriTokens = self::tokenizeUri($uri))) {
                 http()->_server()->add('REQUEST_URI_ORIGINAL', $uri);
-                http()->_server()->add('REQUEST_URI', $uri = str_start_from($uri, APP_ROOT_FOLDER));
+
+                $uri_extract = array_extract($uriTokens, (($pos = strpos_in_array($uriTokens, APP_ROOT_FOLDER,
+                        STRPOS_IN_ARRAY_OPT_ARRAY_INDEX)) + 1), array_size($uriTokens) - $pos);
+
+                http()->_server()->add('REQUEST_URI', $uri = implode($uri_extract, "/"));
             }
 
             self::$method = $method = strtoupper(http()->_server()->get("REQUEST_METHOD"));
@@ -44,7 +50,8 @@ final class Route extends RouteCompiler
                 throw new RouteException("Sorry, ({$method} request) is an unsupported request method");
             }
 
-            $path = APP_PATH . $uri;
+
+            $path = APP_PATH . DIRECTORY_SEPARATOR . $uri;
 
             if (str_contains($path, "#"))
                 $path = substr($path, 0, strpos($path, "#"));
@@ -53,10 +60,19 @@ final class Route extends RouteCompiler
                 $path = substr($path, 0, strpos($path, "?"));
 
             if (is_file($path)) {
+
+                header('Content-Description: File Transfer');
                 header("Content-type:" . mime_type_from_filename($path));
+                header('Content-Transfer-Encoding: binary');
+                header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+                header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+                header('Pragma: public');
+                header('Content-Length: ' . filesize($path));
+                ob_clean();
+                flush();
                 $limit = 0;
                 while (readgzfile($path) === false && $limit < MAX_RETRY) $limit++;
-                return;
+                exit;
             }
 
             self::compile();

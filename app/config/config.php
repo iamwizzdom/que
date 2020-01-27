@@ -11,7 +11,6 @@ define('APP_ROOT_FOLDER', 'que'); // Your app root folder name
 define('APP_PATH', APP_ROOT_PATH . "/app");
 define('QUE_PATH', APP_ROOT_PATH . '/system/que');
 define('APP_HOST', APP_SCHEME . "://" . ($_SERVER['HTTP_HOST'] ?? 'localhost'));
-define('APP_HOST_FOLDER', APP_SCHEME . "://" . ($_SERVER['HTTP_HOST'] ?? 'localhost'));
 define('APP_TITLE', ''); // Your app title
 define('APP_NAME', ''); // Your app name
 define('APP_DESC', ""); // Your app description
