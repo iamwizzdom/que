@@ -1584,7 +1584,7 @@ function current_route()
  */
 function current_uri(): string
 {
-    return (((\http()->_server()['REQUEST_URI'] ?: \http()->_server()['REQUEST_URI_ORIGINAL'])) ?: '');
+    return (((\http()->_server()['REQUEST_URI_ORIGINAL'] ?: \http()->_server()['REQUEST_URI'])) ?: '');
 }
 
 /**
