@@ -9,6 +9,7 @@ use que\route\Route;
 use que\route\structure\RouteEntry;
 use que\security\CSRF;
 use que\template\Composer;
+use que\template\Form;
 use que\template\Pagination;
 use que\user\User;
 use que\utility\Converter;
@@ -1353,6 +1354,13 @@ function db(): Query
 function composer(): Composer
 {
     return Composer::getInstance();
+}
+
+/**
+ * @return Form
+ */
+function form(): Form {
+    return Form::getInstance();
 }
 
 /**
