@@ -38,7 +38,7 @@ final class Route extends RouteCompiler
                 http()->_server()->add('REQUEST_URI_ORIGINAL', $uri);
 
                 $uri_extract = array_extract($uriTokens, (($pos = strpos_in_array($uriTokens, APP_ROOT_FOLDER,
-                        STRPOS_IN_ARRAY_OPT_ARRAY_INDEX)) + 1), array_size($uriTokens) - $pos);
+                        STRPOS_IN_ARRAY_OPT_ARRAY_INDEX)) + 1), (array_size($uriTokens) - 1));
 
                 http()->_server()->add('REQUEST_URI', $uri = implode($uri_extract, "/"));
             }

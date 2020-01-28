@@ -46,11 +46,7 @@ class FlatList
      */
     public function countries(): array
     {
-        $list = [];
-        $countries = $this->getCountries();
-        foreach ($countries as $country)
-            $list[] = object_to_array($country);
-        return $list;
+        return $this->getCountries();
     }
 
     /**
@@ -59,11 +55,7 @@ class FlatList
      */
     public function states($countryID): array
     {
-        $list = [];
-        $states = $this->getStates($countryID);
-        foreach ($states as $state)
-            $list[] = object_to_array($state);
-        return $list;
+        return $this->getStates($countryID);
     }
 
     /**
@@ -71,11 +63,7 @@ class FlatList
      */
     public function languages(): array
     {
-        $list = [];
-        $languages = $this->getLanguages();
-        foreach ($languages as $language)
-            $list[] = object_to_array($language);
-        return $list;
+        return $this->getLanguages();
     }
 
     /**
@@ -84,11 +72,7 @@ class FlatList
      */
     public function areas($stateID): array
     {
-        $list = [];
-        $areas = $this->getAreas($stateID);
-        foreach ($areas as $area)
-            $list[$area->areaID] = $area->areaName;
-        return $list;
+        return $this->getAreas($stateID);
     }
 
     /**

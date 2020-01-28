@@ -8,6 +8,7 @@ use que\http\Http;
 use que\route\Route;
 use que\route\structure\RouteEntry;
 use que\security\CSRF;
+use que\session\Session;
 use que\template\Composer;
 use que\template\Form;
 use que\template\Pagination;
@@ -866,7 +867,7 @@ function array_extract(array $array, int $start, int $end): array
     $size = count($array); $keys = array_keys($array);
     for ($i = $start; $i < $size; $i++) {
         $extracted[$keys[$i]] = $array[$keys[$i]];
-        if ($i == $end) break;
+        if ($i >= $end) break;
     }
     return $extracted;
 }
@@ -1338,6 +1339,13 @@ function headers($param = null)
     if (is_null($param)) return \http()->_header()->_get();
 
     return \http()->_header()->get($param);
+}
+
+/**
+ * @return Session
+ */
+function session(): Session {
+    return Session::getInstance();
 }
 
 /**
