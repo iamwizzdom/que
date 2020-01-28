@@ -55,6 +55,12 @@ class Query extends Connect
         parent::__construct();
     }
 
+    public function __destruct()
+    {
+        // TODO: Implement __destruct() method.
+        $this->close();
+    }
+
     private function __clone()
     {
         // TODO: Implement __clone() method.

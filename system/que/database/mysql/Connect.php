@@ -11,7 +11,7 @@ abstract class Connect
     /**
      * @var mysqli
      */
-    private $conn;
+    private $conn = null;
 
     /**
      * @var int
@@ -74,7 +74,8 @@ abstract class Connect
     protected function __construct()
     {
 
-        $this->setDbHost(CONFIG['database']['mysql']['host'] ?? null);
+        $pconnect = CONFIG['database']['mysql']['persist'] ?? false;
+        $this->setDbHost(($pconnect === true ? "p:" : "") . CONFIG['database']['mysql']['host'] ?? null);
         $this->setDbName(CONFIG['database']['mysql']['name'] ?? null);
         $this->setDbUser(CONFIG['database']['mysql']['user'] ?? null);
         $this->setDbPass(CONFIG['database']['mysql']['pass'] ?? null);
@@ -347,8 +348,7 @@ abstract class Connect
      */
     public function close(): bool
     {
-        if (isset($this->conn)) {
-            $this->conn->kill($this->conn->thread_id);
+        if (!is_null($this->conn)) {
             $this->conn->close();
             $this->conn = null;
             return true;
@@ -357,5 +357,3 @@ abstract class Connect
     }
 
 }
-
-?>

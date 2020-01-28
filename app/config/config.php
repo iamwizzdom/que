@@ -99,6 +99,7 @@ define('CONFIG', [
             'host' => 'localhost', // MySQL host / ip address
             'port' => null, // MySQL port
             'socket' => null, // MySQL socket
+            'persist' => false, // MySQL persistent connection
             'debug' => true // Set to [bool](true) to shutdown Que and output all MySQL/SQL errors,
             // otherwise [bool](false) to output only FATAL errors
 
