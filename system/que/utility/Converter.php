@@ -42,11 +42,11 @@ class Converter
     /**
      * @param int $gender
      * @param int $genderType
-     * @param string $default
-     * @return string
+     * @param string|null $default
+     * @return string|null
      */
     public function convertGender(int $gender, int $genderType,
-                                  string $default = 'Unknown'): string
+                                  string $default = null): ?string
     {
         switch ($genderType) {
             case GENDER_TYPE_MALE_FEMALE:
@@ -70,9 +70,11 @@ class Converter
 
     /**
      * @param int $countryID
-     * @return array
+     * @param string $key
+     * @param string|null $default
+     * @return string|null
      */
-    public function convertCountry(int $countryID): array
+    public function convertCountry(int $countryID, string $key, string $default = null): ?string
     {
         $country = db()->select((CONFIG['db_table']['country']['name'] ?? 'countries'), '*', [
             'AND' => [
@@ -80,14 +82,22 @@ class Converter
                 (CONFIG['db_table_status_key'] ?? 'is_active') => STATE_ACTIVE
             ]
         ]);
-        return ($country->isSuccessful() ? $country->getQueryResponseArray(0) : []);
+
+        if ($country->isSuccessful()) {
+            $country = $country->getQueryResponseArray(0);
+            return $country[$key] ?? $default;
+        }
+
+        return $default;
     }
 
     /**
      * @param int $stateID
-     * @return array
+     * @param string $key
+     * @param string|null $default
+     * @return string|null
      */
-    public function convertState(int $stateID): array
+    public function convertState(int $stateID, string $key, string $default = null): ?string
     {
         $state = db()->select((CONFIG['db_table']['state']['name'] ?? 'states'), '*', [
             'AND' => [
@@ -95,14 +105,22 @@ class Converter
                 (CONFIG['db_table_status_key'] ?? 'is_active') => STATE_ACTIVE
             ]
         ]);
-        return ($state->isSuccessful() ? $state->getQueryResponseArray(0) : []);
+
+        if ($state->isSuccessful()) {
+            $state = $state->getQueryResponseArray(0);
+            return $state[$key] ?? $default;
+        }
+
+        return $default;
     }
 
     /**
      * @param int $languageID
-     * @return array
+     * @param string $key
+     * @param string|null $default
+     * @return string|null
      */
-    public function convertLanguage(int $languageID): array
+    public function convertLanguage(int $languageID, string $key, string $default = null): ?string
     {
         $language = db()->select((CONFIG['db_table']['language']['name'] ?? 'languages'), '*', [
             'AND' => [
@@ -111,14 +129,21 @@ class Converter
             ]
         ]);
 
-        return ($language->isSuccessful() ? $language->getQueryResponseArray(0) : []);
+        if ($language->isSuccessful()) {
+            $language = $language->getQueryResponseArray(0);
+            return $language[$key] ?? $default;
+        }
+
+        return $default;
     }
 
     /**
      * @param int $areaID
-     * @return array
+     * @param string $key
+     * @param string|null $default
+     * @return string|null
      */
-    public function convertArea(int $areaID): array
+    public function convertArea(int $areaID, string $key, string $default = null): ?string
     {
         $area = db()->select((CONFIG['db_table']['area']['name'] ?? 'areas'), '*', [
             'AND' => [
@@ -126,15 +151,21 @@ class Converter
                 (CONFIG['db_table_status_key'] ?? 'is_active') => STATE_ACTIVE
             ]
         ]);
-        return ($area->isSuccessful() ? $area->getQueryResponseArray(0) : []);
+
+        if ($area->isSuccessful()) {
+            $area = $area->getQueryResponseArray(0);
+            return $area[$key] ?? $default;
+        }
+
+        return $default;
     }
 
     /**
      * @param int $ageRangeID
-     * @param string $default
-     * @return string
+     * @param string|null $default
+     * @return string|null
      */
-    public function convertAgeRange(int $ageRangeID, string $default = 'None'): string
+    public function convertAgeRange(int $ageRangeID, string $default = null): ?string
     {
         $flatList = $this->getFlatList();
         return $ageRangeID != 0 && array_key_exists($ageRangeID, $flatList->ageRange()) ?
@@ -143,10 +174,10 @@ class Converter
 
     /**
      * @param int $maritalStatusID
-     * @param string $default
-     * @return string
+     * @param string|null $default
+     * @return string|null
      */
-    public function convertMaritalStatus(int $maritalStatusID, string $default = 'None'): string
+    public function convertMaritalStatus(int $maritalStatusID, string $default = null): ?string
     {
         $flatList = $this->getFlatList();
         return $maritalStatusID != 0 && array_key_exists($maritalStatusID, $flatList->maritalStatus()) ?
@@ -155,10 +186,10 @@ class Converter
 
     /**
      * @param int $religionID
-     * @param string $default
-     * @return string
+     * @param string|null $default
+     * @return string|null
      */
-    public function convertReligion(int $religionID, string $default = 'None'): string
+    public function convertReligion(int $religionID, string $default = null): ?string
     {
         $flatList = $this->getFlatList();
         return $religionID != 0 && array_key_exists($religionID, $flatList->religion()) ?
@@ -167,10 +198,10 @@ class Converter
 
     /**
      * @param int $bloodGroupID
-     * @param string $default
-     * @return string
+     * @param string|null $default
+     * @return string|null
      */
-    public function convertBloodGroup(int $bloodGroupID, string $default = 'None'): string
+    public function convertBloodGroup(int $bloodGroupID, string $default = null): ?string
     {
         $flatList = $this->getFlatList();
         return $bloodGroupID != 0 && array_key_exists($bloodGroupID, $flatList->bloodGroup()) ?
@@ -179,10 +210,10 @@ class Converter
 
     /**
      * @param int $genotypeID
-     * @param string $default
-     * @return string
+     * @param string|null $default
+     * @return string|null
      */
-    public function convertGenotype(int $genotypeID, string $default = 'None'): string
+    public function convertGenotype(int $genotypeID, string $default = null): ?string
     {
         $flatList = $this->getFlatList();
         return $genotypeID != 0 && array_key_exists($genotypeID, $flatList->genotype()) ?
@@ -191,10 +222,10 @@ class Converter
 
     /**
      * @param int $educationID
-     * @param string $default
-     * @return string
+     * @param string|null $default
+     * @return string|null
      */
-    public function convertEducationLevel(int $educationID, string $default = 'None'): string
+    public function convertEducationLevel(int $educationID, string $default = null): ?string
     {
         $flatList = $this->getFlatList();
         return $educationID != 0 && array_key_exists($educationID, $flatList->educationLevel()) ?
@@ -215,10 +246,10 @@ class Converter
 
     /**
      * @param int $jobTypeID
-     * @param string $default
-     * @return string
+     * @param string|null $default
+     * @return string|null
      */
-    public function convertJobType(int $jobTypeID, string $default = 'None'): string
+    public function convertJobType(int $jobTypeID, string $default = null): ?string
     {
         $flatList = $this->getFlatList();
         return $jobTypeID != 0 && array_key_exists($jobTypeID, $flatList->jobTypes()) ?
@@ -227,10 +258,10 @@ class Converter
 
     /**
      * @param int $experienceID
-     * @param string $default
-     * @return string
+     * @param string|null $default
+     * @return string|null
      */
-    public function convertExperience(int $experienceID, string $default = 'None'): string
+    public function convertExperience(int $experienceID, string $default = null): ?string
     {
         $flatList = $this->getFlatList();
         return $experienceID != 0 && array_key_exists($experienceID, $flatList->experience()) ?
@@ -243,8 +274,8 @@ class Converter
      * @return array
      */
     public function convertQualification(int $qualificationID, array $default = [
-        'title' => 'None',
-        'subtitle' => 'None'
+        'title' => null,
+        'subtitle' => null
     ]): array
     {
         $flatList = $this->getFlatList();
@@ -254,10 +285,10 @@ class Converter
 
     /**
      * @param int $dayID
-     * @param string $default
-     * @return string
+     * @param string|null $default
+     * @return string|null
      */
-    public function convertDay(int $dayID, string $default = 'None'): string
+    public function convertDay(int $dayID, string $default = null): ?string
     {
         $flatList = $this->getFlatList();
         return $dayID != 0 && array_key_exists($dayID, $flatList->getDays()) ?
@@ -266,10 +297,10 @@ class Converter
 
     /**
      * @param int $monthID
-     * @param string $default
-     * @return string
+     * @param string|null $default
+     * @return string|null
      */
-    public function convertMonth(int $monthID, string $default = 'None'): string
+    public function convertMonth(int $monthID, string $default = null): ?string
     {
         $flatList = $this->getFlatList();
         return $monthID != 0 && array_key_exists($monthID, $flatList->getMonths()) ?
@@ -278,10 +309,10 @@ class Converter
 
     /**
      * @param int $yearID
-     * @param string $default
-     * @return string
+     * @param string|null $default
+     * @return string|null
      */
-    public function convertYear(int $yearID, string $default = 'None'): string
+    public function convertYear(int $yearID, string $default = null): ?string
     {
         $flatList = $this->getFlatList();
         return $yearID != 0 && array_key_exists($yearID, $flatList->getYears()) ?
@@ -290,10 +321,10 @@ class Converter
 
     /**
      * @param int $gender
-     * @param string $default
-     * @return string
+     * @param string|null $default
+     * @return string|null
      */
-    private function genderMaleFemale(int $gender, string $default): string
+    private function genderMaleFemale(int $gender, string $default = null): ?string
     {
         switch ($gender) {
             case GENDER_MALE:
@@ -311,10 +342,10 @@ class Converter
 
     /**
      * @param int $gender
-     * @param string $default
-     * @return string
+     * @param string|null $default
+     * @return string|null
      */
-    private function genderHimHer(int $gender, string $default): string
+    private function genderHimHer(int $gender, string $default = null): ?string
     {
         switch ($gender) {
             case GENDER_MALE:
@@ -332,10 +363,10 @@ class Converter
 
     /**
      * @param int $gender
-     * @param string $default
-     * @return string
+     * @param string|null $default
+     * @return string|null
      */
-    private function genderHisHer(int $gender, string $default): string
+    private function genderHisHer(int $gender, string $default = null): ?string
     {
         switch ($gender) {
             case GENDER_MALE:
@@ -353,10 +384,10 @@ class Converter
 
     /**
      * @param int $gender
-     * @param string $default
-     * @return string
+     * @param string|null $default
+     * @return string|null
      */
-    private function genderHeShe(int $gender, string $default): string
+    private function genderHeShe(int $gender, string $default = null): ?string
     {
         switch ($gender) {
             case GENDER_MALE:
