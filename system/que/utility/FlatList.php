@@ -423,7 +423,7 @@ class FlatList
                 (CONFIG['db_table_status_key'] ?? 'is_active') => STATE_ACTIVE
             ]
         ]);
-        return ($countries->isSuccessful() ? $countries->getQueryResponseArray(0) : []);
+        return ($countries->isSuccessful() ? $countries->getQueryResponseArray() : []);
     }
 
     /**
@@ -438,7 +438,7 @@ class FlatList
                 (CONFIG['db_table_status_key'] ?? 'is_active') => STATE_ACTIVE
             ]
         ]);
-        return ($states->isSuccessful() ? $states->getQueryResponseArray(0) : []);
+        return ($states->isSuccessful() ? $states->getQueryResponseArray() : []);
     }
 
     /**
@@ -453,7 +453,7 @@ class FlatList
                 (CONFIG['db_table_status_key'] ?? 'is_active') => STATE_ACTIVE
             ]
         ]);
-        return ($states->isSuccessful() ? $states->getQueryResponseArray(0) : []);
+        return ($states->isSuccessful() ? $states->getQueryResponseArray() : []);
     }
 
     /**
@@ -466,6 +466,6 @@ class FlatList
                 (CONFIG['db_table_status_key'] ?? 'is_active') => STATE_ACTIVE
             ]
         ]);
-        return ($language->isSuccessful() ? $language->getQueryResponseArray(0) : []);
+        return ($language->isSuccessful() ? $language->getQueryResponseArray() : []);
     }
 }
