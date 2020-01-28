@@ -963,6 +963,16 @@ function array_multi($value, int $range) {
 }
 
 /**
+ * @param array $haystack
+ * @param $needle
+ * @param null $default
+ * @return mixed|null
+ */
+function find_in_array(array $haystack, $needle, $default = null) {
+    return $haystack[$needle] ?? $default;
+}
+
+/**
  * Array functions ends here
  */
 
@@ -1199,6 +1209,16 @@ function object_identical(object $object1, object $object2): bool
         if (!in_object($value, $object2, true))
             return false;
     return true;
+}
+
+/**
+ * @param object $haystack
+ * @param $needle
+ * @param null $default
+ * @return mixed|null
+ */
+function find_in_object(object $haystack, $needle, $default = null) {
+    return $haystack->{$needle} ?? $default;
 }
 
 /**
