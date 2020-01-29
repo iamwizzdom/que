@@ -75,7 +75,7 @@ abstract class Connect
     {
 
         $pconnect = CONFIG['database']['mysql']['persist'] ?? false;
-        $this->setDbHost(($pconnect === true ? "p:" : "") . CONFIG['database']['mysql']['host'] ?? null);
+        $this->setDbHost(($pconnect === true ? "p:" : "") . (CONFIG['database']['mysql']['host'] ?? null));
         $this->setDbName(CONFIG['database']['mysql']['name'] ?? null);
         $this->setDbUser(CONFIG['database']['mysql']['user'] ?? null);
         $this->setDbPass(CONFIG['database']['mysql']['pass'] ?? null);

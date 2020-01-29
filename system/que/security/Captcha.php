@@ -50,7 +50,7 @@ class Captcha
 
     public function setHost($host)
     {
-        $this->host = $host;
+        $this->host = base_url($host);
     }
 
     public function getHost()
@@ -72,7 +72,7 @@ class Captcha
 
     public function resetPrivateKey()
     {
-        Session::getInstance()->getFiles()->_get()['session']['captcha'] = $this->generatePrivateKey();
+        $this->setPrivateKey();
     }
 
     private function generatePrivateKey()

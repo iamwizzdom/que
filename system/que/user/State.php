@@ -95,7 +95,17 @@ abstract class State
     private static function resolve_state(): void
     {
 
-        if (!empty(self::$state['files']) && !empty(self::$state['memcached']) && !empty(self::$state['redis'])) return;
+        if (!empty(self::$state['files']) &&
+            (
+                (
+                    (self::$enabled['memcached'] === true && !empty(self::$state['memcached'])) ||
+                    (self::$enabled['redis'] === true && !empty(self::$state['redis']))
+                ) || (
+                    (self::$enabled['memcached'] !== true && self::$enabled['redis'] !== true) &&
+                    !empty(self::$state['quekip'])
+                )
+            )
+        ) return;
 
         $memcached = $redis = $quekip = null;
 
@@ -157,15 +167,18 @@ abstract class State
     protected static function is_equal_state(): bool
     {
 
-        if (
-            !(
-                isset(self::$state['files']['uid']) ||
+        if (!(
+            isset(self::$state['files']['uid']) &&
+            (
                 (
                     (self::$enabled['memcached'] === true && isset(self::$state['memcached']['uid'])) ||
                     (self::$enabled['redis'] === true && isset(self::$state['redis']['uid']))
+                ) || (
+                    (self::$enabled['memcached'] !== true && self::$enabled['redis'] !== true) &&
+                    isset(self::$state['quekip']['uid'])
                 )
             )
-        ) return false;
+        )) return false;
 
         if (self::$enabled['memcached'] === true && self::$enabled['redis'] === true) {
 
