@@ -106,18 +106,21 @@ class Redirect
             foreach ($headers as $header) {
 
                 if (!is_array($header)) {
-                    throw new QueRuntimeException("The HTTP setHeaderArray method ' .
-                            'expects its parameter to be an array list with a 'message' and 'status' index",
-                        "Http redirect error", E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace()));
+                    throw new QueRuntimeException(
+                        'The Http/Redirect setHeaderArray method expects ' .
+                        'its "$headers" param to be an array list',
+                        "Http redirect error", E_USER_ERROR,
+                        0, PreviousException::getInstance(debug_backtrace()));
                 }
 
                 if (!isset($header['message']) || !isset($header['status'])) {
-                    throw new QueRuntimeException("The HTTP setHeaderArray method ' .
-                            'expects its parameter to be an array list with a 'message' and 'status' index",
+                    throw new QueRuntimeException(
+                        'The Http/Redirect setHeaderArray method expects ' .
+                        'its "$headers" param to be an array list with each entry having a "message" and "status" index',
                         "Http redirect error", E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace()));
                 }
 
-                Session::getInstance()->getFiles()->_get()['http']['http-alert'][] = $header;
+                Session::getInstance()->getFiles()->_get()['http']['http-header'][] = $header;
 
             }
         }

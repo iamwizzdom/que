@@ -1657,7 +1657,14 @@ function base_url(string $url = null): string
 
     $uri = (((\http()->_server()['REQUEST_URI_ORIGINAL'] ?: \http()->_server()['REQUEST_URI'])) ?: '');
 
-    if (str_contains($uri, APP_ROOT_FOLDER)) $host .= ("/" . str_end_at($uri, APP_ROOT_FOLDER));
+    if (!empty(APP_ROOT_FOLDER) && str_contains($uri, APP_ROOT_FOLDER) &&
+        in_array(APP_ROOT_FOLDER, $uriTokens = str_tokenize($uri, "/"))) {
+
+        $uri_extract = array_extract($uriTokens, 0, strpos_in_array($uriTokens,
+            APP_ROOT_FOLDER, STRPOS_IN_ARRAY_OPT_ARRAY_INDEX));
+
+        $host .= ("/" . implode($uri_extract, "/"));
+    }
 
     return server_protocol() . preg_replace("/\/\//", "/", $isNull ? $host : "{$host}/{$url}");
 }

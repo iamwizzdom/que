@@ -34,7 +34,7 @@ final class Route extends RouteCompiler
 
             $uri = self::getRequestUri();
 
-            if (in_array(APP_ROOT_FOLDER, $uriTokens = self::tokenizeUri($uri))) {
+            if (!empty(APP_ROOT_FOLDER) && in_array(APP_ROOT_FOLDER, $uriTokens = self::tokenizeUri($uri))) {
                 http()->_server()->add('REQUEST_URI_ORIGINAL', $uri);
 
                 $uri_extract = array_extract($uriTokens, (($pos = strpos_in_array($uriTokens, APP_ROOT_FOLDER,
@@ -61,7 +61,7 @@ final class Route extends RouteCompiler
 
             if (is_file($path)) {
 
-                header('Content-Description: File Transfer');
+                header('Content-Description: Que File Transfer');
                 header("Content-type:" . mime_type_from_filename($path));
                 header('Content-Transfer-Encoding: binary');
                 header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');

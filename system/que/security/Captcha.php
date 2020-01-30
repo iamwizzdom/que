@@ -12,13 +12,12 @@ use que\session\Session;
 
 class Captcha
 {
-    private $key; // ultra private static text
     private $long; // size of text
     private $lx; // width of picture
     private $ly; // height of picture
     private $nb_noise; // number of background noisy characters
     private $font_size; // character font size
-    private $host; // file of captcha picture stored on disk
+    private $host; // link to captcha
     private $font = QUE_PATH . "/assets/font/comic.ttf";
 
     /**
@@ -35,7 +34,6 @@ class Captcha
      */
     public function __construct($long = 6, $lx = 120, $ly = 30, $nb_noise = 25, $font_size = 10)
     {
-        $this->key = hash("SHA256", "Jehovah will reward all those who endure to the end.");
         $this->long = $long;
         $this->lx = $lx;
         $this->ly = $ly;
@@ -55,7 +53,7 @@ class Captcha
 
     public function getHost()
     {
-        return $this->host . "?" . uniqid();
+        return $this->host . "?e=" . uniqid();
     }
 
     public function getPrivateKey()

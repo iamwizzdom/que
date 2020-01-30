@@ -367,9 +367,13 @@ class Composer
 
         array_callback($js, function ($uri) {
 
-            if (str_starts_with($uri, '/')) {
+            if (str_starts_with($uri, '/') ||
+                str_starts_with($uri, './') ||
+                str_starts_with($uri, '../')) {
+
                 $uri = str_start_from($uri, '/');
                 $uri = "template/{$uri}";
+
             } else $uri = "template/js/{$uri}";
 
             return base_url($uri);
@@ -377,9 +381,13 @@ class Composer
 
         array_callback($css, function ($uri) {
 
-            if (str_starts_with($uri, '/')) {
+            if (str_starts_with($uri, '/') ||
+                str_starts_with($uri, './') ||
+                str_starts_with($uri, '../')) {
+
                 $uri = str_start_from($uri, '/');
                 $uri = "template/{$uri}";
+
             } else $uri = "template/css/{$uri}";
 
             return base_url($uri);
