@@ -51,8 +51,6 @@ abstract class RuntimeError
 
         if (ob_get_contents()) ob_clean();
 
-        $route = Route::getCurrentRoute();
-
         if (LIVE or ini_get('display_errors') == "Off") {
 
             $error = [
@@ -81,6 +79,8 @@ abstract class RuntimeError
         if (PHP_SAPI == 'cli') die(debug_print($error, true));
 
         http()->http_response_code($http_code);
+
+        $route = Route::getCurrentRoute();
 
         if (!empty($route) && $route->getType() == 'api' ||
             http()->_header()->get('X-Requested-With') == 'XMLHttpRequest') {

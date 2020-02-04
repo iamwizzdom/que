@@ -83,6 +83,9 @@ class RouteCompiler
                 else throw new RouteException($error, "Route Error", HTTP_NOT_FOUND_CODE);
             }
 
+            self::setUriArgs($routeArgs);
+            self::setCurrentRoute($routeEntry);
+
             if ($routeEntry->isRequireLogIn() === true && !is_logged_in()) {
                 if (!empty($routeEntry->getLoginUrl())) {
                     http()->redirect()->setHeader(sprintf("You don't have access to this route (%s), log in and try again.",
@@ -92,9 +95,6 @@ class RouteCompiler
                         "Access denied", E_USER_NOTICE);
                 }
             }
-
-            self::setUriArgs($routeArgs);
-            self::setCurrentRoute($routeEntry);
 
         } catch (RouteException $e) {
             RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(), $e->getLine(),
