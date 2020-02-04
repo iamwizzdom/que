@@ -16,8 +16,8 @@ interface Info
     /**
      * This method will run each time the module is accessed
      * @param array $uri_args - This parameter provides the arguments found in the uri
-     * @note Que will run this method for you automatically
      * @return Model|null - This method must return a model of the needed record or null
+     * @note Que will run this method for you automatically
      */
     public function info(array $uri_args): ?Model;
 

@@ -159,7 +159,7 @@ class User extends State implements ArrayAccess
 
         $columnsToUpdate = [];
         foreach ($columns as $key => $value) {
-            if (isset(self::$user->{$key}) && self::$user->{$key} != $value) {
+            if (object_key_exists($key, self::$user) && self::$user->{$key} != $value) {
                 $columnsToUpdate[$key] = $value;
             }
         }

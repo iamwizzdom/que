@@ -1015,6 +1015,15 @@ function object_keys(object $object): object {
 }
 
 /**
+ * @param $key
+ * @param object $object
+ * @return bool
+ */
+function object_key_exists($key, object $object): bool {
+    return in_object($key, object_keys($object));
+}
+
+/**
  * @param object $object
  * @return object
  */
