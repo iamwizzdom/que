@@ -59,6 +59,12 @@ class CacheAutoload
     private static $cache_file_path = QUE_PATH . "/cache/autoload.json";
 
     /**
+     * This property would be assigned the project package name
+     * @var string
+     */
+    private static $package_name;
+
+    /**
      * This method adds more file paths to the $cache
      * @param string $key
      * @param string $value
@@ -114,7 +120,7 @@ class CacheAutoload
 
         spl_autoload_register(function ($class_name) {
 
-            $hash = sha1($class_name);
+            $hash = sha1("{$class_name}:" . self::get_package_name());
 
             self::$cache = self::getCache();
 
@@ -168,7 +174,7 @@ class CacheAutoload
                     foreach ($files as $file) {
                         $filePath = "{$path}/{$file}";
                         if (self::scanFile($filePath, $fileName) === true) {
-                            self::setCache(sha1($fileName), $filePath);
+                            self::setCache((sha1("{$fileName}:" . self::get_package_name())), $filePath);
                             require_once "$filePath";
                             $found = true; break;
                         }
@@ -187,7 +193,7 @@ class CacheAutoload
 
                     if (!empty($filePath)) {
                         if (self::scanFile($filePath, $fileName) === true) {
-                            self::setCache(sha1($fileName), $filePath);
+                            self::setCache((sha1("{$fileName}:" . self::get_package_name())), $filePath);
                             require_once "$filePath";
                             $found = true; break;
                         } else self::findFile($path, $fileName, $exclude);
@@ -322,12 +328,17 @@ class CacheAutoload
     }
 
     /**
+     * The method would return the project package name
      * @return mixed
      */
     private static function get_package_name() {
-        $package_path_arr = explode("/", preg_replace(
-            "/\\\\/", "/", self::$root_dir));
-        return end($package_path_arr) ?: current($package_path_arr);
+
+        if (empty(self::$package_name)) {
+            $package_path_arr = explode("/", preg_replace("/\\\\/", "/", self::$root_dir));
+            self::$package_name = end($package_path_arr) ?: current($package_path_arr);
+        }
+
+        return self::$package_name;
     }
 
 }
