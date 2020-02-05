@@ -28,6 +28,11 @@ class Query extends Connect
     private static $instance;
 
     /**
+     * @var Query
+     */
+    private static $p_instance;
+
+    /**
      * @var bool
      */
     private $paginate = false;
@@ -78,9 +83,15 @@ class Query extends Connect
      */
     public static function getInstance(bool $persist = false): Query
     {
-        if (!isset(self::$instance))
-            self::$instance = new self($persist);
-        return self::$instance;
+        if ($persist === true) {
+            if (!isset(self::$p_instance))
+                self::$p_instance = new self(true);
+            return self::$p_instance;
+        } else {
+            if (!isset(self::$instance))
+                self::$instance = new self(false);
+            return self::$instance;
+        }
     }
 
     /**
