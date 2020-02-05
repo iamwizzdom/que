@@ -42,7 +42,7 @@ abstract class Manager
      * @param bool $persist
      * @return Query
      */
-    protected function db(bool $persist = false): Query {
+    protected function db(bool $persist = (CONFIG['database']['mysql']['persist'] ?? false)): Query {
         return Query::getInstance($persist);
     }
 

@@ -1381,7 +1381,7 @@ function session(): Session {
  * @param bool $persist
  * @return Query
  */
-function db(bool $persist = false): Query
+function db(bool $persist = (CONFIG['database']['mysql']['persist'] ?? false)): Query
 {
     return Query::getInstance($persist);
 }

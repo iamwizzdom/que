@@ -81,7 +81,7 @@ class Query extends Connect
      * @param bool $persist
      * @return Query
      */
-    public static function getInstance(bool $persist = false): Query
+    public static function getInstance(bool $persist = (CONFIG['database']['mysql']['persist'] ?? false)): Query
     {
         if ($persist === true) {
             if (!isset(self::$p_instance))
