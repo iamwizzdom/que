@@ -8,8 +8,6 @@
 
 namespace que\utility;
 
-use que\database\mysql\Query;
-
 class FlatList
 {
     /**
@@ -418,7 +416,7 @@ class FlatList
      */
     private function getCountries()
     {
-        $countries = (Query::getInstance())->select((CONFIG['db_table']['country']['name'] ?? 'countries'), '*', [
+        $countries = db()->select((CONFIG['db_table']['country']['name'] ?? 'countries'), '*', [
             'AND' => [
                 (CONFIG['db_table_status_key'] ?? 'is_active') => STATE_ACTIVE
             ]
@@ -432,7 +430,7 @@ class FlatList
      */
     private function getStates(int $countryID)
     {
-        $states = (Query::getInstance())->select((CONFIG['db_table']['state']['name'] ?? 'states'), '*', [
+        $states = db()->select((CONFIG['db_table']['state']['name'] ?? 'states'), '*', [
             'AND' => [
                 (CONFIG['db_table']['country']['primary_key'] ?? 'id') => $countryID,
                 (CONFIG['db_table_status_key'] ?? 'is_active') => STATE_ACTIVE
@@ -447,7 +445,7 @@ class FlatList
      */
     private function getAreas(int $stateID)
     {
-        $states = (Query::getInstance())->select((CONFIG['db_table']['area']['name'] ?? 'areas'), '*', [
+        $states = db()->select((CONFIG['db_table']['area']['name'] ?? 'areas'), '*', [
             'AND' => [
                 (CONFIG['db_table']['state']['primary_key'] ?? 'id') => $stateID,
                 (CONFIG['db_table_status_key'] ?? 'is_active') => STATE_ACTIVE
@@ -461,7 +459,7 @@ class FlatList
      */
     private function getLanguages()
     {
-        $language = (Query::getInstance())->select((CONFIG['db_table']['language']['name'] ?? 'languages'), '*', [
+        $language = db()->select((CONFIG['db_table']['language']['name'] ?? 'languages'), '*', [
             'AND' => [
                 (CONFIG['db_table_status_key'] ?? 'is_active') => STATE_ACTIVE
             ]

@@ -49,10 +49,11 @@ class Query extends Connect
 
     /**
      * Query constructor.
+     * @param bool $persist
      */
-    protected function __construct()
+    protected function __construct(bool $persist)
     {
-        parent::__construct();
+        parent::__construct($persist);
     }
 
     public function __destruct()
@@ -72,12 +73,13 @@ class Query extends Connect
     }
 
     /**
+     * @param bool $persist
      * @return Query
      */
-    public static function getInstance(): Query
+    public static function getInstance(bool $persist = false): Query
     {
         if (!isset(self::$instance))
-            self::$instance = new self;
+            self::$instance = new self($persist);
         return self::$instance;
     }
 

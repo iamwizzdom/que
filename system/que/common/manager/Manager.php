@@ -39,11 +39,11 @@ abstract class Manager
 {
 
     /**
-     *
+     * @param bool $persist
      * @return Query
      */
-    protected function db(): Query {
-        return Query::getInstance();
+    protected function db(bool $persist = false): Query {
+        return Query::getInstance($persist);
     }
 
     /**

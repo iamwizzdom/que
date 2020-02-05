@@ -70,11 +70,12 @@ abstract class Connect
 
     /**
      * Connect constructor.
+     * @param bool $persist
      */
-    protected function __construct()
+    protected function __construct(bool $persist = false)
     {
 
-        $pconnect = CONFIG['database']['mysql']['persist'] ?? false;
+        $pconnect = $persist ? $persist : (CONFIG['database']['mysql']['persist'] ?? false);
         $this->setDbHost(($pconnect === true ? "p:" : "") . (CONFIG['database']['mysql']['host'] ?? null));
         $this->setDbName(CONFIG['database']['mysql']['name'] ?? null);
         $this->setDbUser(CONFIG['database']['mysql']['user'] ?? null);

@@ -1378,11 +1378,12 @@ function session(): Session {
 }
 
 /**
+ * @param bool $persist
  * @return Query
  */
-function db(): Query
+function db(bool $persist = false): Query
 {
-    return Query::getInstance();
+    return Query::getInstance($persist);
 }
 
 /**
