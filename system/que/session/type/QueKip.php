@@ -114,7 +114,11 @@ class QueKip
      */
     public function session_id($session_id = null) {
         if (is_null($session_id)) return $this->session_id;
-        else return $this->reset_session_id($this->session_id);
+        else {
+            $this->session_id = $session_id;
+            $this->fetch_data();
+            return $this->session_id;
+        }
     }
 
     /**
