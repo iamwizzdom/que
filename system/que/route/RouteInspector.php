@@ -275,7 +275,12 @@ class RouteInspector
      */
     public static function validateJWT(Http $http) {
         try {
-            $tokenEncoded = new TokenEncoded(get_bearer_token());
+
+            $token = get_bearer_token();
+            if (empty($token)) $token = Input::getInstance()->get('X-Jwt-Token');
+            if (empty($token)) $token = Input::getInstance()->get('jwt');
+
+            $tokenEncoded = new TokenEncoded($token);
             $tokenEncoded->validate(JWT_KEY, JWT::ALGORITHM_HS512);
             $tokenDecoded = $tokenEncoded->decode();
             $http->_server()->offsetSet("JWT_PAYLOAD", $tokenDecoded->getPayload());

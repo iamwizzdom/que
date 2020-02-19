@@ -490,6 +490,11 @@ function get_date(string $format, string $date, string $default = ''): string {
     return !$dateTime ? $default : $dateTime->format($format);
 }
 
+/**
+ * This function would retrieve the http bearer token if any
+ *
+ * @return mixed|null
+ */
 function get_bearer_token() {
     if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
         if (preg_match('/Bearer\s(\S+)/', $_SERVER['HTTP_AUTHORIZATION'], $matches)) {
