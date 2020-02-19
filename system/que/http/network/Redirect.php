@@ -71,7 +71,7 @@ class Redirect
     public function setUrl(string $url)
     {
         if ($this->isPreventRedirect()) return $this;
-        $this->url = base_url($url);
+        $this->url = base_url($url, true);
         return $this;
     }
 

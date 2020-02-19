@@ -1441,6 +1441,19 @@ function is_logged_in(): bool
 }
 
 /**
+ * @param RouteEntry $entry
+ * @return bool
+ */
+function has_route_permission(RouteEntry $entry): bool {
+    $module = $entry->getModule();
+    if (!class_exists($module, true)) return false;
+    $implement = class_implements($module, true);
+    if (!isset($implement['que\security\permission\RoutePermission'])) return true;
+    $instance = new $module();
+    return $instance->hasPermission($entry);
+}
+
+/**
  * @param string|null $key
  * @return User|mixed|null
  */
@@ -1594,6 +1607,31 @@ function mime_type_from_extension(string $extension)
 }
 
 /**
+ * Output a gz-file
+ * @link https://php.net/manual/en/function.readgzfile.php
+ *
+ * @param $filename
+ * The file name. This is the file to be opened from the filesystem and its
+ * contents written to standard output.
+ *
+ * @return bool
+ */
+function render_file($filename) {
+    header('Content-Description: Que File Transfer');
+    header("Content-type:" . mime_type_from_filename($filename));
+    header('Content-Transfer-Encoding: binary');
+    header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+    header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+    header('Pragma: public');
+    header('Content-Length: ' . filesize($filename));
+    ob_clean();
+    flush();
+    $limit = 0;
+    while (($status = readgzfile($filename)) === false && $limit < MAX_RETRY) $limit++;
+    return $status !== false;
+}
+
+/**
  * @return string
  */
 function server_protocol() {
@@ -1637,10 +1675,14 @@ function current_url(): string
 /**
  * This function returns a string of the base url
  *
- * @param string $url
+ * @param string|null $url
+ *
+ * @param bool $forceUrl - This param when true will force base url to return a
+ * valid url regardless of login or permission restriction
+ *
  * @return string
  */
-function base_url(string $url = null): string
+function base_url(string $url = null, bool $forceUrl = false): string
 {
     $host = server_host();
 
@@ -1661,7 +1703,8 @@ function base_url(string $url = null): string
     if (!$isNull) {
         $routeEntry = Route::getRouteEntry($url);
         if ($routeEntry instanceof RouteEntry) {
-            if ($routeEntry->isRequireLogIn() === true && !is_logged_in()) return '#';
+            if ($routeEntry->isRequireLogIn() === true && !is_logged_in() && !$forceUrl) return '#';
+            elseif (!has_route_permission($routeEntry) && !$forceUrl) return '#';
         }
     }
 

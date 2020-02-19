@@ -60,18 +60,7 @@ final class Route extends RouteCompiler
                 $path = substr($path, 0, strpos($path, "?"));
 
             if (is_file($path)) {
-
-                header('Content-Description: Que File Transfer');
-                header("Content-type:" . mime_type_from_filename($path));
-                header('Content-Transfer-Encoding: binary');
-                header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-                header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-                header('Pragma: public');
-                header('Content-Length: ' . filesize($path));
-                ob_clean();
-                flush();
-                $limit = 0;
-                while (readgzfile($path) === false && $limit < MAX_RETRY) $limit++;
+                render_file($path);
                 exit;
             }
 
