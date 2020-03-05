@@ -15,7 +15,6 @@ abstract class FileBase
     protected $uploadDir = APP_PATH . "/storage";
     protected $uploadMax = 0;
     protected $uploadOverwrite = false;
-    protected $uploadMultiple = false;
     protected $allowedExtensions = array();
     protected $allowedMimeType = array();
     protected $formatName = true;
@@ -24,23 +23,49 @@ abstract class FileBase
     private $fileName = null;
 
     /**
-     * @param $error
+     * @param $key
+     * @param string $error
      */
-    public function addError($error){
-        $this->errors[] = $error;
+    public function addError($key, string $error){
+        $this->errors[$key][] = $error;
     }
 
     /**
-     * @return int
+     * @param $key
+     * @return bool
      */
-    public function hasError(): int {
-        return count($this->errors);
+    public function hasError($key): bool {
+        return count(($this->errors[$key] ?? [])) > 0;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasAnyError(): bool {
+        return count($this->errors) > 0;
+    }
+
+    /**
+     * @param $key
+     * @param $index
+     * @return mixed|null
+     */
+    public function getError($key, $index) {
+        return $this->errors[$key][$index] ?? null;
+    }
+
+    /**
+     * @param $key
+     * @return array
+     */
+    public function getErrors($key): array {
+        return $this->errors[$key] ?? [];
     }
 
     /**
      * @return array
      */
-    public function getErrors(): array {
+    public function getAllErrors(): array {
         return $this->errors;
     }
 

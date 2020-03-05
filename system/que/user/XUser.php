@@ -94,7 +94,7 @@ class XUser implements ArrayAccess
 
         if (!isset($this->user->{$primaryKey}))
             throw new QueRuntimeException("The key '{$primaryKey}' was not found in the present user object",
-                "User Error", E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace()));
+                "User Error", E_USER_ERROR, 0, PreviousException::getInstance());
         
         return User::isLoggedIn() && User::getInstance()->getModel()
                 ->get($primaryKey)->is($this->getValue($primaryKey));

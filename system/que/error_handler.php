@@ -15,8 +15,9 @@ register_shutdown_function(function() {
 set_error_handler(['que\error\RuntimeError', 'render']);
 
 set_exception_handler(function ($e) {
+    $_e = $e->getPrevious() ?: $e;
     if (!empty($e)) call_user_func(['que\error\RuntimeError', 'render'],
-        $e->getCode(), $e->getMessage(), $e->getFile(),
-        $e->getLine(), $e->getTrace(), method_exists($e, 'getTitle') ?
+        $e->getCode(), $e->getMessage(), $_e->getFile(),
+        $_e->getLine(), $e->getTrace(), method_exists($e, 'getTitle') ?
             ($e->getTitle() ?: "Que Runtime Error") : "Que Runtime Error");
 });

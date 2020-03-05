@@ -173,7 +173,7 @@ class Composer
 
         if ($type !== ALERT_SUCCESS && $type !== ALERT_ERROR && $type !== ALERT_WARNING)
             throw new QueRuntimeException("You passed an invalid alert type", 'Composer error',
-                E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace()));
+                E_USER_ERROR, 0, PreviousException::getInstance(1));
 
         if ($type === ALERT_SUCCESS) {
             $this->alert['success'] = [
@@ -341,10 +341,14 @@ class Composer
     }
 
     /**
-     * @param bool $ignoreDefaultConfig
+     * @param bool $ignoreDefaultCss
+     * @param bool $ignoreDefaultScript
+     * @param bool $ignoreDefaultHeader
      * @return $this
      */
-    public function prepare(bool $ignoreDefaultConfig = false) {
+    public function prepare(bool $ignoreDefaultCss = false,
+                            bool $ignoreDefaultScript = false,
+                            bool $ignoreDefaultHeader = false) {
 
         $this->http_header();
         $this->http_data();
@@ -355,17 +359,19 @@ class Composer
 
         $route = Route::getCurrentRoute();
 
-        $tmpHeader['app_title'] = ((!empty($route) && !empty($route->getTitle())) ?
-            $route->getTitle() : $tmpHeader['app_title']);
+        $tmpHeader['app_title'] = ((!empty($route) && !empty($route->getTitle())) ? $route->getTitle() : $tmpHeader['app_title']);
 
-        $css = (!$ignoreDefaultConfig ? array_merge(APP_TEMP_CSS, $this->getCss()) : $this->getCss());
-        $js = (!$ignoreDefaultConfig ? array_merge(APP_TEMP_SCRIPT, $this->getScript()) : $this->getScript());
+        $css = (!$ignoreDefaultCss ? array_merge(APP_TEMP_CSS, $this->getCss()) : $this->getCss());
+        $js = (!$ignoreDefaultScript ? array_merge(APP_TEMP_SCRIPT, $this->getScript()) : $this->getScript());
 
         $module_files = $this->get_tmp_module_files();
         $js = array_merge($js, $module_files['js']);
         $css = array_merge($css, $module_files['css']);
 
         array_callback($js, function ($uri) {
+
+            if (str_starts_with($uri, 'http://') ||
+                str_starts_with($uri, 'https://')) return $uri;
 
             if (str_starts_with($uri, '/') ||
                 str_starts_with($uri, './') ||
@@ -380,6 +386,9 @@ class Composer
         });
 
         array_callback($css, function ($uri) {
+
+            if (str_starts_with($uri, 'http://') ||
+                str_starts_with($uri, 'https://')) return $uri;
 
             if (str_starts_with($uri, '/') ||
                 str_starts_with($uri, './') ||
@@ -397,7 +406,7 @@ class Composer
         $this->script($js);
         $this->form('track', Track::generateToken());
         $this->form('csrf', (CSRF === true ? CSRF::getInstance()->getToken() : ""));
-        $this->header((!$ignoreDefaultConfig ? array_merge($tmpHeader, $this->getHeader()) : $this->getHeader()));
+        $this->header((!$ignoreDefaultHeader ? array_merge($tmpHeader, $this->getHeader()) : $this->getHeader()));
 
         $this->setContext("script", $this->getScript());
         $this->setContext("css", $this->getCss());
@@ -406,7 +415,7 @@ class Composer
         $this->setContext("form", $this->getForm());
         $this->setContext("menu", self::$menu->getMenu());
         $this->setContext('header', $this->getHeader());
-        $this->setContext("pagination", Pagination::getInstance()->getPaginationFlat());
+        $this->setContext("pagination", Pagination::getInstance());
 
         return $this;
     }

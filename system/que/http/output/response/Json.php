@@ -26,12 +26,12 @@ class Json
     /**
      * @var int
      */
-    private $option;
+    private $option = 0;
 
     /**
      * @var int
      */
-    private $depth;
+    private $depth = 512;
 
     /**
      * Json constructor.

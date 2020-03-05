@@ -110,14 +110,14 @@ class Redirect
                         'The Http/Redirect setHeaderArray method expects ' .
                         'its "$headers" param to be an array list',
                         "Http redirect error", E_USER_ERROR,
-                        0, PreviousException::getInstance(debug_backtrace()));
+                        0, PreviousException::getInstance());
                 }
 
                 if (!isset($header['message']) || !isset($header['status'])) {
                     throw new QueRuntimeException(
                         'The Http/Redirect setHeaderArray method expects ' .
                         'its "$headers" param to be an array list with each entry having a "message" and "status" index',
-                        "Http redirect error", E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace()));
+                        "Http redirect error", E_USER_ERROR, 0, PreviousException::getInstance());
                 }
 
                 Session::getInstance()->getFiles()->_get()['http']['http-header'][] = $header;

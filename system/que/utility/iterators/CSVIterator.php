@@ -9,7 +9,7 @@
 namespace que\utility\iterators;
 
 use Iterator;
-use RuntimeException;
+use que\common\exception\QueRuntimeException;
 
 class CSVIterator implements Iterator {
 
@@ -32,9 +32,10 @@ class CSVIterator implements Iterator {
      * CSVIterator constructor.
      * @param $fileName
      */
-	public function __construct($fileName) {
-		if (!$this->fileHandle = fopen($fileName, 'r'))
-            throw new RuntimeException("Couldn't open file '{$fileName}'");
+	public function __construct(string $fileName) {
+
+	    if (!$this->fileHandle = fopen($fileName, 'r'))
+	        throw new QueRuntimeException("Couldn't open file '{$fileName}'");
 	}
 
 	public function rewind() {
@@ -64,11 +65,15 @@ class CSVIterator implements Iterator {
 		return $this->i;
 	}
 
+    /**
+     * @return array|bool|false|string|void|null
+     */
 	public function next() {
 		if (false !== $this->line){
 			$this->line = fgetcsv($this->fileHandle);
 			$this->i++;
 		}
+        return $this->line;
 	}
 
 	public function __destruct() {

@@ -244,7 +244,7 @@ abstract class Connect
         // check connection error
         if ($this->conn->connect_error)
             throw new QueRuntimeException("Connection failed: {$this->conn->connect_error}",
-                "Database Error", E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace()));
+                "Database Error", E_USER_ERROR, 0, PreviousException::getInstance());
 
         $limit = 0;
 
@@ -254,7 +254,7 @@ abstract class Connect
         }
 
         if (!$ping) throw new QueRuntimeException("Failed to establish database connection after {$limit} trials",
-            "Database Error", E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace()));
+            "Database Error", E_USER_ERROR, 0, PreviousException::getInstance());
 
         return $this->conn;
     }

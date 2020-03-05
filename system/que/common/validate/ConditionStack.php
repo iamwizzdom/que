@@ -5,8 +5,8 @@ namespace que\common\validate;
 
 
 use Closure;
-use que\common\exception\QueException;
-use que\error\RuntimeError;
+use que\common\exception\PreviousException;
+use que\common\exception\QueRuntimeException;
 use que\session\Session;
 
 class ConditionStack
@@ -123,26 +123,20 @@ class ConditionStack
     /**
      * @param $childKey
      * @param Closure $callback
-     * callback param 1: Condition instance
-     * callback param 2: Child siblings
-     * callback param 3: Child key
      * @return ConditionStack
      */
     public function validateNextedChild($childKey, Closure $callback): ConditionStack {
         foreach ($this->value as $_key => $value) {
-            try {
 
-                if (!array_key_exists($childKey, $value))
-                    throw new QueException("Undefined input sub-key -- '{$childKey}'. " .
-                        "Key not found under -- '{$this->getKey()}' at index '{$_key}'", "Validator error");
+            if (!array_key_exists($childKey, $value))
+                throw new QueRuntimeException("Undefined input sub-key -- '{$childKey}'. " .
+                    "Key not found under -- '{$this->getKey()}' at index '{$_key}'", "Validator error",
+                    0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(2));
 
-                $this->conditions[$_key][$childKey] = new Condition($childKey, $value[$childKey], $this->getValidator());
+            $this->conditions[$_key][$childKey] = new Condition($childKey, $value[$childKey], $this->getValidator());
 
-                call_user_func($callback, $this->conditions[$_key][$childKey], array_exclude($value, [$childKey]), $_key);
+            call_user_func($callback, $this->conditions[$_key][$childKey], array_exclude($value, [$childKey]), $_key);
 
-            } catch (QueException $e) {
-                RuntimeError::render(E_USER_ERROR, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(), $e->getTitle());
-            }
         }
         return $this;
     }

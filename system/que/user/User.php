@@ -61,7 +61,7 @@ class User extends State implements ArrayAccess
 
         if (!self::isLoggedIn())
             throw new QueRuntimeException("Trying to get a user instance when you're not logged in.",
-                "User Error", E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace(), 1));
+                "User Error", E_USER_ERROR, 0, PreviousException::getInstance(1));
 
         if (!isset(self::$instance)) {
 
@@ -308,8 +308,8 @@ class User extends State implements ArrayAccess
         $redirect_to = $redirect_to ?? (current_route()->isRequireLogIn() ? APP_HOME_PAGE : current_uri());
         $message = $message ?? sprintf("Good bye, see you soon. Log-out successful (IP::%s)", self::getLastIP());
         self::flush();
-        if (current_route()->getType() != 'web') throw new QueRuntimeException($message, "User Error", E_USER_ERROR,
-            0, PreviousException::getInstance(debug_backtrace()));
+        if (current_route()->getType() != 'web') throw new QueRuntimeException($message, "User Error",
+            E_USER_ERROR, 0, PreviousException::getInstance());
         else http()->redirect()->setUrl($redirect_to)->setHeader($message, SUCCESS)->initiate();
 
     }

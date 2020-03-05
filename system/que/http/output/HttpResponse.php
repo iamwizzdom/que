@@ -59,7 +59,7 @@ class HttpResponse
     public function json(array $data, int $status = HTTP_SUCCESS_CODE, array $headers = [],
                          bool $replaceHeaders = true, int $jsonOption = 0, int $jsonDepth = 512): Json {
         if (!isset($data['code'])) $data['code'] = $status;
-        http()->http_response_code($data['code']);
+        http()->http_response_code($status);
         foreach ($headers as $header) header($header, $replaceHeaders);
         return new Json($data, $jsonOption, $jsonDepth);
     }
@@ -77,7 +77,7 @@ class HttpResponse
     public function jsonp(string $callback, array $data, int $status = HTTP_SUCCESS_CODE, array $headers = [],
                           bool $replaceHeaders = true, int $jsonOption = 0, int $jsonDepth = 512): Jsonp {
         if (!isset($data['code'])) $data['code'] = $status;
-        http()->http_response_code($data['code']);
+        http()->http_response_code($status);
         foreach ($headers as $header) header($header, $replaceHeaders);
         return new Jsonp($callback, $data, $jsonOption, $jsonDepth);
     }

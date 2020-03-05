@@ -64,7 +64,7 @@ class Pagination
         $currentUrl = serializer($params);
         $count = 0;
 
-        $pagination = "<ul class='pagination justify-content-center mt-4 mb-0'>";
+        $pagination = "<ul class='pagination'>";
 
         if ($pageStart > 10) {
             $pagination .= '<li class="page-item"><a class="page-link" href="?' .  $currentUrl . '">' .
@@ -93,16 +93,13 @@ class Pagination
 
         $pagination .= "</ul>";
 
-        $pagination .= "<br/><div class='justify-content-center mt-10 text-center'>{$currentPage} of {$totalPages}</div>";
-
-
         self::$pagination[$tag] = [
             'currentPage' => $currentPage,
             'pageStart' => $pageStart,
             'pageEnd' => $pageEnd,
             'totalPages' => $totalPages,
             'totalRecords' => $totalRecords,
-            'pagination' => $pagination
+            'links' => $pagination
         ];
     }
 
@@ -210,19 +207,19 @@ class Pagination
      * @param $tag
      * @return string
      */
-    public function getPagination($tag): string
+    public function getLinks($tag): string
     {
-        return @self::$pagination[$tag]['pagination'];
+        return @self::$pagination[$tag]['links'];
     }
 
     /**
      * @return array
      */
-    public function getPaginationFlat(): array
+    public function getLinksFlat(): array
     {
         $pagination = [];
         foreach (self::$pagination as $k => $v)
-            $pagination[$k] = $v['pagination'];
+            $pagination[$k] = $v['links'];
         return $pagination;
     }
 }

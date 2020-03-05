@@ -46,8 +46,8 @@ final class Route extends RouteCompiler
             self::$method = $method = strtoupper(http()->_server()->get("REQUEST_METHOD"));
 
             if (!($method === 'GET' || $method === 'POST')) {
-                http()->http_response_code(HTTP_FORBIDDEN_METHOD_CODE);
-                throw new RouteException("Sorry, ({$method} request) is an unsupported request method");
+                throw new RouteException("Sorry, ({$method} request) is an unsupported request method",
+                    "Route Error", HTTP_FORBIDDEN_METHOD_CODE);
             }
 
 
@@ -60,7 +60,7 @@ final class Route extends RouteCompiler
                 $path = substr($path, 0, strpos($path, "?"));
 
             if (is_file($path)) {
-                render_file($path);
+                render_file($path, pathinfo($path, PATHINFO_FILENAME));
                 exit;
             }
 
@@ -72,8 +72,9 @@ final class Route extends RouteCompiler
 
         } catch (RouteException $e) {
 
-            RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(), $e->getTitle(),
-                $e->getCode() == HTTP_NOT_FOUND_CODE ? HTTP_NOT_FOUND_CODE : HTTP_INTERNAL_ERROR_CODE);
+            RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(),
+                method_exists($e, 'getTitle') ? ($e->getTitle() ?: "Route Error") : "Route Error",
+                $e->getCode() ?: HTTP_INTERNAL_ERROR_CODE);
         }
     }
 
@@ -103,8 +104,9 @@ final class Route extends RouteCompiler
 
         } catch (RouteException $e) {
 
-            RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(), $e->getTitle(),
-                $e->getCode() == HTTP_NOT_FOUND_CODE ? HTTP_NOT_FOUND_CODE : HTTP_INTERNAL_ERROR_CODE);
+            RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(),
+                method_exists($e, 'getTitle') ? ($e->getTitle() ?: "Route Error") : "Route Error",
+                $e->getCode() ?: HTTP_INTERNAL_ERROR_CODE);
 
         }
 
@@ -126,11 +128,7 @@ final class Route extends RouteCompiler
             $http = http();
 
             //check if JWT is required
-            if ($route->isRequireJWTAuth() === true) try {
-                RouteInspector::validateJWT($http);
-            } catch (Exception $e) {
-                throw new RouteException($e->getMessage(), "JWT Auth Error");
-            }
+            if ($route->isRequireJWTAuth() === true) RouteInspector::validateJWT($http);
 
             if (!empty($module = $route->getModule())) {
 
@@ -240,9 +238,19 @@ final class Route extends RouteCompiler
                         $args = $http->_server()->get("URI_ARGS");
 
                         if (self::$method === "GET") {
+
                             if ($route->isRequireCSRFAuth() === true) CSRF::getInstance()->generateToken();
                             $instance->{"onLoad"}($args, $instance->{"info"}($args));
+
                         } else {
+
+                            if (!isset($implement['que\common\structure\Receiver'])) {
+
+                                throw new RouteException(sprintf(
+                                    "Sorry, the current route (%s)\n does not support (%s request).\n",
+                                    current_url(), self::$method), "Route Error", HTTP_FORBIDDEN_METHOD_CODE);
+                            }
+
                             if ($route->isRequireCSRFAuth() === true) RouteInspector::validateCSRF();
                             $instance->{"onReceive"}($args, $instance->{"info"}($args));
                         }
@@ -285,11 +293,9 @@ final class Route extends RouteCompiler
 
                             if (!isset($implement['que\common\structure\Receiver'])) {
 
-                                $http->http_response_code(HTTP_FORBIDDEN_METHOD_CODE);
-
                                 throw new RouteException(sprintf(
                                     "Sorry, the current route (%s)\n does not support (%s request).\n",
-                                    current_url(), self::$method));
+                                    current_url(), self::$method), "Route Error", HTTP_FORBIDDEN_METHOD_CODE);
                             }
 
                             if ($route->isRequireCSRFAuth() === true) RouteInspector::validateCSRF();
@@ -312,7 +318,8 @@ final class Route extends RouteCompiler
         } catch (RouteException $e) {
 
             RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(),
-                method_exists($e, 'getTitle') ? $e->getTitle() ?: "Route Error" : "Route Error", HTTP_UNAUTHORIZED_CODE);
+                method_exists($e, 'getTitle') ? ($e->getTitle() ?: "Route Error") : "Route Error",
+                $e->getCode() ?: HTTP_INTERNAL_ERROR_CODE);
 
         }
     }
@@ -333,11 +340,7 @@ final class Route extends RouteCompiler
             $http = http();
 
             //check if JWT is required
-            if ($route->isRequireJWTAuth() === true) try {
-                RouteInspector::validateJWT($http);
-            } catch (Exception $e) {
-                throw new RouteException($e->getMessage(), "JWT Auth Error");
-            }
+            if ($route->isRequireJWTAuth() === true) RouteInspector::validateJWT($http);
 
             if (!empty($module = $route->getModule())) {
 
@@ -424,7 +427,8 @@ final class Route extends RouteCompiler
         } catch (RouteException $e) {
 
             RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(),
-                method_exists($e, 'getTitle') ? $e->getTitle() ?: "Route Error" : "Route Error", HTTP_UNAUTHORIZED_CODE);
+                method_exists($e, 'getTitle') ? ($e->getTitle() ?: "Route Error") : "Route Error",
+                $e->getCode() ?: HTTP_INTERNAL_ERROR_CODE);
 
         }
 
@@ -446,11 +450,7 @@ final class Route extends RouteCompiler
             $http = http();
 
             //check if JWT is required
-            if ($route->isRequireJWTAuth() === true) try {
-                RouteInspector::validateJWT($http);
-            } catch (Exception $e) {
-                throw new RouteException($e->getMessage(), "JWT Auth Error");
-            }
+            if ($route->isRequireJWTAuth() === true) RouteInspector::validateJWT($http);
 
             if (!empty($module = $route->getModule())) {
 
@@ -492,7 +492,8 @@ final class Route extends RouteCompiler
         } catch (RouteException $e) {
 
             RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(),
-                method_exists($e, 'getTitle') ? $e->getTitle() ?: "Route Error" : "Route Error", HTTP_UNAUTHORIZED_CODE);
+                method_exists($e, 'getTitle') ? ($e->getTitle() ?: "Route Error") : "Route Error",
+                $e->getCode() ?: HTTP_INTERNAL_ERROR_CODE);
 
         }
 

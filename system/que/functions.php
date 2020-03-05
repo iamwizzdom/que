@@ -1306,73 +1306,79 @@ function convert_date_to_age(string $date): int
 
 /**
  * @param null $param
- * @return mixed|null
+ * @param null $default
+ * @return array|mixed|null
  */
-function post($param = null)
+function post($param = null, $default = null)
 {
 
     if (is_null($param)) return \http()->_post()->_get();
 
-    return \http()->_post()->get($param);
+    return \http()->_post()->get($param, $default);
 }
 
 /**
  * @param null $param
- * @return mixed|null
+ * @param null $default
+ * @return array|mixed|null
  */
-function get($param = null)
+function get($param = null, $default = null)
 {
 
     if (is_null($param)) return \http()->_get()->_get();
 
-    return \http()->_get()->get($param);
+    return \http()->_get()->get($param, $default);
 }
 
 /**
  * @param null $param
- * @return mixed|null
+ * @param null $default
+ * @return array|mixed|null
  */
-function server($param = null)
+function server($param = null, $default = null)
 {
 
     if (is_null($param)) return \http()->_server()->_get();
 
-    return \http()->_server()->get($param);
+    return \http()->_server()->get($param, $default);
 }
 
 /**
  * @param null $param
- * @return mixed|null
+ * @param null $default
+ * @return array|mixed|null
  */
-function request($param = null)
+function request($param = null, $default = null)
 {
 
     if (is_null($param)) return \http()->_request()->_get();
 
-    return \http()->_request()->get($param);
+    return \http()->_request()->get($param, $default);
 }
 
 /**
  * @param null $param
- * @return mixed|null
+ * @param null $default
+ * @return array|mixed|null
  */
-function files($param = null)
+function files($param = null, $default = null)
 {
     if (is_null($param)) return \http()->_files()->_get();
 
-    return \http()->_files()->get($param);
+    return \http()->_files()->get($param, $default);
 }
 
 /**
  * @param null $param
- * @return mixed|null
+ * @param null $default
+ * @return array|false|mixed|null
  */
-function headers($param = null)
+function headers($param = null, $default = null)
 {
 
     if (is_null($param)) return \http()->_header()->_get();
 
-    return \http()->_header()->get($param);
+    return \http()->_header()->get($param, $default);
 }
 
 /**
@@ -1606,33 +1612,155 @@ function mime_type_from_extension(string $extension)
 
     $extension = strtolower($extension);
 
-    return isset($mime_types[$extension])
-        ? $mime_types[$extension]
-        : null;
+    return $mime_types[$extension] ?? null;
+}
+
+/**
+ * Maps a file mime type to an extension.
+ *
+ * @param string $mime_type string The file mime type.
+ *
+ * @return string|null
+ */
+function extension_from_mime_type(string $mime_type)
+{
+    static $mime_types = [
+        '7z' => 'application/x-7z-compressed',
+        'aac' => 'audio/x-aac',
+        'ai' => 'application/postscript',
+        'aif' => 'audio/x-aiff',
+        'asc' => 'text/plain',
+        'asf' => 'video/x-ms-asf',
+        'atom' => 'application/atom+xml',
+        'avi' => 'video/x-msvideo',
+        'bmp' => 'image/bmp',
+        'bz2' => 'application/x-bzip2',
+        'cer' => 'application/pkix-cert',
+        'crl' => 'application/pkix-crl',
+        'crt' => 'application/x-x509-ca-cert',
+        'css' => 'text/css',
+        'csv' => 'text/csv',
+        'cu' => 'application/cu-seeme',
+        'deb' => 'application/x-debian-package',
+        'doc' => 'application/msword',
+        'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'dvi' => 'application/x-dvi',
+        'eot' => 'application/vnd.ms-fontobject',
+        'eps' => 'application/postscript',
+        'epub' => 'application/epub+zip',
+        'etx' => 'text/x-setext',
+        'flac' => 'audio/flac',
+        'flv' => 'video/x-flv',
+        'gif' => 'image/gif',
+        'gz' => 'application/gzip',
+        'htm' => 'text/html',
+        'html' => 'text/html',
+        'ico' => 'image/x-icon',
+        'ics' => 'text/calendar',
+        'ini' => 'text/plain',
+        'iso' => 'application/x-iso9660-image',
+        'jar' => 'application/java-archive',
+        'jpe' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'jpg' => 'image/jpeg',
+        'js' => 'text/javascript',
+        'json' => 'application/json',
+        'latex' => 'application/x-latex',
+        'log' => 'text/plain',
+        'm4a' => 'audio/mp4',
+        'm4v' => 'video/mp4',
+        'mid' => 'audio/midi',
+        'midi' => 'audio/midi',
+        'mov' => 'video/quicktime',
+        'mp3' => 'audio/mpeg',
+        'mp4' => 'video/mp4',
+        'mp4a' => 'audio/mp4',
+        'mp4v' => 'video/mp4',
+        'mpe' => 'video/mpeg',
+        'mpeg' => 'video/mpeg',
+        'mpg' => 'video/mpeg',
+        'mpg4' => 'video/mp4',
+        'oga' => 'audio/ogg',
+        'ogg' => 'audio/ogg',
+        'ogv' => 'video/ogg',
+        'ogx' => 'application/ogg',
+        'pbm' => 'image/x-portable-bitmap',
+        'pdf' => 'application/pdf',
+        'pgm' => 'image/x-portable-graymap',
+        'png' => 'image/png',
+        'pnm' => 'image/x-portable-anymap',
+        'ppm' => 'image/x-portable-pixmap',
+        'ppt' => 'application/vnd.ms-powerpoint',
+        'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'ps' => 'application/postscript',
+        'qt' => 'video/quicktime',
+        'rar' => 'application/x-rar-compressed',
+        'ras' => 'image/x-cmu-raster',
+        'rss' => 'application/rss+xml',
+        'rtf' => 'application/rtf',
+        'sgm' => 'text/sgml',
+        'sgml' => 'text/sgml',
+        'svg' => 'image/svg+xml',
+        'swf' => 'application/x-shockwave-flash',
+        'tar' => 'application/x-tar',
+        'tif' => 'image/tiff',
+        'tiff' => 'image/tiff',
+        'torrent' => 'application/x-bittorrent',
+        'ttf' => 'application/x-font-ttf',
+        'txt' => 'text/plain',
+        'wav' => 'audio/x-wav',
+        'webm' => 'video/webm',
+        'wma' => 'audio/x-ms-wma',
+        'wmv' => 'video/x-ms-wmv',
+        'woff' => 'application/x-font-woff',
+        'wsdl' => 'application/wsdl+xml',
+        'xbm' => 'image/x-xbitmap',
+        'xls' => 'application/vnd.ms-excel',
+        'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'xml' => 'application/xml',
+        'xpm' => 'image/x-xpixmap',
+        'xwd' => 'image/x-xwindowdump',
+        'yaml' => 'text/yaml',
+        'yml' => 'text/yaml',
+        'zip' => 'application/zip',
+    ];
+    $extensions = array_flip($mime_types);
+
+    $mime_type = strtolower($mime_type);
+
+    return $extensions[$mime_type] ?? null;
 }
 
 /**
  * Output a gz-file
  * @link https://php.net/manual/en/function.readgzfile.php
  *
- * @param $filename
+ * @param $filepath
  * The file name. This is the file to be opened from the filesystem and its
  * contents written to standard output.
  *
+ * @param $filename
+ * Defines the output filename
+ *
+ * @param $auto_download
+ * Specifies whether to do file automatically
+ *
  * @return bool
  */
-function render_file($filename) {
+function render_file($filepath, $filename = 'download', bool $auto_download = false) {
     header('Content-Description: Que File Transfer');
-    header("Content-type:" . mime_type_from_filename($filename));
+    header("Content-Disposition: " . ($auto_download ? "attachment; " : '') .
+        "filename={$filename}." . pathinfo($filepath, PATHINFO_EXTENSION));
+    header("Content-type:" . mime_type_from_filename($filepath));
     header('Content-Transfer-Encoding: binary');
-    header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+    header('Expires: Fri, 30 Dec 2050 00:00:00 GMT');
     header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
     header('Pragma: public');
-    header('Content-Length: ' . filesize($filename));
+    header('Content-Length: ' . filesize($filepath));
     ob_clean();
     flush();
     $limit = 0;
-    while (($status = readgzfile($filename)) === false && $limit < MAX_RETRY) $limit++;
+    while (($status = readgzfile($filepath)) === false && $limit < MAX_RETRY) $limit++;
     return $status !== false;
 }
 
@@ -1689,9 +1817,13 @@ function current_url(): string
  */
 function base_url(string $url = null, bool $forceUrl = false): string
 {
+
+    if (!($isNull = is_null($url)) && (str_starts_with($url, 'http://') ||
+            str_starts_with($url, 'https://'))) return $url;
+
     $host = server_host();
 
-    if (!($isNull = is_null($url)) && preg_match_all('/\{(.*?)\}/', $url, $matches)) {
+    if (!$isNull && preg_match_all('/\{(.*?)\}/', $url, $matches)) {
 
         $args = array_map(function ($m) {
             return trim($m, '?');

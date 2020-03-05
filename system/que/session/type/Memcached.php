@@ -50,13 +50,13 @@ class Memcached
 
             if (!$enable)
                 throw new QueRuntimeException("Can't use memcached, memcached is disabled from config", "Session Error",
-                    E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace(), 2));
+                    E_USER_ERROR, 0, PreviousException::getInstance(2));
 
             $this->memcached = new Memcache();
 
             if (!$this->memcached->addserver($host, $port))
                 throw new QueRuntimeException("Unable to connect to memcached", "Session Error",
-                    E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace(), 2));
+                    E_USER_ERROR, 0, PreviousException::getInstance(2));
         }
 
         $this->fetch_data();

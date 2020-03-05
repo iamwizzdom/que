@@ -70,7 +70,8 @@ class Menu
 
                 if ($this->checkPermission) {
                     $entry = $this->getRouteEntry($menu['href']);
-                    if (!$entry || !$this->menuInstance->hasPermission($entry)) {
+                    if (!($menu['override-permission'] ?? false) &&
+                        ((!$entry || empty($entry)) || !$this->menuInstance->hasPermission($entry))) {
                         unset($menus[$key]);
                         continue;
                     }

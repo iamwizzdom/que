@@ -42,13 +42,13 @@ class Redis
 
             if (!$enable)
                 throw new QueRuntimeException("Can't use redis, redis is disabled from config", "Session Error",
-                    E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace(), 2));
+                    E_USER_ERROR, 0, PreviousException::getInstance(2));
 
             $this->redis = new \Redis();
 
             if (!$this->redis->connect($host, $port))
                 throw new QueRuntimeException("Unable to connect to redis", "Session Error",
-                    E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace(), 2));
+                    E_USER_ERROR, 0, PreviousException::getInstance(2));
 
         }
 

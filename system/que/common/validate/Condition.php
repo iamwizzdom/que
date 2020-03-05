@@ -491,8 +491,9 @@ class Condition
     {
 
         if (!preg_match("/^[0-9]+$/", $this->getValue()))
-            $this->addError($error);
-        elseif (!($this->getValue() > $number)) $this->addError($error);
+            $this->addError((str_contains($error, "%s") ? sprintf($error, $number) : $error));
+        elseif (!($this->getValue() > $number))
+            $this->addError((str_contains($error, "%s") ? sprintf($error, $number) : $error));
 
         return $this;
     }
@@ -506,8 +507,9 @@ class Condition
     {
 
         if (!preg_match("/^[0-9]+$/", $this->getValue()))
-            $this->addError($error);
-        elseif (!($this->getValue() >= $number)) $this->addError($error);
+            $this->addError((str_contains($error, "%s") ? sprintf($error, $number) : $error));
+        elseif (!($this->getValue() >= $number))
+            $this->addError((str_contains($error, "%s") ? sprintf($error, $number) : $error));
 
         return $this;
     }
@@ -520,8 +522,9 @@ class Condition
     public function isNumberLessThan(int $number, $error = null): Condition
     {
         if (!preg_match("/^[0-9]+$/", $this->getValue()))
-            $this->addError($error);
-        elseif (!($this->getValue() < $number)) $this->addError($error);
+            $this->addError((str_contains($error, "%s") ? sprintf($error, $number) : $error));
+        elseif (!($this->getValue() < $number))
+            $this->addError((str_contains($error, "%s") ? sprintf($error, $number) : $error));
 
         return $this;
     }
@@ -534,8 +537,9 @@ class Condition
     public function isNumberLessThanOrEqual(int $number, $error = null): Condition
     {
         if (!preg_match("/^[0-9]+$/", $this->getValue()))
-            $this->addError($error);
-        elseif (!($this->getValue() <= $number)) $this->addError($error);
+            $this->addError((str_contains($error, "%s") ? sprintf($error, $number) : $error));
+        elseif (!($this->getValue() <= $number))
+            $this->addError((str_contains($error, "%s") ? sprintf($error, $number) : $error));
 
         return $this;
     }
@@ -561,8 +565,9 @@ class Condition
     {
 
         if (!filter_var($this->getValue(), FILTER_VALIDATE_FLOAT))
-            $this->addError($error);
-        elseif (!($this->getValue() > $number)) $this->addError($error);
+            $this->addError((str_contains($error, "%s") ? sprintf($error, $number) : $error));
+        elseif (!($this->getValue() > $number))
+            $this->addError((str_contains($error, "%s") ? sprintf($error, $number) : $error));
 
         return $this;
     }
@@ -576,8 +581,9 @@ class Condition
     {
 
         if (!filter_var($this->getValue(), FILTER_VALIDATE_FLOAT))
-            $this->addError($error);
-        elseif (!($this->getValue() >= $number)) $this->addError($error);
+            $this->addError((str_contains($error, "%s") ? sprintf($error, $number) : $error));
+        elseif (!($this->getValue() >= $number))
+            $this->addError((str_contains($error, "%s") ? sprintf($error, $number) : $error));
 
         return $this;
     }
@@ -590,8 +596,9 @@ class Condition
     public function isFloatingNumberLessThan(int $number, $error = null): Condition
     {
         if (!filter_var($this->getValue(), FILTER_VALIDATE_FLOAT))
-            $this->addError($error);
-        elseif (!($this->getValue() < $number)) $this->addError($error);
+            $this->addError((str_contains($error, "%s") ? sprintf($error, $number) : $error));
+        elseif (!($this->getValue() < $number))
+            $this->addError((str_contains($error, "%s") ? sprintf($error, $number) : $error));
 
         return $this;
     }
@@ -604,8 +611,9 @@ class Condition
     public function isFloatingNumberLessThanOrEqual(int $number, $error = null): Condition
     {
         if (!filter_var($this->getValue(), FILTER_VALIDATE_FLOAT))
-            $this->addError($error);
-        elseif (!($this->getValue() <= $number)) $this->addError($error);
+            $this->addError((str_contains($error, "%s") ? sprintf($error, $number) : $error));
+        elseif (!($this->getValue() <= $number))
+            $this->addError((str_contains($error, "%s") ? sprintf($error, $number) : $error));
 
         return $this;
     }
@@ -723,7 +731,7 @@ class Condition
     public function hasMaxWord($max, $error = null): Condition
     {
         if (str_word_count($this->getValue()) > $max)
-            $this->addError($error);
+            $this->addError((str_contains($error, "%s") ? sprintf($error, $max) : $error));
 
         return $this;
     }
@@ -736,7 +744,7 @@ class Condition
     public function hasMinWord($min = 3, $error = null): Condition
     {
         if (str_word_count($this->getValue()) < $min)
-            $this->addError($error);
+            $this->addError((str_contains($error, "%s") ? sprintf($error, $min) : $error));
 
         return $this;
     }
@@ -749,7 +757,7 @@ class Condition
     public function hasMaxLength($max, $error = null): Condition
     {
         if (strlen($this->getValue()) > $max)
-            $this->addError($error);
+            $this->addError((str_contains($error, "%s") ? sprintf($error, $max) : $error));
 
         return $this;
     }
@@ -762,7 +770,7 @@ class Condition
     public function hasMinLength($min = 3, $error = null): Condition
     {
         if (strlen($this->getValue()) < $min)
-            $this->addError($error);
+            $this->addError((str_contains($error, "%s") ? sprintf($error, $min) : $error));
 
         return $this;
     }
@@ -878,21 +886,25 @@ class Condition
 
     /**
      * @param $function
-     * @return $this
+     * @param mixed ...$extra_params
+     * @return Condition
      */
-    public function _call($function): Condition
+    public function _call($function, ...$extra_params): Condition
     {
         if (!function_exists($function)) return $this;
 
         if (is_array($this->getValue())) {
             $value = $this->getValue();
-            foreach ($value as $key => $item)
-                $value[$key] = call_user_func($function, $item);
+            foreach ($value as $key => $item) {
+                $params = array_merge([$item], $extra_params);
+                $value[$key] = call_user_func($function, ...$params);
+            }
             $this->setValue($value);
             return $this;
         }
 
-        $this->setValue(call_user_func($function, $this->getValue()));
+        $params = array_merge([$this->getValue()], $extra_params);
+        $this->setValue(call_user_func($function, ...$params));
 
         return $this;
     }

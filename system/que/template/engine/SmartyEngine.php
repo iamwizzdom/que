@@ -148,7 +148,7 @@ class SmartyEngine
             $this->smarty->display($this->getTmpFileName());
         } catch (Exception $e) {
             throw new QueRuntimeException($e->getMessage(), "Que Templating Error",
-                E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace(), 1));
+                E_USER_ERROR, 0, PreviousException::getInstance(1));
         }
     }
 }

@@ -86,7 +86,8 @@ class Form
         $formClose = '';
 
         if (($currentRoute && $currentRoute->isRequireCSRFAuth()) &&
-            str_contains($this->formAction, base_url()) && strtolower($this->formMethod) != "get")
+            ($this->formAction == "#" || str_contains($this->formAction, base_url())) &&
+            strtolower($this->formMethod) != "get")
         {
             $formClose .= "<input type='hidden' name='csrf' value='{$this->getCsrfToken()}'/>\n";
         }

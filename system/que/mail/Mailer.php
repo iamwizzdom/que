@@ -117,10 +117,10 @@ class Mailer
 
     /**
      * @param string $key
-     * @param int $using
+     * @param int $compose_using
      * @throws QueException
      */
-    public function prepare(string $key, int $using = self::COMPOSE_USING_SMARTY) {
+    public function prepare(string $key, int $compose_using = self::COMPOSE_USING_SMARTY) {
 
         if (!array_key_exists($key, $this->mailQueue))
             throw new QueException("Undefined key: '{$key}' not found in mailer queue", "Mailer error");
@@ -133,8 +133,8 @@ class Mailer
         if (!$this->composer instanceof Composer)
             throw new QueException("Composer not set. Mail cannot be prepared without composer.", "Mailer error");
 
-        $mail->AltBody = $this->parse($mail->getBodyPath(), $mail->getData(), $using);
-        $mail->MsgHTML = $this->parse($mail->getHtmlPath(), $mail->getData(), $using);
+        $mail->AltBody = $this->parse($mail->getBodyPath(), $mail->getData(), $compose_using);
+        $mail->MsgHTML = $this->parse($mail->getHtmlPath(), $mail->getData(), $compose_using);
 
         $this->composer->_flush();
 
@@ -223,29 +223,29 @@ class Mailer
     /**
      * @param string $path
      * @param array $data
-     * @param int $using
+     * @param int $compose_using
      * @return false|string
      * @throws QueException
      */
-    protected function parse(string $path, array $data, int $using)
+    protected function parse(string $path, array $data, int $compose_using)
     {
-        return $this->render($path, $data, $using);
+        return $this->render($path, $data, $compose_using);
     }
 
     /**
      * @param string $file
      * @param array $data
-     * @param int $using
+     * @param int $compose_using
      * @throws QueException
      */
-    protected function display(string $file, array $data, int $using)
+    protected function display(string $file, array $data, int $compose_using)
     {
         $this->composer->dataOverwrite($data);
         $this->composer->setTmpFileName($file);
         $this->composer->prepare();
-        if ($using == self::COMPOSE_USING_SMARTY)
+        if ($compose_using == self::COMPOSE_USING_SMARTY)
             $this->composer->renderWithSmarty();
-        elseif ($using == self::COMPOSE_USING_TWIG)
+        elseif ($compose_using == self::COMPOSE_USING_TWIG)
             $this->composer->renderWithTwig();
         else throw new QueException(
             "Trying to compose mail template using an unsupported templating engine type", "Mailer error");
@@ -254,14 +254,14 @@ class Mailer
     /**
      * @param string $file
      * @param array $data
-     * @param int $using
+     * @param int $compose_using
      * @return false|string
      * @throws QueException
      */
-    protected function render(string $file, array $data, int $using)
+    protected function render(string $file, array $data, int $compose_using)
     {
         ob_start();
-        $this->display($file, $data, $using);
+        $this->display($file, $data, $compose_using);
         $content = ob_get_contents();
         if (ob_get_length()) {
             ob_end_clean();

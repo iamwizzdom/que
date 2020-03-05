@@ -51,6 +51,7 @@ const MAX_FILE = 999;
  * HTTP status code constants
  */
 const HTTP_SUCCESS_CODE = 200;
+const HTTP_CREATED_CODE = 201;
 const HTTP_MOVED_PERMANENTLY_CODE = 301;
 const HTTP_BAD_REQUEST_CODE = 400;
 const HTTP_UNAUTHORIZED_CODE = 401;

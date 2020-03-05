@@ -13,8 +13,6 @@
 
 use que\common\time\Time;
 
-require "../../../app/app.settings.php";
-
 if (preg_match('/\[(.*?)\]/', "app_job.jobID[>=]", $matches)) {
 
     debug_print([trim($matches[1], '?'), preg_replace('/\[(.*?)\]/', "", "app_job.jobID[>=]")]);

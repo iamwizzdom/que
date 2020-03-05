@@ -10,7 +10,7 @@ namespace que\common\structure;
 
 use que\template\Composer;
 
-interface Add
+interface Add extends Receiver
 {
 
     /**
@@ -19,13 +19,6 @@ interface Add
      * @note Que will run this method for you automatically
      */
     public function onLoad(array $uri_args): void;
-
-    /**
-     * This method will run when the module is accessed via POST request
-     * @param array $uri_args - This parameter provides the arguments found in the uri
-     * @note Que will run this method for you automatically
-     */
-    public function onReceive(array $uri_args): void;
 
     /**
      * This method will run last, to finalize your Composer and render your template

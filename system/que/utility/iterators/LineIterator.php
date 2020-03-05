@@ -9,7 +9,7 @@
 namespace que\utility\iterators;
 
 use Iterator;
-use RuntimeException;
+use que\common\exception\QueRuntimeException;
 
 class LineIterator implements Iterator {
 
@@ -28,9 +28,9 @@ class LineIterator implements Iterator {
      */
 	protected $i = 0;
 
-	public function __construct($fileName) {
+	public function __construct(string $fileName) {
 		if (!$this->fileHandle = fopen($fileName, 'r'))
-            throw new RuntimeException("Couldn't open file '{$fileName}'");
+            throw new QueRuntimeException("Couldn't open file '{$fileName}'");
 	}
 
 	public function rewind() {
@@ -65,6 +65,7 @@ class LineIterator implements Iterator {
 			$this->line = fgets($this->fileHandle);
 			$this->i++;
 		}
+        return $this->line;
 	}
 
 	public function __destruct() {

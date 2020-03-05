@@ -259,9 +259,8 @@ class RouteInspector
             )) {
 
                 CSRF::getInstance()->generateToken();
-                http()->http_response_code(HTTP_INVALID_AUTH_CODE);
                 throw new RouteException("Cross-site request forgery (CSRF) are forbidden",
-                    "Route Error", E_USER_NOTICE);
+                    "CSRF Error", HTTP_INVALID_AUTH_CODE);
 
             } else CSRF::getInstance()->generateToken();
 
@@ -271,7 +270,7 @@ class RouteInspector
 
     /**
      * @param Http $http
-     * @throws Exception
+     * @throws RouteException
      */
     public static function validateJWT(Http $http) {
         try {
@@ -286,8 +285,7 @@ class RouteInspector
             $http->_server()->offsetSet("JWT_PAYLOAD", $tokenDecoded->getPayload());
             $http->_server()->offsetSet("JWT_HEADER", $tokenDecoded->getHeader());
         } catch (Exception $e) {
-            $http->http_response_code(HTTP_INVALID_AUTH_CODE);
-            throw $e;
+            throw new RouteException($e->getMessage(), "JWT Auth Error", HTTP_INVALID_AUTH_CODE);
         }
     }
 }

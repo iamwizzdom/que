@@ -301,7 +301,7 @@ class Query extends Connect
             if ($this->isDebug()) {
                 throw new QueRuntimeException("Error: {$error} \nSQL: '{$sql}'\n",
                     "Database Error", E_USER_ERROR, 0,
-                    PreviousException::getInstance(debug_backtrace()));
+                    PreviousException::getInstance());
             }
         }
 
@@ -337,7 +337,7 @@ class Query extends Connect
             if ($this->isDebug()) {
                 throw new QueRuntimeException("Error: {$error} \nSQL: '{$sql}'\n",
                     "Database Error", E_USER_ERROR, 0,
-                    PreviousException::getInstance(debug_backtrace()));
+                    PreviousException::getInstance());
             }
         }
 
@@ -374,7 +374,7 @@ class Query extends Connect
             if ($this->isDebug()) {
                 throw new QueRuntimeException("Error: {$error} \nSQL: '{$sql}'\n",
                     "Database Error", E_USER_ERROR, 0,
-                    PreviousException::getInstance(debug_backtrace()));
+                    PreviousException::getInstance());
             }
         }
 
@@ -504,8 +504,7 @@ class Query extends Connect
 
             if ($this->isDebug()) {
                 throw new QueRuntimeException("Error: {$error} \nSQL: '{$sql}'\n",
-                    "Database Error", E_USER_ERROR, 0,
-                    PreviousException::getInstance(debug_backtrace()));
+                    "Database Error", E_USER_ERROR, 0, PreviousException::getInstance());
             }
         }
 
@@ -592,8 +591,7 @@ class Query extends Connect
 
             if ($this->isDebug()) {
                 throw new QueRuntimeException("Error: {$error} \nSQL: '{$sql}'\n",
-                    "Database Error", E_USER_ERROR, 0,
-                    PreviousException::getInstance(debug_backtrace()));
+                    "Database Error", E_USER_ERROR, 0, PreviousException::getInstance());
             }
         }
 
@@ -624,8 +622,7 @@ class Query extends Connect
 
             if ($this->isDebug()) {
                 throw new QueRuntimeException("Error: {$error} \nSQL: '{$sql}'\n",
-                    "Database Error", E_USER_ERROR, 0,
-                    PreviousException::getInstance(debug_backtrace()));
+                    "Database Error", E_USER_ERROR, 0, PreviousException::getInstance());
             }
         }
 
@@ -657,8 +654,7 @@ class Query extends Connect
 
             if ($this->isDebug()) {
                 throw new QueRuntimeException("Error: {$error} \nSQL: '{$sql}'\n",
-                    "Database Error", E_USER_ERROR, 0,
-                    PreviousException::getInstance(debug_backtrace()));
+                    "Database Error", E_USER_ERROR, 0, PreviousException::getInstance());
             }
         }
 
@@ -695,8 +691,7 @@ class Query extends Connect
 
             if ($this->isDebug()) {
                 throw new QueRuntimeException("Error: {$error} \nSQL: '{$sql}'\n",
-                    "Database Error", E_USER_ERROR, 0,
-                    PreviousException::getInstance(debug_backtrace()));
+                    "Database Error", E_USER_ERROR, 0, PreviousException::getInstance());
             }
         }
 
@@ -738,8 +733,7 @@ class Query extends Connect
 
             if ($this->isDebug()) {
                 throw new QueRuntimeException("Error: {$error} \nSQL: '{$sql}'\n",
-                    "Database Error", E_USER_ERROR, 0,
-                    PreviousException::getInstance(debug_backtrace()));
+                    "Database Error", E_USER_ERROR, 0, PreviousException::getInstance());
             }
         }
 
@@ -782,8 +776,7 @@ class Query extends Connect
 
             if ($this->isDebug()) {
                 throw new QueRuntimeException("Error: {$error} \nSQL: '{$sql}'\n",
-                    "Database Error", E_USER_ERROR, 0,
-                    PreviousException::getInstance(debug_backtrace()));
+                    "Database Error", E_USER_ERROR, 0, PreviousException::getInstance());
             }
         }
 
@@ -825,8 +818,7 @@ class Query extends Connect
 
             if ($this->isDebug()) {
                 throw new QueRuntimeException("Error: {$error} \nSQL: '{$sql}'\n",
-                    "Database Error", E_USER_ERROR, 0,
-                    PreviousException::getInstance(debug_backtrace()));
+                    "Database Error", E_USER_ERROR, 0, PreviousException::getInstance());
             }
         }
 
@@ -1165,7 +1157,7 @@ class Query extends Connect
     {
         foreach ($data as $key => $value) {
             if (is_null($value)) continue;
-            $data[$key] = addslashes($value);
+            $data[$key] = $this->escape_string($value);
         }
         return $data;
     }
@@ -1179,7 +1171,6 @@ class Query extends Connect
         foreach ($data as $key => $value) {
             if (is_null($value)) continue;
             $data->{$key} = stripslashes($value);
-            $data->{$key} = $this->escape_string($data->{$key});
         }
         return $data;
     }

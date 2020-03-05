@@ -14,15 +14,16 @@ class PreviousException extends Exception
 {
 
     /**
-     * @param array $backtrace
-     * @param int $index
+     * @param int $backtrace_index
+     * @param array|null $backtrace
      * @return PreviousException
      */
-    public static function getInstance(array $backtrace, int $index = 0)
+    public static function getInstance(int $backtrace_index = 0, array $backtrace = null)
     {
+        $backtrace = $backtrace ?: debug_backtrace();
         $e = new self();
-        $e->file = ($backtrace[$index]['file'] ?? '');
-        $e->line = ($backtrace[$index]['line'] ?? '');
+        $e->file = ($backtrace[$backtrace_index]['file'] ?? '');
+        $e->line = ($backtrace[$backtrace_index]['line'] ?? '');
         return $e;
     }
 

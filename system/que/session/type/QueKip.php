@@ -158,7 +158,7 @@ class QueKip
                 $this->mk_dir($filePath);
             } catch (QueException $e) {
                 throw new QueRuntimeException($e->getMessage(), "Session Error",
-                    E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace(), 2));
+                    E_USER_ERROR, 0, PreviousException::getInstance(2));
             }
         }
 
@@ -169,7 +169,7 @@ class QueKip
 
         if (($cache = @file_get_contents("{$filePath}/que_session_{$fileName}.tmp")) === false)
             throw new QueRuntimeException("Unable to read from quekip cache file!", "Session Error",
-                E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace(), 2));
+                E_USER_ERROR, 0, PreviousException::getInstance(2));
 
         $this->data = !empty($cache) && strlen($cache) > 0 ? unserialize($cache) : [];
 
@@ -188,7 +188,7 @@ class QueKip
                 $this->mk_dir($filePath);
             } catch (QueException $e) {
                 throw new QueRuntimeException($e->getMessage(), "Session Error",
-                    E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace(), 2));
+                    E_USER_ERROR, 0, PreviousException::getInstance(2));
             }
         }
 
@@ -200,7 +200,7 @@ class QueKip
         if (($status = @file_put_contents("{$filePath}/que_session_{$fileName}.tmp",
             serialize($this->data))) === false)
             throw new QueRuntimeException("Unable to write to quekip cache file!", "Session Error",
-                E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace(), 2));
+                E_USER_ERROR, 0, PreviousException::getInstance(2));
 
         return $status;
     }

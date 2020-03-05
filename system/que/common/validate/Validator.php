@@ -8,8 +8,8 @@
 
 namespace que\common\validate;
 
-use que\common\exception\QueException;
-use que\error\RuntimeError;
+use que\common\exception\PreviousException;
+use que\common\exception\QueRuntimeException;
 use que\http\input\Input;
 use que\session\Session;
 
@@ -77,22 +77,16 @@ class Validator
     }
 
     /**
-     * @param null $key
-     * @return mixed
+     * @param $key
+     * @return mixed|null
      */
     public function getValue($key)
     {
-        try {
+        if (!array_key_exists($key, $this->input->_get()))
+            throw new QueRuntimeException("Undefined input key -- '{$key}'", "Validator error",
+                0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
 
-            if (!array_key_exists($key, $this->input->_get()))
-                throw new QueException("Undefined input key -- '{$key}'", "Validator error");
-
-            return $this->input[$key];
-
-        } catch (QueException $e) {
-
-            RuntimeError::render(E_USER_ERROR, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(), $e->getTitle());
-        }
+        return $this->input[$key];
     }
 
     /**
@@ -136,20 +130,14 @@ class Validator
      */
     public function validate($key): Condition {
 
-        try {
+        if (!array_key_exists($key, $this->input->_get()))
+            throw new QueRuntimeException("Undefined input key -- '{$key}'", "Validator error",
+                0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
 
-            if (!array_key_exists($key, $this->input->_get()))
-                throw new QueException("Undefined input key -- '{$key}'", "Validator error");
+        if (!isset($this->condition[$key]))
+            $this->condition[$key] = new Condition($key, @$this->input[$key], $this);
 
-            if (!isset($this->condition[$key]))
-                $this->condition[$key] = new Condition($key, @$this->input[$key], $this);
-
-            return $this->condition[$key];
-
-        } catch (QueException $e) {
-
-            RuntimeError::render(E_USER_ERROR, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(), $e->getTitle());
-        }
+        return $this->condition[$key];
 
     }
 
@@ -159,23 +147,18 @@ class Validator
      */
     public function validateMulti($key): ConditionStack {
 
-        try {
+        if (!array_key_exists($key, $this->input->_get()))
+            throw new QueRuntimeException("Undefined input key -- '{$key}'", "Validator error",
+                0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
 
-            if (!array_key_exists($key, $this->input->_get()))
-                throw new QueException("Undefined input key -- '{$key}'", "Validator error");
+        if (!is_array($this->input[$key]))
+            throw new QueRuntimeException("Value for input with key '{$key}' is not an array", "Validator error",
+                0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
 
-            if (!is_array($this->input[$key]))
-                throw new QueException("Value for input with key '{$key}' is not an array", "Validator error");
+        if (!isset($this->condition[$key]))
+            $this->condition[$key] = new ConditionStack($key, @$this->input[$key], $this);
 
-            if (!isset($this->condition[$key]))
-                $this->condition[$key] = new ConditionStack($key, @$this->input[$key], $this);
-
-            return $this->condition[$key];
-
-        } catch (QueException $e) {
-
-            RuntimeError::render(E_USER_ERROR, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(), $e->getTitle());
-        }
+        return $this->condition[$key];
 
     }
 
@@ -187,10 +170,10 @@ class Validator
     }
 
     /**
-     * @return Base64Image
+     * @return Base64File
      */
-    public function validateBase64Image(): Base64Image {
-        return Base64Image::getInstance();
+    public function validateBase64File(): Base64File {
+        return Base64File::getInstance();
     }
 
     /**
@@ -285,8 +268,10 @@ class Validator
         if (isset($this->input[$key]['size']) &&
             $this->input[$key]['size'] > 0) return true;
 
-        foreach ($this->input[$key] as $value)
-            if (isset($value['size']) && $value['size'] > 0) return true;
+        if (is_array($this->input[$key])) {
+            foreach ($this->input[$key] as $value)
+                if (isset($value['size']) && $value['size'] > 0) return true;
+        }
 
         return false;
     }
@@ -508,11 +493,13 @@ class Validator
     /**
      * @param $key
      * @param $function
+     * @param mixed ...$extra_params
      * @return Validator
      */
-    public function _call($key, $function): Validator {
+    public function _call($key, $function, ...$extra_params): Validator {
         if (!function_exists($function)) return $this;
-        $value = call_user_func($function, $this->getValue($key));
+        $params = array_merge([$this->getValue($key)], $extra_params);
+        $value = call_user_func($function, ...$params);
         $this->setValue($key, $value);
         return $this;
     }

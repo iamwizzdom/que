@@ -8,10 +8,8 @@
 
 namespace que\error;
 
-use Exception;
 use que\route\Route;
 use que\utility\ImageGenerator;
-use Smarty;
 
 abstract class RuntimeError
 {
@@ -19,20 +17,6 @@ abstract class RuntimeError
      * @var bool
      */
     private static $hasError = false;
-
-    /**
-     * @var Smarty
-     */
-    private static $smarty;
-
-    /**
-     * @return Smarty
-     */
-    private static function getSmarty() {
-        if (!isset(self::$smarty))
-            self::$smarty = new Smarty();
-        return self::$smarty;
-    }
 
     /**
      * @param $error_level
@@ -110,33 +94,14 @@ abstract class RuntimeError
             $image->render();
 
         } else {
-            $smarty = self::getSmarty();
 
-            $error['message'] = nl2br($error['message']);
+            $composer = composer();
 
-            $smarty->assign("header", APP_TEMP_HEADER);
-            $smarty->assign("data", $error);
-
-            $tmp_dir = QUE_PATH . "/error/tmp";
-            $tmp = "error.html";
-
-            if (is_file(APP_ERROR_TMP)) {
-                $pathinfo = pathinfo(APP_ERROR_TMP);
-                $tmp_dir = $pathinfo["dirname"];
-                $tmp = $pathinfo["basename"];
-            }
-
-            $smarty->addTemplateDir($tmp_dir);
-            $smarty->setCompileDir(QUE_PATH . "/cache/tmp/smarty/compile_dir/");
-            $smarty->setConfigDir(QUE_PATH . "/cache/tmp/smarty/config_dir/");
-            $smarty->setCacheDir(QUE_PATH . "/cache/tmp/smarty/cache_dir/");
-            $smarty->setCacheLifetime(1);
-
-            try {
-                $smarty->display($tmp);
-            } catch (Exception $e) {
-                die($e->getMessage());
-            }
+            $error['message'] = trim($error['message']);
+            $composer->resetTmpDir(LIVE ? (APP_PATH . "/template/") : (QUE_PATH . "/error/tmp"));
+            $composer->data($error);
+            $composer->setTmpFileName(LIVE ? APP_ERROR_TMP : "error.html");
+            $composer->prepare()->renderWithSmarty();
         }
 
         die();

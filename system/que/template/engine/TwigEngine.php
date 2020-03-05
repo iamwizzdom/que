@@ -142,7 +142,7 @@ class TwigEngine
             $this->twig->display($this->getTmpFileName(), $this->getContext());
         } catch (Exception $e) {
             throw new QueRuntimeException($e->getMessage(), "Que Templating Error", E_USER_ERROR,
-                0, PreviousException::getInstance(debug_backtrace(), 1));
+                0, PreviousException::getInstance(1));
         }
     }
 }

@@ -41,7 +41,7 @@ abstract class State
 
         if (!isset($state['uid'])) throw new QueRuntimeException(
             "Trying to set state without a 'uid' key. Your state must have a unique id",
-            "State Error", E_USER_ERROR, 0, PreviousException::getInstance(debug_backtrace()));
+            "State Error", E_USER_ERROR, 0, PreviousException::getInstance());
 
         Session::getInstance()->getFiles()->_get()['session']['user'] = $state;
 

@@ -240,6 +240,14 @@ class Model implements ArrayAccess
         $this->object->{$offset} = $value;
     }
 
+
+    public function offsetRename($offset, $to)
+    {
+        // TODO: Implement offsetSet() method.
+        $this->object->{$to} = $this->offsetGet($offset);
+        $this->offsetUnset($offset);
+    }
+
     /**
      * Offset to unset
      * @link https://php.net/manual/en/arrayaccess.offsetunset.php
