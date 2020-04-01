@@ -1398,11 +1398,12 @@ function db(bool $persist = (CONFIG['database']['mysql']['persist'] ?? false)): 
 }
 
 /**
+ * @param bool $singleton
  * @return Composer
  */
-function composer(): Composer
+function composer(bool $singleton = true): Composer
 {
-    return Composer::getInstance();
+    return Composer::getInstance($singleton);
 }
 
 /**
@@ -1460,8 +1461,7 @@ function has_route_permission(RouteEntry $entry): bool {
     if (!class_exists($module, true)) return false;
     $implement = class_implements($module, true);
     if (!isset($implement['que\security\permission\RoutePermission'])) return true;
-    $instance = new $module();
-    return $instance->hasPermission($entry);
+    return (new $module())->hasPermission($entry);
 }
 
 /**
@@ -1819,7 +1819,10 @@ function base_url(string $url = null, bool $forceUrl = false): string
 {
 
     if (!($isNull = is_null($url)) && (str_starts_with($url, 'http://') ||
-            str_starts_with($url, 'https://'))) return $url;
+            str_starts_with($url, 'https://'))) {
+        if (!str_starts_with($url, $base = base_url())) return $url;
+        else $url = str_start_from($url, $base);
+    }
 
     $host = server_host();
 
@@ -1840,8 +1843,9 @@ function base_url(string $url = null, bool $forceUrl = false): string
     if (!$isNull) {
         $routeEntry = Route::getRouteEntry($url);
         if ($routeEntry instanceof RouteEntry) {
-            if ($routeEntry->isRequireLogIn() === true && !is_logged_in() && !$forceUrl) return '#';
-            elseif (!has_route_permission($routeEntry) && !$forceUrl) return '#';
+            if ($routeEntry->isRequireLogIn() === true && !is_logged_in()) {
+                if (!$forceUrl) return '#';
+            } elseif (!has_route_permission($routeEntry) && !$forceUrl) return '#';
         }
     }
 

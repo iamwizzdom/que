@@ -57,9 +57,10 @@ class Http
      * @param null $default
      * @return mixed|null
      */
-    public function getLastUrl($default = null)
+    public function getReferer($default = null)
     {
-        return $this->_header()->get("Referer", $default);
+        $referer = $this->_header()->get("Referer");
+        return $referer ? ($referer != current_url() ? $referer : $default) : $default;
     }
 
     /**

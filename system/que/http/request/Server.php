@@ -77,7 +77,7 @@ class Server implements  ArrayAccess, Countable, JsonSerializable, IteratorAggre
     }
 
     /**
-     * @param string $offset
+     * @param $offset
      * @param null $default
      * @return mixed|null
      */

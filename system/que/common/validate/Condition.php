@@ -123,8 +123,7 @@ class Condition
      */
     public function addError($error): Condition
     {
-        if ($error === null)
-            $error = "Value for '{$this->key}' does not seem to be valid when '{$this->getValue()}' value is given";
+        if ($error === null) $error = "Value for '{$this->key}' does not seem to be valid when '{$this->getValue()}' value is given";
         array_push($this->error, $error);
         return $this;
     }

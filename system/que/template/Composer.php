@@ -5,6 +5,7 @@
  * Date: 12/12/2017
  * Time: 2:09 AM
  */
+
 namespace que\template;
 
 use que\common\exception\PreviousException;
@@ -73,12 +74,17 @@ class Composer
     /**
      * @var array
      */
-    private $css =[];
+    private $css = [];
 
     /**
      * @var array
      */
-    private $script =[];
+    private $script = [];
+
+    /**
+     * @var bool
+     */
+    private $prepared = false;
 
     protected function __construct()
     {
@@ -95,10 +101,13 @@ class Composer
     }
 
     /**
+     * @param bool $singleton
      * @return Composer
      */
-    public static function getInstance()
+    public static function getInstance(bool $singleton = true)
     {
+        if (!$singleton) return new self();
+
         if (!isset(self::$instance))
             self::$instance = new self();
         return self::$instance;
@@ -107,21 +116,24 @@ class Composer
     /**
      * @param array $data
      */
-    public function data(array $data){
+    public function data(array $data)
+    {
         $this->data = $data;
     }
 
     /**
      * @param array $data
      */
-    public function dataOverwrite(array $data){
+    public function dataOverwrite(array $data)
+    {
         $this->data = array_merge($this->data, $data);
     }
 
     /**
      * @param array $data
      */
-    public function dataExtra(array $data){
+    public function dataExtra(array $data)
+    {
         $this->data = array_merge_recursive($this->data, $data);
     }
 
@@ -137,21 +149,24 @@ class Composer
     /**
      * @param array $header
      */
-    public function header(array $header){
+    public function header(array $header)
+    {
         $this->header = $header;
     }
 
     /**
      * @param array $header
      */
-    public function headerOverwrite(array $header){
+    public function headerOverwrite(array $header)
+    {
         $this->header = array_merge($this->header, $header);
     }
 
     /**
      * @param array $header
      */
-    public function headerExtra(array $header){
+    public function headerExtra(array $header)
+    {
         $this->header = array_merge_recursive($this->header, $header);
     }
 
@@ -169,7 +184,8 @@ class Composer
      * @param $message
      * @return AlertButton
      */
-    public function alert($type, $title, $message): AlertButton {
+    public function alert($type, $title, $message): AlertButton
+    {
 
         if ($type !== ALERT_SUCCESS && $type !== ALERT_ERROR && $type !== ALERT_WARNING)
             throw new QueRuntimeException("You passed an invalid alert type", 'Composer error',
@@ -202,7 +218,8 @@ class Composer
     /**
      * @param array $alert
      */
-    public function setAlert(array $alert) {
+    public function setAlert(array $alert)
+    {
         $this->alert = $alert;
     }
 
@@ -218,7 +235,8 @@ class Composer
      * @param string $key
      * @param $data
      */
-    public function form(string $key, $data) {
+    public function form(string $key, $data)
+    {
         $this->form[$key] = $data;
     }
 
@@ -234,7 +252,8 @@ class Composer
     /**
      * @param array $css
      */
-    public function css(array $css = []) {
+    public function css(array $css = [])
+    {
         $this->css = $css;
     }
 
@@ -249,7 +268,8 @@ class Composer
     /**
      * @param array $script
      */
-    public function script(array $script = []) {
+    public function script(array $script = [])
+    {
         $this->script = $script;
     }
 
@@ -264,7 +284,8 @@ class Composer
     /**
      * @param $tmpFileName
      */
-    public function setTmpFileName($tmpFileName){
+    public function setTmpFileName($tmpFileName)
+    {
         $this->tmpFileName = $tmpFileName;
     }
 
@@ -276,20 +297,25 @@ class Composer
         return $this->tmpFileName;
     }
 
-    public function resetTmpDir(string $dir) {
+    public function resetTmpDir(string $dir)
+    {
         $this->tmpDir = $dir;
     }
 
-    private function http_header() {
-        $http_header = http()->redirect()->getHeader(); $header = [];
+    private function http_header()
+    {
+        $http_header = http()->redirect()->getHeader();
+        $header = [];
         foreach ($http_header as $key => $value)
             $header['http'][$key] = $value;
         $this->headerExtra($header);
         unset(Session::getInstance()->getFiles()->_get()['http']['http-header']);
     }
 
-    private function http_data() {
-        $http_data = http()->redirect()->getData(); $data = [];
+    private function http_data()
+    {
+        $http_data = http()->redirect()->getData();
+        $data = [];
         foreach ($http_data as $key => $value) $data['http'][$key] = $value;
         $this->dataExtra($data);
         unset(Session::getInstance()->getFiles()->_get()['http']['http-data']);
@@ -298,7 +324,8 @@ class Composer
     /**
      * @return string|string[]|null
      */
-    private function get_tmp_module() {
+    private function get_tmp_module()
+    {
         $route = Route::getCurrentRoute();
         if (empty($route)) return "";
         return $route->getUri() == '/' ? 'home' : preg_replace("[/]", "-",
@@ -308,11 +335,13 @@ class Composer
     /**
      * @return array
      */
-    private function get_tmp_module_files(): array {
+    private function get_tmp_module_files(): array
+    {
         $files = [
             'js' => [],
             'css' => [],
-        ]; $module = $this->get_tmp_module();
+        ];
+        $module = $this->get_tmp_module();
         foreach ($this->tmp_module_suffix as $suffix) {
             $js = "js/module/{$module}{$suffix}";
             $css = "css/module/{$module}{$suffix}";
@@ -341,6 +370,22 @@ class Composer
     }
 
     /**
+     * @return bool
+     */
+    public function isPrepared(): bool
+    {
+        return $this->prepared;
+    }
+
+    /**
+     * @param bool $prepared
+     */
+    public function setPrepared(bool $prepared): void
+    {
+        $this->prepared = $prepared;
+    }
+
+    /**
      * @param bool $ignoreDefaultCss
      * @param bool $ignoreDefaultScript
      * @param bool $ignoreDefaultHeader
@@ -348,7 +393,8 @@ class Composer
      */
     public function prepare(bool $ignoreDefaultCss = false,
                             bool $ignoreDefaultScript = false,
-                            bool $ignoreDefaultHeader = false) {
+                            bool $ignoreDefaultHeader = false)
+    {
 
         $this->http_header();
         $this->http_data();
@@ -416,6 +462,7 @@ class Composer
         $this->setContext("menu", self::$menu->getMenu());
         $this->setContext('header', $this->getHeader());
         $this->setContext("pagination", Pagination::getInstance());
+        $this->setPrepared(true);
 
         return $this;
     }
@@ -425,21 +472,28 @@ class Composer
      * @param bool $returnAsString
      * @return false|string
      */
-    public function renderWithSmarty(bool $returnAsString = false) {
+    public function renderWithSmarty(bool $returnAsString = false)
+    {
+        if ($returnAsString) ob_start();
+
+        if (!$this->isPrepared())
+            throw new QueRuntimeException("The current template '{$this->getTmpFileName()}' is not prepared for rending. You cannot render an unprepared template.",
+            'Composer error', E_USER_ERROR, 0, PreviousException::getInstance(1));
+
         $smarty = SmartyEngine::getInstance();
         $smarty->setTmpDir($this->tmpDir);
         $smarty->setCacheDir((QUE_PATH . "/cache/tmp/smarty"));
         $smarty->setTmpFileName($this->getTmpFileName());
         $smarty->setContext($this->getContext());
 
+        $smarty->render();
+        $this->_flush();
+
         if ($returnAsString === true) {
-            $smarty->render();
             $content = ob_get_contents();
             if (ob_get_length()) ob_end_clean();
             return $content;
         }
-
-        $smarty->render();
     }
 
     /**
@@ -447,28 +501,38 @@ class Composer
      * @param bool $returnAsString
      * @return false|string
      */
-    public function renderWithTwig(bool $returnAsString = false) {
+    public function renderWithTwig(bool $returnAsString = false)
+    {
+        if ($returnAsString) ob_start();
+
+        if (!$this->isPrepared())
+            throw new QueRuntimeException("The current template '{$this->getTmpFileName()}' is not prepared for rending. You cannot render an unprepared template.",
+                'Composer error', E_USER_ERROR, 0, PreviousException::getInstance(1));
+
         $twig = TwigEngine::getInstance();
         $twig->setTmpDir($this->tmpDir);
         $twig->setCacheDir((QUE_PATH . "/cache/tmp/twig"));
         $twig->setTmpFileName($this->getTmpFileName());
         $twig->setContext($this->getContext());
 
+        $twig->render();
+        $this->_flush();
+
         if ($returnAsString === true) {
-            $twig->render();
             $content = ob_get_contents();
             if (ob_get_length()) ob_end_clean();
             return $content;
         }
-
-        $twig->render();
     }
 
     /**
      * This method simply resets all data passed to composer
      */
-    public function _flush() {
-        $this->data = $this->header = $this->script = $this->css = $this->form = $this->alert = $this->context = [];
+    public function _flush()
+    {
+        $this->data = $this->header = $this->script = $this->css =
+        $this->form = $this->alert = $this->context = [];
+        $this->prepared = false;
     }
 
 }

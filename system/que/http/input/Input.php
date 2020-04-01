@@ -14,6 +14,11 @@ use Countable;
 use IteratorAggregate;
 use JsonSerializable;
 use que\http\Http;
+use que\http\request\Files;
+use que\http\request\Get;
+use que\http\request\Header;
+use que\http\request\Post;
+use que\http\request\Server;
 use Serializable;
 use Traversable;
 
@@ -30,27 +35,27 @@ class Input implements ArrayAccess, Countable, JsonSerializable, IteratorAggrega
     private $pointer = [];
 
     /**
-     * @var array
+     * @var Post
      */
     private $post;
 
     /**
-     * @var array
+     * @var Get
      */
     private $get;
 
     /**
-     * @var array
+     * @var Files
      */
     private $files;
 
     /**
-     * @var array
+     * @var Server
      */
     private $server;
 
     /**
-     * @var array
+     * @var Header
      */
     private $header;
 
@@ -85,41 +90,41 @@ class Input implements ArrayAccess, Countable, JsonSerializable, IteratorAggrega
     }
 
     /**
-     * @return array
+     * @return Post
      */
-    public function &getPost(): array
+    public function &getPost(): Post
     {
         return $this->post;
     }
 
     /**
-     * @return array
+     * @return Get
      */
-    public function &getGet(): array
+    public function &getGet(): Get
     {
         return $this->get;
     }
 
     /**
-     * @return array
+     * @return Files
      */
-    public function &getFiles(): array
+    public function &getFiles(): Files
     {
         return $this->files;
     }
 
     /**
-     * @return array
+     * @return Server
      */
-    public function &getServer(): array
+    public function &getServer(): Server
     {
         return $this->server;
     }
 
     /**
-     * @return array
+     * @return Header
      */
-    public function getHeader(): array
+    public function getHeader(): Header
     {
         return $this->header;
     }
@@ -129,11 +134,11 @@ class Input implements ArrayAccess, Countable, JsonSerializable, IteratorAggrega
      */
     private function get_all_input(): array {
         return array_merge(
-            $this->post = &Http::getInstance()->_post()->_get(),
-            $this->get = &Http::getInstance()->_get()->_get(),
-            $this->files = &Http::getInstance()->_files()->_get(),
-            $this->server = &Http::getInstance()->_server()->_get(),
-            $this->header = getallheaders(),
+            ($this->post = Http::getInstance()->_post())->_get(),
+            ($this->get = Http::getInstance()->_get())->_get(),
+            ($this->server = Http::getInstance()->_server())->_get(),
+            ($this->header = Http::getInstance()->_header())->_get(),
+            ($this->files = Http::getInstance()->_files())->_get(),
             $this->pointer
         );
     }
@@ -156,7 +161,7 @@ class Input implements ArrayAccess, Countable, JsonSerializable, IteratorAggrega
     }
 
     /**
-     * @param string $offset
+     * @param $offset
      * @param null $default
      * @return mixed|null
      */

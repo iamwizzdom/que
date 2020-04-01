@@ -11,12 +11,12 @@
 //require "../../../app/config/config.php";
 //use que\permission\AccessLevelEnum;
 
-use que\common\time\Time;
-
-if (preg_match('/\[(.*?)\]/', "app_job.jobID[>=]", $matches)) {
-
-    debug_print([trim($matches[1], '?'), preg_replace('/\[(.*?)\]/', "", "app_job.jobID[>=]")]);
-}
+//use que\common\time\Time;
+//
+//if (preg_match('/\[(.*?)\]/', "app_job.jobID[>=]", $matches)) {
+//
+//    debug_print([trim($matches[1], '?'), preg_replace('/\[(.*?)\]/', "", "app_job.jobID[>=]")]);
+//}
 //
 //$browser = \que\utility\client\Browser::browserInfo();
 //debug_print(AccessLevelEnum::getList());
@@ -57,5 +57,9 @@ if (preg_match('/\[(.*?)\]/', "app_job.jobID[>=]", $matches)) {
 //new Foo();
 
 
-echo Time::getInstance()->time_ago(date("Y/m/d H:i:s",'1564582940'));
+//echo Time::getInstance()->time_ago(date("Y/m/d H:i:s",'1564582940'));
 
+if (preg_match('/\[(.*?)\]\((.*?)\)/', '[a:2:{s:7:"browser";s:13:"Google Chrome";s:8:"platform";s:10:"Windows 10";}](array)', $matches)) {
+
+    print_r($matches);
+} else echo "Not match";

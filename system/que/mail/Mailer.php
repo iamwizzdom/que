@@ -78,7 +78,8 @@ class Mailer
             // Default Config
             $this->mail->AddReplyTo(APP_EMAIL_REPLY, APP_NAME);
 
-            $this->composer = Composer::getInstance();
+            $this->composer = Composer::getInstance(false);
+            $this->composer->_flush();
 
         } catch (\Exception $exception) {
 
@@ -111,7 +112,8 @@ class Mailer
     /**
      * @param Mail $mail
      */
-    public function addMail(Mail $mail) {
+    public function addMail(Mail $mail)
+    {
         $this->mailQueue[$mail->getKey()] = $mail;
     }
 
@@ -120,7 +122,8 @@ class Mailer
      * @param int $compose_using
      * @throws QueException
      */
-    public function prepare(string $key, int $compose_using = self::COMPOSE_USING_SMARTY) {
+    public function prepare(string $key, int $compose_using = self::COMPOSE_USING_SMARTY)
+    {
 
         if (!array_key_exists($key, $this->mailQueue))
             throw new QueException("Undefined key: '{$key}' not found in mailer queue", "Mailer error");
@@ -136,8 +139,6 @@ class Mailer
         $mail->AltBody = $this->parse($mail->getBodyPath(), $mail->getData(), $compose_using);
         $mail->MsgHTML = $this->parse($mail->getHtmlPath(), $mail->getData(), $compose_using);
 
-        $this->composer->_flush();
-
     }
 
     /**
@@ -145,7 +146,8 @@ class Mailer
      * @return bool
      * @throws QueException
      */
-    public function dispatch(string $key) {
+    public function dispatch(string $key)
+    {
 
         if (!array_key_exists($key, $this->mailQueue))
             throw new QueException("Undefined key: '{$key}' not found in mailer queue", "Mailer error");
@@ -158,40 +160,35 @@ class Mailer
         if (!(isset($mail->AltBody) && !empty($mail->AltBody)) || !(isset($mail->MsgHTML) && !empty($mail->MsgHTML)))
             throw new QueException("Mail found in mailer queue with key '{$key}' seems not to be prepared. You can't dispatch an unprepared mail.", "Mailer error");
 
-        $this->mail->Subject = $mail->getSubject();
-
         try {
+
+            $this->mail->Subject = $mail->getSubject();
+
             $from = $mail->getFrom();
-            $this->mail->setFrom($from['email'] ?: APP_EMAIL_DEFAULT, $from['name'] ?: APP_NAME);
-        } catch (Exception $e) {
-            throw new QueException($e->getMessage(), "Mailer error");
-        }
+            $this->mail->setFrom($from['email'] ?? APP_EMAIL_DEFAULT, $from['name'] ?? APP_NAME);
 
-        foreach ($mail->getRecipient() as $recipient) {
-            $this->mail->addAddress($recipient['email'], $recipient['name']);
-        }
+            foreach ($mail->getRecipient() as $recipient) {
+                if (!isset($recipient['email']) || !is_email($recipient['email'])) continue;
+                $this->mail->addAddress($recipient['email'], $recipient['name']);
+            }
 
-        if (!empty($replyTos = $mail->getReplyTo())) {
-            $this->mail->clearReplyTos();
-            foreach ($replyTos as $replyTo) {
+            foreach ($mail->getReplyTo() as $replyTo) {
+                if (!isset($replyTo['email']) || !is_email($replyTo['email'])) continue;
                 $this->mail->addReplyTo($replyTo['email'], $replyTo['name']);
             }
-        }
 
-        foreach ($mail->getCc() as $cc) {
-            if (!isset($cc['email']) || !is_email($cc['email'])) continue;
-            $this->mail->addCC($cc['email'], $cc['name']);
-        }
+            foreach ($mail->getCc() as $cc) {
+                if (!isset($cc['email']) || !is_email($cc['email'])) continue;
+                $this->mail->addCC($cc['email'], $cc['name']);
+            }
 
-        foreach ($mail->getBcc() as $bcc) {
-            if (!isset($bcc['email']) || !is_email($bcc['email'])) continue;
-            $this->mail->addBCC($bcc['email'], $bcc['name']);
-        }
+            foreach ($mail->getBcc() as $bcc) {
+                if (!isset($bcc['email']) || !is_email($bcc['email'])) continue;
+                $this->mail->addBCC($bcc['email'], $bcc['name']);
+            }
 
-        $this->mail->AltBody = $mail->AltBody;
-        $this->mail->MsgHTML($mail->MsgHTML);
-
-        try {
+            $this->mail->AltBody = $mail->AltBody;
+            $this->mail->MsgHTML($mail->MsgHTML);
 
             foreach ($mail->getAttachment() as $attachment) {
                 $this->mail->addAttachment($attachment['path'], $attachment['name'],
@@ -203,7 +200,7 @@ class Mailer
                     $attachment['encoding'], $attachment['type'], $attachment['disposition']);
             }
 
-            $status = (bool) $this->mail->Send();
+            $status = (bool)$this->mail->Send();
 
             $mail->setError($this->mail->ErrorInfo);
             $this->error[$mail->getKey()] = $mail->getError();
@@ -236,37 +233,19 @@ class Mailer
      * @param string $file
      * @param array $data
      * @param int $compose_using
-     * @throws QueException
-     */
-    protected function display(string $file, array $data, int $compose_using)
-    {
-        $this->composer->dataOverwrite($data);
-        $this->composer->setTmpFileName($file);
-        $this->composer->prepare();
-        if ($compose_using == self::COMPOSE_USING_SMARTY)
-            $this->composer->renderWithSmarty();
-        elseif ($compose_using == self::COMPOSE_USING_TWIG)
-            $this->composer->renderWithTwig();
-        else throw new QueException(
-            "Trying to compose mail template using an unsupported templating engine type", "Mailer error");
-    }
-
-    /**
-     * @param string $file
-     * @param array $data
-     * @param int $compose_using
      * @return false|string
      * @throws QueException
      */
     protected function render(string $file, array $data, int $compose_using)
     {
-        ob_start();
-        $this->display($file, $data, $compose_using);
-        $content = ob_get_contents();
-        if (ob_get_length()) {
-            ob_end_clean();
-        }
-        return $content;
+        $this->composer->dataOverwrite($data);
+        $this->composer->setTmpFileName($file);
+        $this->composer->prepare();
+        if ($compose_using == self::COMPOSE_USING_SMARTY)
+            return $this->composer->renderWithSmarty(true);
+        elseif ($compose_using == self::COMPOSE_USING_TWIG)
+            return $this->composer->renderWithTwig(true);
+        else throw new QueException("Trying to compose mail template using an unsupported templating engine type", "Mailer error");
     }
 
     /**
@@ -306,21 +285,24 @@ class Mailer
     /**
      * @param string $key
      */
-    public function __unsetError(string $key) {
+    public function __unsetError(string $key)
+    {
         unset($this->error[$key]);
     }
 
     /**
      * @param string $key
      */
-    public function __unsetMail(string $key) {
+    public function __unsetMail(string $key)
+    {
         unset($this->mailQueue[$key]);
     }
 
     /**
      * flush Mailer
      */
-    protected function __flush() {
+    protected function __flush()
+    {
         $this->mail->clearReplyTos();
         $this->mail->clearAddresses();
         $this->mail->clearAllRecipients();

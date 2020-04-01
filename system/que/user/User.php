@@ -115,20 +115,20 @@ class User extends State implements ArrayAccess
 
     /**
      * @param $key
-     * @param null $default
+     * @param int $default
      * @return int
      */
-    public function getInt($key, $default = null)
+    public function getInt($key, int $default = 0)
     {
         return (int) $this->getValue($key, $default);
     }
 
     /**
      * @param $key
-     * @param null $default
+     * @param float $default
      * @return float
      */
-    public function getFloat($key, $default = null)
+    public function getFloat($key, float $default = 0.0)
     {
         return (float) $this->getValue($key, $default);
     }
@@ -329,7 +329,7 @@ class User extends State implements ArrayAccess
     public function offsetExists($offset)
     {
         // TODO: Implement offsetExists() method.
-        return isset(self::$user->{$offset});
+        return object_key_exists($offset, self::$user);
     }
 
     /**

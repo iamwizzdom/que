@@ -65,19 +65,21 @@ class RouteRegistrar
             $group_arr = call_user_func($callback, $prefix);
 
             if (!is_array($group_arr))
-                throw new RouteException("Route group callback must return an array");
+                throw new RouteException("Route group callback must return an array", "Route Error");
 
             foreach ($group_arr as $key => $callback) {
 
                 if (!$callback instanceof Closure || !is_callable($callback))
-                    throw new RouteException("All elements in route group list must be callable");
+                    throw new RouteException("All elements in route group list must be callable", "Route Error");
 
                 $entry = new RouteEntry();
 
                 call_user_func($callback, $entry);
 
+                $entry->setType(strtolower($entry->getType()));
+
                 if ('web' !== $entry->getType() && 'api' !== $entry->getType() && 'resource' !== $entry->getType())
-                    throw new RouteException("Invalid group route type for {$prefix}[::]{$entry->getUri()}");
+                    throw new RouteException("Invalid group route type for {$prefix}[::]{$entry->getUri()}", "Route Error");
 
 
                 $route = $entry->getUri();
@@ -91,7 +93,7 @@ class RouteRegistrar
 
         } catch (RouteException $e) {
 
-            RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(), $e->getTitle());
+            RuntimeError::render(E_USER_ERROR, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(), $e->getTitle());
         }
 
         return $this;

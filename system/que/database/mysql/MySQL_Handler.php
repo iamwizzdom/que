@@ -61,6 +61,7 @@ class MySQL_Handler
     public function __construct($query_response, bool $query_status,
                                 string $query_error, ?int $query_error_code, string $query_string, string $table)
     {
+        if (str_contains($table, " ")) $table = str_strip_spaces(str_end_at($table, " "));
         $this->setTable($table);
         $this->setSuccessful($query_status);
         $this->setQueryResponse($query_response);
@@ -76,21 +77,19 @@ class MySQL_Handler
      */
     public function getQueryResponse($key = null)
     {
-        return (!is_null($key) && isset($this->query_response[$key]) ?
-            $this->query_response[$key] : $this->query_response);
+        return (!is_null($key) ? ($this->query_response[$key] ?? null) : $this->query_response);
     }
 
     /**
      * @param null $key
-     * @return array
+     * @return array|null
      */
     public function getQueryResponseArray($key = null)
     {
         if (empty($this->query_response))
             return $this->query_response;
 
-        if (!is_null($key) && isset($this->query_response[$key]))
-            return (array) $this->query_response[$key];
+        if (!is_null($key)) return (array) $this->query_response[$key] ?? [];
 
         $queue = [];
 
@@ -102,15 +101,15 @@ class MySQL_Handler
 
     /**
      * @param null $key
-     * @return array|Model
+     * @return array|Model|null
      */
     public function getQueryResponseWithModel($key = null)
     {
         if (empty($this->query_response))
             return $this->query_response;
 
-        if (!is_null($key) && isset($this->query_response[$key]))
-            return new Model($this->query_response[$key], $this->getTable());
+        if (!is_null($key)) return isset($this->query_response[$key]) ?
+                new Model($this->query_response[$key], $this->getTable()) : null;
 
         $queue = [];
 

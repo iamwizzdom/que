@@ -140,7 +140,7 @@ class XUser implements ArrayAccess
     public function offsetExists($offset)
     {
         // TODO: Implement offsetExists() method.
-        return isset($this->user->{$offset});
+        return object_key_exists($offset, $this->user);
     }
 
     /**

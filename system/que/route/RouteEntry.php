@@ -39,7 +39,7 @@ class RouteEntry
     /**
      * @var bool
      */
-    private $requireLogIn = false;
+    private $requireLogIn = null;
 
     /**
      * @var string
@@ -90,7 +90,8 @@ class RouteEntry
      */
     public function setUri(string $uri)
     {
-        $this->uri = strlen($uri) > 1 && str_ends_with($uri, '/') ? rtrim($uri, '/') : $uri;
+        $uri = strlen($uri) > 1 && str_ends_with($uri, '/') ? rtrim($uri, '/') : $uri;
+        $this->uri = strlen($uri) > 1 && str_starts_with($uri, '/') ? ltrim($uri, '/') : $uri;
     }
 
     /**
@@ -142,9 +143,9 @@ class RouteEntry
     }
 
     /**
-     * @return bool
+     * @return bool|null
      */
-    public function isRequireLogIn(): bool
+    public function isRequireLogIn(): ?bool
     {
         return $this->requireLogIn;
     }

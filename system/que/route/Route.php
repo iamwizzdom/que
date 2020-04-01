@@ -150,14 +150,15 @@ final class Route extends RouteCompiler
                         if (!isset($implement['que\common\structure\Add']))
                             throw new RouteException(sprintf(
                                 "Sorry, the module (%s) bound to the current " .
-                                "route \n(%s) implements the wrong interface (%s)\n",
-                                $module, current_url(), implode(', ', $implement)));
+                                "route \n(%s) implements the wrong interface (%s)\n but registered as (%s)",
+                                $module, current_url(), implode(', ', $implement),
+                                RouteImplementEnum::getImplement(RouteImplementEnum::IMPLEMENT_ADD)));
 
                         $instance = new $module();
 
                         if (isset($implement['que\security\permission\RoutePermission']) && !$instance->hasPermission($route))
                             throw new RouteException(sprintf("You dont have permission to the current route (%s)", current_url()),
-                                "Access denied", E_USER_NOTICE);
+                                "Access denied", HTTP_UNAUTHORIZED_CODE);
 
                         if (self::$method === "GET") {
                             if ($route->isRequireCSRFAuth() === true) CSRF::getInstance()->generateToken();
@@ -187,14 +188,15 @@ final class Route extends RouteCompiler
                         if (!isset($implement['que\common\structure\Edit']))
                             throw new RouteException(sprintf(
                                 "Sorry, the module (%s) bound to the current " .
-                                "route \n(%s) implements the wrong interface (%s)\n",
-                                $module, current_url(), implode(', ', $implement)));
+                                "route \n(%s) implements the wrong interface (%s)\n but registered as (%s)",
+                                $module, current_url(), implode(', ', $implement),
+                                RouteImplementEnum::getImplement(RouteImplementEnum::IMPLEMENT_EDIT)));
 
                         $instance = new $module();
 
                         if (isset($implement['que\security\permission\RoutePermission']) && !$instance->hasPermission($route))
                             throw new RouteException(sprintf("You dont have permission to the current route (%s)", current_url()),
-                                "Access denied", E_USER_NOTICE);
+                                "Access denied", HTTP_UNAUTHORIZED_CODE);
 
                         $args = $http->_server()->get("URI_ARGS");
 
@@ -226,14 +228,15 @@ final class Route extends RouteCompiler
                         if (!isset($implement['que\common\structure\Info']))
                             throw new RouteException(sprintf(
                                 "Sorry, the module (%s) bound to the current " .
-                                "route \n(%s) implements the wrong interface (%s)\n",
-                                $module, current_url(), implode(', ', $implement)));
+                                "route \n(%s) implements the wrong interface (%s)\n but registered as (%s)",
+                                $module, current_url(), implode(', ', $implement),
+                                RouteImplementEnum::getImplement(RouteImplementEnum::IMPLEMENT_INFO)));
 
                         $instance = new $module();
 
                         if (isset($implement['que\security\permission\RoutePermission']) && !$instance->hasPermission($route))
                             throw new RouteException(sprintf("You dont have permission to the current route \n(%s)\n", current_url()),
-                                "Access denied", E_USER_NOTICE);
+                                "Access denied", HTTP_UNAUTHORIZED_CODE);
 
                         $args = $http->_server()->get("URI_ARGS");
 
@@ -275,14 +278,15 @@ final class Route extends RouteCompiler
                         if (!isset($implement['que\common\structure\Page']))
                             throw new RouteException(sprintf(
                                 "Sorry, the module (%s) bound to the current " .
-                                "route \n(%s) implements the wrong interface (%s)\n",
-                                $module, current_url(), implode(', ', $implement)));
+                                "route \n(%s) implements the wrong interface (%s)\n but registered as (%s)",
+                                $module, current_url(), implode(', ', $implement), 
+                                RouteImplementEnum::getImplement(RouteImplementEnum::IMPLEMENT_PAGE)));
 
                         $instance = new $module();
 
                         if (isset($implement['que\security\permission\RoutePermission']) && !$instance->hasPermission($route))
                             throw new RouteException(sprintf("You dont have permission to the current route (%s)", current_url()),
-                                "Access denied", E_USER_NOTICE);
+                                "Access denied", HTTP_UNAUTHORIZED_CODE);
 
                         if (self::$method === "GET") {
 
@@ -359,14 +363,15 @@ final class Route extends RouteCompiler
                 if (!isset($implement['que\common\structure\Api']))
                     throw new RouteException(sprintf(
                         "Sorry, the module (%s) bound to the current " .
-                        "route (%s)\n implements the wrong interface (%s)\n",
-                        $module, $route->getUri(), implode(', ', $implement)));
+                        "route \n(%s) implements the wrong interface (%s)\n but registered as (%s)",
+                        $module, current_url(), implode(', ', $implement),
+                        RouteImplementEnum::getImplement(RouteImplementEnum::IMPLEMENT_API)));
 
                 $instance = new $module();
 
                 if (isset($implement['que\security\permission\RoutePermission']) && !$instance->hasPermission($route))
                     throw new RouteException(sprintf("You dont have permission to the current route (%s)", current_url()),
-                        "Access denied", E_USER_NOTICE);
+                        "Access denied", HTTP_UNAUTHORIZED_CODE);
 
                 if ($route->isRequireCSRFAuth() === true) {
                     RouteInspector::validateCSRF();
@@ -377,24 +382,24 @@ final class Route extends RouteCompiler
                 $response = $instance->{"process"}($http->_server()->get("URI_ARGS"));
 
                 if ($response instanceof Json) {
-                    header("Content-Type: application/json");
+                    header("Content-Type: application/json", true);
                     $data = $response->getJson();
                     if (!$data) throw new RouteException("Failed to output response");
                     echo $data;
                 } elseif ($response instanceof Jsonp) {
-                    header("Content-Type: " . mime_type_from_extension('js'));
+                    header("Content-Type: " . mime_type_from_extension('js'), true);
                     $data = $response->getJsonp();
                     if (!$data) throw new RouteException("Failed to output response");
                     echo $data;
                 } elseif ($response instanceof Html) {
-                    header("Content-Type: " . mime_type_from_extension('html'));
+                    header("Content-Type: " . mime_type_from_extension('html'), true);
                     echo $response->getHtml();
                 } elseif ($response instanceof Plain) {
-                    header("Content-Type: " . mime_type_from_extension('txt'));
+                    header("Content-Type: " . mime_type_from_extension('txt'), true);
                     echo $response->getData();
                 } elseif (is_array($response)) {
 
-                    header("Content-Type: application/json");
+                    header("Content-Type: application/json", true);
 
                     if (isset($response['code']) && is_numeric($response['code']))
                         $http->http_response_code(intval($response['code']));
@@ -469,14 +474,15 @@ final class Route extends RouteCompiler
                 if (!isset($implement['que\common\structure\Resource']))
                     throw new RouteException(sprintf(
                         "Sorry, the module (%s) bound to the current " .
-                        "route (%s) \nimplements the wrong interface (%s)\n",
-                        $module, current_url(), implode(', ', $implement)));
+                        "route \n(%s) implements the wrong interface (%s)\n but registered as (%s)",
+                        $module, current_url(), implode(', ', $implement),
+                        RouteImplementEnum::getImplement(RouteImplementEnum::IMPLEMENT_RESOURCE)));
 
                 $instance = new $module();
 
                 if (isset($implement['que\security\permission\RoutePermission']) && !$instance->hasPermission($route))
                     throw new RouteException(sprintf("You dont have permission to the current route (%s)", current_url()),
-                        "Access denied", E_USER_NOTICE);
+                        "Access denied", HTTP_UNAUTHORIZED_CODE);
 
                 if ($route->isRequireCSRFAuth() === true) {
                     RouteInspector::validateCSRF();

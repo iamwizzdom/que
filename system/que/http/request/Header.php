@@ -80,7 +80,7 @@ class Header implements ArrayAccess, Countable, JsonSerializable, IteratorAggreg
     }
 
     /**
-     * @param string $offset
+     * @param $offset
      * @param null $default
      * @return mixed|null
      */

@@ -9,8 +9,8 @@
 namespace que\model;
 
 use ArrayAccess;
-use que\common\exception\QueException;
-use que\error\RuntimeError;
+use que\common\exception\PreviousException;
+use que\common\exception\QueRuntimeException;
 
 class Model implements ArrayAccess
 {
@@ -81,7 +81,7 @@ class Model implements ArrayAccess
      * @return bool
      */
     public function has($key): bool {
-        return isset($this->object->{$key});
+        return $this->offsetExists($key);
     }
 
     /**
@@ -104,20 +104,20 @@ class Model implements ArrayAccess
 
     /**
      * @param $key
-     * @param null $default
+     * @param int $default
      * @return int
      */
-    public function getInt($key, $default = null)
+    public function getInt($key, int $default = 0)
     {
         return (int) $this->getValue($key, $default);
     }
 
     /**
      * @param $key
-     * @param null $default
+     * @param float $default
      * @return float
      */
-    public function getFloat($key, $default = null)
+    public function getFloat($key, float $default = 0.0)
     {
         return (float) $this->getValue($key, $default);
     }
@@ -127,16 +127,82 @@ class Model implements ArrayAccess
      * @return Condition
      */
     public function get($key): Condition {
-        try {
 
-            if (!isset($this->object->{$key}))
-                throw new QueException("Undefined key: '{$key}' not found in current model object", "Model Error");
+        if (!$this->offsetExists($key))
+            throw new QueRuntimeException("Undefined key: '{$key}' not found in current model object", "Model error",
+                0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
 
-            return new Condition($key, $this->object->{$key});
-        } catch (QueException $e) {
+        return new Condition($key, $this->getValue($key));
+    }
 
-            RuntimeError::render(E_USER_ERROR, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(), $e->getTitle());
+    /**
+     * @param string $primaryKey
+     * @param array $columns
+     * @param string $dataType
+     * @param array|null $join
+     * @return array|mixed|Model|null
+     */
+    public function nextRecord(string $primaryKey, array $columns = ['*'], string $dataType = 'model', array $join = null) {
+
+        if (!$this->offsetExists($primaryKey)) return null;
+
+        if (!$this->get($primaryKey)->isNumeric()) {
+            throw new QueRuntimeException("Invalid primary key: Value for key '{$primaryKey}' is expected to be numeric, got {$this->get($primaryKey)->getType()}",
+                "Model error", 0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
         }
+
+        $record = db()->select($this->getTable(), implode(',', $columns), [
+            'AND' => [
+                "{$primaryKey}[>]" => $this->getValue($primaryKey)
+            ]
+        ], $join, 1);
+
+        if (!$record->isSuccessful()) return null;
+
+        switch (strtolower($dataType)) {
+            case 'model':
+                return $record->getQueryResponseWithModel(0);
+            case 'array':
+                return $record->getQueryResponseArray(0);
+            default:
+                return $record->getQueryResponse(0);
+        }
+
+    }
+
+    /**
+     * @param string $primaryKey
+     * @param array $columns
+     * @param string $dataType
+     * @param array|null $join
+     * @return array|mixed|Model|null
+     */
+    public function previousRecord(string $primaryKey, array $columns = ['*'], string $dataType = 'model', array $join = null) {
+
+        if (!$this->offsetExists($primaryKey)) return null;
+
+        if (!$this->get($primaryKey)->isNumeric()) {
+            throw new QueRuntimeException("Invalid primary key: Value for key '{$primaryKey}' is expected to be numeric, got {$this->get($primaryKey)->getType()}",
+                "Model error", 0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
+        }
+
+        $record = db()->select($this->getTable(), implode(',', $columns), [
+            'AND' => [
+                "{$primaryKey}[<]" => $this->getValue($primaryKey)
+            ]
+        ], $join, 1, [$primaryKey => 'DESC']);
+
+        if (!$record->isSuccessful()) return null;
+
+        switch (strtolower($dataType)) {
+            case 'model':
+                return $record->getQueryResponseWithModel(0);
+            case 'array':
+                return $record->getQueryResponseArray(0);
+            default:
+                return $record->getQueryResponse(0);
+        }
+
     }
 
     /**
@@ -151,20 +217,18 @@ class Model implements ArrayAccess
         $columnsToUpdate = [];
 
         foreach ($columns as $key => $value)
-            if (isset($this->object->{$key}))
-                $columnsToUpdate[$key] = $value;
+            if ($this->offsetExists($key)) $columnsToUpdate[$key] = $value;
 
         if (empty($columnsToUpdate)) return false;
 
         $update = db()->update($this->getTable(), $columnsToUpdate, [
             'AND' => [
-                $primaryKey => $this->object->{$primaryKey}
+                $primaryKey => $this->getValue($primaryKey)
             ]
         ]);
 
         if ($status = $update->isSuccessful())
-            foreach ($columnsToUpdate as $key => $value)
-                $this->object->{$key} = $value;
+            foreach ($columnsToUpdate as $key => $value) $this->offsetSet($key, $value);
 
         return $status;
 
@@ -180,11 +244,11 @@ class Model implements ArrayAccess
 
         $delete = db()->delete($this->getTable(), [
             'AND' => [
-                $primaryKey => $this->object->{$primaryKey}
+                $primaryKey => $this->getValue($primaryKey)
             ]
         ]);
 
-        if ($status = $delete->isSuccessful()) $this->object = null;
+        if ($status = $delete->isSuccessful()) $this->object = (object)[];
 
         return $status;
     }
@@ -204,7 +268,7 @@ class Model implements ArrayAccess
     public function offsetExists($offset)
     {
         // TODO: Implement offsetExists() method.
-        return isset($this->object->{$offset});
+        return object_key_exists($offset, $this->object);
     }
 
     /**

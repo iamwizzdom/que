@@ -80,7 +80,7 @@ class Get implements ArrayAccess, Countable, JsonSerializable, IteratorAggregate
     }
 
     /**
-     * @param string $offset
+     * @param $offset
      * @param null $default
      * @return mixed|null
      */

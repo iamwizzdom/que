@@ -166,7 +166,7 @@ class Query extends Connect
     public function paginate(string $tag = "default", int $recordPerPage = DEFAULT_PAGINATION_RECORD_PER_PAGE): Query
     {
         $this->setPaginateStatus(true);
-        $this->setRecordPerPage($recordPerPage);
+        $this->setRecordPerPage($recordPerPage ?: 1);
         $this->setTag($tag);
         $page = http()->_get()->get('p', 1);
         $this->setPage($page);
@@ -864,6 +864,12 @@ class Query extends Connect
             }
         }
 
+        $table_as = "";
+        if (str_contains($table, " ")) {
+            $table_as = " " . str_start_from($table, " ");
+            $table = str_strip_spaces(str_end_at($table, " "));
+        }
+
         switch ($query_type) {
             case self::INSERT:
 
@@ -879,24 +885,24 @@ class Query extends Connect
                 }
 
                 if (!empty($columns) && !empty($values))
-                    $query = "INSERT INTO {$table} ({$columns}) VALUES ({$values})";
+                    $query = "INSERT INTO `{$table}`{$table_as} ({$columns}) VALUES ({$values})";
 
                 break;
             case self::DELETE:
 
-                if (!empty($where_query)) $query = "DELETE FROM `{$table}` WHERE {$where_query}";
-                else $query = "DELETE FROM `{$table}`";
+                if (!empty($where_query)) $query = "DELETE FROM `{$table}`{$table_as} WHERE {$where_query}";
+                else $query = "DELETE FROM `{$table}`{$table_as}";
 
                 break;
             case self::SELECT:
 
                 if (!empty($where_query) && !empty($join_query))
-                    $query = "SELECT {$column} FROM `{$table}` {$join_query} WHERE {$where_query}";
+                    $query = "SELECT {$column} FROM `{$table}`{$table_as} {$join_query} WHERE {$where_query}";
                 elseif (!empty($where_query) && empty($join_query))
-                    $query = "SELECT {$column} FROM `{$table}` WHERE {$where_query}";
+                    $query = "SELECT {$column} FROM `{$table}`{$table_as} WHERE {$where_query}";
                 elseif (empty($where_query) && !empty($join_query))
-                    $query = "SELECT {$column} FROM `{$table}` {$join_query}";
-                else $query = "SELECT {$column} FROM `{$table}`";
+                    $query = "SELECT {$column} FROM `{$table}`{$table_as} {$join_query}";
+                else $query = "SELECT {$column} FROM `{$table}`{$table_as}";
 
                 break;
             case self::UPDATE:
@@ -912,41 +918,41 @@ class Query extends Connect
                 }
 
                 if (!empty($where_query))
-                    $query = "UPDATE `{$table}` SET {$updateColumn} WHERE {$where_query}";
-                elseif (!empty($updateColumn)) $query = "UPDATE `{$table}` SET {$updateColumn}";
+                    $query = "UPDATE `{$table}`{$table_as} SET {$updateColumn} WHERE {$where_query}";
+                elseif (!empty($updateColumn)) $query = "UPDATE `{$table}`{$table_as} SET {$updateColumn}";
 
                 break;
             case self::COUNT:
 
                 if (!empty($where_query) && !empty($join_query))
-                    $query = "SELECT COUNT({$column}) as total FROM `{$table}` {$join_query} WHERE {$where_query}";
+                    $query = "SELECT COUNT({$column}) as total FROM `{$table}`{$table_as} {$join_query} WHERE {$where_query}";
                 elseif (!empty($where_query) && empty($join_query))
-                    $query = "SELECT COUNT({$column}) as total FROM `{$table}` WHERE {$where_query}";
+                    $query = "SELECT COUNT({$column}) as total FROM `{$table}`{$table_as} WHERE {$where_query}";
                 elseif (empty($where_query) && !empty($join_query))
-                    $query = "SELECT COUNT({$column}) as total FROM `{$table}` {$join_query}";
-                else $query = "SELECT COUNT({$column}) as total FROM `{$table}`";
+                    $query = "SELECT COUNT({$column}) as total FROM `{$table}`{$table_as} {$join_query}";
+                else $query = "SELECT COUNT({$column}) as total FROM `{$table}`{$table_as}";
 
                 break;
             case self::AVG:
 
                 if (!empty($where_query) && !empty($join_query))
-                    $query = "SELECT AVG({$column}) as total FROM `{$table}` {$join_query} WHERE {$where_query}";
+                    $query = "SELECT AVG({$column}) as total FROM `{$table}`{$table_as} {$join_query} WHERE {$where_query}";
                 elseif (!empty($where_query) && empty($join_query))
-                    $query = "SELECT AVG({$column}) as total FROM `{$table}` WHERE {$where_query}";
+                    $query = "SELECT AVG({$column}) as total FROM `{$table}`{$table_as} WHERE {$where_query}";
                 elseif (empty($where_query) && !empty($join_query))
-                    $query = "SELECT AVG({$column}) as total FROM `{$table}` {$join_query}";
-                else $query = "SELECT AVG({$column}) as total FROM `{$table}`";
+                    $query = "SELECT AVG({$column}) as total FROM `{$table}`{$table_as} {$join_query}";
+                else $query = "SELECT AVG({$column}) as total FROM `{$table}`{$table_as}";
 
                 break;
             case self::SUM:
 
                 if (!empty($where_query) && !empty($join_query))
-                    $query = "SELECT SUM({$column}) as total FROM `{$table}` {$join_query} WHERE {$where_query}";
+                    $query = "SELECT SUM({$column}) as total FROM `{$table}`{$table_as} {$join_query} WHERE {$where_query}";
                 elseif (!empty($where_query) && empty($join_query))
-                    $query = "SELECT SUM({$column}) as total FROM `{$table}` WHERE {$where_query}";
+                    $query = "SELECT SUM({$column}) as total FROM `{$table}`{$table_as} WHERE {$where_query}";
                 elseif (empty($where_query) && !empty($join_query))
-                    $query = "SELECT SUM({$column}) as total FROM `{$table}` {$join_query}";
-                else $query = "SELECT SUM({$column}) as total FROM `{$table}`";
+                    $query = "SELECT SUM({$column}) as total FROM `{$table}`{$table_as} {$join_query}";
+                else $query = "SELECT SUM({$column}) as total FROM `{$table}`{$table_as}";
 
                 break;
             default:
@@ -1028,7 +1034,14 @@ class Query extends Connect
                         $join_on .= (empty($join_on) ? '' : ' AND ') . "{$table_column} = {$external_table_column}";
                     }
                     if ($join_type == '~') $join_type = '';
-                    $join_query .= (empty($join_query) ? '' : ' ') . "{$join_type} JOIN `{$join_table}` ON {$join_on}";
+
+                    $join_table_as = "";
+                    if (str_contains($join_table, " ")) {
+                        $join_table_as = " " . str_start_from($join_table, " ");
+                        $join_table = str_strip_spaces(str_end_at($join_table, " "));
+                    }
+
+                    $join_query .= (empty($join_query) ? '' : ' ') . "{$join_type} JOIN `{$join_table}`{$join_table_as} ON {$join_on}";
                 }
             }
         }
@@ -1157,7 +1170,7 @@ class Query extends Connect
     {
         foreach ($data as $key => $value) {
             if (is_null($value)) continue;
-            $data[$key] = $this->escape_string($value);
+            $data[$key] = (is_array($value) || is_object($value)) ? $this->mark_down($value) : $this->escape_string($value);
         }
         return $data;
     }
@@ -1169,9 +1182,43 @@ class Query extends Connect
     private function filter_object(object $data): object
     {
         foreach ($data as $key => $value) {
-            if (is_null($value)) continue;
-            $data->{$key} = stripslashes($value);
+            $data->{$key} = is_null($value) ? null : ($this->get_mark_down($value) ?: stripslashes($value));
         }
         return $data;
+    }
+
+    /**
+     * @param $data
+     * @return string
+     */
+    private function mark_down($data) {
+        $type = gettype($data);
+        $can_wakeup = "false";
+        if (is_object($data) && (($class_name = get_class($data)) != "stdClass") && class_exists($class_name, true)) {
+            $type = "class";
+            if (method_exists($data, '__wakeup') &&
+                is_callable([$data, '__wakeup'])) $can_wakeup = "true";
+        }
+        $data = $this->escape_string(serialize($data));
+        return "[{$data}]({$type})({$can_wakeup})";
+    }
+
+    /**
+     * @param $data
+     * @return mixed|null
+     */
+    private function get_mark_down($data) {
+        if (preg_match('/\[(.*?)\]\((.*?)\)\((.*?)\)/', $data, $matches)) {
+            if ($matches[2] == "array" || $matches[2] == "object" || $matches[2] == "class") {
+
+                if ($matches[2] == "class") {
+
+                    if ($matches[3] === "true") return unserialize($matches[1]);
+                    else return unserialize($matches[1], ['allowed_classes' => false]);
+
+                } else return unserialize($matches[1]);
+            }
+        }
+        return null;
     }
 }

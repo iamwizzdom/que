@@ -128,11 +128,11 @@ abstract class Manager
     }
 
     /**
-     *
+     * @param bool $singleton
      * @return Composer
      */
-    protected function composer(): Composer {
-        return Composer::getInstance();
+    protected function composer(bool $singleton = true): Composer {
+        return Composer::getInstance($singleton);
     }
 
     /**

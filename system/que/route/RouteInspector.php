@@ -260,7 +260,7 @@ class RouteInspector
 
                 CSRF::getInstance()->generateToken();
                 throw new RouteException("Cross-site request forgery (CSRF) are forbidden",
-                    "CSRF Error", HTTP_INVALID_AUTH_CODE);
+                    "CSRF Error", HTTP_EXPIRED_AUTH_CODE);
 
             } else CSRF::getInstance()->generateToken();
 
@@ -285,7 +285,7 @@ class RouteInspector
             $http->_server()->offsetSet("JWT_PAYLOAD", $tokenDecoded->getPayload());
             $http->_server()->offsetSet("JWT_HEADER", $tokenDecoded->getHeader());
         } catch (Exception $e) {
-            throw new RouteException($e->getMessage(), "JWT Auth Error", HTTP_INVALID_AUTH_CODE);
+            throw new RouteException($e->getMessage(), "JWT Auth Error", HTTP_EXPIRED_AUTH_CODE);
         }
     }
 }

@@ -60,7 +60,7 @@ class BaseException extends Exception
     /**
      * @return bool
      */
-    public function isStatus(): bool
+    public function getStatus(): bool
     {
         return $this->status;
     }

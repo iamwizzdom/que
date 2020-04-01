@@ -24,7 +24,8 @@ class Jsonp
         'code' => 0,
         'title' => '',
         'message' => '',
-        'response' => []
+        'response' => [],
+        'version' => ''
     ];
 
     /**

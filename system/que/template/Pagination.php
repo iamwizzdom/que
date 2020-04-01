@@ -8,6 +8,9 @@
 
 namespace que\template;
 
+use que\common\exception\PreviousException;
+use que\common\exception\QueRuntimeException;
+
 class Pagination
 {
 
@@ -109,7 +112,13 @@ class Pagination
      */
     public function getCurrentPage($tag): int
     {
-        return @self::$pagination[$tag]['currentPage'];
+        if (!isset(self::$pagination[$tag])) {
+
+            throw new QueRuntimeException("Undefined tag: No Database Query was found paginated with tag '{$tag}'",
+                "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(2));
+        }
+
+        return self::$pagination[$tag]['currentPage'];
     }
 
     /**
@@ -129,7 +138,13 @@ class Pagination
      */
     public function getPageStart($tag): int
     {
-        return @self::$pagination[$tag]['pageStart'];
+        if (!isset(self::$pagination[$tag])) {
+
+            throw new QueRuntimeException("Undefined tag: No Database Query was found paginated with tag '{$tag}'",
+                "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(2));
+        }
+
+        return self::$pagination[$tag]['pageStart'];
     }
 
     /**
@@ -149,7 +164,13 @@ class Pagination
      */
     public function getPageEnd($tag): int
     {
-        return @self::$pagination[$tag]['pageEnd'];
+        if (!isset(self::$pagination[$tag])) {
+
+            throw new QueRuntimeException("Undefined tag: No Database Query was found paginated with tag '{$tag}'",
+                "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(2));
+        }
+
+        return self::$pagination[$tag]['pageEnd'];
     }
 
     /**
@@ -169,7 +190,13 @@ class Pagination
      */
     public function getTotalPages($tag): int
     {
-        return @self::$pagination[$tag]['totalPages'];
+        if (!isset(self::$pagination[$tag])) {
+
+            throw new QueRuntimeException("Undefined tag: No Database Query was found paginated with tag '{$tag}'",
+                "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(2));
+        }
+
+        return self::$pagination[$tag]['totalPages'];
     }
 
     /**
@@ -189,7 +216,13 @@ class Pagination
      */
     public function getTotalRecords($tag): int
     {
-        return @self::$pagination[$tag]['totalRecords'];
+        if (!isset(self::$pagination[$tag])) {
+
+            throw new QueRuntimeException("Undefined tag: No Database Query was found paginated with tag '{$tag}'",
+                "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(2));
+        }
+
+        return self::$pagination[$tag]['totalRecords'];
     }
 
     /**
@@ -209,7 +242,13 @@ class Pagination
      */
     public function getLinks($tag): string
     {
-        return @self::$pagination[$tag]['links'];
+        if (!isset(self::$pagination[$tag])) {
+
+            throw new QueRuntimeException("Undefined tag: No Database Query was found paginated with tag '{$tag}'",
+                "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(2));
+        }
+
+        return self::$pagination[$tag]['links'];
     }
 
     /**

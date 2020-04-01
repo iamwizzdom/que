@@ -134,8 +134,12 @@ class Validator
             throw new QueRuntimeException("Undefined input key -- '{$key}'", "Validator error",
                 0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
 
+        if (is_array($this->input[$key]))
+            throw new QueRuntimeException("Value for input with key '{$key}' is of type array, use the [validateMulti] method instead",
+                "Validator error", 0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
+
         if (!isset($this->condition[$key]))
-            $this->condition[$key] = new Condition($key, @$this->input[$key], $this);
+            $this->condition[$key] = new Condition($key, $this->input[$key], $this);
 
         return $this->condition[$key];
 
@@ -152,11 +156,11 @@ class Validator
                 0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
 
         if (!is_array($this->input[$key]))
-            throw new QueRuntimeException("Value for input with key '{$key}' is not an array", "Validator error",
-                0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
+            throw new QueRuntimeException("Value for input with key '{$key}' is not of type array, use the [validate] method instead",
+                "Validator error", 0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
 
         if (!isset($this->condition[$key]))
-            $this->condition[$key] = new ConditionStack($key, @$this->input[$key], $this);
+            $this->condition[$key] = new ConditionStack($key, $this->input[$key], $this);
 
         return $this->condition[$key];
 
@@ -166,7 +170,7 @@ class Validator
      * @return File
      */
     public function validateFile(): File {
-        return File::getInstance($this->input);
+        return File::getInstance($this->input->getFiles());
     }
 
     /**
@@ -179,13 +183,29 @@ class Validator
     /**
      * @param $key
      * @param $value
-     * @return Condition | ConditionStack
+     * @return Condition
      */
     public function validateValue($key, $value) {
+
         if (is_array($value))
-            $this->condition[$key] = new ConditionStack($key, $value, $this);
-        else $this->condition[$key] = new Condition($key, $value, $this);
-        return $this->condition[$key];
+            throw new QueRuntimeException("Value must not be of type array, or use the [validateMultiValue] method instead",
+                "Validator error", 0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
+
+        return $this->condition[$key] = new Condition($key, $value, $this);
+    }
+
+    /**
+     * @param $key
+     * @param $value
+     * @return ConditionStack
+     */
+    public function validateMultiValue($key, $value) {
+
+        if (!is_array($value))
+            throw new QueRuntimeException("Value must be of type array, or use the [validateValue] method instead",
+                "Validator error", 0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
+
+        return $this->condition[$key] = new ConditionStack($key, $value, $this);
     }
 
     /**
@@ -194,16 +214,9 @@ class Validator
     public function hasError(): bool {
         $hasError = false;
         foreach($this->condition as $condition) {
-            if ($condition instanceof Condition) {
-                if ($condition->hasError()) {
-                    $hasError = true;
-                    break;
-                }
-            } elseif ($condition instanceof ConditionStack) {
-                if ($condition->hasError()) {
-                    $hasError = true;
-                    break;
-                }
+            if ($condition->hasError()) {
+                $hasError = true;
+                break;
             }
         }
         return $hasError;
@@ -215,10 +228,7 @@ class Validator
     public function totalError(): int {
         $count = 0;
         foreach($this->condition as $condition) {
-            if ($condition instanceof Condition) {
-                if ($condition->hasError()) $count++;
-            } elseif ($condition instanceof ConditionStack)
-                if ($condition->hasError()) $count++;
+            if ($condition->hasError()) $count++;
         }
         return $count;
     }
@@ -262,14 +272,16 @@ class Validator
      * @return bool
      */
     public function hasFile(string $key): bool {
-        if (!(isset($this->input[$key]) &&
-            is_array($this->input[$key]))) return false;
 
-        if (isset($this->input[$key]['size']) &&
-            $this->input[$key]['size'] > 0) return true;
+        $files = $this->input->getFiles();
 
-        if (is_array($this->input[$key])) {
-            foreach ($this->input[$key] as $value)
+        if (!(isset($files[$key]) && is_array($files[$key]))) return false;
+
+        if (isset($files[$key]['size']) && $files[$key]['size'] > 0) return true;
+
+        if (is_array($files[$key])) {
+
+            foreach ($files[$key] as $value)
                 if (isset($value['size']) && $value['size'] > 0) return true;
         }
 
@@ -284,10 +296,25 @@ class Validator
 
         if (!isset($this->condition[$key])) return false;
 
-        if ($this->condition[$key] instanceof Condition)
-            return $this->condition[$key]->hasError();
-        elseif ($this->condition[$key] instanceof ConditionStack)
-            return $this->condition[$key]->hasError();
+        return $this->condition[$key]->hasError();
+    }
+
+    /**
+     * @param $key
+     * @return array
+     */
+    public function getError($key): array {
+        $errors = [];
+        $condition = ($this->condition[$key] ?? null);
+        if ($condition instanceof Condition) {
+
+            if ($condition->hasError())
+                $errors[$condition->getKey()] = $condition->getError();
+
+        } elseif ($condition instanceof ConditionStack)
+            $errors[$condition->getKey()] = $condition->getErrors();
+
+        return $errors;
     }
 
     /**
@@ -310,6 +337,24 @@ class Validator
     }
 
     /**
+     * @param $key
+     * @return array
+     */
+    public function getErrorFlat($key): array {
+        $errors = [];
+        $condition = ($this->condition[$key] ?? null);
+        if ($condition instanceof Condition) {
+
+            if ($condition->hasError())
+                $errors[$condition->getKey()] = current($condition->getError());
+
+        } elseif ($condition instanceof ConditionStack)
+            $errors[$condition->getKey()] = current($condition->getErrorsFlat());
+
+        return $errors;
+    }
+
+    /**
      * @return array
      */
     public function getErrorsFlat(): array {
@@ -322,15 +367,43 @@ class Validator
                     $errors[$condition->getKey()] = current($condition->getError());
 
             } elseif ($condition instanceof ConditionStack)
-                $errors[$condition->getKey()] = current($condition->getError()) ?: $condition->getErrorsFlat();
+                $errors[$condition->getKey()] = $condition->getErrorsFlat();
         }
         return $errors;
     }
 
     /**
+     * @param $key
      * @return array
      */
-    public function getStatus(): array {
+    public function getStatus($key): array {
+        $status = []; $session = &Session::getInstance()->getFiles()->_get();
+        $condition = ($this->condition[$key] ?? null);
+        if ($condition instanceof Condition) {
+
+            if ($condition->hasError()) {
+
+                if (!isset($session['session']['last-form-status'][$condition->getKey()])) {
+                    $status[$condition->getKey()] = WARNING;
+                    $session['session']['last-form-status'][$condition->getKey()] = true;
+                } else $status[$condition->getKey()] = ERROR;
+
+            } else {
+                $status[$condition->getKey()] = SUCCESS;
+                if (isset($session['session']['last-form-status'][$condition->getKey()]))
+                    unset($session['session']['last-form-status'][$condition->getKey()]);
+            }
+
+        } elseif ($condition instanceof ConditionStack)
+            $status[$condition->getKey()] = $condition->getStatus($session['session']['last-form-status']);
+
+        return $status;
+    }
+
+    /**
+     * @return array
+     */
+    public function getStatuses(): array {
         $status = []; $session = &Session::getInstance()->getFiles()->_get();
         foreach($this->condition as $condition) {
 
@@ -350,7 +423,7 @@ class Validator
                 }
 
             } elseif ($condition instanceof ConditionStack)
-                $status[$condition->getKey()] = $condition->getStatus();
+                $status[$condition->getKey()] = $condition->getStatus($session['session']['last-form-status']);
 
         }
         return $status;
@@ -359,7 +432,7 @@ class Validator
     /**
      * @param $key
      * @param $error
-     * @return Condition | ConditionStack
+     * @return Condition|ConditionStack
      */
     public function addError($key, $error) {
         if (!isset($this->condition[$key])) {
@@ -374,7 +447,7 @@ class Validator
     /**
      * @param $key
      * @param array $errors
-     * @return Condition | ConditionStack
+     * @return Condition|ConditionStack
      */
     public function addErrors($key, array $errors) {
         if (!isset($this->condition[$key])) {
@@ -382,6 +455,82 @@ class Validator
                 $this->condition[$key] = new ConditionStack($key, $this->input[$key], $this);
             } else $this->condition[$key] = new Condition($key, $this->input[$key], $this);
         }
+        foreach($errors as $error) $this->condition[$key]->addError($error);
+        return $this->condition[$key];
+    }
+
+    /**
+     * @param $key
+     * @param $error
+     * @param bool $force_add - Setting this to [bool](true) might result in some unexpected errors
+     * @return Condition
+     */
+    public function addConditionError($key, $error, bool $force_add = false) {
+
+        if (is_array($this->input[$key]) && !$force_add)
+            throw new QueRuntimeException("Value for input with key '{$key}' is of type array, use the [addConditionStackError] method instead",
+                "Validator error", 0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
+
+        if (!isset($this->condition[$key]))
+            $this->condition[$key] = new Condition($key, $this->input[$key], $this);
+
+        $this->condition[$key]->addError($error);
+        return $this->condition[$key];
+    }
+
+    /**
+     * @param $key
+     * @param array $errors
+     * @param bool $force_add - Setting this to [bool](true) might result in some unexpected errors
+     * @return Condition
+     */
+    public function addConditionErrors($key, array $errors, bool $force_add = false) {
+
+        if (is_array($this->input[$key]) && !$force_add)
+            throw new QueRuntimeException("Value for input with key '{$key}' is of type array, use the [addConditionStackErrors] method instead",
+                "Validator error", 0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
+
+        if (!isset($this->condition[$key]))
+            $this->condition[$key] = new Condition($key, $this->input[$key], $this);
+
+        foreach($errors as $error) $this->condition[$key]->addError($error);
+        return $this->condition[$key];
+    }
+
+    /**
+     * @param $key
+     * @param $error
+     * @param bool $force_add - Setting this to [bool](true) might result in some unexpected errors
+     * @return ConditionStack
+     */
+    public function addConditionStackError($key, $error, bool $force_add = false) {
+
+        if (!is_array($this->input[$key]) && !$force_add)
+            throw new QueRuntimeException("Value for input with key '{$key}' is not of type array, use the [addConditionError] method instead",
+                "Validator error", 0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
+
+        if (!isset($this->condition[$key]))
+            $this->condition[$key] = new ConditionStack($key, $this->input[$key], $this);
+
+        $this->condition[$key]->addError($error);
+        return $this->condition[$key];
+    }
+
+    /**
+     * @param $key
+     * @param array $errors
+     * @param bool $force_add - Setting this to [bool](true) might result in some unexpected errors
+     * @return ConditionStack
+     */
+    public function addConditionStackErrors($key, array $errors, bool $force_add = false) {
+
+        if (!is_array($this->input[$key]) && !$force_add)
+            throw new QueRuntimeException("Value for input with key '{$key}' is not of type array, use the [addConditionErrors] method instead",
+                "Validator error", 0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
+
+        if (!isset($this->condition[$key]))
+            $this->condition[$key] = new ConditionStack($key, $this->input[$key], $this);
+
         foreach($errors as $error) $this->condition[$key]->addError($error);
         return $this->condition[$key];
     }
@@ -407,19 +556,12 @@ class Validator
     }
 
     /**
-     *
-     * @param string $key
-     * @return Condition | ConditionStack
+     * @param $key
+     * @param null $default [Default condition]
+     * @return Condition|ConditionStack
      */
-    public function getCondition($key) {
-        if (!isset($this->condition[$key])) {
-
-            if (is_array($this->input[$key]))
-                $this->condition[$key] = new ConditionStack($key, $this->input[$key], $this);
-            else $this->condition[$key] = new Condition($key, $this->input[$key], $this);
-        }
-
-        return $this->condition[$key];
+    public function getCondition($key, $default = null) {
+        return $this->condition[$key] ?? $default;
     }
 
     /**

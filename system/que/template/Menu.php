@@ -63,6 +63,10 @@ class Menu
                 if (str_contains($menu['href'], $host = server_host()))
                     $menu['href'] = str_start_from($menu['href'], $host);
 
+
+                $menu['href'] = strlen($menu['href']) > 1 && str_ends_with($menu['href'], '/') ? rtrim($menu['href'], '/') : $menu['href'];
+                $menu['href'] = strlen($menu['href']) > 1 && str_starts_with($menu['href'], '/') ? ltrim($menu['href'], '/') : $menu['href'];
+
                 $children = [];
 
                 if (isset($menu['__']))

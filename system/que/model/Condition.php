@@ -75,6 +75,13 @@ class Condition
     }
 
     /**
+     * @return string
+     */
+    public function getType(): string {
+        return gettype($this->getValue());
+    }
+
+    /**
      * @return bool
      */
     public function isEmpty(): bool {

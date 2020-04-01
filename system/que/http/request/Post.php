@@ -78,7 +78,7 @@ class Post implements ArrayAccess, Countable, JsonSerializable, IteratorAggregat
     }
 
     /**
-     * @param string $offset
+     * @param $offset
      * @param null $default
      * @return mixed|null
      */

@@ -86,20 +86,53 @@ class RouteCompiler
             self::setUriArgs($routeArgs);
             self::setCurrentRoute($routeEntry);
 
+            if ($routeEntry->isUnderMaintenance() === true) {
+
+                throw new RouteException("This route is currently under maintenance, please try again later",
+                    "Access denied", HTTP_MAINTENANCE_CODE);
+            }
+
             if ($routeEntry->isRequireLogIn() === true && !is_logged_in()) {
+
                 if (!empty($routeEntry->getLoginUrl())) {
-                    http()->redirect()->setHeader(sprintf("You don't have access to this route (%s), log in and try again.",
-                        current_url()), WARNING)->setUrl($routeEntry->getLoginUrl())->initiate();
+
+                    redirect($routeEntry->getLoginUrl(), [
+                        [
+                            'message' => sprintf(
+                                "You don't have access to this route (%s), login and try again.",
+                                current_url()),
+                            'status' => INFO
+                        ]
+                    ]);
+
                 } else {
-                    throw new RouteException("You don't have access to the current route, log in and try again.",
-                        "Access denied", E_USER_NOTICE);
+                    throw new RouteException("You don't have access to the current route, login and try again.",
+                        "Access denied", HTTP_UNAUTHORIZED_CODE);
                 }
+
+            } elseif ($routeEntry->isRequireLogIn() === false && is_logged_in()) {
+
+                if (!empty($routeEntry->getLoginUrl())) {
+
+                    redirect($routeEntry->getLoginUrl(), [
+                        [
+                            'message' => sprintf(
+                                "You don't have access to this route (%s), logout and try again.",
+                                current_url()),
+                            'status' => INFO
+                        ]
+                    ]);
+
+                } else {
+                    throw new RouteException("You don't have access to the current route, logout and try again.",
+                        "Access denied", HTTP_UNAUTHORIZED_CODE);
+                }
+
             }
 
         } catch (RouteException $e) {
-            RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(), $e->getLine(),
-                $e->getTrace(), $e->getTitle(), $e->getCode() == HTTP_NOT_FOUND_CODE ?
-                    HTTP_NOT_FOUND_CODE : HTTP_UNAUTHORIZED_CODE);
+            RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(),
+                $e->getLine(), $e->getTrace(), $e->getTitle(), $e->getCode() ?: HTTP_UNAUTHORIZED_CODE);
         }
     }
 
