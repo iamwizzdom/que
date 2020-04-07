@@ -53,45 +53,6 @@ function debug_print(...$params)
  */
 
 /**
- * @param string $number
- * @param int $start
- * @param int $end
- * @return string
- */
-function hide_number(string $number, int $start = 0, int $end = 1): string
-{
-    if (empty($number)) return '';
-    $hidden = '';
-    $size = strlen($number);
-    for ($i = 0; $i < $size; $i++) $hidden .= ($i >= $start &&
-    (is_numeric($end) ? $i < $end : $i < $size) ? '*' : substr($number, $i, 1));
-    return $hidden;
-}
-
-/**
- * @param string $number
- * @return mixed
- */
-function filter_number(string $number): string
-{
-    return preg_replace("/[^+0-9]/", "", $number);
-}
-
-/**
- * @param string $phone
- * @param $prefix
- * @return string
- */
-function format_phone(string $phone, $prefix): string
-{
-    $phone = filter_number($phone);
-    if (str_starts_with($phone, '+')) return $phone;
-    elseif (str_starts_with($phone, $prefix))
-        return str_starts_with($prefix, '+') ? $phone : "+{$phone}";
-    return (str_starts_with($prefix, '+') ? '' : '+') . ($prefix . substr($phone, 1, strlen($phone)));
-}
-
-/**
  * @param int $length
  * @param bool $hex
  * @return bool|string
@@ -190,15 +151,17 @@ function str_end_at(string $haystack, string $needle) {
 }
 
 /**
- * @param string $string
+ * This function will return the needle's number
+ * of occurrence in the haystack
+ * @param string $haystack
  * @param string $needle
  * @return int
  */
-function str_char_count(string $string, string $needle): int
+function str_char_count(string $haystack, string $needle): int
 {
     $count = 0;
-    while (($pos = strpos($string, $needle)) !== false) {
-        $string = substr($string, ($pos + 1));
+    while (($pos = strpos($haystack, $needle)) !== false) {
+        $haystack = substr($haystack, ($pos + 1));
         $count++;
     }
     return $count;
@@ -220,12 +183,14 @@ function str_ellipsis(string $string, int $length = 50, string $ellipsis = null)
 }
 
 /**
+ * This function will remove all occurrences
+ * of the needle from the string
  * @param string $string
  * @param string $needle
  * @return bool|string
  */
 function str_strip(string $string, string $needle) {
-    if (($pos = strpos($string, $needle)) === false) return $string;
+    if (!str_contains($string, $needle)) return $string;
     return preg_replace("[{$needle}]", "", $string);
 }
 
@@ -254,93 +219,6 @@ function str_strip_special_char(string $string): string
 function str_strip_spaces(string $string): string
 {
     return str_replace(" ", "", $string);
-}
-
-/**
- * Finds the key and position of the first occurrence of a substring in an array
- *
- * @param array $array
- * @param string $needle
- * @param int $option | -1 will return an array of both the array index and string position of the needle,
- * 0 will return the array index of the needle, while 1 will return the string position of the needle.
- * @return array|bool|int|string
- */
-function strpos_in_array(
-    array $array, string $needle,
-    int $option = STRPOS_IN_ARRAY_OPT_DEFAULT
-) {
-    foreach ($array as $index => $value) {
-        $position = strpos($value, $needle);
-        if ($position !== false) {
-            switch ($option) {
-                case STRPOS_IN_ARRAY_OPT_DEFAULT:
-                    return [
-                        STRPOS_IN_ARRAY_OPT_ARRAY_INDEX => $index,
-                        STRPOS_IN_ARRAY_OPT_STR_POSITION => $position
-                    ];
-                case STRPOS_IN_ARRAY_OPT_ARRAY_INDEX:
-                    return $index;
-                case STRPOS_IN_ARRAY_OPT_STR_POSITION:
-                    return $position;
-                default:
-                    return [
-                        STRPOS_IN_ARRAY_OPT_ARRAY_INDEX => $index,
-                        STRPOS_IN_ARRAY_OPT_STR_POSITION => $position
-                    ];
-            }
-        }
-    }
-    return false;
-}
-
-/**
- * @param string $haystack
- * @param string $needle
- * @return bool
- */
-function str_starts_with(string $haystack, string $needle): bool
-{
-    return strcmp(substr($haystack, 0, strlen($needle)), $needle) == 0;
-}
-
-/**
- * @param string $haystack
- * @param string $needle
- * @return bool
- */
-function str_ends_with(string $haystack, string $needle): bool
-{
-    return strcmp(substr($haystack, (strlen($haystack) - ($len = strlen($needle))), $len), $needle) == 0;
-}
-
-/**
- *
- * Removes line breaks from a string
- *
- * @param string $string
- * @return mixed|string
- */
-function str_flatten(string $string): string
-{
-    $string = str_replace("\n", "", $string);
-    $string = str_replace("\t", "", $string);
-    $string = str_replace("\r", "", $string);
-    return $string;
-}
-
-/**
- * Get an array of unique characters used in a string.
- * This should also work with multibyte characters.
- *
- * @param string $string
- * @param bool $returnAsArray
- * @return mixed
- */
-function str_unique_chars(string $string, bool $returnAsArray = true)
-{
-    $unique = array_unique(preg_split('/(?<!^)(?!$)/u', $string));
-    if (!$returnAsArray) $unique = implode("", $unique);
-    return $unique;
 }
 
 /**
@@ -410,6 +288,88 @@ function str_strip_non_alpha_space(string $name): string
 }
 
 /**
+ * Finds the key and position of the first occurrence of a substring in an array
+ *
+ * @param array $array
+ * @param string $needle
+ * @param int $option | -1 will return an array of both the array index and string position of the needle,
+ * 0 will return the array index of the needle, while 1 will return the string position of the needle.
+ * @return array|bool|int|string
+ */
+function strpos_in_array(
+    array $array, string $needle,
+    int $option = STRPOS_IN_ARRAY_OPT_DEFAULT
+) {
+    foreach ($array as $index => $value) {
+        $position = strpos($value, $needle);
+        if ($position !== false) {
+            switch ($option) {
+                case STRPOS_IN_ARRAY_OPT_ARRAY_INDEX:
+                    return $index;
+                case STRPOS_IN_ARRAY_OPT_STR_POSITION:
+                    return $position;
+                default:
+                    return [
+                        STRPOS_IN_ARRAY_OPT_ARRAY_INDEX => $index,
+                        STRPOS_IN_ARRAY_OPT_STR_POSITION => $position
+                    ];
+            }
+        }
+    }
+    return false;
+}
+
+/**
+ * @param string $haystack
+ * @param string $needle
+ * @return bool
+ */
+function str_starts_with(string $haystack, string $needle): bool
+{
+    return strcmp(substr($haystack, 0, strlen($needle)), $needle) == 0;
+}
+
+/**
+ * @param string $haystack
+ * @param string $needle
+ * @return bool
+ */
+function str_ends_with(string $haystack, string $needle): bool
+{
+    return strcmp(substr($haystack, (strlen($haystack) - ($len = strlen($needle))), $len), $needle) == 0;
+}
+
+/**
+ *
+ * Removes line breaks from a string
+ *
+ * @param string $string
+ * @return mixed|string
+ */
+function str_flatten(string $string): string
+{
+    $string = str_replace("\n", "", $string);
+    $string = str_replace("\t", "", $string);
+    $string = str_replace("\r", "", $string);
+    return $string;
+}
+
+/**
+ * Get an array of unique characters used in a string.
+ * This should also work with multibyte characters.
+ *
+ * @param string $string
+ * @param bool $returnAsArray
+ * @return mixed
+ */
+function str_unique_chars(string $string, bool $returnAsArray = true)
+{
+    $unique = array_unique(preg_split('/(?<!^)(?!$)/u', $string));
+    if (!$returnAsArray) $unique = implode("", $unique);
+    return $unique;
+}
+
+/**
  * @param string $string
  * @param string $needle
  * @return array
@@ -428,7 +388,7 @@ function str_tokenize(string $string, string $needle): array {
 }
 
 /**
- * Remove all characters except from url except domain name and uri
+ * Remove all characters from url except domain name and uri
  *
  * @param string $url
  * @return string
@@ -444,7 +404,7 @@ function filter_url(string $url): string
 /**
  * @param string $email
  * @param int|null $option
- * @return bool|string
+ * @return array|bool|mixed|string
  */
 function filter_email(string $email, int $option = null)
 {
@@ -452,14 +412,14 @@ function filter_email(string $email, int $option = null)
     if (!is_email($email)) return false;
 
     if ($option !== null) {
-        $email_arr = explode("@", $email);
+        $arr = explode("@", $email);
         switch ($option) {
-            case FILTER_GET_EMAIL_NAME:
-                return $email_arr[FILTER_GET_EMAIL_NAME];
-            case FILTER_GET_EMAIL_HOST:
-                return $email_arr[FILTER_GET_EMAIL_HOST];
+            case FILTER_EMAIL_GET_NAME:
+                return $arr[FILTER_EMAIL_GET_NAME];
+            case FILTER_EMAIL_GET_HOST:
+                return $arr[FILTER_EMAIL_GET_HOST];
             default:
-                return false;
+                return $arr;
         }
     }
 
@@ -515,10 +475,50 @@ function get_bearer_token() {
 
 
 /**
- * @param int $input
+ * @param string $number
+ * @param int $start
+ * @param int $end
  * @return string
  */
-function number_short(int $input): string
+function hide_number(string $number, int $start = 0, int $end = 1): string
+{
+    if (empty($number)) return '';
+    $hidden = '';
+    $size = strlen($number);
+    for ($i = 0; $i < $size; $i++) $hidden .= ($i >= $start &&
+    (is_numeric($end) ? $i < $end : $i < $size) ? '*' : substr($number, $i, 1));
+    return $hidden;
+}
+
+/**
+ * @param string $number
+ * @return mixed
+ */
+function filter_number(string $number): string
+{
+    return preg_replace("/[^+0-9]/", "", $number);
+}
+
+/**
+ * @param string $phone
+ * @param $prefix
+ * @return string
+ */
+function format_phone(string $phone, string $prefix): string
+{
+    $phone = filter_number($phone);
+    if (str_starts_with($phone, '+')) return $phone;
+    elseif (str_starts_with($phone, $prefix))
+        return str_starts_with($prefix, '+') ? $phone : "+{$phone}";
+    return (str_starts_with($prefix, '+') ? '' : '+') . ($prefix . substr($phone, 1, strlen($phone)));
+}
+
+
+/**
+ * @param int $num
+ * @return string
+ */
+function number_short(int $num): string
 {
     $k = pow(10, 3);
     $mil = pow(10, 6);
@@ -527,31 +527,31 @@ function number_short(int $input): string
     $quad = pow(10, 15);
     $quint = pow(10, 18);
 
-    if ($input >= $quint)
-        return number_format((int)($input / $quint)) . 'quint';
-    elseif ($input >= $quad)
-        return number_format((int)($input / $quad)) . 'quad';
-    elseif ($input >= $tril)
-        return number_format((int)($input / $tril)) . 'tril';
-    elseif ($input >= $bil)
-        return number_format((int)($input / $bil)) . 'bil';
-    elseif ($input >= $mil)
-        return number_format((int)($input / $mil)) . 'mil';
-    elseif ($input >= $k)
-        return number_format((int)($input / $k)) . 'k';
-    else return number_format((int)$input);
+    if ($num >= $quint)
+        return number_format((int)($num / $quint)) . 'quint';
+    elseif ($num >= $quad)
+        return number_format((int)($num / $quad)) . 'quad';
+    elseif ($num >= $tril)
+        return number_format((int)($num / $tril)) . 'tril';
+    elseif ($num >= $bil)
+        return number_format((int)($num / $bil)) . 'bil';
+    elseif ($num >= $mil)
+        return number_format((int)($num / $mil)) . 'mil';
+    elseif ($num >= $k)
+        return number_format((int)($num / $k)) . 'k';
+    else return number_format((int)$num);
 }
 
 /**
- * @param int $value
+ * @param int $num
  * @param int $total
  * @param int $decimal
  * @return string
  */
-function number_percent(int $value, int $total, int $decimal = 2): string
+function number_percent(int $num, int $total, int $decimal = 2): string
 {
-    if ($value == 0 || $total == 0) return '0';
-    return number_format(($value / $total) * 100, $decimal);
+    if ($num == 0 || $total == 0) return '0';
+    return number_format(($num / $total) * 100, $decimal);
 }
 
 /**
@@ -1189,7 +1189,7 @@ function object_extract(object $object, int $start, int $end): object
  * @param array $keys | Key to extracted
  * @return object
  */
-function object_extract_by_key(object $object, array $keys): object
+function object_extract_by_keys(object $object, array $keys): object
 {
     $extracted = new stdClass();
     foreach ($keys as $key)
