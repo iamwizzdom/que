@@ -8,23 +8,32 @@
 
 namespace que\route;
 
-use Exception;
+use que\common\exception\PreviousException;
 use que\common\exception\RouteException;
+use que\common\structure\Add;
+use que\common\structure\Api;
+use que\common\structure\Edit;
+use que\common\structure\Info;
+use que\common\structure\Page;
+use que\common\structure\Receiver;
+use que\common\structure\Resource;
 use que\common\validate\Track;
 use que\error\RuntimeError;
 use que\http\output\response\Html;
 use que\http\output\response\Json;
 use que\http\output\response\Jsonp;
 use que\http\output\response\Plain;
-use que\route\structure\RouteEntry;
-use que\route\structure\RouteImplementEnum;
 use que\security\CSRF;
+use que\security\permission\RoutePermission;
 use que\template\Composer;
 
 final class Route extends RouteCompiler
 {
 
-    private static $method = "GET";
+    /**
+     * @var string
+     */
+    private static string $method = "GET";
 
     public static function init() {
 
@@ -40,14 +49,14 @@ final class Route extends RouteCompiler
                 $uri_extract = array_extract($uriTokens, (($pos = strpos_in_array($uriTokens, APP_ROOT_FOLDER,
                         STRPOS_IN_ARRAY_OPT_ARRAY_INDEX)) + 1), (array_size($uriTokens) - 1));
 
-                http()->_server()->add('REQUEST_URI', $uri = implode($uri_extract, "/"));
+                http()->_server()->add('REQUEST_URI', $uri = implode("/", $uri_extract));
             }
 
             self::$method = $method = strtoupper(http()->_server()->get("REQUEST_METHOD"));
 
             if (!($method === 'GET' || $method === 'POST')) {
                 throw new RouteException("Sorry, ({$method} request) is an unsupported request method",
-                    "Route Error", HTTP_FORBIDDEN_METHOD_CODE);
+                    "Route Error", HTTP_METHOD_NOT_ALLOWED);
             }
 
 
@@ -74,7 +83,7 @@ final class Route extends RouteCompiler
 
             RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(),
                 method_exists($e, 'getTitle') ? ($e->getTitle() ?: "Route Error") : "Route Error",
-                $e->getCode() ?: HTTP_INTERNAL_ERROR_CODE);
+                $e->getCode() ?: HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -97,16 +106,16 @@ final class Route extends RouteCompiler
                         self::render_resource_route($route);
                         break;
                     default:
-                        throw new RouteException(sprintf("%s is an invalid url", current_url()), "Route Error", HTTP_NOT_FOUND_CODE);
+                        throw new RouteException(sprintf("%s is an invalid url", current_url()), "Route Error", HTTP_NOT_FOUND);
                 }
 
-            } else throw new RouteException(sprintf("%s is an invalid url", current_url()), "Route Error", HTTP_NOT_FOUND_CODE);
+            } else throw new RouteException(sprintf("%s is an invalid url", current_url()), "Route Error", HTTP_NOT_FOUND);
 
         } catch (RouteException $e) {
 
             RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(),
                 method_exists($e, 'getTitle') ? ($e->getTitle() ?: "Route Error") : "Route Error",
-                $e->getCode() ?: HTTP_INTERNAL_ERROR_CODE);
+                $e->getCode() ?: HTTP_INTERNAL_SERVER_ERROR);
 
         }
 
@@ -132,189 +141,83 @@ final class Route extends RouteCompiler
 
             if (!empty($module = $route->getModule())) {
 
-                switch ($route->getImplement()) {
-                    case RouteImplementEnum::IMPLEMENT_ADD:
+                if (!class_exists($module, true))
+                    throw new RouteException(sprintf(
+                        "Sorry, the module (%s) bound to the current route \n(%s) does not exist\n",
+                        $module, current_url()));
 
-                        if (!class_exists($module, true))
+                $instance = new $module();
+
+                if ($instance instanceof RoutePermission && !$instance->hasPermission($route))
+                    throw new RouteException(sprintf("You dont have permission to the current route (%s)",
+                        current_url()), "Access denied", HTTP_UNAUTHORIZED);
+
+                $args = $http->_server()->get("URI_ARGS");
+
+                if ($instance instanceof Add) {
+
+                    if (self::$method === "GET") {
+                        if ($route->isRequireCSRFAuth() === true) CSRF::getInstance()->generateToken();
+                        $instance->onLoad($args);
+                    } else {
+                        if ($route->isRequireCSRFAuth() === true) RouteInspector::validateCSRF();
+                        $instance->onReceive($args);
+                    }
+
+                    $instance->setTemplate(Composer::getInstance());
+
+                } elseif ($instance instanceof Edit) {
+
+                    if (self::$method === "GET") {
+                        if ($route->isRequireCSRFAuth() === true) CSRF::getInstance()->generateToken();
+                        $instance->onLoad($args, $instance->info($args));
+                    } else {
+                        if ($route->isRequireCSRFAuth() === true) RouteInspector::validateCSRF();
+                        $instance->onReceive($args, $instance->info($args));
+                    }
+
+                } elseif ($instance instanceof Info) {
+
+                    if (self::$method === "GET") {
+
+                        if ($route->isRequireCSRFAuth() === true) CSRF::getInstance()->generateToken();
+                        $instance->onLoad($args, $instance->info($args));
+
+                    } else {
+
+                        if (!$instance instanceof Receiver)
                             throw new RouteException(sprintf(
-                                "Sorry, the module (%s) bound to the current " .
-                                "route \n(%s) does not exist\n", $module, current_url()));
+                                "Sorry, the current route (%s)\n does not support (%s request).\n",
+                                current_url(), self::$method), "Route Error", HTTP_METHOD_NOT_ALLOWED);
 
-                        $implement = class_implements($module, true);
+                        if ($route->isRequireCSRFAuth() === true) RouteInspector::validateCSRF();
+                        $instance->onReceive($args, $instance->info($args));
+                    }
 
-                        if (!$implement)
+                } elseif ($instance instanceof Page) {
+
+                    if (self::$method === "GET") {
+
+                        if ($route->isRequireCSRFAuth() === true) CSRF::getInstance()->generateToken();
+                        $instance->onLoad($args);
+
+                    } else {
+
+                        if (!$instance instanceof Receiver)
                             throw new RouteException(sprintf(
-                                "Sorry, the module (%s) bound to the current " .
-                                "route \n(%s) does not implement a valid interface\n", $module, current_url()));
+                                "Sorry, the current route (%s)\n does not support (%s request).\n",
+                                current_url(), self::$method), "Route Error", HTTP_METHOD_NOT_ALLOWED);
 
-                        if (!isset($implement['que\common\structure\Add']))
-                            throw new RouteException(sprintf(
-                                "Sorry, the module (%s) bound to the current " .
-                                "route \n(%s) implements the wrong interface (%s)\n but registered as (%s)",
-                                $module, current_url(), implode(', ', $implement),
-                                RouteImplementEnum::getImplement(RouteImplementEnum::IMPLEMENT_ADD)));
+                        if ($route->isRequireCSRFAuth() === true) RouteInspector::validateCSRF();
+                        $instance->onReceive($args);
+                    }
 
-                        $instance = new $module();
+                } else throw new RouteException(sprintf(
+                    "Sorry, the module bound to the current route \n(%s) " .
+                    "is registered as a web module but does not implement \n" .
+                    "a valid web module interface\n", current_url()));
 
-                        if (isset($implement['que\security\permission\RoutePermission']) && !$instance->hasPermission($route))
-                            throw new RouteException(sprintf("You dont have permission to the current route (%s)", current_url()),
-                                "Access denied", HTTP_UNAUTHORIZED_CODE);
-
-                        if (self::$method === "GET") {
-                            if ($route->isRequireCSRFAuth() === true) CSRF::getInstance()->generateToken();
-                            $instance->{"onLoad"}($http->_server()->get("URI_ARGS"));
-                        } else {
-                            if ($route->isRequireCSRFAuth() === true) RouteInspector::validateCSRF();
-                            $instance->{"onReceive"}($http->_server()->get("URI_ARGS"));
-                        }
-
-                        $instance->setTemplate(Composer::getInstance());
-
-                        break;
-                    case RouteImplementEnum::IMPLEMENT_EDIT:
-
-                        if (!class_exists($module, true))
-                            throw new RouteException(sprintf(
-                                "Sorry, the module (%s) bound to the current " .
-                                "route \n(%s) does not exist\n", $module, current_url()));
-
-                        $implement = class_implements($module, true);
-
-                        if (!$implement)
-                            throw new RouteException(sprintf(
-                                "Sorry, the module (%s) bound to the current " .
-                                "route (%s) does not implement a valid interface", $module, current_url()));
-
-                        if (!isset($implement['que\common\structure\Edit']))
-                            throw new RouteException(sprintf(
-                                "Sorry, the module (%s) bound to the current " .
-                                "route \n(%s) implements the wrong interface (%s)\n but registered as (%s)",
-                                $module, current_url(), implode(', ', $implement),
-                                RouteImplementEnum::getImplement(RouteImplementEnum::IMPLEMENT_EDIT)));
-
-                        $instance = new $module();
-
-                        if (isset($implement['que\security\permission\RoutePermission']) && !$instance->hasPermission($route))
-                            throw new RouteException(sprintf("You dont have permission to the current route (%s)", current_url()),
-                                "Access denied", HTTP_UNAUTHORIZED_CODE);
-
-                        $args = $http->_server()->get("URI_ARGS");
-
-                        if (self::$method === "GET") {
-                            if ($route->isRequireCSRFAuth() === true) CSRF::getInstance()->generateToken();
-                            $instance->{"onLoad"}($args, $instance->{"info"}($args));
-                        } else {
-                            if ($route->isRequireCSRFAuth() === true) RouteInspector::validateCSRF();
-                            $instance->{"onReceive"}($args, $instance->{"info"}($args));
-                        }
-
-                        $instance->setTemplate(Composer::getInstance());
-
-                        break;
-                    case RouteImplementEnum::IMPLEMENT_INFO:
-
-                        if (!class_exists($module, true))
-                            throw new RouteException(sprintf(
-                                "Sorry, the module (%s) bound to the current " .
-                                "route \n(%s) does not exist\n", $module, current_url()));
-
-                        $implement = class_implements($module, true);
-
-                        if (!$implement)
-                            throw new RouteException(sprintf(
-                                "Sorry, the module (%s) bound to the current " .
-                                "route \n(%s) does not implement a valid interface\n", $module, current_url()));
-
-                        if (!isset($implement['que\common\structure\Info']))
-                            throw new RouteException(sprintf(
-                                "Sorry, the module (%s) bound to the current " .
-                                "route \n(%s) implements the wrong interface (%s)\n but registered as (%s)",
-                                $module, current_url(), implode(', ', $implement),
-                                RouteImplementEnum::getImplement(RouteImplementEnum::IMPLEMENT_INFO)));
-
-                        $instance = new $module();
-
-                        if (isset($implement['que\security\permission\RoutePermission']) && !$instance->hasPermission($route))
-                            throw new RouteException(sprintf("You dont have permission to the current route \n(%s)\n", current_url()),
-                                "Access denied", HTTP_UNAUTHORIZED_CODE);
-
-                        $args = $http->_server()->get("URI_ARGS");
-
-                        if (self::$method === "GET") {
-
-                            if ($route->isRequireCSRFAuth() === true) CSRF::getInstance()->generateToken();
-                            $instance->{"onLoad"}($args, $instance->{"info"}($args));
-
-                        } else {
-
-                            if (!isset($implement['que\common\structure\Receiver'])) {
-
-                                throw new RouteException(sprintf(
-                                    "Sorry, the current route (%s)\n does not support (%s request).\n",
-                                    current_url(), self::$method), "Route Error", HTTP_FORBIDDEN_METHOD_CODE);
-                            }
-
-                            if ($route->isRequireCSRFAuth() === true) RouteInspector::validateCSRF();
-                            $instance->{"onReceive"}($args, $instance->{"info"}($args));
-                        }
-
-                        $instance->setTemplate(Composer::getInstance());
-
-                        break;
-                    case RouteImplementEnum::IMPLEMENT_PAGE:
-
-                        if (!class_exists($module, true))
-                            throw new RouteException(sprintf(
-                                "Sorry, the module (%s) bound to the current " .
-                                "route \n(%s) does not exist\n", $module, current_url()));
-
-                        $implement = class_implements($module, true);
-
-                        if (!$implement)
-                            throw new RouteException(sprintf(
-                                "Sorry, the module (%s) bound to the current " .
-                                "route (%s) does not implement a valid interface", $module, current_url()));
-
-                        if (!isset($implement['que\common\structure\Page']))
-                            throw new RouteException(sprintf(
-                                "Sorry, the module (%s) bound to the current " .
-                                "route \n(%s) implements the wrong interface (%s)\n but registered as (%s)",
-                                $module, current_url(), implode(', ', $implement), 
-                                RouteImplementEnum::getImplement(RouteImplementEnum::IMPLEMENT_PAGE)));
-
-                        $instance = new $module();
-
-                        if (isset($implement['que\security\permission\RoutePermission']) && !$instance->hasPermission($route))
-                            throw new RouteException(sprintf("You dont have permission to the current route (%s)", current_url()),
-                                "Access denied", HTTP_UNAUTHORIZED_CODE);
-
-                        if (self::$method === "GET") {
-
-                            if ($route->isRequireCSRFAuth() === true) CSRF::getInstance()->generateToken();
-                            $instance->{"onLoad"}($http->_server()->get("URI_ARGS"));
-
-                        } else {
-
-                            if (!isset($implement['que\common\structure\Receiver'])) {
-
-                                throw new RouteException(sprintf(
-                                    "Sorry, the current route (%s)\n does not support (%s request).\n",
-                                    current_url(), self::$method), "Route Error", HTTP_FORBIDDEN_METHOD_CODE);
-                            }
-
-                            if ($route->isRequireCSRFAuth() === true) RouteInspector::validateCSRF();
-                            $instance->{"onReceive"}($http->_server()->get("URI_ARGS"));
-                        }
-
-                        $instance->setTemplate(Composer::getInstance());
-
-                        break;
-                    default:
-                        throw new RouteException(sprintf(
-                            "Sorry, the module bound to the current " .
-                            "route \n(%s) does not implement a valid interface\n", current_url()));
-                        break;
-                }
+                $instance->setTemplate(Composer::getInstance());
 
             } else throw new RouteException(sprintf(
                 "Sorry, the current route (%s)\n is not bound to a module", current_url()));
@@ -323,7 +226,7 @@ final class Route extends RouteCompiler
 
             RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(),
                 method_exists($e, 'getTitle') ? ($e->getTitle() ?: "Route Error") : "Route Error",
-                $e->getCode() ?: HTTP_INTERNAL_ERROR_CODE);
+                $e->getCode() ?: HTTP_INTERNAL_SERVER_ERROR);
 
         }
     }
@@ -350,28 +253,19 @@ final class Route extends RouteCompiler
 
                 if (!class_exists($module, true))
                     throw new RouteException(sprintf(
-                        "Sorry, the module (%s) bound to the current " .
-                        "route \n(%s) does not exist\n", $module, current_url()));
-
-                $implement = class_implements($module, true);
-
-                if (!$implement)
-                    throw new RouteException(sprintf(
-                        "Sorry, the module (%s) bound to the current " .
-                        "route \n(%s) does not implement a valid interface\n", $module, current_url()));
-
-                if (!isset($implement['que\common\structure\Api']))
-                    throw new RouteException(sprintf(
-                        "Sorry, the module (%s) bound to the current " .
-                        "route \n(%s) implements the wrong interface (%s)\n but registered as (%s)",
-                        $module, current_url(), implode(', ', $implement),
-                        RouteImplementEnum::getImplement(RouteImplementEnum::IMPLEMENT_API)));
+                        "Sorry, the module (%s) bound to the current route \n(%s) does not exist\n",
+                        $module, current_url()));
 
                 $instance = new $module();
 
-                if (isset($implement['que\security\permission\RoutePermission']) && !$instance->hasPermission($route))
-                    throw new RouteException(sprintf("You dont have permission to the current route (%s)", current_url()),
-                        "Access denied", HTTP_UNAUTHORIZED_CODE);
+                if ($instance instanceof RoutePermission && !$instance->hasPermission($route))
+                    throw new RouteException(sprintf("You dont have permission to the current route (%s)",
+                        current_url()), "Access denied", HTTP_UNAUTHORIZED);
+
+                if (!$instance instanceof Api) throw new RouteException(sprintf(
+                    "Sorry, the module bound to the current route \n(%s) " .
+                    "is registered as an API module but does not implement \n" .
+                    "a valid API module interface\n", current_url()));
 
                 if ($route->isRequireCSRFAuth() === true) {
                     RouteInspector::validateCSRF();
@@ -379,17 +273,19 @@ final class Route extends RouteCompiler
                     header("X-Track-Token: " . Track::generateToken());
                 }
 
-                $response = $instance->{"process"}($http->_server()->get("URI_ARGS"));
+                $response = $instance->process($http->_server()->get("URI_ARGS"));
 
                 if ($response instanceof Json) {
                     header("Content-Type: application/json", true);
                     $data = $response->getJson();
-                    if (!$data) throw new RouteException("Failed to output response");
+                    if (!$data) throw new RouteException("Failed to output response", "Output Error",
+                        HTTP_NO_CONTENT, PreviousException::getInstance(1));
                     echo $data;
                 } elseif ($response instanceof Jsonp) {
                     header("Content-Type: " . mime_type_from_extension('js'), true);
                     $data = $response->getJsonp();
-                    if (!$data) throw new RouteException("Failed to output response");
+                    if (!$data) throw new RouteException("Failed to output response", "Output Error",
+                        HTTP_NO_CONTENT, PreviousException::getInstance(1));
                     echo $data;
                 } elseif ($response instanceof Html) {
                     header("Content-Type: " . mime_type_from_extension('html'), true);
@@ -420,11 +316,8 @@ final class Route extends RouteCompiler
                     if (!$data) throw new RouteException("Failed to output response");
                     echo $data;
 
-                } else {
-
-                    throw new RouteException(sprintf(
-                        "Sorry, the module bound to the current route (%s) did not return a valid response", current_url()));
-                }
+                } else throw new RouteException(sprintf(
+                    "Sorry, the API module bound to the current route (%s) did not return a valid response", current_url()));
 
             } else throw new RouteException(sprintf(
                 "Sorry, the current route (%s) is not bound to a module", current_url()));
@@ -433,7 +326,7 @@ final class Route extends RouteCompiler
 
             RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(),
                 method_exists($e, 'getTitle') ? ($e->getTitle() ?: "Route Error") : "Route Error",
-                $e->getCode() ?: HTTP_INTERNAL_ERROR_CODE);
+                $e->getCode() ?: HTTP_INTERNAL_SERVER_ERROR);
 
         }
 
@@ -461,28 +354,19 @@ final class Route extends RouteCompiler
 
                 if (!class_exists($module, true))
                     throw new RouteException(sprintf(
-                        "Sorry, the module (%s) bound to the current " .
-                        "route \n(%s) does not exist\n", $module, current_url()));
-
-                $implement = class_implements($module, true);
-
-                if (!$implement)
-                    throw new RouteException(sprintf(
-                        "Sorry, the module (%s) bound to the current " .
-                        "route (%s)\n does not implement a valid interface\n", $module, current_url()));
-
-                if (!isset($implement['que\common\structure\Resource']))
-                    throw new RouteException(sprintf(
-                        "Sorry, the module (%s) bound to the current " .
-                        "route \n(%s) implements the wrong interface (%s)\n but registered as (%s)",
-                        $module, current_url(), implode(', ', $implement),
-                        RouteImplementEnum::getImplement(RouteImplementEnum::IMPLEMENT_RESOURCE)));
+                        "Sorry, the module (%s) bound to the current route \n(%s) does not exist\n",
+                        $module, current_url()));
 
                 $instance = new $module();
 
-                if (isset($implement['que\security\permission\RoutePermission']) && !$instance->hasPermission($route))
-                    throw new RouteException(sprintf("You dont have permission to the current route (%s)", current_url()),
-                        "Access denied", HTTP_UNAUTHORIZED_CODE);
+                if ($instance instanceof RoutePermission && !$instance->hasPermission($route))
+                    throw new RouteException(sprintf("You dont have permission to the current route (%s)",
+                        current_url()), "Access denied", HTTP_UNAUTHORIZED);
+
+                if (!$instance instanceof Resource) throw new RouteException(sprintf(
+                    "Sorry, the module bound to the current route \n(%s) " .
+                    "is registered as a resource module but does not implement \n" .
+                    "a valid resource module interface\n", current_url()));
 
                 if ($route->isRequireCSRFAuth() === true) {
                     RouteInspector::validateCSRF();
@@ -490,7 +374,7 @@ final class Route extends RouteCompiler
                     header("X-Track-Token: " . Track::generateToken());
                 }
 
-                $instance->{"render"}($http->_server()->get("URI_ARGS"));
+                $instance->render($http->_server()->get("URI_ARGS"));
 
             } else throw new RouteException(sprintf(
                 "Sorry, the current route (%s) is not bound to a module", current_url()));
@@ -499,7 +383,7 @@ final class Route extends RouteCompiler
 
             RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(),
                 method_exists($e, 'getTitle') ? ($e->getTitle() ?: "Route Error") : "Route Error",
-                $e->getCode() ?: HTTP_INTERNAL_ERROR_CODE);
+                $e->getCode() ?: HTTP_INTERNAL_SERVER_ERROR);
 
         }
 

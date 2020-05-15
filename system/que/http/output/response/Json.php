@@ -44,6 +44,7 @@ class Json
     {
         $this->option = $option;
         $this->depth = $depth;
+        $this->data['version'] = config('auth.app.version');
         $this->data = array_merge($this->data, $data);
     }
 

@@ -252,7 +252,7 @@ class Condition
         if (!(db()->check($table, [
             'AND' => ($considerIsActive === true ? [
                 $column => $this->getValue(),
-                (CONFIG['db_table_status_key'] ?? 'is_active') => STATE_ACTIVE
+                (config('database.table_status_key', 'is_active')) => STATE_ACTIVE
             ] : [
                 $column => $this->getValue()
             ])
@@ -273,7 +273,7 @@ class Condition
         if ((db()->check($table, [
             'AND' => ($considerIsActive === true ? [
                 $column => $this->getValue(),
-                (CONFIG['db_table_status_key'] ?? 'is_active') => STATE_ACTIVE
+                (config('database.table_status_key', 'is_active')) => STATE_ACTIVE
             ] : [
                 $column => $this->getValue()
             ])
@@ -388,6 +388,32 @@ class Condition
                     $this->addError($error);
 
         } elseif ($variable === $this->getValue())
+            $this->addError($error);
+
+        return $this;
+    }
+
+    /**
+     * @param array $variable
+     * @param null $error
+     * @return Condition
+     */
+    public function isIdenticalToAny(array $variable, $error = null): Condition
+    {
+        if (!in_array($this->getValue(), $variable, true))
+            $this->addError($error);
+
+        return $this;
+    }
+
+    /**
+     * @param array $variable
+     * @param null $error
+     * @return Condition
+     */
+    public function isNotIdenticalToAny(array $variable, $error = null): Condition
+    {
+        if (in_array($this->getValue(), $variable, true))
             $this->addError($error);
 
         return $this;

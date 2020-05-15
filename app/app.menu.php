@@ -1,6 +1,6 @@
 <?php
 
-use que\route\structure\RouteEntry;
+use que\route\RouteEntry;
 use que\security\permission\RoutePermission;
 
 /**

@@ -14,6 +14,7 @@ use que\common\validate\Track;
 use que\route\Route;
 use que\security\CSRF;
 use que\session\Session;
+use que\support\Config;
 
 
 class Composer
@@ -399,16 +400,16 @@ class Composer
         $this->http_header();
         $this->http_data();
 
-        $tmpHeader = APP_TEMP_HEADER;
+        $tmpHeader = config('template.app.header');
 
         if (!isset(self::$menu)) self::$menu = new Menu();
 
         $route = Route::getCurrentRoute();
 
-        $tmpHeader['app_title'] = ((!empty($route) && !empty($route->getTitle())) ? $route->getTitle() : $tmpHeader['app_title']);
+        $tmpHeader['title'] = ((!empty($route) && !empty($route->getTitle())) ? $route->getTitle() : $tmpHeader['title'] ?? '');
 
-        $css = (!$ignoreDefaultCss ? array_merge(APP_TEMP_CSS, $this->getCss()) : $this->getCss());
-        $js = (!$ignoreDefaultScript ? array_merge(APP_TEMP_SCRIPT, $this->getScript()) : $this->getScript());
+        $css = (!$ignoreDefaultCss ? array_merge(config('template.app.css', []), $this->getCss()) : $this->getCss());
+        $js = (!$ignoreDefaultScript ? array_merge(config('template.app.js', []), $this->getScript()) : $this->getScript());
 
         $module_files = $this->get_tmp_module_files();
         $js = array_merge($js, $module_files['js']);
@@ -451,7 +452,7 @@ class Composer
         $this->css($css);
         $this->script($js);
         $this->form('track', Track::generateToken());
-        $this->form('csrf', (CSRF === true ? CSRF::getInstance()->getToken() : ""));
+        $this->form('csrf', (config('auth.csrf', false) === true ? CSRF::getInstance()->getToken() : ""));
         $this->header((!$ignoreDefaultHeader ? array_merge($tmpHeader, $this->getHeader()) : $this->getHeader()));
 
         $this->setContext("script", $this->getScript());

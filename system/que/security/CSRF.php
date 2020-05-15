@@ -18,12 +18,12 @@ class CSRF
     /**
      * @var CSRF
      */
-    private static $instance;
+    private static CSRF $instance;
 
     /**
      * @var Files
      */
-    private $session;
+    private Files $session;
 
     protected function __construct()
     {
@@ -73,7 +73,7 @@ class CSRF
         try {
             $this->session->add("csrf-token", "csrf:" .
                 wordwrap(str_shuffle(unique_id(40) . session_id() .
-                    (is_logged_in() ? user((CONFIG['db_table']['user']['primary_key'] ?? 'id')) : '')), 4, ":", true));
+                    (is_logged_in() ? user(config('database.tables.user.primary_key', 'id')) : '')), 4, ":", true));
         } catch (Exception $exception) {
         }
         return $this;

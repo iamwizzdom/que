@@ -8,7 +8,6 @@ use Exception;
 use que\common\exception\RouteException;
 use que\http\Http;
 use que\http\input\Input;
-use que\route\structure\RouteEntry;
 use que\security\CSRF;
 use que\security\JWT\JWT;
 use que\security\JWT\TokenEncoded;
@@ -19,22 +18,22 @@ class RouteInspector
     /**
      * @var RouteInspector
      */
-    private static $instance;
+    private static RouteInspector $instance;
 
     /**
      * @var RouteEntry
      */
-    private $routeEntry;
+    private RouteEntry $routeEntry;
 
     /**
      * @var array
      */
-    private $uriTokens;
+    private array $uriTokens;
 
     /**
      * @var array
      */
-    private $foundRoutes = [];
+    private array $foundRoutes = [];
 
     /**
      * RouteRegistrar constructor.
@@ -88,7 +87,7 @@ class RouteInspector
     }
 
     /**
-     * This method inspects a registered route to see if it closely matches the current uri by at least 50%
+     * This method inspects a registered route to see if it closely matches the current uri by at least by 50%
      */
     public function inspect()
     {
@@ -239,7 +238,7 @@ class RouteInspector
             $value = str_ellipsis($value, 70);
             throw new RouteException(
                 "Invalid data type found in the current route argument at '{$value}'.",
-                "Route Error", E_USER_NOTICE
+                "Route Error", HTTP_INTERNAL_SERVER_ERROR
             );
         }
     }
@@ -249,7 +248,7 @@ class RouteInspector
      */
     public static function validateCSRF() {
 
-        if (CSRF === true) {
+        if (config('auth.csrf', false) === true) {
 
             $token = Input::getInstance()->get('X-Csrf-Token');
             if (empty($token)) $token = Input::getInstance()->get('csrf');
@@ -260,7 +259,7 @@ class RouteInspector
 
                 CSRF::getInstance()->generateToken();
                 throw new RouteException("Cross-site request forgery (CSRF) are forbidden",
-                    "CSRF Error", HTTP_EXPIRED_AUTH_CODE);
+                    "CSRF Error", HTTP_EXPIRED_AUTH);
 
             } else CSRF::getInstance()->generateToken();
 
@@ -280,12 +279,13 @@ class RouteInspector
             if (empty($token)) $token = Input::getInstance()->get('jwt');
 
             $tokenEncoded = new TokenEncoded($token);
-            $tokenEncoded->validate(JWT_KEY, JWT::ALGORITHM_HS512);
+            $tokenEncoded->validate(config('auth.jwt.key', 'que_jwt_key'),
+                config('auth.jwt.algo', JWT::ALGORITHM_HS512));
             $tokenDecoded = $tokenEncoded->decode();
             $http->_server()->offsetSet("JWT_PAYLOAD", $tokenDecoded->getPayload());
             $http->_server()->offsetSet("JWT_HEADER", $tokenDecoded->getHeader());
         } catch (Exception $e) {
-            throw new RouteException($e->getMessage(), "JWT Auth Error", HTTP_EXPIRED_AUTH_CODE);
+            throw new RouteException($e->getMessage(), "JWT Auth Error", HTTP_EXPIRED_AUTH);
         }
     }
 }

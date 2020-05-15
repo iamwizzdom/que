@@ -19,7 +19,7 @@ class Session
     /**
      * @var Session
      */
-    private static $instance;
+    private static Session $instance;
 
     protected function __construct()
     {

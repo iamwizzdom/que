@@ -1,7 +1,7 @@
 <?php
 
 
-namespace que\route\structure;
+namespace que\route;
 
 
 class RouteEntry
@@ -9,57 +9,60 @@ class RouteEntry
     /**
      * @var array
      */
-    public $uriTokens = [];
+    public array $uriTokens = [];
 
     /**
      * @var string
      */
-    private $type = "";
+    private string $type = "";
 
     /**
      * @var string
      */
-    private $uri = "";
+    private string $uri = "";
 
     /**
      * @var string
      */
-    private $title = "";
+    private string $title = "";
 
     /**
      * @var string
      */
-    private $module = "";
-
-    /**
-     * @var int
-     */
-    private $implement = 0;
+    private string $module = "";
 
     /**
      * @var bool
      */
-    private $requireLogIn = null;
+    private ?bool $requireLogIn = null;
 
     /**
      * @var string
      */
-    private $loginUrl = null;
+    private ?string $loginUrl = null;
 
     /**
      * @var bool
      */
-    private $requireCSRFAuth = CSRF;
+    private bool $requireCSRFAuth;
 
     /**
      * @var bool
      */
-    private $requireJWTAuth = false;
+    private bool $requireJWTAuth = false;
 
     /**
      * @var bool
      */
-    private $underMaintenance = false;
+    private bool $underMaintenance = false;
+
+    /**
+     * RouteEntry constructor.
+     */
+    public function __construct()
+    {
+        $this->setRequireCSRFAuth(config('auth.csrf', false));
+    }
 
     /**
      * @return string
@@ -90,8 +93,7 @@ class RouteEntry
      */
     public function setUri(string $uri)
     {
-        $uri = strlen($uri) > 1 && str_ends_with($uri, '/') ? rtrim($uri, '/') : $uri;
-        $this->uri = strlen($uri) > 1 && str_starts_with($uri, '/') ? ltrim($uri, '/') : $uri;
+        $this->uri = trim($uri, '/');
     }
 
     /**
@@ -124,22 +126,6 @@ class RouteEntry
     public function setModule(string $module)
     {
         $this->module = $module;
-    }
-
-    /**
-     * @return int
-     */
-    public function getImplement(): int
-    {
-        return $this->implement;
-    }
-
-    /**
-     * @param int $implement
-     */
-    public function setImplement(int $implement)
-    {
-        $this->implement = $implement;
     }
 
     /**

@@ -149,7 +149,7 @@ class Obj
      * @return mixed|null
      */
     public static function find_in_object (object $haystack, $needle, $default = null) {
-        return find_in_object($haystack, $needle, $default);
+        return object_get($haystack, $needle, $default);
     }
 
 }

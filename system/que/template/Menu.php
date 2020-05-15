@@ -4,7 +4,8 @@
 namespace que\template;
 
 use que\route\Route;
-use que\route\structure\RouteEntry;
+use que\route\RouteEntry;
+use que\security\permission\RoutePermission;
 
 class Menu
 {
@@ -30,7 +31,7 @@ class Menu
     {
         $this->menuInstance = new \Menu();
         $implements = class_implements($this->menuInstance);
-        if ($implements) $this->checkPermission = isset($implements['que\security\permission\RoutePermission']);
+        if ($implements) $this->checkPermission = in_array(RoutePermission::class, $implements);
         $appMenu = $this->menuInstance->menuList();
         $this->filter($appMenu);
         $this->menus = $appMenu;

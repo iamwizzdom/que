@@ -6,9 +6,69 @@
  * Time: 11:01 PM
  */
 
+$startTime = ($start = microtime(true)) . "\n";
+
 //echo dechex(0x3fff);
 
-//require "../../../app/config/config.php";
+use que\support\Config;
+
+require "../../../app/app.settings.php";
+
+//echo $startTime;
+
+
+//$mds = [90,6,78,9];
+//array_callback($mds, function ($md) {
+//    $md = (object) $md;
+//    return new \que\database\model\Model($md, 'user', 'id');
+//});
+//$modelStack = new \que\database\model\ModelStack($mds, true);
+//
+//foreach ($modelStack as $key => $model) unset($modelStack[$key]);
+//
+//debug_print($modelStack);
+//usleep(
+//    (1.2 * 1000000)
+//);
+//
+//print_r(find_in_array([
+//    'user' => [
+//        'names' => [
+//            'surname' => [
+//                'firstname' => 'Wisdom',
+//                'middlename' => 'Obinna'
+//            ]
+//        ]
+//    ]
+//], ['user.names.surname.middlename'], 'not found'));
+
+//$data = [
+//    'user' => [
+//        'names' => [
+//            'surname' => [
+//                'firstname' => 'Wisdom',
+//                'middlename' => 'Obinna'
+//            ]
+//        ]
+//    ]
+//];
+
+//echo str_strip_repeated_char('l', "helll\\\lo\\\\ guys");
+
+//$params = Config::get('database.connections.mysql');
+//if ($params['unix_socket'] !== null) {
+//    unset($params['host']);
+//    unset($params['port']);
+//}
+//echo serializer_recursive($params, ";", function ($value) {
+//    return $value !== null;
+//});
+
+//$class = Config::get("database.drivers.mysql");
+//debug_print(['stat' => class_exists($class) ? 'true' : 'false']);
+//debug_print(new $class);
+
+
 //use que\permission\AccessLevelEnum;
 
 //use que\common\time\Time;
@@ -59,7 +119,12 @@
 
 //echo Time::getInstance()->time_ago(date("Y/m/d H:i:s",'1564582940'));
 
-if (preg_match('/\[(.*?)\]\((.*?)\)/', '[a:2:{s:7:"browser";s:13:"Google Chrome";s:8:"platform";s:10:"Windows 10";}](array)', $matches)) {
+//if (preg_match('/\[(.*?)\]\((.*?)\)/', '[a:2:{s:7:"browser";s:13:"Google Chrome";s:8:"platform";s:10:"Windows 10";}](array)', $matches)) {
+//
+//    print_r($matches);
+//} else echo "Not match";
 
-    print_r($matches);
-} else echo "Not match";
+
+echo "\n" . ($end = microtime(true));
+echo "\n" . ($end - $start);
+

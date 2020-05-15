@@ -1,14 +1,19 @@
 <?php
 
+use que\common\exception\PreviousException;
+use que\common\exception\QueRuntimeException;
+use que\config\Repository;
 use que\common\time\Time;
 use que\common\validate\Track;
 use que\database\mysql\Query;
 use que\error\RuntimeError;
 use que\http\Http;
+use que\database\model\interfaces\Model;
 use que\route\Route;
 use que\route\structure\RouteEntry;
 use que\security\CSRF;
 use que\session\Session;
+use que\support\Config;
 use que\template\Composer;
 use que\template\Form;
 use que\template\Pagination;
@@ -21,31 +26,6 @@ use que\utility\Converter;
  * Date: 12/10/2018
  * Time: 3:55 PM
  */
-
-
-/**
- * debug_print is used to output all data types
- * @param mixed ...$params
- * @return string
- */
-function debug_print(...$params)
-{
-    $args = func_get_args();
-
-    $end = end($args);
-
-    if ($end === true) array_pop($args);
-
-    $print = "<pre>";
-    foreach ($args as $arg) {
-        $print .= print_r($arg, true);
-        $print .= "\t";
-    }
-    $print .= "</pre>";
-
-    if ($end === true) return $print;
-    else echo $print;
-}
 
 
 /**
@@ -119,11 +99,29 @@ function str_to_word_array(string $string): array
 /**
  * @param string $haystack
  * @param string $needle
+ * @param bool $case_insensitive
  * @return bool
  */
-function str_contains(string $haystack, string $needle): bool
+function str_contains(string $haystack, string $needle, bool $case_insensitive = false): bool
 {
-    return strpos($haystack, $needle) !== false;
+    return $case_insensitive ? stripos($haystack, $needle) !== false : strpos($haystack, $needle) !== false;
+}
+
+/**
+ * @param string $haystack
+ * @param array $needles
+ * @param bool $case_insensitive
+ * @return bool
+ */
+function str_contains_any(string $haystack, array $needles, bool $case_insensitive = false): bool
+{
+    $count = 0;
+    foreach ($needles as $needle)
+        if (str_contains($haystack, $needle, $case_insensitive)) {
+            $count++;
+            break;
+        }
+    return $count > 0;
 }
 
 /**
@@ -159,9 +157,9 @@ function str_end_at(string $haystack, string $needle) {
  */
 function str_char_count(string $haystack, string $needle): int
 {
-    $count = 0;
+    $count = 0; $len = strlen($needle);
     while (($pos = strpos($haystack, $needle)) !== false) {
-        $haystack = substr($haystack, ($pos + 1));
+        $haystack = substr($haystack, ($pos + $len));
         $count++;
     }
     return $count;
@@ -191,7 +189,7 @@ function str_ellipsis(string $string, int $length = 50, string $ellipsis = null)
  */
 function str_strip(string $string, string $needle) {
     if (!str_contains($string, $needle)) return $string;
-    return preg_replace("[{$needle}]", "", $string);
+    return preg_replace('/' . $needle .'+/', "", $string);
 }
 
 /**
@@ -229,7 +227,7 @@ function str_strip_spaces(string $string): string
  */
 function str_strip_excess_whitespace(string $string): string
 {
-    return preg_replace('/  +/', ' ', $string);
+    return preg_replace('/\s+?/', " ", $string);
 }
 
 /**
@@ -285,6 +283,18 @@ function str_strip_non_alpha(string $string): string
 function str_strip_non_alpha_space(string $name): string
 {
     return preg_replace("/[^a-z A-Z]/", "", $name);
+}
+
+/**
+ * Remove all repeated occurrence of $char from $subject leaving just one
+ *
+ * @param string $char
+ * @param string $subject
+ * @return string
+ */
+function str_strip_repeated_char(string $char, string $subject): string
+{
+    return preg_replace('/([' . $char . '])\1+/', '$1', $subject);
 }
 
 /**
@@ -724,16 +734,41 @@ function convert_mega_bytes(int $mega_bytes, int $decimals = 0): float
 
 
 /**
- * @param array $data
+ * @param array $pieces
+ * @param string $glue
+ * @param callable $filter
  * @return string
  */
-function serializer(array $data): string
+function serializer(array $pieces, string $glue = '&', callable $filter = null): string
 {
     $serial = [];
-    foreach ($data as $key => $value) {
+    foreach ($pieces as $key => $value) {
+        if ($filter !== null && !call_user_func($filter, $value, $key)) continue;
         $serial[] = "{$key}={$value}";
     }
-    return join('&', $serial);
+    return join($glue, $serial);
+}
+
+
+/**
+ * @param array $pieces
+ * @param string $glue
+ * @param callable $filter
+ * @return string
+ */
+function serializer_recursive(array $pieces, string $glue = '&', callable $filter = null): string
+{
+    $serial = [];
+    foreach ($pieces as $key => $value) {
+        if (is_array($value)) {
+            $pieces = serializer_recursive($value, $glue, $filter);
+            if (!empty($pieces)) $serial[] = $pieces;
+            continue;
+        }
+        if ($filter !== null && !call_user_func($filter, $value, $key)) continue;
+        $serial[] = "{$key}={$value}";
+    }
+    return join($glue, $serial);
 }
 
 /**
@@ -831,6 +866,121 @@ function array_callback(array &$element, $callback, array $affected = [])
     }
     foreach ($element as $key => $value)
         $element[$key] = call_user_func($callback, $value, $key, $element);
+}
+
+/**
+ * @param array $element
+ * @param $callback
+ * @param array $affected
+ */
+function array_callback_recursive(array &$element, $callback, array $affected = [])
+{
+    if (!empty($affected)) {
+        foreach ($affected as $key)
+            if (array_key_exists($key, $element)) {
+                if (is_array($element[$key])) {
+                    $value = &$element[$key];
+                    array_callback_recursive($value, $callback, $affected);
+                } else $element[$key] = call_user_func($callback, $element[$key], $key, $element);
+            }
+        return;
+    }
+
+    foreach ($element as $key => &$value) {
+        if (is_array($value)) {
+            array_callback_recursive($value, $callback, $affected);
+        } else $value = call_user_func($callback, $value, $key, $element);
+    }
+}
+
+/**
+ * @param array|object $element
+ * @param $callback
+ * @param array $affected
+ */
+function iterable_callback(&$element, $callback, array $affected = [])
+{
+    if (!is_iterable($element)) throw new QueRuntimeException(
+        "element passed to iterable_callback is not iterable", "Que Function Error",
+        E_USER_ERROR, 0, PreviousException::getInstance());
+
+    if (array_is_accessible($element)) {
+
+        if (!empty($affected)) {
+
+            foreach ($affected as $key)
+                if (array_key_exists($key, $element))
+                    $element[$key] = call_user_func($callback, $element[$key], $key, $element);
+            return;
+        }
+
+        foreach ($element as $key => $value)
+            $element[$key] = call_user_func($callback, $value, $key, $element);
+
+    } else {
+
+        if (!empty($affected)) {
+
+            foreach ($affected as $key)
+                if (array_key_exists($key, $element))
+                    $element->{$key} = call_user_func($callback, $element->{$key}, $key, $element);
+            return;
+        }
+
+        foreach ($element as $key => $value)
+            $element->{$key} = call_user_func($callback, $value, $key, $element);
+    }
+}
+
+/**
+ * @param array|object $element
+ * @param $callback
+ * @param array $affected
+ */
+function iterable_callback_recursive(&$element, $callback, array $affected = [])
+{
+    if (!is_iterable($element) && !is_object($element)) throw new QueRuntimeException(
+        "element passed to iterable_callback_recursive is not iterable", "Que Function Error",
+        E_USER_ERROR, 0, PreviousException::getInstance());
+
+    if (array_is_accessible($element)) {
+
+        if (!empty($affected)) {
+            foreach ($affected as $key)
+                if (array_key_exists($key, $element)) {
+                    if (is_array($element[$key]) || is_object($element[$key])) {
+                        $value = &$element[$key];
+                        iterable_callback_recursive($value, $callback, $affected);
+                    } else $element[$key] = call_user_func($callback, $element[$key], $key, $element);
+                }
+            return;
+        }
+
+        foreach ($element as $key => &$value) {
+            if (is_array($value)) {
+                iterable_callback_recursive($value, $callback, $affected);
+            } else $value = call_user_func($callback, $value, $key, $element);
+        }
+
+    } else {
+
+        if (!empty($affected)) {
+            foreach ($affected as $key)
+                if (array_key_exists($key, $element)) {
+                    if (is_array($element->{$key}) || is_object($element->{$key})) {
+                        $value = &$element->{$key};
+                        iterable_callback_recursive($value, $callback, $affected);
+                    } else $element->{$key} = call_user_func($callback, $element->{$key}, $key, $element);
+                }
+            return;
+        }
+
+        foreach ($element as $key => &$value) {
+            if (is_array($value) || is_object($value)) {
+                iterable_callback_recursive($value, $callback, $affected);
+            } else $value = call_user_func($callback, $value, $key, $element);
+        }
+    }
 }
 
 /**
@@ -968,13 +1118,118 @@ function array_multi($value, int $range) {
 }
 
 /**
+ * Determine whether the given value is array accessible.
+ *
+ * @param $value
+ * @return bool
+ */
+function array_is_accessible($value): bool {
+    return is_array($value) || $value instanceof ArrayAccess;
+}
+
+/**
+ * Determine if the given key exists in the provided array.
+ *
+ * @param array $array
+ * @param $key
+ * @return bool
+ */
+function array_has_key($array, $key): bool {
+
+    if ($array instanceof ArrayAccess) {
+        return $array->offsetExists($key);
+    }
+
+    return array_key_exists($key, $array);
+}
+
+/**
+ * Collapse an array of arrays into a single array.
+ *
+ * @param  array  $array
+ * @return array
+ */
+function array_collapse($array)
+{
+    $results = [];
+    foreach ($array as $values) {
+        if (!is_array($values)) {
+            continue;
+        }
+        $results[] = $values;
+    }
+    return array_merge([], ...$results);
+}
+
+/**
+ * Get an item from an array using "dot" notation.
+ *
  * @param array $haystack
  * @param $needle
  * @param null $default
  * @return mixed|null
  */
-function find_in_array(array $haystack, $needle, $default = null) {
-    return $haystack[$needle] ?? $default;
+function array_get(array $haystack, $needle, $default = null) {
+
+    if (!array_is_accessible($haystack)) {
+        return value($default);
+    }
+
+    if (is_null($needle)) {
+        return $haystack;
+    }
+
+    if (array_has_key($haystack, $needle)) {
+        return $haystack[$needle];
+    }
+
+    if (strpos($needle, '.') === false) {
+        return $haystack[$needle] ?? value($default);
+    }
+
+    foreach (explode('.', $needle) as $segment) {
+        if (array_is_accessible($haystack) && array_has_key($haystack, $segment)) {
+            $haystack = $haystack[$segment];
+        } else {
+            return value($default);
+        }
+    }
+
+    return $haystack;
+}
+
+/**
+ * Set an item on an array using dot notation.
+ *
+ * @param array $array
+ * @param $key
+ * @param $value
+ * @return array|mixed
+ */
+function array_set(array &$array, $key, $value) {
+
+    if (is_null($key)) {
+        return $array = $value;
+    }
+
+    $keys = explode('.', $key);
+
+    while (count($keys) > 1) {
+        $key = array_shift($keys);
+
+        // If the key doesn't exist at this depth, we will just create an empty array
+        // to hold the next value, allowing us to create the arrays to hold final
+        // values at the correct depth. Then we'll keep digging into the array.
+        if (! isset($array[$key]) || ! is_array($array[$key])) {
+            $array[$key] = [];
+        }
+
+        $array = &$array[$key];
+    }
+
+    $array[array_shift($keys)] = $value;
+
+    return $array;
 }
 
 /**
@@ -1226,13 +1481,25 @@ function object_identical(object $object1, object $object2): bool
 }
 
 /**
+ * Get an item from an object using "dot" notation.
+ *
  * @param object $haystack
  * @param $needle
  * @param null $default
  * @return mixed|null
  */
-function find_in_object(object $haystack, $needle, $default = null) {
-    return $haystack->{$needle} ?? $default;
+function object_get(object $haystack, $needle, $default = null) {
+
+    if (is_blank($needle)) return $default;
+
+    foreach (explode('.', $needle) as $segment) {
+        if (!object_key_exists($segment, $haystack)) {
+            return value($default);
+        }
+        $haystack = $haystack->{$segment};
+    }
+
+    return $haystack;
 }
 
 /**
@@ -1247,6 +1514,33 @@ function find_in_object(object $haystack, $needle, $default = null) {
 /**
  * Misc functions starts here
  */
+
+
+
+
+/**
+ * debug_print is used to output all data types
+ * @param mixed ...$params
+ * @return string
+ */
+function debug_print(...$params)
+{
+    $args = func_get_args();
+
+    $end = end($args);
+
+    if ($end === true) array_pop($args);
+
+    $print = "<pre>";
+    foreach ($args as $arg) {
+        $print .= print_r($arg, true);
+        $print .= "\t";
+    }
+    $print .= "</pre>\n\n";
+
+    if ($end === true) return $print;
+    else echo $print;
+}
 
 /**
  * @param string $json
@@ -1389,12 +1683,265 @@ function session(): Session {
 }
 
 /**
- * @param bool $persist
+ * Return the default value of the given value.
+ *
+ * @param  mixed  $value
+ * @return mixed
+ */
+function value($value)
+{
+    return $value instanceof Closure ? $value() : $value;
+}
+
+/**
+ * @param array $data
+ * @return bool
+ */
+function is_array_of_arrays(array $data): bool {
+    foreach ($data as $value) if (!is_array($value)) return false;
+    return true;
+}
+
+/**
+ * @param array $data
+ * @return bool
+ */
+function is_array_of_objects(array $data): bool {
+    foreach ($data as $value) if (!is_object($value)) return false;
+    return true;
+}
+
+/**
+ * Determine if the given value is "blank".
+ *
+ * @param  mixed  $value
+ * @return bool
+ */
+function is_blank($value): bool
+{
+    if (is_null($value)) return true;
+
+    if (is_string($value)) return trim($value) === '';
+
+    if (is_numeric($value) || is_bool($value)) return false;
+
+    if ($value instanceof Countable) return count($value) === 0;
+
+    return empty($value);
+}
+
+/**
+ * Determine if a value is "filled".
+ *
+ * @param  mixed  $value
+ * @return bool
+ */
+function is_filled($value): bool
+{
+    return !is_blank($value);
+}
+
+/**
+ * Retry an operation a given number of times.
+ *
+ * @param callable $callback
+ * @param int $times
+ * @param float $sleep | retrial interval in milliseconds
+ * @param Closure|null $when
+ * @return mixed
+ * @throws Exception
+ */
+function retry(callable $callback, int $times, float $sleep = 0, Closure $when = null)
+{
+    $attempts = 0;
+
+    beginning:
+    $attempts++;
+    $times--;
+
+    try {
+
+        $data = $callback($attempts, $times);
+        if ($when && $when($data)) return $data;
+        if ($times < 1) return $data;
+
+    } catch (Exception $e) {
+
+        if ($times < 1) throw $e;
+    }
+
+    if ($sleep) usleep($sleep * 1000);
+
+    goto beginning;
+}
+
+/**
+ * Throw the given exception if the given condition is true.
+ *
+ * @param $condition
+ * @param Throwable|string $exception
+ * @param mixed ...$parameters
+ * @return mixed
+ * @throws Throwable
+ */
+function throw_if($condition, $exception, ...$parameters)
+{
+    if ($condition) {
+        throw (is_string($exception) ? new $exception(...$parameters) : $exception);
+    }
+
+    return $condition;
+}
+
+/**
+ * Throw the given exception unless the given condition is true.
+ *
+ * @param  mixed  $condition
+ * @param  Throwable|string  $exception
+ * @param  array  ...$parameters
+ * @return mixed
+ * @throws Throwable
+ */
+function throw_unless($condition, $exception, ...$parameters)
+{
+    if (!$condition) {
+        throw (is_string($exception) ? new $exception(...$parameters) : $exception);
+    }
+
+    return $condition;
+}
+
+/**
+ * Get an item from an array or object using "dot" notation.
+ *
+ * @param  mixed   $target
+ * @param  string|array|int  $key
+ * @param  mixed   $default
+ * @return mixed
+ */
+function data_get($target, $key, $default = null)
+{
+    if (is_null($key)) {
+        return $target;
+    }
+
+    $key = is_array($key) ? $key : explode('.', $key);
+
+    while (! is_null($segment = array_shift($key))) {
+
+        if ($segment === '*') {
+
+            if (!is_array($target)) {
+                return value($default);
+            }
+
+            $result = [];
+
+            foreach ($target as $item) {
+                $result[] = data_get($item, $key);
+            }
+
+            return in_array('*', $key) ? array_collapse($result) : $result;
+        }
+
+        if (array_is_accessible($target) && array_has_key($target, $segment)) {
+            $target = $target[$segment];
+        } elseif (is_object($target) && object_key_exists($segment, $target)) {
+            $target = $target->{$segment};
+        } else {
+            return value($default);
+        }
+    }
+
+    return $target;
+}
+
+/**
+ * Set an item on an array or object using dot notation.
+ *
+ * @param  mixed  $target
+ * @param  string|array  $key
+ * @param  mixed  $value
+ * @param  bool  $overwrite
+ * @return mixed
+ */
+function data_set(&$target, $key, $value, $overwrite = true)
+{
+    $segments = is_array($key) ? $key : explode('.', $key);
+
+    if (($segment = array_shift($segments)) === '*') {
+
+        if (!array_is_accessible($target)) $target = [];
+
+        if ($segments) {
+            foreach ($target as &$inner) {
+                data_set($inner, $segments, $value, $overwrite);
+            }
+        } elseif ($overwrite) {
+            foreach ($target as &$inner) {
+                $inner = $value;
+            }
+        }
+    } elseif (array_is_accessible($target)) {
+        if ($segments) {
+            if (!array_has_key($target, $segment)) {
+                $target[$segment] = [];
+            }
+
+            data_set($target[$segment], $segments, $value, $overwrite);
+        } elseif ($overwrite || !array_has_key($target, $segment)) {
+            $target[$segment] = $value;
+        }
+    } elseif (is_object($target)) {
+        if ($segments) {
+            if (! isset($target->{$segment})) {
+                $target->{$segment} = [];
+            }
+
+            data_set($target->{$segment}, $segments, $value, $overwrite);
+        } elseif ($overwrite || ! isset($target->{$segment})) {
+            $target->{$segment} = $value;
+        }
+    } else {
+        $target = [];
+
+        if ($segments) {
+            data_set($target[$segment], $segments, $value, $overwrite);
+        } elseif ($overwrite) {
+            $target[$segment] = $value;
+        }
+    }
+
+    return $target;
+}
+
+/**
+ * @param $offset
+ * @param null $default
+ * @return mixed|null
+ */
+function config(string $offset, $default = null) {
+    return Config::get($offset, $default);
+}
+
+/**
  * @return Query
  */
-function db(bool $persist = (CONFIG['database']['mysql']['persist'] ?? false)): Query
+function db(): Query
 {
-    return Query::getInstance($persist);
+    return Query::getInstance();
+}
+
+/**
+ * @param string $model | model key in database config
+ * @return mixed|null
+ */
+function model(string $model) {
+    if ($model === null) return null;
+    $model = config("database.models.{$model}", null);
+    if ($model === null) return null;
+    if (!class_exists($model, true)) return null;
+    return $model;
 }
 
 /**
@@ -1736,14 +2283,14 @@ function extension_from_mime_type(string $mime_type)
  * @link https://php.net/manual/en/function.readgzfile.php
  *
  * @param $filepath
- * The file name. This is the file to be opened from the filesystem and its
+ * The file path. This is the file to be opened from the filesystem and its
  * contents written to standard output.
  *
  * @param $filename
  * Defines the output filename
  *
  * @param $auto_download
- * Specifies whether to do file automatically
+ * Specifies whether to download file automatically
  *
  * @return bool
  */
@@ -1857,10 +2404,13 @@ function base_url(string $url = null, bool $forceUrl = false): string
         $uri_extract = array_extract($uriTokens, 0, strpos_in_array($uriTokens,
             APP_ROOT_FOLDER, STRPOS_IN_ARRAY_OPT_ARRAY_INDEX));
 
-        $host .= ("/" . implode($uri_extract, "/"));
+        $host .= ("/" . implode("/", $uri_extract));
     }
 
-    return server_protocol() . preg_replace("/\/\//", "/", $isNull ? $host : "{$host}/{$url}");
+    $url = $isNull ? $host : "{$host}/{$url}";
+    $url = str_strip_repeated_char('\/', $url);
+
+    return server_protocol() . str_strip_repeated_char('\\\\', $url);
 }
 
 /**

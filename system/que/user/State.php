@@ -15,10 +15,11 @@ use que\session\Session;
 
 abstract class State
 {
+
     /**
      * @var array
      */
-    private static $state = [
+    private static array $state = [
         'files' => [],
         'memcached' => [],
         'redis' => [],
@@ -29,9 +30,18 @@ abstract class State
      * @var array
      */
     private static $enabled = [
-        'memcached' => CONFIG['session']['memcached']['enable'] ?? false,
-        'redis' => CONFIG['session']['redis']['enable'] ?? false
+        'memcached' => false,
+        'redis' => false
     ];
+
+    /**
+     * State constructor.
+     */
+    public function __construct()
+    {
+        self::$enabled['memcached'] = config('cache.memcached.enable', false);
+        self::$enabled['redis'] = config('cache.redis.enable', false);
+    }
 
     /**
      * @param array $state

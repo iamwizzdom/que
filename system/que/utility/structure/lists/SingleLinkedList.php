@@ -109,7 +109,6 @@ class SingleLinkedList
 
     /**
      * @param $key
-     * @return null
      */
     public function deleteNode($key)
     {
@@ -118,7 +117,7 @@ class SingleLinkedList
 
         while ($current->data != $key) {
             if ($current->next == null)
-                return null;
+                return;
             else {
                 $previous = $current;
                 $current = $current->next;

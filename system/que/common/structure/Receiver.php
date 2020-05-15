@@ -9,7 +9,7 @@
 namespace que\common\structure;
 
 
-use que\model\Model;
+use que\database\model\interfaces\Model;
 
 interface Receiver
 {

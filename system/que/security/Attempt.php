@@ -16,12 +16,12 @@ class Attempt
     /**
      * @var Attempt
      */
-    private static $instance;
+    private static Attempt $instance;
 
     /**
      * @var int
      */
-    private $max_attempt;
+    private int $max_attempt;
 
     /**
      * @var array

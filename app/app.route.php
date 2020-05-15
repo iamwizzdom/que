@@ -1,8 +1,7 @@
 <?php
 
 use que\route\Route;
-use que\route\structure\RouteEntry;
-use que\route\structure\RouteImplementEnum;
+use que\route\RouteEntry;
 
 require 'app.settings.php';
 
@@ -10,7 +9,12 @@ Route::register()->web(function (RouteEntry $entry) {
     $entry->setUri('/');
     $entry->setRequireCSRFAuth(false);
     $entry->setModule('View');
-    $entry->setImplement(RouteImplementEnum::IMPLEMENT_PAGE);
+});
+
+Route::register()->api(function (RouteEntry $entry) {
+    $entry->setUri('api');
+    $entry->setRequireCSRFAuth(false);
+    $entry->setModule('App');
 });
 
 //Route::register()->group('profile', function (string $prefix) {

@@ -13,6 +13,7 @@ use ArrayIterator;
 use Countable;
 use IteratorAggregate;
 use JsonSerializable;
+use que\support\Arr;
 use Serializable;
 use Traversable;
 
@@ -29,10 +30,8 @@ class Post implements ArrayAccess, Countable, JsonSerializable, IteratorAggregat
     private $pointer;
 
     /**
-     * @var mixed
+     * Post constructor.
      */
-    private $iterator = null;
-
     protected function __construct()
     {
         $this->pointer = &$_POST;
@@ -84,63 +83,7 @@ class Post implements ArrayAccess, Countable, JsonSerializable, IteratorAggregat
      */
     public function get($offset, $default = null)
     {
-        if (is_array($offset)) {
-
-            $offset_value = current($offset);
-
-            $key = key($offset);
-
-            if (is_array($offset_value)) {
-
-                if ($this->iterator === null && !isset($this->pointer[$key])) return $default;
-
-                if ($this->iterator === null) {
-
-                    $this->iterator = $this->pointer[$key];
-                    $this->reset_pointer($this->iterator);
-                    return $this->get($offset_value, $default);
-
-                } else {
-
-                    if (isset($this->iterator[$key])) {
-                        $this->iterator = $this->iterator[$key];
-                        $this->reset_pointer($this->iterator);
-                    }
-
-                    return $this->get($offset_value, $default);
-                }
-
-
-            } else {
-
-                if ($this->iterator === null) {
-
-                    if (isset($this->pointer[$key])) {
-                        $this->iterator = $this->pointer[$key];
-                        $this->reset_pointer($this->iterator);
-                    }
-
-                    return $this->get($offset_value, $default);
-                }
-
-                if (isset($this->iterator[$key])) $this->iterator = $this->iterator[$key];
-                $this->reset_pointer($this->iterator);
-                return $this->get($offset_value, $default);
-            }
-
-        } else {
-            $value = isset($this->pointer[$offset]) ? $this->pointer[$offset] : $default;
-            $this->reset_pointer($_POST);
-            return $value;
-        }
-    }
-
-    /**
-     * @param $pointer
-     */
-    private function reset_pointer(&$pointer)
-    {
-        $this->pointer = &$pointer;
+        return Arr::get($this->pointer, $offset, $default);
     }
 
     /**

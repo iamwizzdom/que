@@ -29,7 +29,7 @@ abstract class RuntimeError
      */
     public static function render($error_level, $error_message, $error_file = "", $error_line = "",
                                   $error_context = [], $error_title = "Que Runtime Error",
-                                  int $http_code = HTTP_INTERNAL_ERROR_CODE) {
+                                  int $http_code = HTTP_INTERNAL_SERVER_ERROR) {
 
         if (self::$hasError === true) return; else self::$hasError = true;
 
@@ -38,7 +38,7 @@ abstract class RuntimeError
         if (LIVE or ini_get('display_errors') == "Off") {
 
             $error = [
-                'title' => sprintf("%s Error", APP_NAME),
+                'title' => sprintf("%s Error", config('template.app.name')),
                 'message' => $error_level == E_USER_NOTICE ? $error_message :
                     "Something unexpected happened, please contact webmaster.",
                 'code' => $http_code,
@@ -98,9 +98,12 @@ abstract class RuntimeError
             $composer = composer();
 
             $error['message'] = trim($error['message']);
-            $composer->resetTmpDir(LIVE ? (APP_PATH . "/template/") : (QUE_PATH . "/error/tmp"));
+            $tmpPath = LIVE ? (APP_PATH . "/template/") : (QUE_PATH . "/error/tmp");
+            $tmpFIle = LIVE ? config('template.error_tmp_path') : "error.html";
+            $isFile = is_file("{$tmpPath}/{$tmpFIle}");
+            $composer->resetTmpDir($isFile ? $tmpPath : (QUE_PATH . "/error/tmp"));
             $composer->data($error);
-            $composer->setTmpFileName(LIVE ? APP_ERROR_TMP : "error.html");
+            $composer->setTmpFileName($isFile ? $tmpFIle : "error.html");
             $composer->prepare()->renderWithSmarty();
         }
 

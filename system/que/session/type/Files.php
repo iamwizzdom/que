@@ -21,12 +21,12 @@ class Files implements  ArrayAccess, Countable, JsonSerializable, IteratorAggreg
     /**
      * @var Files
      */
-    private static $instance;
+    private static Files $instance;
 
     /**
      * @var array
      */
-    private $pointer;
+    private array $pointer;
 
     /**
      * @var mixed

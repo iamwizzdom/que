@@ -56,7 +56,7 @@ class HttpResponse
      * @param int $jsonDepth
      * @return Json
      */
-    public function json(array $data, int $status = HTTP_SUCCESS_CODE, array $headers = [],
+    public function json(array $data, int $status = HTTP_OK, array $headers = [],
                          bool $replaceHeaders = true, int $jsonOption = 0, int $jsonDepth = 512): Json {
         if (!isset($data['code'])) $data['code'] = $status;
         http()->http_response_code($status);
@@ -74,7 +74,7 @@ class HttpResponse
      * @param int $jsonDepth
      * @return Jsonp
      */
-    public function jsonp(string $callback, array $data, int $status = HTTP_SUCCESS_CODE, array $headers = [],
+    public function jsonp(string $callback, array $data, int $status = HTTP_OK, array $headers = [],
                           bool $replaceHeaders = true, int $jsonOption = 0, int $jsonDepth = 512): Jsonp {
         if (!isset($data['code'])) $data['code'] = $status;
         http()->http_response_code($status);
@@ -88,7 +88,7 @@ class HttpResponse
      * @param array $headers
      * @return Html
      */
-    public function html(string $content, int $status = HTTP_SUCCESS_CODE, array $headers = []): Html {
+    public function html(string $content, int $status = HTTP_OK, array $headers = []): Html {
         http()->http_response_code($status);
         foreach ($headers as $header) header($header, true);
         return new Html($content);
@@ -100,7 +100,7 @@ class HttpResponse
      * @param array $headers
      * @return Plain
      */
-    public function plain(string $content, int $status = HTTP_SUCCESS_CODE, array $headers = []): Plain {
+    public function plain(string $content, int $status = HTTP_OK, array $headers = []): Plain {
         http()->http_response_code($status);
         foreach ($headers as $header) header($header, true);
         return new Plain($content);

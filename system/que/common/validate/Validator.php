@@ -84,7 +84,7 @@ class Validator
     {
         if (!array_key_exists($key, $this->input->_get()))
             throw new QueRuntimeException("Undefined input key -- '{$key}'", "Validator error",
-                0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
+                0, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         return $this->input[$key];
     }
@@ -132,11 +132,11 @@ class Validator
 
         if (!array_key_exists($key, $this->input->_get()))
             throw new QueRuntimeException("Undefined input key -- '{$key}'", "Validator error",
-                0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
+                0, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         if (is_array($this->input[$key]))
             throw new QueRuntimeException("Value for input with key '{$key}' is of type array, use the [validateMulti] method instead",
-                "Validator error", 0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
+                "Validator error", 0, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         if (!isset($this->condition[$key]))
             $this->condition[$key] = new Condition($key, $this->input[$key], $this);
@@ -153,11 +153,11 @@ class Validator
 
         if (!array_key_exists($key, $this->input->_get()))
             throw new QueRuntimeException("Undefined input key -- '{$key}'", "Validator error",
-                0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
+                0, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         if (!is_array($this->input[$key]))
             throw new QueRuntimeException("Value for input with key '{$key}' is not of type array, use the [validate] method instead",
-                "Validator error", 0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
+                "Validator error", 0, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         if (!isset($this->condition[$key]))
             $this->condition[$key] = new ConditionStack($key, $this->input[$key], $this);
@@ -189,7 +189,7 @@ class Validator
 
         if (is_array($value))
             throw new QueRuntimeException("Value must not be of type array, or use the [validateMultiValue] method instead",
-                "Validator error", 0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
+                "Validator error", 0, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         return $this->condition[$key] = new Condition($key, $value, $this);
     }
@@ -203,7 +203,7 @@ class Validator
 
         if (!is_array($value))
             throw new QueRuntimeException("Value must be of type array, or use the [validateValue] method instead",
-                "Validator error", 0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
+                "Validator error", 0, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         return $this->condition[$key] = new ConditionStack($key, $value, $this);
     }
@@ -469,7 +469,7 @@ class Validator
 
         if (is_array($this->input[$key]) && !$force_add)
             throw new QueRuntimeException("Value for input with key '{$key}' is of type array, use the [addConditionStackError] method instead",
-                "Validator error", 0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
+                "Validator error", 0, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         if (!isset($this->condition[$key]))
             $this->condition[$key] = new Condition($key, $this->input[$key], $this);
@@ -488,7 +488,7 @@ class Validator
 
         if (is_array($this->input[$key]) && !$force_add)
             throw new QueRuntimeException("Value for input with key '{$key}' is of type array, use the [addConditionStackErrors] method instead",
-                "Validator error", 0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
+                "Validator error", 0, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         if (!isset($this->condition[$key]))
             $this->condition[$key] = new Condition($key, $this->input[$key], $this);
@@ -507,7 +507,7 @@ class Validator
 
         if (!is_array($this->input[$key]) && !$force_add)
             throw new QueRuntimeException("Value for input with key '{$key}' is not of type array, use the [addConditionError] method instead",
-                "Validator error", 0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
+                "Validator error", 0, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         if (!isset($this->condition[$key]))
             $this->condition[$key] = new ConditionStack($key, $this->input[$key], $this);
@@ -526,7 +526,7 @@ class Validator
 
         if (!is_array($this->input[$key]) && !$force_add)
             throw new QueRuntimeException("Value for input with key '{$key}' is not of type array, use the [addConditionErrors] method instead",
-                "Validator error", 0, HTTP_INTERNAL_ERROR_CODE, PreviousException::getInstance(1));
+                "Validator error", 0, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         if (!isset($this->condition[$key]))
             $this->condition[$key] = new ConditionStack($key, $this->input[$key], $this);

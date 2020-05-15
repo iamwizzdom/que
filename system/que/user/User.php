@@ -12,7 +12,7 @@ namespace que\user;
 use ArrayAccess;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
-use que\model\Model;
+use que\database\model\interfaces\Model;
 use que\session\Session;
 use que\utility\client\Browser;
 use que\utility\client\IP;
@@ -22,25 +22,47 @@ class User extends State implements ArrayAccess
     /**
      * @var User
      */
-    private static $instance;
+    private static User $instance;
 
     /**
      * @var array
      */
-    private static $state;
+    private static array $state;
 
     /**
      * @var object
      */
-    private static $user;
+    private static object $user;
 
     /**
-     * @var Model
+     * @var array
      */
-    private static $model;
+    private static array $model = [];
 
+    /**
+     * @var array
+     */
+    private static $database_config;
+
+    /**
+     * @var array
+     */
+    private static $session_config;
+
+    /**
+     * @var array
+     */
+    private static $cache_config;
+
+    /**
+     * User constructor.
+     */
     protected function __construct()
     {
+        parent::__construct();
+        self::$database_config = config('database');
+        self::$session_config = config('session');
+        self::$cache_config = config('cache');
     }
 
     private function __clone()
@@ -77,12 +99,12 @@ class User extends State implements ArrayAccess
                 ]));
             }
 
-            if (SESSION_TIMEOUT === true && (APP_TIME >= (self::getLastSeen() + SESSION_TIMEOUT_TIME)))
+            if (self::$session_config['timeout'] === true && (APP_TIME >= (self::getLastSeen() + self::$session_config['timeout_time'])))
                 self::logout(vsprintf("System session expired for security reasons. Please re-login (IP::%s)", [self::getLastIP()]));
 
             self::$user = &self::$state['data'];
 
-            if (SESSION_REGENERATION === true && ((APP_TIME - self::getLastSeen()) >= SESSION_REGENERATION_TIME))
+            if (self::$session_config['regeneration'] === true && ((APP_TIME - self::getLastSeen()) >= self::$session_config['regeneration_time']))
                 self::regenerate();
 
             self::updateState();
@@ -94,13 +116,27 @@ class User extends State implements ArrayAccess
     }
 
     /**
+     * @param string $model
      * @return Model
      */
-    public function getModel(): Model
+    public function getModel(string $model = null): Model
     {
-        if (!isset(self::$model))
-            self::$model = new Model(self::$user, (CONFIG['db_table']['user']['name'] ?? 'users'));
-        return self::$model;
+        $model = model(($modelKey = $model ?? config("database.default.model")));
+
+        if ($model === null) throw new QueRuntimeException(
+            "No database model was found with the key '{$modelKey}', check your database configuration to fix this issue.",
+            "Que Runtime Error", E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+
+        if (!($implements = class_implements($model)) || !in_array(Model::class, $implements)) throw new QueRuntimeException(
+            "The specified model ({$model}) with key '{$modelKey}' does not implement the Que database model interface.",
+            "Que Runtime Error", E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+
+        if (!isset(self::$model[$modelKey]))
+            self::$model[$modelKey] = new $model(self::$user,
+                self::$database_config['tables']['user']['name'] ?? 'users',
+                self::$database_config['tables']['user']['primary_key'] ?? 'id'
+            );
+        return self::$model[$modelKey];
     }
 
     /**
@@ -118,7 +154,7 @@ class User extends State implements ArrayAccess
      * @param int $default
      * @return int
      */
-    public function getInt($key, int $default = 0)
+    public function getInt($key, int $default = 0): int
     {
         return (int) $this->getValue($key, $default);
     }
@@ -128,7 +164,7 @@ class User extends State implements ArrayAccess
      * @param float $default
      * @return float
      */
-    public function getFloat($key, float $default = 0.0)
+    public function getFloat($key, float $default = 0.0): float
     {
         return (float) $this->getValue($key, $default);
     }
@@ -153,7 +189,7 @@ class User extends State implements ArrayAccess
      * @param array $columns
      * @return bool
      */
-    public function update(array $columns)
+    public function update(array $columns): bool
     {
         if (!self::isLoggedIn() || empty($columns)) return false;
 
@@ -166,9 +202,9 @@ class User extends State implements ArrayAccess
 
         if (empty($columnsToUpdate)) return false;
 
-        $primaryKey = (CONFIG['db_table']['user']['primary_key'] ?? 'id');
+        $primaryKey = self::$database_config['tables']['user']['primary_key'] ?? 'id';
 
-        $update = db()->update((CONFIG['db_table']['user']['name'] ?? 'users'), $columnsToUpdate, [
+        $update = db()->update((self::$database_config['tables']['user']['name'] ?? 'users'), $columnsToUpdate, [
             'AND' => [
                 $primaryKey => $this->getValue($primaryKey, 0)
             ]
@@ -189,7 +225,7 @@ class User extends State implements ArrayAccess
      * @param $value
      * @return bool
      */
-    public function updateInMemory($key, $value) {
+    public function updateInMemory($key, $value): bool {
         if (!isset(self::$user->{$key}) || self::$user->{$key} == $value) return false;
         self::$user->{$key} = $value;
         self::updateState();
@@ -233,14 +269,14 @@ class User extends State implements ArrayAccess
 
         $memcached = $redis = $quekip = null;
 
-        if ((CONFIG['session']['memcached']['enable'] ?? false) === true)
+        if ((self::$cache_config['memcached']['enable'] ?? false) === true)
             $memcached = Session::getInstance()->getMemcached();
 
-        if ((CONFIG['session']['redis']['enable'] ?? false) === true)
+        if ((self::$cache_config['redis']['enable'] ?? false) === true)
             $redis = Session::getInstance()->getRedis();
 
-        if ((CONFIG['session']['memcached']['enable'] ?? false) !== true &&
-            (CONFIG['session']['redis']['enable'] ?? false) !== true)
+        if ((self::$cache_config['memcached']['enable'] ?? false) !== true &&
+            (self::$cache_config['redis']['enable'] ?? false) !== true)
             $quekip = Session::getInstance()->getQueKip();
 
         if (!@session_regenerate_id(true)) { // change session ID for the current session and invalidate old session ID
@@ -249,9 +285,9 @@ class User extends State implements ArrayAccess
             session_regenerate_id(true);
         }
 
-        $primaryKey = (CONFIG['db_table']['user']['primary_key'] ?? 'id');
+        $primaryKey = (self::$database_config['tables']['user']['primary_key'] ?? 'id');
 
-        $user = db()->find((CONFIG['db_table']['user']['name'] ?? 'users'), $primaryKey,
+        $user = db()->find((self::$database_config['tables']['user']['name'] ?? 'users'), $primaryKey,
             self::$state['data']->{$primaryKey} ?? 0);
 
         if ($user->isSuccessful()) {
@@ -287,7 +323,6 @@ class User extends State implements ArrayAccess
      */
     public static function login(object $user)
     {
-
         self::set_state([
             'uid' => Session::getSessionID(),
             'data' => $user,
@@ -304,14 +339,12 @@ class User extends State implements ArrayAccess
      */
     public static function logout($message = null, string $redirect_to = null)
     {
-
-        $redirect_to = $redirect_to ?? (current_route()->isRequireLogIn() ? APP_HOME_PAGE : current_uri());
+        $redirect_to = $redirect_to ?? (current_route()->isRequireLogIn() ? current_route()->getLoginUrl() : current_uri());
         $message = $message ?? sprintf("Good bye, see you soon. Log-out successful (IP::%s)", self::getLastIP());
         self::flush();
         if (current_route()->getType() != 'web') throw new QueRuntimeException($message, "User Error",
             E_USER_ERROR, 0, PreviousException::getInstance());
-        else http()->redirect()->setUrl($redirect_to)->setHeader($message, SUCCESS)->initiate();
-
+        else http()->redirect()->setUrl($redirect_to ?? '/')->setHeader($message, SUCCESS)->initiate();
     }
 
     /**

@@ -1,7 +1,7 @@
 {
     "require": {
-        "phpmailer/phpmailer": "^6.0",
-        "twig/twig": "^2.12",
+        "phpmailer/phpmailer": "^6.1",
+        "twig/twig": "^3.0",
         "smarty/smarty": "^3.1"
     }
 }

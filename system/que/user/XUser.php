@@ -12,7 +12,7 @@ namespace que\user;
 use ArrayAccess;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
-use que\model\Model;
+use que\database\model\interfaces\Model;
 
 class XUser implements ArrayAccess
 {
@@ -20,11 +20,21 @@ class XUser implements ArrayAccess
     /**
      * @var object
      */
-    private $user;
+    private object $user;
 
+    /**
+     * @var array
+     */
+    private static $database_config;
+
+    /**
+     * XUser constructor.
+     * @param object $user
+     */
     public function __construct(object $user)
     {
         $this->user = $user;
+        self::$database_config = config('database');
     }
 
     /**
@@ -53,13 +63,32 @@ class XUser implements ArrayAccess
     }
 
     /**
+     * @param string|null $model
      * @return Model
      */
-    public function getModel(): Model {
-        return new Model($this->user, (CONFIG['db_table']['user']['name'] ?? 'users'));
+    public function getModel(string $model = null): Model {
+
+        $model = \model(($modelKey = $model ?? config("database.default.model")));
+
+        if ($model === null) throw new QueRuntimeException(
+            "No database model was found with the key '{$modelKey}', check your database configuration to fix this issue.",
+            "Que Runtime Error", E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+
+        if (!($implements = class_implements($model)) || !in_array(Model::class, $implements)) throw new QueRuntimeException(
+            "The specified model ({$model}) with key '{$modelKey}' does not implement the Que database model interface.",
+            "Que Runtime Error", E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+
+        return new $model($this->user,
+            self::$database_config['tables']['user']['name'] ?? 'users',
+            self::$database_config['tables']['user']['primary_key'] ?? 'id'
+        );
     }
 
-    public function update(array $columns) {
+    /**
+     * @param array $columns
+     * @return bool
+     */
+    public function update(array $columns): bool {
 
         $columnsToUpdate = [];
         foreach ($columns as $key => $value) {
@@ -70,9 +99,9 @@ class XUser implements ArrayAccess
 
         if (empty($columnsToUpdate)) return false;
 
-        $primaryKey = (CONFIG['db_table']['user']['primary_key'] ?? 'id');
+        $primaryKey = self::$database_config['tables']['user']['primary_key'] ?? 'id';
 
-        $update = db()->update((CONFIG['db_table']['user']['name'] ?? 'user'), $columnsToUpdate, [
+        $update = db()->update(self::$database_config['tables']['user']['name'] ?? 'users', $columnsToUpdate, [
             'AND' => [
                 $primaryKey => $this->getValue($primaryKey, 0)
             ]
@@ -90,9 +119,9 @@ class XUser implements ArrayAccess
      */
     public function isMe(): bool {
 
-        $primaryKey = (CONFIG['db_table']['user']['primary_key'] ?? 'id');
+        $primaryKey = self::$database_config['tables']['user']['primary_key'] ?? 'id';
 
-        if (!isset($this->user->{$primaryKey}))
+        if (!object_key_exists($primaryKey, $this->user))
             throw new QueRuntimeException("The key '{$primaryKey}' was not found in the present user object",
                 "User Error", E_USER_ERROR, 0, PreviousException::getInstance());
         
@@ -107,7 +136,8 @@ class XUser implements ArrayAccess
      */
     public static function getUser(int $userID, string $dataType = null)
     {
-        $user = db()->find((CONFIG['db_table']['user']['name'] ?? 'users'), (CONFIG['db_table']['user']['primary_key'] ?? 'id'), $userID);
+        $user = db()->find(self::$database_config['tables']['user']['name'] ?? 'users',
+            self::$database_config['tables']['user']['primary_key'] ?? 'id', $userID);
 
         if (!$user->isSuccessful()) return null;
 

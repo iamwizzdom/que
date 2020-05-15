@@ -11,8 +11,6 @@ namespace que\route;
 use Closure;
 use que\common\exception\RouteException;
 use que\error\RuntimeError;
-use que\route\structure\RouteEntry;
-use que\route\structure\RouteImplementEnum;
 
 class RouteRegistrar
 {
@@ -20,12 +18,12 @@ class RouteRegistrar
     /**
      * @var RouteRegistrar
      */
-    private static $instance;
+    private static RouteRegistrar $instance;
 
     /**
      * @var array
      */
-    private $queue = [];
+    private array $queue = [];
 
     /**
      * RouteRegistrar constructor.
@@ -81,12 +79,14 @@ class RouteRegistrar
                 if ('web' !== $entry->getType() && 'api' !== $entry->getType() && 'resource' !== $entry->getType())
                     throw new RouteException("Invalid group route type for {$prefix}[::]{$entry->getUri()}", "Route Error");
 
-
                 $route = $entry->getUri();
 
                 if (!empty($prefix)) $route = "{$prefix}/{$route}";
 
-                $entry->setUri(preg_replace("[//]", "/", $route));
+                $route = str_strip_repeated_char('\/', $route);
+                $route = str_strip_repeated_char('\\\\', $route);
+
+                $entry->setUri($route);
 
                 array_push($this->queue, $entry);
             }
@@ -127,7 +127,6 @@ class RouteRegistrar
         call_user_func($callback, $entry);
 
         $entry->setType('api');
-        $entry->setImplement(RouteImplementEnum::IMPLEMENT_API);
 
         array_push($this->queue, $entry);
 
@@ -145,7 +144,6 @@ class RouteRegistrar
         call_user_func($callback, $entry);
 
         $entry->setType('resource');
-        $entry->setImplement(RouteImplementEnum::IMPLEMENT_RESOURCE);
 
         array_push($this->queue, $entry);
 

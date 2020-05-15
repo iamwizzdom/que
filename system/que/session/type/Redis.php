@@ -13,22 +13,40 @@ use que\common\exception\QueRuntimeException;
 
 class Redis
 {
+    /**
+     * @var mixed
+     */
     private $session_id;
+
+    /**
+     * @var mixed
+     */
+    private $host;
+
+    /**
+     * @var mixed
+     */
+    private $port;
+
+    /**
+     * @var bool
+     */
+    private bool $enable;
 
     /**
      * @var Redis
      */
-    private static $instance;
+    private static Redis $instance;
 
     /**
      * @var \Redis
      */
-    private $redis;
+    private \Redis $redis;
 
     /**
      * @var array
      */
-    private $data = [];
+    private array $data = [];
 
     protected function __construct($session_id)
     {
@@ -36,20 +54,10 @@ class Redis
 
         if (!isset($this->redis)) {
 
-            $host = CONFIG['session']['redis']['host'] ?? "127.0.0.1";
-            $port = CONFIG['session']['redis']['port'] ?? 6379;
-            $enable = CONFIG['session']['redis']['enable'] ?? false;
-
-            if (!$enable)
-                throw new QueRuntimeException("Can't use redis, redis is disabled from config", "Session Error",
-                    E_USER_ERROR, 0, PreviousException::getInstance(2));
-
-            $this->redis = new \Redis();
-
-            if (!$this->redis->connect($host, $port))
-                throw new QueRuntimeException("Unable to connect to redis", "Session Error",
-                    E_USER_ERROR, 0, PreviousException::getInstance(2));
-
+            $this->host = config('cache.redis.host', "127.0.0.1");
+            $this->port = config('cache.redis.port', 6379);
+            $this->enable = config('cache.redis.enable', false);
+            $this->connect();
         }
 
         $this->fetch_data();
@@ -75,6 +83,45 @@ class Redis
             self::$instance = new self($session_id);
 
         return self::$instance;
+    }
+
+    /**
+     * This method will enable Redis for Que
+     */
+    public function enable()
+    {
+        $this->enable = true;
+    }
+
+    /**
+     * This method will disable Redis for Que
+     */
+    public function disable()
+    {
+        $this->enable = false;
+    }
+
+    /**
+     * @param null $host
+     * @param null $port
+     */
+    private function reconnect($host = null, $port = null) {
+        if ($host !== null) $this->host = $host;
+        if ($port !== null) $this->port = $port;
+        $this->connect();
+    }
+
+    private function connect() {
+
+        if (!$this->enable)
+            throw new QueRuntimeException("Can't use redis, redis is disabled from config", "Session Error",
+                E_USER_ERROR, 0, PreviousException::getInstance(2));
+
+        $this->redis = new \Redis();
+
+        if (!$this->redis->connect($this->host, $this->port))
+            throw new QueRuntimeException("Unable to connect to redis", "Session Error",
+                E_USER_ERROR, 0, PreviousException::getInstance(2));
     }
 
     /**

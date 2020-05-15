@@ -33,7 +33,7 @@ class QueRuntimeException extends RuntimeException
      * @param Throwable|null $previous
      */
     public function __construct(string $message = "", string $title = "", int $code = 0,
-                                int $http_code = HTTP_INTERNAL_ERROR_CODE,
+                                int $http_code = HTTP_INTERNAL_SERVER_ERROR,
                                 Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);

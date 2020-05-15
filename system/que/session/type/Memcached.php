@@ -15,27 +15,42 @@ use que\common\exception\QueRuntimeException;
 class Memcached
 {
     /**
-     * @var string
+     * @var mixed
      */
     private $session_id;
 
     /**
-     * @var Memcached
+     * @var mixed
      */
-    private static $instance;
+    private $host;
 
     /**
-     * @var Memcache
+     * @var mixed
      */
-    private $memcached;
+    private $port;
+
+    /**
+     * @var bool
+     */
+    private bool $enable;
+
+    /**
+     * @var Memcached
+     */
+    private static Memcached $instance;
+
+    /**
+     * @var \Memcached
+     */
+    private \Memcached $memcached;
 
     /**
      * @var array
      */
-    private $data = [];
+    private array $data = [];
 
     /**
-     * Memcache constructor.
+     * Memcached constructor.
      * @param string $session_id
      */
     protected function __construct(string $session_id)
@@ -44,19 +59,10 @@ class Memcached
 
         if (!isset($this->memcached)) {
 
-            $host = CONFIG['session']['memcached']['host'] ?? "127.0.0.1";
-            $port = CONFIG['session']['memcached']['port'] ?? 11211;
-            $enable = CONFIG['session']['memcached']['enable'] ?? false;
-
-            if (!$enable)
-                throw new QueRuntimeException("Can't use memcached, memcached is disabled from config", "Session Error",
-                    E_USER_ERROR, 0, PreviousException::getInstance(2));
-
-            $this->memcached = new Memcache();
-
-            if (!$this->memcached->addserver($host, $port))
-                throw new QueRuntimeException("Unable to connect to memcached", "Session Error",
-                    E_USER_ERROR, 0, PreviousException::getInstance(2));
+            $this->host = config('cache.memcached.host', "127.0.0.1");
+            $this->port = config('cache.memcached.port', 11211);
+            $this->enable = config('cache.memcached.enable', false);
+            $this->connect();
         }
 
         $this->fetch_data();
@@ -85,6 +91,45 @@ class Memcached
     }
 
     /**
+     * This method will enable Redis for Que
+     */
+    public function enable()
+    {
+        $this->enable = true;
+    }
+
+    /**
+     * This method will disable Redis for Que
+     */
+    public function disable()
+    {
+        $this->enable = false;
+    }
+
+    /**
+     * @param null $host
+     * @param null $port
+     */
+    private function reconnect($host = null, $port = null) {
+        if ($host !== null) $this->host = $host;
+        if ($port !== null) $this->port = $port;
+        $this->connect();
+    }
+
+    private function connect() {
+
+        if (!$this->enable)
+            throw new QueRuntimeException("Can't use memcached, memcached is disabled from config",
+                "Session Error", E_USER_ERROR, 0, PreviousException::getInstance(2));
+
+        $this->memcached = new \Memcached();
+
+        if (!$this->memcached->addserver($this->host, $this->port))
+            throw new QueRuntimeException("Unable to connect to memcached", "Session Error",
+                E_USER_ERROR, 0, PreviousException::getInstance(2));
+    }
+
+    /**
      * @param $key
      * @return mixed|null
      */
@@ -100,7 +145,7 @@ class Memcached
      */
     public function set($key, $value, int $expire = null): bool {
         $this->data[$key] = $value;
-        return $this->memcached->set($this->session_id, $this->data, null, $expire);
+        return $this->memcached->set($this->session_id, $this->data, $expire);
     }
 
     /**

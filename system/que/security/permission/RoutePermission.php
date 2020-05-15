@@ -8,8 +8,7 @@
 
 namespace que\security\permission;
 
-
-use que\route\structure\RouteEntry;
+use que\route\RouteEntry;
 
 interface RoutePermission
 {

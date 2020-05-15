@@ -46,16 +46,6 @@ class ComposerStaticInit1c33a4207aabd74eea5b4f773f1b6ce8
         ),
     );
 
-    public static $prefixesPsr0 = array (
-        'T' => 
-        array (
-            'Twig_' => 
-            array (
-                0 => __DIR__ . '/..' . '/twig/twig/lib',
-            ),
-        ),
-    );
-
     public static $classMap = array (
         'Smarty' => __DIR__ . '/..' . '/smarty/smarty/libs/Smarty.class.php',
         'SmartyBC' => __DIR__ . '/..' . '/smarty/smarty/libs/SmartyBC.class.php',
@@ -237,7 +227,6 @@ class ComposerStaticInit1c33a4207aabd74eea5b4f773f1b6ce8
         return \Closure::bind(function () use ($loader) {
             $loader->prefixLengthsPsr4 = ComposerStaticInit1c33a4207aabd74eea5b4f773f1b6ce8::$prefixLengthsPsr4;
             $loader->prefixDirsPsr4 = ComposerStaticInit1c33a4207aabd74eea5b4f773f1b6ce8::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInit1c33a4207aabd74eea5b4f773f1b6ce8::$prefixesPsr0;
             $loader->classMap = ComposerStaticInit1c33a4207aabd74eea5b4f773f1b6ce8::$classMap;
 
         }, null, ClassLoader::class);

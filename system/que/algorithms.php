@@ -91,27 +91,24 @@ function binary_search(array $arr, int $left, int $right, $search)
         throw new QueRuntimeException("binary_search expects a numeric array");
 
     if ($right < $left)
-        throw new QueRuntimeException("binary_search expects right to be greater than left");
+        throw new QueRuntimeException("binary_search expects right to be greater than or equal to left");
 
-    if ($right >= $left) {
+    $mid = ($left + ($right - $left) / 2);
 
-        $mid = ($left + ($right - $left) / 2);
+    // If the element is present
+    // at the middle itself
+    if ($arr[$mid] == $search)
+        return floor($mid);
 
-        // If the element is present
-        // at the middle itself
-        if ($arr[$mid] == $search)
-            return floor($mid);
+    // If element is smaller than
+    // mid, then it can only be
+    // present in left subarray
+    if ($arr[$mid] > $search)
+        return binary_search($arr, $left, $mid - 1, $search);
 
-        // If element is smaller than
-        // mid, then it can only be
-        // present in left subarray
-        if ($arr[$mid] > $search)
-            return binary_search($arr, $left, $mid - 1, $search);
-
-        // Else the element can only
-        // be present in right subarray
-        return binary_search($arr, $mid + 1, $right, $search);
-    }
+    // Else the element can only
+    // be present in right subarray
+    return binary_search($arr, $mid + 1, $right, $search);
 }
 
 /**

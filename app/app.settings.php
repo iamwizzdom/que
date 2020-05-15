@@ -4,8 +4,10 @@ session_start();
 
 require 'config/config.php';
 
-require APP_ROOT_PATH . '/system/que/autoloader.php';
+require QUE_PATH . '/autoloader.php';
 
-require APP_ROOT_PATH . '/system/que/error_handler.php';
+require QUE_PATH . '/error_handler.php';
+
+require QUE_PATH . '/config_loader.php';
 
 require 'app.misc.php';

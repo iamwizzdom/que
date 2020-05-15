@@ -43,8 +43,10 @@ class AlertButton {
      * @param string $url
      * @param int $option
      */
-    public function button(string $title, string $url = APP_HOME_PAGE,
-                           int $option = ALERT_BUTTON_OPTION_DEFAULT) {
+    public function button(
+        string $title, string $url,
+        int $option = ALERT_BUTTON_OPTION_DEFAULT
+    ) {
         if ($this->alert_key !== null) {
             $this->alert[$this->alert_key]['button'] = [
                 'title' => $title,

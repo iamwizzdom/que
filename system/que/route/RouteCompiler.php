@@ -11,7 +11,6 @@ namespace que\route;
 use function http;
 use que\common\exception\RouteException;
 use que\error\RuntimeError;
-use que\route\structure\RouteEntry;
 
 class RouteCompiler
 {
@@ -31,23 +30,23 @@ class RouteCompiler
 
         $routeEntries = Route::getRouteEntries();
 
-        $routeDetector = RouteInspector::getInstance();
+        $routeInspector = RouteInspector::getInstance();
 
-        $routeDetector->setUriTokens($uriTokens = self::tokenizeUri(Route::getRequestUri()));
+        $routeInspector->setUriTokens($uriTokens = self::tokenizeUri(Route::getRequestUri()));
 
         foreach ($routeEntries as $routeEntry) {
 
             if (!$routeEntry instanceof RouteEntry) continue;
 
-            $routeDetector->setRouteEntry($routeEntry);
-            $routeDetector->inspect();
+            $routeInspector->setRouteEntry($routeEntry);
+            $routeInspector->inspect();
         }
 
         try {
 
             $routeEntry = null; $routeArgs = []; $error = ''; $percentage = 0;
 
-            $foundRoutes = $routeDetector->getFoundRoutes();
+            $foundRoutes = $routeInspector->getFoundRoutes();
 
             foreach ($foundRoutes as $foundRoute) {
 
@@ -79,8 +78,8 @@ class RouteCompiler
 
             if ($routeEntry === null || !$routeEntry instanceof RouteEntry) {
 
-                if (empty($error)) throw new RouteException(sprintf("%s is an invalid url", current_url()), "Route Error", HTTP_NOT_FOUND_CODE);
-                else throw new RouteException($error, "Route Error", HTTP_NOT_FOUND_CODE);
+                if (empty($error)) throw new RouteException(sprintf("%s is an invalid url", current_url()), "Route Error", HTTP_NOT_FOUND);
+                else throw new RouteException($error, "Route Error", HTTP_NOT_FOUND);
             }
 
             self::setUriArgs($routeArgs);
@@ -89,7 +88,7 @@ class RouteCompiler
             if ($routeEntry->isUnderMaintenance() === true) {
 
                 throw new RouteException("This route is currently under maintenance, please try again later",
-                    "Access denied", HTTP_MAINTENANCE_CODE);
+                    "Access denied", HTTP_MAINTENANCE);
             }
 
             if ($routeEntry->isRequireLogIn() === true && !is_logged_in()) {
@@ -107,7 +106,7 @@ class RouteCompiler
 
                 } else {
                     throw new RouteException("You don't have access to the current route, login and try again.",
-                        "Access denied", HTTP_UNAUTHORIZED_CODE);
+                        "Access denied", HTTP_UNAUTHORIZED);
                 }
 
             } elseif ($routeEntry->isRequireLogIn() === false && is_logged_in()) {
@@ -125,14 +124,14 @@ class RouteCompiler
 
                 } else {
                     throw new RouteException("You don't have access to the current route, logout and try again.",
-                        "Access denied", HTTP_UNAUTHORIZED_CODE);
+                        "Access denied", HTTP_UNAUTHORIZED);
                 }
 
             }
 
         } catch (RouteException $e) {
             RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(),
-                $e->getLine(), $e->getTrace(), $e->getTitle(), $e->getCode() ?: HTTP_UNAUTHORIZED_CODE);
+                $e->getLine(), $e->getTrace(), $e->getTitle(), $e->getCode() ?: HTTP_UNAUTHORIZED);
         }
     }
 
@@ -167,12 +166,9 @@ class RouteCompiler
         $sorted = bubble_sort($uriSizeList, true);
 
         foreach ($sorted as $value) {
-
             $key = array_search($value, $uriSizeList);
-
             $sortedRoutes[] = $routes[$key];
             unset($uriSizeList[$key]);
-
         }
 
         $routes = $sortedRoutes;

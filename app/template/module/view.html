@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Welcome to Que</title>
+    <title>{$header.title}</title>
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,600" rel="stylesheet">
@@ -62,6 +62,11 @@
             margin-bottom: 30px;
         }
     </style>
+
+    {foreach $css as $value}
+    <link href="{$value}" rel="stylesheet" type="text/css">
+    {/foreach}
+
 </head>
 
 <body data-gr-c-s-loaded="true">
@@ -73,7 +78,7 @@
         </div>
 
         <div class="links">
-            <a href="#">Que Docs</a>
+            <a href="{base_url('/api')}">Que Docs</a>
             <a href="https://github.com/iamwizzdom/que">GitHub</a>
         </div>
     </div>

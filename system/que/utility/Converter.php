@@ -15,8 +15,17 @@ class Converter
      */
     private static $instance;
 
+    /**
+     * @var array
+     */
+    private static $database_config;
+
+    /**
+     * Converter constructor.
+     */
     protected function __construct()
     {
+        self::$database_config = config('database');
     }
 
     private function __clone()
@@ -76,10 +85,10 @@ class Converter
      */
     public function convertCountry(int $countryID, string $key, string $default = null): ?string
     {
-        $country = db()->select((CONFIG['db_table']['country']['name'] ?? 'countries'), '*', [
+        $country = db()->select((self::$database_config['tables']['country']['name'] ?? 'countries'), '*', [
             'AND' => [
-                (CONFIG['db_table']['country']['primary_key'] ?? 'id') => $countryID,
-                (CONFIG['db_table_status_key'] ?? 'is_active') => STATE_ACTIVE
+                (self::$database_config['tables']['country']['primary_key'] ?? 'id') => $countryID,
+                (self::$database_config['table_status_key'] ?? 'is_active') => STATE_ACTIVE
             ]
         ]);
 
@@ -99,10 +108,10 @@ class Converter
      */
     public function convertState(int $stateID, string $key, string $default = null): ?string
     {
-        $state = db()->select((CONFIG['db_table']['state']['name'] ?? 'states'), '*', [
+        $state = db()->select((self::$database_config['tables']['state']['name'] ?? 'states'), '*', [
             'AND' => [
-                (CONFIG['db_table']['state']['primary_key'] ?? 'id') => $stateID,
-                (CONFIG['db_table_status_key'] ?? 'is_active') => STATE_ACTIVE
+                (self::$database_config['tables']['state']['primary_key'] ?? 'id') => $stateID,
+                (self::$database_config['table_status_key'] ?? 'is_active') => STATE_ACTIVE
             ]
         ]);
 
@@ -122,10 +131,10 @@ class Converter
      */
     public function convertLanguage(int $languageID, string $key, string $default = null): ?string
     {
-        $language = db()->select((CONFIG['db_table']['language']['name'] ?? 'languages'), '*', [
+        $language = db()->select((self::$database_config['tables']['language']['name'] ?? 'languages'), '*', [
             'AND' => [
-                (CONFIG['db_table']['language']['primary_key'] ?? 'id') => $languageID,
-                (CONFIG['db_table_status_key'] ?? 'is_active') => STATE_ACTIVE
+                (self::$database_config['tables']['language']['primary_key'] ?? 'id') => $languageID,
+                (self::$database_config['table_status_key'] ?? 'is_active') => STATE_ACTIVE
             ]
         ]);
 
@@ -145,10 +154,10 @@ class Converter
      */
     public function convertArea(int $areaID, string $key, string $default = null): ?string
     {
-        $area = db()->select((CONFIG['db_table']['area']['name'] ?? 'areas'), '*', [
+        $area = db()->select((self::$database_config['tables']['area']['name'] ?? 'areas'), '*', [
             'AND' => [
-                (CONFIG['db_table']['area']['primary_key'] ?? 'id') => $areaID,
-                (CONFIG['db_table_status_key'] ?? 'is_active') => STATE_ACTIVE
+                (self::$database_config['tables']['area']['primary_key'] ?? 'id') => $areaID,
+                (self::$database_config['table_status_key'] ?? 'is_active') => STATE_ACTIVE
             ]
         ]);
 

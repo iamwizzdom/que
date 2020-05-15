@@ -9,8 +9,121 @@
 namespace que\support;
 
 
+use ArrayAccess;
+
 class Arr
 {
+
+    /**
+     * Determine whether the given value is array accessible.
+     *
+     * @param $value
+     * @return bool
+     */
+    public static function is_accessible($value): bool
+    {
+        return array_is_accessible($value);
+    }
+
+    /**
+     * Determine if the given key exists in the provided array.
+     *
+     * @param $array
+     * @param $key
+     * @return bool
+     */
+    public static function exists($array, $key): bool
+    {
+        if ($array instanceof ArrayAccess) {
+            return $array->offsetExists($key);
+        }
+
+        return array_key_exists($key, $array);
+    }
+
+    /**
+     * Add an element to an array using "dot" notation if it doesn't exist.
+     *
+     * @param  array   $array
+     * @param  string  $key
+     * @param  mixed   $value
+     * @return array
+     */
+    public static function add($array, $key, $value)
+    {
+        if (is_null(static::get($array, $key))) {
+            static::set($array, $key, $value);
+        }
+
+        return $array;
+    }
+
+    /**
+     * Check if an item or items exist in an array using "dot" notation.
+     *
+     * @param  \ArrayAccess|array  $array
+     * @param  string|array  $keys
+     * @return bool
+     */
+    public static function has($array, $keys)
+    {
+        $keys = (array) $keys;
+
+        if (! $array || $keys === []) {
+            return false;
+        }
+
+        foreach ($keys as $key) {
+            $subKeyArray = $array;
+
+            if (static::exists($array, $key)) {
+                continue;
+            }
+
+            foreach (explode('.', $key) as $segment) {
+                if (static::is_accessible($subKeyArray) && static::exists($subKeyArray, $segment)) {
+                    $subKeyArray = $subKeyArray[$segment];
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Determines if an array is associative.
+     *
+     * An array is "associative" if it doesn't have sequential numerical keys beginning with zero.
+     *
+     * @param  array  $array
+     * @return bool
+     */
+    public static function isAssoc(array $array)
+    {
+        $keys = array_keys($array);
+
+        return array_keys($keys) !== $keys;
+    }
+
+    /**
+     * Get a value from the array, and remove it.
+     *
+     * @param  array   $array
+     * @param  string  $key
+     * @param  mixed   $default
+     * @return mixed
+     */
+    public static function pull(&$array, $key, $default = null)
+    {
+        $value = static::get($array, $key, $default);
+
+        static::unset($array, $key);
+
+        return $value;
+    }
+
     /**
      * @param array $data
      * @return string
@@ -156,18 +269,122 @@ class Arr
      * @param $offset
      * @return bool
      */
-    public static function _isset(array $array, $offset) {
-        return isset($array[$offset]);
+    public static function isset(array $array, $offset) {
+        return array_has_key($array, $offset);
     }
 
     /**
-     * @param array $haystack
-     * @param $needle
-     * @param null $default
-     * @return mixed|null
+     * Remove one or many array items from a given array using "dot" notation.
+     *
+     * @param $array
+     * @param $keys
      */
-    public static function find_in_array (array $haystack, $needle, $default = null) {
-        return find_in_array($haystack, $needle, $default);
+    public static function unset (array &$array, $keys)
+    {
+        $original = &$array;
+
+        $keys = (array) $keys;
+
+        if (count($keys) === 0) {
+            return;
+        }
+
+        foreach ($keys as $key) {
+            // if the exact key exists in the top-level, remove it
+            if (static::exists($array, $key)) {
+                unset($array[$key]);
+                continue;
+            }
+
+            $parts = explode('.', $key);
+
+            // clean up before each pass
+            $array = &$original;
+
+            while (count($parts) > 1) {
+                $part = array_shift($parts);
+
+                if (isset($array[$part]) && is_array($array[$part])) {
+                    $array = &$array[$part];
+                } else {
+                    continue 2;
+                }
+            }
+
+            unset($array[array_shift($parts)]);
+        }
+    }
+
+    /**
+     * Set an item on an array using dot notation.
+     *
+     * @param array $array
+     * @param $key
+     * @param null $default
+     * @return array|mixed
+     */
+    public static function get (array $array, $key, $default = null) {
+
+        if (! static::is_accessible($array)) {
+            return value($default);
+        }
+
+        if (is_null($key)) {
+            return $array;
+        }
+
+        if (static::exists($array, $key)) {
+            return $array[$key];
+        }
+
+        if (strpos($key, '.') === false) {
+            return $array[$key] ?? value($default);
+        }
+
+        foreach (explode('.', $key) as $segment) {
+            if (static::is_accessible($array) && static::exists($array, $segment)) {
+                $array = $array[$segment];
+            } else {
+                return value($default);
+            }
+        }
+
+        return $array;
+    }
+
+    /**
+     * Set an item on an array using dot notation.
+     *
+     * @param array $array
+     * @param $key
+     * @param $value
+     * @return array|mixed
+     */
+    public static function set (array &$array, $key, $value) {
+        return array_set($array, $key, $value);
+    }
+
+    /**
+     * Convert the array into a query string.
+     *
+     * @param  array  $array
+     * @return string
+     */
+    public static function to_http_query($array)
+    {
+        return http_build_query($array, null, '&', PHP_QUERY_RFC3986);
+    }
+
+    /**
+     * Filter the array using the given callback.
+     *
+     * @param  array  $array
+     * @param  callable  $callback
+     * @return array
+     */
+    public static function where($array, callable $callback)
+    {
+        return array_filter($array, $callback, ARRAY_FILTER_USE_BOTH);
     }
 
 }

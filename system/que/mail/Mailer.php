@@ -55,28 +55,28 @@ class Mailer
             $mail->XMailer = "Que Mailer 1.0 (https://www.quidvis.com/que)";
 
             // Set Debug options
-            $mail->SMTPDebug = APP_SMTP_DEBUG;
+            $mail->SMTPDebug = config('mail.smtp.debug', false);
 
             // Check for remote connections
-            if (APP_SMTP_REMOTE) {
-                $mail->SMTPSecure = APP_SMTP_TRANSPORT; // secure transfer enabled REQUIRED
+            if (config('mail.smtp.remote', false)) {
+                $mail->SMTPSecure = config('mail.smtp.transport', 'ssl'); // secure transfer enabled REQUIRED
             }
 
             // Host & Port
-            $mail->Host = APP_SMTP_HOST; // sets the SMTP server
-            $mail->Port = APP_SMTP_PORT; // set the SMTP port for the GMAIL
+            $mail->Host = config('mail.smtp.host', ''); // sets the SMTP server
+            $mail->Port = config('mail.smtp.port', '465'); // set the SMTP port for the GMAIL
 
             // server
-            $mail->Username = APP_SMTP_USER; // SMTP account username
-            $mail->Password = APP_SMTP_PASS; // SMTP account password
-            $mail->SMTPOptions = APP_SMTP_OPTIONS; // SMTP Options
-            $mail->SMTPAuth = APP_SMTP_AUTH; // enable SMTP authentication
+            $mail->Username = config('mail.smtp.username', ''); // SMTP account username
+            $mail->Password = config('mail.smtp.password', ''); // SMTP account password
+            $mail->SMTPOptions = config('mail.smtp.options', []); // SMTP Options
+            $mail->SMTPAuth = config('mail.smtp.auth', false); // enable SMTP authentication
 
             // Set Mail
             $this->mail = $mail;
 
             // Default Config
-            $this->mail->AddReplyTo(APP_EMAIL_REPLY, APP_NAME);
+            $this->mail->AddReplyTo(config('mail.address.reply', ''), config('template.app.header.name'));
 
             $this->composer = Composer::getInstance(false);
             $this->composer->_flush();
@@ -165,7 +165,7 @@ class Mailer
             $this->mail->Subject = $mail->getSubject();
 
             $from = $mail->getFrom();
-            $this->mail->setFrom($from['email'] ?? APP_EMAIL_DEFAULT, $from['name'] ?? APP_NAME);
+            $this->mail->setFrom($from['email'] ?? config('mail.address.default', ''), $from['name'] ?? config('template.app.header.name'));
 
             foreach ($mail->getRecipient() as $recipient) {
                 if (!isset($recipient['email']) || !is_email($recipient['email'])) continue;

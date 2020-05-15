@@ -15,10 +15,10 @@ class PreviousException extends Exception
 
     /**
      * @param int $backtrace_index
-     * @param array|null $backtrace
+     * @param array $backtrace
      * @return PreviousException
      */
-    public static function getInstance(int $backtrace_index = 0, ?array $backtrace = null)
+    public static function getInstance(int $backtrace_index = 0, array $backtrace = null)
     {
         $backtrace = $backtrace ?: debug_backtrace();
         $e = new self();

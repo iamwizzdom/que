@@ -8,7 +8,9 @@
 
 namespace que\common\manager;
 
+use que\common\exception\PreviousException;
 use que\common\exception\QueException;
+use que\common\exception\QueRuntimeException;
 use que\database\mysql\Query;
 use que\common\exception\AlertException;
 use que\common\exception\BaseException;
@@ -17,8 +19,8 @@ use que\common\validate\Validator;
 use que\http\Http;
 use que\http\input\Input;
 use que\mail\Mailer;
-use que\model\Model;
 use que\common\time\Time;
+use que\database\model\interfaces\Model;
 use que\security\Attempt;
 use que\security\Captcha;
 use que\session\Session;
@@ -39,11 +41,10 @@ abstract class Manager
 {
 
     /**
-     * @param bool $persist
      * @return Query
      */
-    protected function db(bool $persist = (CONFIG['database']['mysql']['persist'] ?? false)): Query {
-        return Query::getInstance($persist);
+    protected function db(): Query {
+        return Query::getInstance();
     }
 
     /**
@@ -168,12 +169,26 @@ abstract class Manager
     }
 
     /**
-     * @param object $table_row
-     * @param string $table_name
+     * @param object $tableRow
+     * @param string $tableName
+     * @param string $primaryKey
+     * @param string $model
      * @return Model
      */
-    protected function model(object $table_row, string $table_name): Model {
-        return new Model($table_row, $table_name);
+    protected function model(object &$tableRow, string $tableName,
+                             string $primaryKey = 'id', string $model = null): Model
+    {
+        $model = \model(($modelKey = $model ?? config("database.default.model")));
+
+        if ($model === null) throw new QueRuntimeException(
+            "No database model was found with the key '{$modelKey}', check your database configuration to fix this issue.",
+            "Que Runtime Error", E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+
+        if (!($implements = class_implements($model)) || !in_array(Model::class, $implements)) throw new QueRuntimeException(
+            "The specified model ({$model}) with key '{$modelKey}' does not implement the Que database model interface.",
+            "Que Runtime Error", E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+
+        return new $model($tableRow, $tableName, $primaryKey);
     }
 
     /**

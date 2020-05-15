@@ -14,21 +14,35 @@ use que\common\exception\QueRuntimeException;
 
 class QueKip
 {
+    /**
+     * @var mixed
+     */
     private $session_id;
 
     /**
      * @var QueKip
      */
-    private static $instance;
+    private static QueKip $instance;
 
     /**
      * @var array
      */
-    private $data = [];
+    private array $data = [];
 
+    /**
+     * @var string
+     */
+    private string $sessionFilePath;
+
+    /**
+     * QueKip constructor.
+     * @param $session_id
+     */
     protected function __construct($session_id)
     {
         $this->session_id = $session_id;
+
+        $this->sessionFilePath = session_save_path();
 
         $this->fetch_data();
     }
@@ -142,7 +156,7 @@ class QueKip
      */
     public function delete($session_id) {
         $fileName = sha1($session_id);
-        $filePath = session_save_path() . "/quekip/que_session_{$fileName}.tmp";
+        $filePath = "{$this->sessionFilePath}/quekip/que_session_{$fileName}.tmp";
         if (!file_exists($filePath)) return false;
         $this->data = [];
         return unlink($filePath);
@@ -150,7 +164,7 @@ class QueKip
 
     private function fetch_data() {
 
-        $filePath = session_save_path() . "/quekip";
+        $filePath = "{$this->sessionFilePath}/quekip";
 
         if (!is_dir($filePath)) {
 
@@ -180,12 +194,10 @@ class QueKip
      */
     private function write_data() {
 
-        $filePath = session_save_path() . "/quekip";
-
-        if (!is_dir($filePath)) {
+        if (!is_dir($this->sessionFilePath)) {
 
             try {
-                $this->mk_dir($filePath);
+                $this->mk_dir($this->sessionFilePath);
             } catch (QueException $e) {
                 throw new QueRuntimeException($e->getMessage(), "Session Error",
                     E_USER_ERROR, 0, PreviousException::getInstance(2));
@@ -194,10 +206,10 @@ class QueKip
 
         $fileName = sha1($this->session_id);
 
-        if (!file_exists("{$filePath}/que_session_{$fileName}.tmp"))
-            $this->create_file("{$filePath}/que_session_{$fileName}.tmp");
+        if (!file_exists("{$this->sessionFilePath}/que_session_{$fileName}.tmp"))
+            $this->create_file("{$this->sessionFilePath}/que_session_{$fileName}.tmp");
 
-        if (($status = @file_put_contents("{$filePath}/que_session_{$fileName}.tmp",
+        if (($status = @file_put_contents("{$this->sessionFilePath}/que_session_{$fileName}.tmp",
             serialize($this->data))) === false)
             throw new QueRuntimeException("Unable to write to quekip cache file!", "Session Error",
                 E_USER_ERROR, 0, PreviousException::getInstance(2));
