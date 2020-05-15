@@ -37,8 +37,8 @@ return [
         | Default Database Model
         |--------------------------------------------------------------------------
         |
-        | Here you may specify which of the database drivers below you wish
-        | to use as your default driver for all database work.
+        | Here you may specify which of the database models below you wish
+        | to use as your default model for all database work.
         |
         */
         'model' => 'que'
@@ -63,7 +63,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | Here are a list of database models you can use for database works.
-    | Of course, you can add your own custom drivers to this list.
+    | Of course, you can add your own custom models to this list.
     |
     */
     'models' => [
@@ -138,14 +138,13 @@ return [
             'unix_socket' => null,
 
             /*
-             | The character set. See the [character set](https://www.php.net/manual/en/mysqlinfo.concepts.charset.php)
-             | concepts documentation for more information.
+             | The character set. See the [character set](https://dev.mysql.com/doc/refman/5.7/en/charset-unicode-utf8mb4.html)
+             | documentation for more information.
              */
             'charset' => null,
 
             /*
-             | The character set. See the [character set](https://www.php.net/manual/en/mysqlinfo.concepts.charset.php)
-             | concepts documentation for more information.
+             | The collation set.
              */
             'collation' => null,
 
