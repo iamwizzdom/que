@@ -9,16 +9,17 @@
 namespace que\common\structure;
 
 
-use que\database\model\interfaces\Model;
+use que\database\interfaces\model\Model;
+use que\http\input\Input;
 
 interface Receiver
 {
 
     /**
      * This method will run when the module is accessed via POST request
-     * @param array $uri_args - This parameter provides the arguments found in the uri
+     * @param Input $input
      * @param Model|null $info - This parameter will provide the data returned by $this->info() if the info method exist otherwise null
      * @note Que will run this method for you automatically
      */
-    public function onReceive(array $uri_args, ?Model $info = null): void;
+    public function onReceive(Input $input, ?Model $info = null): void;
 }

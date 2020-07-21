@@ -13,9 +13,9 @@ class Time
     /**
      * @var Time
      */
-    private static $instance;
+    private static Time $instance;
 
-    private $templates = [
+    private array $templates = [
         'prefix' => "",
         'suffix' => " ago",
         'seconds' => "less than a minute",

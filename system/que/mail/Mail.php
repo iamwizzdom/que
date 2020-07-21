@@ -9,6 +9,12 @@
 namespace que\mail;
 
 class Mail {
+    
+    const ENCODING_7BIT = '7bit';
+    const ENCODING_8BIT = '8bit';
+    const ENCODING_BASE64 = 'base64';
+    const ENCODING_BINARY = 'binary';
+    const ENCODING_QUOTED_PRINTABLE = 'quoted-printable';
 
     /**
      * @var string
@@ -256,14 +262,15 @@ class Mail {
      * @param string $type
      * @param string $disposition
      */
-    public function addAttachment(string $path, string $name = '', $encoding = 'base64',
-                                  $type = '', $disposition = 'attachment'): void
+    public function addAttachment(string $path, string $name = '', $type = '', 
+                                  $encoding = self::ENCODING_BASE64, 
+                                  $disposition = 'attachment'): void
     {
         array_push($this->attachment, [
             'path' => $path,
             'name' => $name,
-            'encoding' => $encoding,
             'type' => $type,
+            'encoding' => $encoding,
             'disposition' => $disposition
         ]);
     }
@@ -283,14 +290,15 @@ class Mail {
      * @param string $type
      * @param string $disposition
      */
-    public function addStringAttachment(string $data, string $name = '', $encoding = 'base64',
-                                        $type = '', $disposition = 'attachment'): void
+    public function addStringAttachment(string $data, string $name = '', $type = '', 
+                                        $encoding = self::ENCODING_BASE64, 
+                                        $disposition = 'attachment'): void
     {
         array_push($this->stringAttachment, [
             'data' => $data,
             'name' => $name,
-            'encoding' => $encoding,
             'type' => $type,
+            'encoding' => $encoding,
             'disposition' => $disposition
         ]);
     }

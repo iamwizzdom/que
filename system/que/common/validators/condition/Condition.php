@@ -6,13 +6,15 @@
  * Time: 2:28 PM
  */
 
-namespace que\database\model;
+namespace que\common\validator\condition;
 
 use DateTime;
 use Exception;
-use que\database\model\interfaces\Condition as ConditionAlias;
+use que\common\validator\interfaces\Condition as ConditionAlias;
 use que\support\Arr;
 use que\utility\client\IP;
+use que\utility\hash\Hash;
+use que\utility\random\UUID;
 
 class Condition implements ConditionAlias
 {
@@ -27,6 +29,11 @@ class Condition implements ConditionAlias
      */
     private $value;
 
+    /**
+     * Condition constructor.
+     * @param $key
+     * @param $value
+     */
     public function __construct($key, $value)
     {
         $this->setKey($key);
@@ -77,17 +84,17 @@ class Condition implements ConditionAlias
     }
 
     /**
-     * @return string
+     * @return bool
      */
-    public function getType(): string {
-        return gettype($this->getValue());
+    public function isEmpty(): bool {
+        return empty($this->getValue()) && $this->getValue() != "0";
     }
 
     /**
      * @return bool
      */
-    public function isEmpty(): bool {
-        return empty($this->getValue());
+    public function isNotEmpty(): bool {
+        return !$this->isEmpty();
     }
 
     /**
@@ -95,12 +102,7 @@ class Condition implements ConditionAlias
      * @return bool
      */
     public function isIdentical($variable): bool {
-        if (is_array($variable)) {
-            foreach ($variable as $value)
-                if ($value !== $this->getValue()) return false;
-            return true;
-        }
-        return $variable === $this->getValue();
+        return $this->getValue() === $variable;
     }
 
     /**
@@ -108,12 +110,7 @@ class Condition implements ConditionAlias
      * @return bool
      */
     public function isNotIdentical($variable): bool {
-        if (is_array($variable)) {
-            foreach ($variable as $value)
-                if ($value !== $this->getValue()) return true;
-            return false;
-        }
-        return $variable !== $this->getValue();
+        return $this->getValue() !== $variable;
     }
 
     /**
@@ -139,12 +136,7 @@ class Condition implements ConditionAlias
      * @return bool
      */
     public function isEqual($variable): bool {
-        if (is_array($variable)) {
-            foreach ($variable as $value)
-                if ($value != $this->getValue()) return false;
-            return true;
-        }
-        return $variable == $this->getValue();
+        return $this->getValue() == $variable;
     }
 
     /**
@@ -152,12 +144,7 @@ class Condition implements ConditionAlias
      * @return bool
      */
     public function isNotEqual($variable): bool {
-        if (is_array($variable)) {
-            foreach ($variable as $value)
-                if ($value != $this->getValue()) return true;
-            return false;
-        }
-        return $variable != $this->getValue();
+        return $this->getValue() != $variable;
     }
 
     /**
@@ -179,47 +166,80 @@ class Condition implements ConditionAlias
     }
 
     /**
-     * @param $variable
+     * @param $number
      * @return bool
      */
-    public function isNumberGreaterThan($variable): bool {
-        if (is_array($variable))
-            foreach ($variable as $value)
-                if ($value > $this->getValue()) return true;
-        return $variable > $this->getValue();
+    public function isNumberGreaterThan(int $number): bool {
+        return $this->getValue() > $number;
     }
 
     /**
-     * @param $variable
+     * @param $number
      * @return bool
      */
-    public function isNumberGreaterThanOrEqual($variable): bool {
-        if (is_array($variable))
-            foreach ($variable as $value)
-                if ($value >= $this->getValue()) return true;
-        return $variable >= $this->getValue();
+    public function isNumberGreaterThanOrEqual(int $number): bool {
+        return $this->getValue() >= $number;
     }
 
     /**
-     * @param $variable
+     * @param $number
      * @return bool
      */
-    public function isNumberLessThan($variable): bool {
-        if (is_array($variable))
-            foreach ($variable as $value)
-                if ($value < $this->getValue()) return true;
-        return $variable < $this->getValue();
+    public function isNumberLessThan(int $number): bool {
+        return $this->getValue() < $number;
     }
 
     /**
-     * @param $variable
+     * @param $number
      * @return bool
      */
-    public function isNumberLessThanOrEqual($variable): bool {
-        if (is_array($variable))
-            foreach ($variable as $value)
-                if ($value <= $this->getValue()) return true;
-        return $variable <= $this->getValue();
+    public function isNumberLessThanOrEqual(int $number): bool {
+        return $this->getValue() <= $number;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isFloatingNumber(): bool
+    {
+        // TODO: Implement isFloatingNumber() method.
+        return filter_var($this->getValue(), FILTER_VALIDATE_FLOAT) !== false;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isFloatingNumberGreaterThan(int $number): bool
+    {
+        // TODO: Implement isFloatingNumberGreaterThan() method.
+        return $this->isFloatingNumber() && ($this->getValue() > $number);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isFloatingNumberGreaterThanOrEqual(int $number): bool
+    {
+        // TODO: Implement isFloatingNumberGreaterThanOrEqual() method.
+        return $this->isFloatingNumber() && ($this->getValue() >= $number);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isFloatingNumberLessThan(int $number): bool
+    {
+        // TODO: Implement isFloatingNumberLessThan() method.
+        return $this->isFloatingNumber() && ($this->getValue() < $number);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isFloatingNumberLessThanOrEqual(int $number): bool
+    {
+        // TODO: Implement isFloatingNumberLessThanOrEqual() method.
+        return $this->isFloatingNumber() && ($this->getValue() <= $number);
     }
 
     /**
@@ -255,6 +275,15 @@ class Condition implements ConditionAlias
     }
 
     /**
+     * @inheritDoc
+     */
+    public function isPhoneNumber(): bool
+    {
+        // TODO: Implement isPhoneNumber() method.
+        return preg_match("/^(\+)?[0-9]+$/", $this->getValue()) == 1;
+    }
+
+    /**
      * @return bool
      */
     public function isNumberFormat(): bool {
@@ -276,18 +305,13 @@ class Condition implements ConditionAlias
     }
 
     /**
+     * @param string|null $pattern
      * @return bool
      */
-    public function isBlank(): bool {
-        return empty($this->getValue()) && $this->getValue() != "0";
-    }
-
-    /**
-     * @return bool
-     */
-    public function isUrl(): bool {
-        if (!filter_var($this->getValue(), FILTER_VALIDATE_URL)) return false;
-        return true;
+    public function isUrl(string $pattern = null): bool {
+        $filter = filter_var($this->getValue(), FILTER_VALIDATE_URL);
+        if ($pattern !== null) return ($filter !== false && preg_match($pattern, $this->getValue()) == 1);
+        return $filter !== false;
     }
 
     /**
@@ -308,7 +332,7 @@ class Condition implements ConditionAlias
      * @return bool
      */
     public function isAlphaNumeric(): bool {
-        return preg_match("/^[a-zA-Z0-9]+$/", $this->getValue()) == 1;
+        return preg_match("/^(?=.*\d)(?=.*[a-zA-Z])/", $this->getValue()) == 1;
     }
 
     /**
@@ -319,11 +343,59 @@ class Condition implements ConditionAlias
     }
 
     /**
+     * @return bool
+     */
+    public function isUUID(): bool {
+        return UUID::is_valid($this->getValue());
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isUniqueInDB($table, $column, $ignoreID = null, string $ignoreColumn = 'id'): bool
+    {
+        // TODO: Implement isUniqueInDB() method.
+        return $this->isNotFoundInDB($table, $column, false, $ignoreID, $ignoreColumn);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isFoundInDB($table, $column, bool $considerIsActive = false,
+                                $ignoreID = null, string $ignoreColumn = 'id'): bool
+    {
+        // TODO: Implement isFoundInDB() method.
+        $where = [
+            $column => $this->getValue()
+        ];
+
+        if ($considerIsActive === true) {
+            $where[config('database.table_status_key', 'is_active')] = STATE_ACTIVE;
+        }
+
+        if (!empty($ignoreID)) {
+            $where["{$ignoreColumn}[!=]"] = $ignoreID;
+        }
+
+        return db()->check($table, ['AND' => $where])->isSuccessful();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isNotFoundInDB($table, $column, bool $considerIsActive = false,
+                                   $ignoreID = null, string $ignoreColumn = 'id'): bool
+    {
+        // TODO: Implement isNotFoundInDB() method.
+        return !$this->isFoundInDB($table, $column, $considerIsActive, $ignoreID, $ignoreColumn);
+    }
+
+    /**
      * @param string $format
      * @return bool
      */
     public function isDate(string $format): bool {
-        return !DateTime::createFromFormat($format, $this->getValue());
+        return DateTime::createFromFormat($format, $this->getValue()) instanceof DateTime;
     }
 
     /**
@@ -331,10 +403,10 @@ class Condition implements ConditionAlias
      * @param DateTime $compare
      * @return bool
      */
-    public function isDateGraterThan(string $format, DateTime $compare): bool {
+    public function isDateGreaterThan(string $format, DateTime $compare): bool {
         $date = DateTime::createFromFormat($format, $this->getValue());
-        if (!$date) return false;
-        return $date > $compare;
+        if (!$date instanceof DateTime) return false;
+        return $date->getTimestamp() > $compare->getTimestamp();
     }
 
     /**
@@ -342,10 +414,10 @@ class Condition implements ConditionAlias
      * @param DateTime $compare
      * @return bool
      */
-    public function isDateGraterThanOrEqual(string $format, DateTime $compare): bool {
+    public function isDateGreaterThanOrEqual(string $format, DateTime $compare): bool {
         $date = DateTime::createFromFormat($format, $this->getValue());
-        if (!$date) return false;
-        return $date >= $compare;
+        if (!$date instanceof DateTime) return false;
+        return $date->getTimestamp() >= $compare->getTimestamp();
     }
 
     /**
@@ -355,8 +427,8 @@ class Condition implements ConditionAlias
      */
     public function isDateLessThan(string $format, DateTime $compare): bool {
         $date = DateTime::createFromFormat($format, $this->getValue());
-        if (!$date) return false;
-        return $date < $compare;
+        if (!$date instanceof DateTime) return false;
+        return $date->getTimestamp() < $compare->getTimestamp();
     }
 
     /**
@@ -366,8 +438,8 @@ class Condition implements ConditionAlias
      */
     public function isDateLessThanOrEqual(string $format, DateTime $compare): bool {
         $date = DateTime::createFromFormat($format, $this->getValue());
-        if (!$date) return false;
-        return $date <= $compare;
+        if (!$date instanceof DateTime) return false;
+        return $date->getTimestamp() <= $compare->getTimestamp();
     }
 
     /**
@@ -376,30 +448,7 @@ class Condition implements ConditionAlias
      */
     public function matches(string $regex): bool
     {
-        return !!preg_match($regex, $this->getValue());
-    }
-
-    /**
-     * @param $format
-     * @return string
-     */
-    public function getDate($format): string {
-        return get_date($format, $this->getValue(), $this->getValue());
-    }
-
-    /**
-     * @return string
-     */
-    public function getAge(): string {
-        if (!$this->isDate("m/d/Y")) return $this->getValue();
-        try {
-            $date = new DateTime($this->getValue());
-            $to = new DateTime('today');
-        } catch (Exception $e) {
-            return $this->getValue();
-        }
-        $age = (int) $date->diff($to)->y;
-        return ($age >= 2 ? "{$age} years old" : "{$age} year old");
+        return preg_match($regex, $this->getValue()) == 1;
     }
 
     /**
@@ -407,6 +456,24 @@ class Condition implements ConditionAlias
      */
     public function isBool(): bool {
         return in_array($this->getValue(), [true, false, 0, 1, '0', '1'], true);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isTrue(callable $test): bool
+    {
+        // TODO: Implement isTrue() method.
+        return !$this->isFalse($test);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isFalse(callable $test): bool
+    {
+        // TODO: Implement isFalse() method.
+        return !$test($this->getValue());
     }
 
     /**
@@ -449,7 +516,7 @@ class Condition implements ConditionAlias
      * @return bool
      */
     public function hasMaxWord(int $max): bool {
-        return str_word_count($this->getValue()) > $max;
+        return str_word_count($this->getValue()) <= $max;
     }
 
     /**
@@ -457,7 +524,7 @@ class Condition implements ConditionAlias
      * @return bool
      */
     public function hasMinWord(int $min = 1): bool {
-        return str_word_count($this->getValue()) < $min;
+        return str_word_count($this->getValue()) >= $min;
     }
 
     /**
@@ -465,7 +532,7 @@ class Condition implements ConditionAlias
      * @return bool
      */
     public function hasMaxLength(int $max): bool {
-        return strlen($this->getValue()) > $max;
+        return strlen($this->getValue()) <= $max;
     }
 
     /**
@@ -473,15 +540,15 @@ class Condition implements ConditionAlias
      * @return bool
      */
     public function hasMinLength(int $min = 1): bool {
-        return strlen($this->getValue()) < $min;
+        return strlen($this->getValue()) >= $min;
     }
 
     /**
      * @param string $algo
      * @return Condition
      */
-    public function hash(string $algo): ConditionAlias {
-        $this->setValue(hash($algo, $this->getValue()));
+    public function hash(string $algo = "SHA256"): ConditionAlias {
+        $this->setValue(Hash::sha($this->getValue(), $algo));
         return $this;
     }
 
@@ -518,10 +585,21 @@ class Condition implements ConditionAlias
     }
 
     /**
+     * @param string $charlist
      * @return $this
      */
-    public function trim(): ConditionAlias {
-        $this->setValue(trim($this->getValue()));
+    public function trim(string $charlist = " \t\n\r\0\x0B"): ConditionAlias {
+        $this->setValue(trim($this->getValue(), $charlist));
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function toDate(string $format): ConditionAlias
+    {
+        // TODO: Implement toDateFormat() method.
+        $this->setValue(get_date($format, $this->getValue(), $this->getValue()));
         return $this;
     }
 

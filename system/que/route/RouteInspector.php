@@ -5,12 +5,13 @@ namespace que\route;
 
 
 use Exception;
+use que\common\exception\QueException;
 use que\common\exception\RouteException;
 use que\http\Http;
 use que\http\input\Input;
 use que\security\CSRF;
-use que\security\JWT\JWT;
 use que\security\JWT\TokenEncoded;
+use que\utility\random\UUID;
 
 class RouteInspector
 {
@@ -103,7 +104,8 @@ class RouteInspector
                 'args' => [],
                 'routeEntry' => $this->routeEntry,
                 'percentage' => $percentage,
-                'error' => "You are passing more arguments than required by the current route"
+                'error' => "You are passing more arguments than required by the current route",
+                'code' => HTTP_UNAUTHORIZED
             ];
             return;
         }
@@ -113,7 +115,8 @@ class RouteInspector
                 'args' => [],
                 'routeEntry' => $this->routeEntry,
                 'percentage' => $percentage,
-                'error' => "You are passing fewer arguments than required by the current route"
+                'error' => "You are passing fewer arguments than required by the current route",
+                'code' => HTTP_UNAUTHORIZED
             ];
             return;
         }
@@ -129,7 +132,8 @@ class RouteInspector
                         'args' => [],
                         'routeEntry' => $this->routeEntry,
                         'percentage' => $percentage,
-                        'error' => "Invalid route argument"
+                        'error' => "Invalid route argument",
+                        'code' => HTTP_UNAUTHORIZED
                     ];
                     return;
                 }
@@ -146,7 +150,8 @@ class RouteInspector
                         'args' => [],
                         'routeEntry' => $this->routeEntry,
                         'percentage' => $percentage,
-                        'error' => "Expected uri argument not found in the current route"
+                        'error' => "Expected uri argument not found in the current route",
+                        'code' => HTTP_EXPECTATION_FAILED
                     ];
                     return;
                 }
@@ -161,7 +166,8 @@ class RouteInspector
                             'args' => [],
                             'routeEntry' => $this->routeEntry,
                             'percentage' => $percentage,
-                            'error' => $e->getMessage()
+                            'error' => $e->getMessage(),
+                            'code' => $e->getCode()
                         ];
                         return;
                     }
@@ -175,7 +181,8 @@ class RouteInspector
             'args' => $foundArgs,
             'routeEntry' => $this->routeEntry,
             'percentage' => $percentage,
-            'error' => null
+            'error' => null,
+            'code' => HTTP_OK
         ];
     }
 
@@ -229,16 +236,26 @@ class RouteInspector
      * @param $value
      * @throws RouteException
      */
-    public static function validateArgDataType($regex, $value) {
+    public static function validateArgDataType(string $regex, $value) {
 
-        if (strcmp($regex, "num") == 0) $regex = "^[0-9]+$";
-        elseif (strcmp($regex, "alpha") == 0) $regex = "^[a-zA-Z]+$";
+        if (strcmp($regex, "uuid") == 0) {
 
-        if (!preg_match("/{$regex}/", $value)) {
-            $value = str_ellipsis($value, 70);
+            if (UUID::is_valid($value)) return;
+
+            $value = str_ellipsis($value ?? '', 70);
             throw new RouteException(
-                "Invalid data type found in the current route argument at '{$value}'.",
-                "Route Error", HTTP_INTERNAL_SERVER_ERROR
+                "Invalid data type found in route argument [Arg: {$value}]",
+                "Route Error", HTTP_EXPECTATION_FAILED
+            );
+
+        } elseif (strcmp($regex, "num") == 0) $regex = "/^[0-9]+$/";
+        elseif (strcmp($regex, "alpha") == 0) $regex = "/^[a-zA-Z]+$/";
+
+        if (!preg_match($regex, $value)) {
+            $value = str_ellipsis($value ?? '', 70);
+            throw new RouteException(
+                "Invalid data type found in route argument [Arg: {$value}]",
+                "Route Error", HTTP_EXPECTATION_FAILED
             );
         }
     }
@@ -248,21 +265,31 @@ class RouteInspector
      */
     public static function validateCSRF() {
 
-        if (config('auth.csrf', false) === true) {
+        $token = Input::getInstance()->get('X-Csrf-Token');
+        if (empty($token)) {
+            foreach (
+                [
+                    'X-CSRF-TOKEN',
+                    'x-csrf-token',
+                    'csrf',
+                    'Csrf',
+                    'CSRF'
+                ] as $key
+            ) {
+                $token = Input::getInstance()->get($key);
+                if (!empty($token)) break;
+            }
+        }
 
-            $token = Input::getInstance()->get('X-Csrf-Token');
-            if (empty($token)) $token = Input::getInstance()->get('csrf');
+        try {
 
-            if (!CSRF::getInstance()->isValidToken(
-                ($token = (!is_null($token) ? $token : ""))
-            )) {
+            CSRF::getInstance()->validateToken((!is_null($token) ? $token : ""));
+            CSRF::getInstance()->generateToken();
 
-                CSRF::getInstance()->generateToken();
-                throw new RouteException("Cross-site request forgery (CSRF) are forbidden",
-                    "CSRF Error", HTTP_EXPIRED_AUTH);
+        } catch (QueException $e) {
 
-            } else CSRF::getInstance()->generateToken();
-
+            CSRF::getInstance()->generateToken();
+            throw new RouteException($e->getMessage(), $e->getTitle(), HTTP_EXPIRED_AUTH);
         }
 
     }
@@ -275,17 +302,50 @@ class RouteInspector
         try {
 
             $token = get_bearer_token();
-            if (empty($token)) $token = Input::getInstance()->get('X-Jwt-Token');
-            if (empty($token)) $token = Input::getInstance()->get('jwt');
+            if (empty($token)) {
+                foreach (
+                    [
+                        'X-JWT-TOKEN',
+                        'X-Jwt-Token',
+                        'x-jwt-token',
+                        'jwt',
+                        'Jwt',
+                        'JWT'
+                    ] as $key
+                ) {
+                    $token = Input::getInstance()->get($key);
+                    if (!empty($token)) break;
+                }
+            }
 
             $tokenEncoded = new TokenEncoded($token);
-            $tokenEncoded->validate(config('auth.jwt.key', 'que_jwt_key'),
-                config('auth.jwt.algo', JWT::ALGORITHM_HS512));
+            $tokenEncoded->validate(config('auth.jwt.key', ''), config('auth.jwt.algo'));
             $tokenDecoded = $tokenEncoded->decode();
             $http->_server()->offsetSet("JWT_PAYLOAD", $tokenDecoded->getPayload());
             $http->_server()->offsetSet("JWT_HEADER", $tokenDecoded->getHeader());
+
         } catch (Exception $e) {
             throw new RouteException($e->getMessage(), "JWT Auth Error", HTTP_EXPIRED_AUTH);
+        }
+    }
+
+    /**
+     * @param string $method
+     * @return bool
+     */
+    public static function isSupportedMethod(string $method): bool
+    {
+        if (!preg_match('/^[a-z-A-Z]+$/', $method)) return false;
+
+        switch (strtoupper($method)) {
+            case 'GET':
+            case 'POST':
+            case 'PUT':
+            case 'PATCH':
+            case 'DELETE':
+                return true;
+            default:
+                return false;
         }
     }
 }

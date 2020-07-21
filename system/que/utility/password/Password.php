@@ -63,7 +63,7 @@ class Password
      * @param string $algo
      * @return string
      */
-    public function hash_sha(string $algo = "sha256")
+    public function hash_sha(string $algo = "SHA256")
     {
         return Hash::sha($this->password, $algo);
     }
@@ -73,7 +73,7 @@ class Password
      * @param string $algo
      * @return bool
      */
-    public function verify_sha(string $hash, string $algo = "sha256"): bool
+    public function verify_sha(string $hash, string $algo = "SHA256"): bool
     {
         return strcmp($this->hash_sha($algo), $hash) == 0;
     }

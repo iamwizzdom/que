@@ -9,7 +9,7 @@
 namespace que\database\drivers\mysql;
 
 
-use que\database\interfaces\DriverResponse;
+use que\database\interfaces\drivers\DriverResponse;
 
 class MySqlDriverResponse implements DriverResponse
 {

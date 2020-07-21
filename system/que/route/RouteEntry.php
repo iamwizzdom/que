@@ -14,22 +14,32 @@ class RouteEntry
     /**
      * @var string
      */
+    private ?string $name = null;
+
+    /**
+     * @var string
+     */
     private string $type = "";
 
     /**
      * @var string
      */
-    private string $uri = "";
+    private ?string $uri = null;
 
     /**
      * @var string
      */
-    private string $title = "";
+    private ?string $title = null;
 
     /**
      * @var string
      */
-    private string $module = "";
+    private ?string $description = null;
+
+    /**
+     * @var string
+     */
+    private ?string $module = null;
 
     /**
      * @var bool
@@ -39,7 +49,7 @@ class RouteEntry
     /**
      * @var string
      */
-    private ?string $loginUrl = null;
+    private ?string $redirectUrl = null;
 
     /**
      * @var bool
@@ -57,6 +67,11 @@ class RouteEntry
     private bool $underMaintenance = false;
 
     /**
+     * @var string
+     */
+    private ?string $middleware = null;
+
+    /**
      * RouteEntry constructor.
      */
     public function __construct()
@@ -65,9 +80,25 @@ class RouteEntry
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getType(): string
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @param string $name
+     */
+    public function setName(string $name): void
+    {
+        $this->name = $name;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getType(): ?string
     {
         return $this->type;
     }
@@ -81,9 +112,9 @@ class RouteEntry
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getUri(): string
+    public function getUri(): ?string
     {
         return $this->uri;
     }
@@ -93,13 +124,13 @@ class RouteEntry
      */
     public function setUri(string $uri)
     {
-        $this->uri = trim($uri, '/');
+        $this->uri = $uri == "/" ? $uri : trim($uri, '/');
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
         return $this->title;
     }
@@ -113,9 +144,25 @@ class RouteEntry
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getModule(): string
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    /**
+     * @param string $description
+     */
+    public function setDescription(string $description): void
+    {
+        $this->description = $description;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getModule(): ?string
     {
         return $this->module;
     }
@@ -138,20 +185,20 @@ class RouteEntry
 
     /**
      * @param bool $requireLogIn
-     * @param string|null $loginUrl
+     * @param string|null $redirectUrl
      */
-    public function setRequireLogIn(bool $requireLogIn, string $loginUrl = null)
+    public function setRequireLogIn(bool $requireLogIn, string $redirectUrl = null)
     {
         $this->requireLogIn = $requireLogIn;
-        $this->loginUrl = $loginUrl;
+        $this->redirectUrl = $redirectUrl;
     }
 
     /**
      * @return string
      */
-    public function getLoginUrl(): ?string
+    public function getRedirectUrl(): ?string
     {
-        return $this->loginUrl;
+        return $this->redirectUrl;
     }
 
     /**
@@ -200,6 +247,22 @@ class RouteEntry
     public function setUnderMaintenance(bool $underMaintenance): void
     {
         $this->underMaintenance = $underMaintenance;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getMiddleware(): ?string
+    {
+        return $this->middleware;
+    }
+
+    /**
+     * @param string $middleware
+     */
+    public function setMiddleware(string $middleware): void
+    {
+        $this->middleware = $middleware;
     }
 
 }

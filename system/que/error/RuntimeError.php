@@ -8,6 +8,7 @@
 
 namespace que\error;
 
+use que\common\exception\QueRuntimeException;
 use que\route\Route;
 use que\utility\ImageGenerator;
 
@@ -16,19 +17,19 @@ abstract class RuntimeError
     /**
      * @var bool
      */
-    private static $hasError = false;
+    private static bool $hasError = false;
 
     /**
      * @param $error_level
      * @param $error_message
      * @param string $error_file
      * @param string $error_line
-     * @param array $error_context
+     * @param array $error_trace
      * @param string $error_title
      * @param int $http_code
      */
     public static function render($error_level, $error_message, $error_file = "", $error_line = "",
-                                  $error_context = [], $error_title = "Que Runtime Error",
+                                  $error_trace = [], $error_title = "Que Runtime Error",
                                   int $http_code = HTTP_INTERNAL_SERVER_ERROR) {
 
         if (self::$hasError === true) return; else self::$hasError = true;
@@ -38,11 +39,11 @@ abstract class RuntimeError
         if (LIVE or ini_get('display_errors') == "Off") {
 
             $error = [
-                'title' => sprintf("%s Error", config('template.app.name')),
+                'title' => sprintf("%s Error", config('template.app.header.name')),
                 'message' => $error_level == E_USER_NOTICE ? $error_message :
                     "Something unexpected happened, please contact webmaster.",
                 'code' => $http_code,
-                'backtrace' => false,
+                'trace' => [],
             ];
 
         } else {
@@ -50,15 +51,16 @@ abstract class RuntimeError
             $error = [
                 'title' => $error_title,
                 'message' => $error_message,
-                'backtrace' => true,
                 'level' => $error_level,
                 'file' => $error_file,
                 'line' => $error_line,
                 'code' => $http_code,
-                'context' => !empty($error_context) ? $error_context : []
+                'trace' => !empty($error_trace) ? $error_trace : []
             ];
 
         }
+
+        log_error($error_message, $error_file, $error_line, $error_level, $http_code, $error_trace);
 
         if (PHP_SAPI == 'cli') die(debug_print($error, true));
 
@@ -66,11 +68,24 @@ abstract class RuntimeError
 
         $route = Route::getCurrentRoute();
 
-        if (!empty($route) && $route->getType() == 'api' ||
-            http()->_header()->get('X-Requested-With') == 'XMLHttpRequest') {
+        $requestedWith = http()->_header()->get('X-Requested-With');
+        if (empty($requestedWith)) {
+            foreach (
+                [
+                    'X-REQUESTED-WITH',
+                    'x-requested-with'
+                ] as $key
+            ) {
+                $requestedWith = http()->_header()->get($key);
+                if (!empty($requestedWith)) break;
+            }
+        }
 
-            if (!empty($route) && $route->getType() != 'api')
-                header("Content-Type: application/json", true);
+        if (!empty($route) && $route->getType() == 'api' || $requestedWith == 'XMLHttpRequest') {
+
+            if (!empty($route) && $route->getType() != 'api') {
+                http()->_header()->set('Content-Type', 'application/json');
+            }
 
             $error = array_merge($error, [
                 'status' => false,
@@ -98,13 +113,21 @@ abstract class RuntimeError
             $composer = composer();
 
             $error['message'] = trim($error['message']);
-            $tmpPath = LIVE ? (APP_PATH . "/template/") : (QUE_PATH . "/error/tmp");
-            $tmpFIle = LIVE ? config('template.error_tmp_path') : "error.html";
+            $tmpPath = LIVE ? (APP_PATH . "/template") : (QUE_PATH . "/error/tmp");
+            $tmpFIle = LIVE ? config('template.error_tmp_path') : "error.tpl";
             $isFile = is_file("{$tmpPath}/{$tmpFIle}");
             $composer->resetTmpDir($isFile ? $tmpPath : (QUE_PATH . "/error/tmp"));
+            $composer->setTmpFileName($isFile ? $tmpFIle : "error.tpl");
             $composer->data($error);
-            $composer->setTmpFileName($isFile ? $tmpFIle : "error.html");
-            $composer->prepare()->renderWithSmarty();
+            beginning:
+            try {
+
+                $composer->prepare()->renderWithSmarty();
+            } catch (QueRuntimeException $e) {
+                $composer->resetTmpDir((QUE_PATH . "/error/tmp"));
+                $composer->setTmpFileName("error.tpl");
+                goto beginning;
+            }
         }
 
         die();

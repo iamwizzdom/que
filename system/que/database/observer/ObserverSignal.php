@@ -6,7 +6,7 @@
  * Time: 10:39 PM
  */
 
-namespace que\database\interfaces;
+namespace que\database\interfaces\drivers;
 
 
 class ObserverSignal

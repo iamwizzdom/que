@@ -9,22 +9,31 @@
 namespace que\template;
 
 
-class Form
+use ArrayAccess;
+use que\route\Route;
+use que\support\Arr;
+
+class Form implements ArrayAccess
 {
     /**
      * @var Form
      */
-    private static $instance;
+    private static ?Form $instance = null;
 
     /**
      * @var string
      */
-    private $formAction = '';
+    private string $formAction = '';
 
     /**
      * @var string
      */
-    private $formMethod = '';
+    private string $formMethod = '';
+
+    /**
+     * @var array
+     */
+    private array $formData = [];
 
     protected function __construct()
     {
@@ -41,13 +50,34 @@ class Form
     }
 
     /**
+     * @param bool $singleton
      * @return Form
      */
-    public static function getInstance(): Form
+    public static function getInstance(bool $singleton = true): Form
     {
+        if (!$singleton) return new self();
+
         if (!isset(self::$instance))
-            self::$instance = new self;
+            self::$instance = new self();
         return self::$instance;
+    }
+
+    /**
+     * @param $offset
+     * @param null $default
+     * @return array|string|null
+     */
+    public function getFormData($offset, $default = null)
+    {
+        return Arr::get($this->formData, $offset, $default);
+    }
+
+    /**
+     * @param array $formData
+     */
+    public function setFormData(array $formData): void
+    {
+        $this->formData = array_merge_recursive($this->formData, $formData);
     }
 
     /**
@@ -56,13 +86,10 @@ class Form
      * @param bool $multipart
      * @return string
      */
-    function formOpen(string $action = '', array $attributes = [], bool $multipart = false)
+    function formOpen(string $action = '#', array $attributes = [], bool $multipart = false)
     {
 
-        if (empty($action)) $action = '#';
-
-        if ($action != "#" && !str_contains($action, "://"))
-            $action = base_url($action);
+        if ($action != "#" && !str_contains($action, "://")) $action = base_url($action);
 
         if (!in_array('method', $keys = array_keys($attributes)))
             $attributes['method'] = 'post';
@@ -81,20 +108,25 @@ class Form
      */
     public function formClose() {
 
-        $currentRoute = current_route();
-
         $formClose = '';
 
-        if (($currentRoute && $currentRoute->isRequireCSRFAuth()) &&
-            ($this->formAction == "#" || str_contains($this->formAction, base_url())) &&
-            strtolower($this->formMethod) != "get")
-        {
-            $formClose .= "<input type='hidden' name='csrf' value='{$this->getCsrfToken()}'/>\n";
+        if (strtolower($this->formMethod) != "get") {
+
+            if ($this->formAction == '#') {
+
+                if (($currentRoute = current_route()) && $currentRoute->isRequireCSRFAuth())
+                    $formClose .= "<input type='hidden' name='csrf' value='{$this->getCsrfToken()}'/>";
+
+            } elseif (($currentRoute = Route::getRouteEntryFromUri($this->formAction))) {
+
+                if ($currentRoute->isRequireCSRFAuth())
+                    $formClose .= "<input type='hidden' name='csrf' value='{$this->getCsrfToken()}'/>";
+            }
         }
 
-        $formClose .= "<input type='hidden' name='track' value='{$this->getTrackToken()}'/>\n";
+        $formClose .= "<input type='hidden' name='track' value='{$this->getTrackToken()}'/>";
 
-        return "{$formClose}</form>\n";
+        return "{$formClose}\n</form>\n";
     }
 
     /**
@@ -110,7 +142,10 @@ class Form
         switch ($tagName) {
             case 'input':
                 if (isset($attributes['value'])) unset($attributes['value']);
-                $elem = "<input value='{$value}' {$this->attributesToString($attributes)} />\n";
+
+                if (($attributes['type'] ?? '') == 'file') $elem = "<input {$this->attributesToString($attributes)} />\n";
+                else $elem = "<input value='{$value}' {$this->attributesToString($attributes)} />\n";
+
                 break;
             case 'textarea':
                 $elem = "<textarea {$this->attributesToString($attributes)} >{$value}</textarea>\n";
@@ -172,6 +207,16 @@ class Form
     }
 
     /**
+     * @param string $name
+     * @param null $default
+     * @return array|mixed
+     */
+    public function old(string $name, $default = null)
+    {
+        return http()->_request()->get($name, $default);
+    }
+
+    /**
      * @param array $attributes
      * @return string
      */
@@ -197,4 +242,39 @@ class Form
         return track_token();
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function offsetExists($offset)
+    {
+        // TODO: Implement offsetExists() method.
+        return $this->getFormData($offset, $id = unique_id(16)) !== $id;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function offsetGet($offset)
+    {
+        // TODO: Implement offsetGet() method.
+        return $this->getFormData($offset);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function offsetSet($offset, $value)
+    {
+        // TODO: Implement offsetSet() method.
+        Arr::set($this->formData, $offset, $value);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function offsetUnset($offset)
+    {
+        // TODO: Implement offsetUnset() method.
+        Arr::unset($this->formData, $offset);
+    }
 }

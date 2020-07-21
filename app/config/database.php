@@ -214,7 +214,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | Here are each of the database table setup for your application.
-    | These table are used natively by Que, so make to create them in your database
+    | These table are used natively by Que, so sure make to create them in your database
     |
     */
     'tables' => [

@@ -12,7 +12,7 @@ namespace que\user;
 use ArrayAccess;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
-use que\database\model\interfaces\Model;
+use que\database\interfaces\model\Model;
 
 class XUser implements ArrayAccess
 {
@@ -74,7 +74,7 @@ class XUser implements ArrayAccess
             "No database model was found with the key '{$modelKey}', check your database configuration to fix this issue.",
             "Que Runtime Error", E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
-        if (!($implements = class_implements($model)) || !in_array(Model::class, $implements)) throw new QueRuntimeException(
+        if (!($implements = class_implements($model)) || !isset($implements[Model::class])) throw new QueRuntimeException(
             "The specified model ({$model}) with key '{$modelKey}' does not implement the Que database model interface.",
             "Que Runtime Error", E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
@@ -117,7 +117,7 @@ class XUser implements ArrayAccess
     /**
      * @return bool
      */
-    public function isMe(): bool {
+    public function isCurrentUser(): bool {
 
         $primaryKey = self::$database_config['tables']['user']['primary_key'] ?? 'id';
 
@@ -137,7 +137,7 @@ class XUser implements ArrayAccess
     public static function getUser(int $userID, string $dataType = null)
     {
         $user = db()->find(self::$database_config['tables']['user']['name'] ?? 'users',
-            self::$database_config['tables']['user']['primary_key'] ?? 'id', $userID);
+            $userID, self::$database_config['tables']['user']['primary_key'] ?? 'id');
 
         if (!$user->isSuccessful()) return null;
 

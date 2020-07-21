@@ -8,26 +8,22 @@
 
 namespace que\http\request;
 
-use ArrayAccess;
 use ArrayIterator;
-use Countable;
-use IteratorAggregate;
-use JsonSerializable;
 use que\support\Arr;
-use Serializable;
+use que\support\interfaces\QueArrayAccess;
 use Traversable;
 
-class Post implements ArrayAccess, Countable, JsonSerializable, IteratorAggregate, Serializable
+class Post implements QueArrayAccess
 {
     /**
      * @var Post
      */
-    private static $instance;
+    private static Post $instance;
 
     /**
      * @var array
      */
-    private $pointer;
+    private array $pointer;
 
     /**
      * Post constructor.
@@ -58,14 +54,12 @@ class Post implements ArrayAccess, Countable, JsonSerializable, IteratorAggregat
     }
 
     /**
-     * @param string $offset
-     * @param $data
-     * @return $this
+     * @param $offset
+     * @param $value
      */
-    public function add(string $offset, $data): Post
+    public function set($offset, $value)
     {
-        $this->pointer[$offset] = $data;
-        return $this;
+        Arr::set($this->pointer, $offset, $value);
     }
 
     /**
@@ -88,27 +82,19 @@ class Post implements ArrayAccess, Countable, JsonSerializable, IteratorAggregat
 
     /**
      * @param string $offset
-     * @return bool
      */
-    public function has(string $offset): bool {
-        return $this->get($offset, false) !== false;
-    }
-
-    /**
-     * @param string $offset
-     */
-    public function _unset(string $offset)
+    public function _unset($offset)
     {
-        unset($this->pointer[$offset]);
+        Arr::unset($this->pointer, $offset);
     }
 
     /**
      * @param string $offset
      * @return bool
      */
-    public function _isset(string $offset): bool
+    public function _isset($offset): bool
     {
-        return isset($this->pointer[$offset]);
+        return $this->get($offset, $id = unique_id(16)) !== $id;
     }
 
     /**
@@ -131,7 +117,7 @@ class Post implements ArrayAccess, Countable, JsonSerializable, IteratorAggregat
     public function offsetExists($offset)
     {
         // TODO: Implement offsetExists() method.
-        return isset($this->pointer[$offset]);
+        return $this->_isset($offset);
     }
 
     /**
@@ -141,7 +127,7 @@ class Post implements ArrayAccess, Countable, JsonSerializable, IteratorAggregat
     public function offsetGet($offset)
     {
         // TODO: Implement offsetGet() method.
-        return $this->pointer[$offset] ?? null;
+        return $this->get($offset);
     }
 
     /**
@@ -151,8 +137,7 @@ class Post implements ArrayAccess, Countable, JsonSerializable, IteratorAggregat
     public function offsetSet($offset, $value)
     {
         // TODO: Implement offsetSet() method.
-        if (is_null($offset)) $this->pointer[] = $value;
-        else $this->pointer[$offset] = $value;
+        $this->set($offset, $value);
     }
 
     /**
@@ -161,7 +146,7 @@ class Post implements ArrayAccess, Countable, JsonSerializable, IteratorAggregat
     public function offsetUnset($offset)
     {
         // TODO: Implement offsetUnset() method.
-        unset($this->pointer[$offset]);
+        $this->_unset($offset);
     }
 
     /**
@@ -229,6 +214,36 @@ class Post implements ArrayAccess, Countable, JsonSerializable, IteratorAggregat
     public function unserialize($serialized)
     {
         // TODO: Implement unserialize() method.
-        return $this->pointer = unserialize($serialized);
+        $this->pointer = unserialize($serialized);
+    }
+
+    public function array_keys(): array
+    {
+        // TODO: Implement array_keys() method.
+        return array_keys($this->pointer);
+    }
+
+    public function array_values(): array
+    {
+        // TODO: Implement array_values() method.
+        return array_values($this->pointer);
+    }
+
+    public function key()
+    {
+        // TODO: Implement key() method.
+        return key($this->pointer);
+    }
+
+    public function current()
+    {
+        // TODO: Implement current() method.
+        return current($this->pointer);
+    }
+
+    public function shuffle(): void
+    {
+        // TODO: Implement shuffle() method.
+        shuffle($this->pointer);
     }
 }

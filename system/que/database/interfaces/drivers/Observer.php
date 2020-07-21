@@ -6,10 +6,10 @@
  * Time: 12:53 AM
  */
 
-namespace que\database\interfaces;
+namespace que\database\interfaces\drivers;
 
 
-use que\database\model\interfaces\Model;
+use que\database\interfaces\model\Model;
 use que\database\model\ModelStack;
 
 interface Observer

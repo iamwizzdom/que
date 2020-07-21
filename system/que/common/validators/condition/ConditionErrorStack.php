@@ -1,12 +1,13 @@
 <?php
 
 
-namespace que\common\validate;
+namespace que\common\validator\condition;
 
 
 use Closure;
+use que\common\validator\Validator;
 
-class ConditionStack
+class ConditionErrorStack
 {
     /**
      * @var Validator
@@ -14,9 +15,9 @@ class ConditionStack
     private $validator;
 
     /**
-     * @var array
+     * @var ConditionError[]|ConditionErrorStack[]
      */
-    private $conditions = [];
+    private array $conditions = [];
 
     /**
      * @var mixed
@@ -82,9 +83,9 @@ class ConditionStack
      * @param Closure $callback
      * callback param 1: Condition instance
      * callback param 2: Condition instance of siblings
-     * @return ConditionStack
+     * @return ConditionErrorStack
      */
-    public function validateChildren(Closure $callback): ConditionStack {
+    public function validateChildren(Closure $callback): ConditionErrorStack {
 
         $conditions = $this->getConditions();
 
@@ -106,9 +107,9 @@ class ConditionStack
     /**
      * @param int $max
      * @param null $error
-     * @return ConditionStack
+     * @return ConditionErrorStack
      */
-    public function hasMaxSize($max = 3, $error = null): ConditionStack
+    public function hasMaxSize($max = 3, $error = null): ConditionErrorStack
     {
         if (array_size($this->value) > $max) $this->addError($error);
         return $this;
@@ -117,9 +118,9 @@ class ConditionStack
     /**
      * @param int $min
      * @param null $error
-     * @return ConditionStack
+     * @return ConditionErrorStack
      */
-    public function hasMinSize($min = 3, $error = null): ConditionStack
+    public function hasMinSize($min = 3, $error = null): ConditionErrorStack
     {
         if (array_size($this->value) < $min) $this->addError($error);
         return $this;
@@ -141,20 +142,19 @@ class ConditionStack
 
     /**
      * @param $error
-     * @return ConditionStack
+     * @return ConditionErrorStack
      */
-    public function addError($error): ConditionStack
+    public function addError($error): ConditionErrorStack
     {
         $this->addConditionError($error);
         return $this;
     }
 
     /**
-     * @param $session
-     * @return mixed
+     * @return array
      */
-    public function getStatus(&$session) {
-        return $this->getConditionStatuses($session);
+    public function getStatus() {
+        return $this->getConditionStatuses();
     }
 
     /**
@@ -163,9 +163,9 @@ class ConditionStack
     private function stackConditions($values) {
         foreach ($values as $key => $value) {
             if (is_array($value)) {
-                $this->conditions[$key] = new ConditionStack($key, $value, $this->validator);
+                $this->conditions[$key] = new ConditionErrorStack($key, $value, $this->validator);
             } else {
-                $this->conditions[$key] = new Condition($key, $value, $this->validator);
+                $this->conditions[$key] = new ConditionError($key, $value, $this->validator);
             }
         }
     }
@@ -176,9 +176,9 @@ class ConditionStack
     public function getConditions() {
         $list = [];
         foreach ($this->conditions as &$condition) {
-            if ($condition instanceof ConditionStack) {
+            if ($condition instanceof ConditionErrorStack) {
                 $list = array_merge($list, $condition->getConditions());
-            } elseif ($condition instanceof Condition) {
+            } elseif ($condition instanceof ConditionError) {
                 $list[] = [
                     'condition' => &$condition,
                     'siblings' => array_exclude($this->conditions, [$condition->getKey()])
@@ -203,8 +203,8 @@ class ConditionStack
     private function getConditionErrors() {
         $errors = [];
         foreach ($this->conditions as $condition) {
-            if ($condition instanceof ConditionStack) $errors[$condition->getKey()] = $condition->getErrors();
-            elseif($condition instanceof Condition) $errors[$condition->getKey()] = $condition->getError();
+            if ($condition instanceof ConditionErrorStack) $errors[$condition->getKey()] = $condition->getErrors();
+            elseif($condition instanceof ConditionError) $errors[$condition->getKey()] = $condition->getError();
         }
         return $errors;
     }
@@ -215,38 +215,38 @@ class ConditionStack
     private function getConditionErrorsFlat() {
         $errors = [];
         foreach ($this->conditions as $condition) {
-            if ($condition instanceof ConditionStack) $errors[$condition->getKey()] = $condition->getErrorsFlat();
-            elseif ($condition instanceof Condition) $errors[$condition->getKey()] = current($condition->getError());
+            if ($condition instanceof ConditionErrorStack) $errors[$condition->getKey()] = $condition->getErrorsFlat();
+            elseif ($condition instanceof ConditionError) $errors[$condition->getKey()] = current($condition->getError());
         }
         return $errors;
     }
 
     /**
-     * @param $session
      * @return array
      */
-    private function getConditionStatuses(&$session) {
+    private function getConditionStatuses() {
 
+        $session = session()->getFiles();
         $statuses = [];
 
         foreach ($this->conditions as $condition) {
 
-            if ($condition instanceof ConditionStack) $statuses[$condition->getKey()] = $condition->getStatus($session);
-            elseif ($condition instanceof Condition) {
+            if ($condition instanceof ConditionErrorStack) $statuses[$condition->getKey()] = $condition->getStatus();
+            elseif ($condition instanceof ConditionError) {
 
                 if ($condition->hasError()) {
 
-                    if (!isset($session[$condition->getKey()])) {
+                    if ($session->_isset("session.last-form-status.{$condition->getKey()}")) {
 
                         $statuses[$condition->getKey()] = WARNING;
-                        $session[$condition->getKey()] = true;
+                        $session->set("session.last-form-status.{$condition->getKey()}", true);
 
                     } else $statuses[$condition->getKey()] = ERROR;
 
                 } else {
 
                     $statuses[$condition->getKey()] = SUCCESS;
-                    if (isset($session[$condition->getKey()])) unset($session[$condition->getKey()]);
+                    $session->_unset("session.last-form-status.{$condition->getKey()}");
 
                 }
 

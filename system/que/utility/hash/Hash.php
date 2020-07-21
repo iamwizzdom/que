@@ -46,7 +46,7 @@ class Hash
      * @param string $algo
      * @return string
      */
-    public static function sha($data, string $algo = 'sha256')
+    public static function sha($data, string $algo = 'SHA256')
     {
         return hash($algo, $data);
     }
@@ -57,8 +57,8 @@ class Hash
      * @param string $key
      * @return string
      */
-    public static function hmac($data, string $algo = 'sha256', string $key = APP_SECRET)
+    public static function hmac($data, string $algo = 'SHA256', string $key = null)
     {
-        return hash_hmac($algo, $data, $key);
+        return hash_hmac($algo, $data, $key !== null ? $key : config("auth.app.secret"));
     }
 }

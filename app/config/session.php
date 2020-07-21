@@ -44,5 +44,10 @@ return [
     | Specifies the time in seconds in which the session data should
     | be regenerated
     */
-    'regeneration_time' => 1800
+    'regeneration_time' => 1800,
+
+    /*
+    | Specifies the partition name for que sessions
+    */
+    'partition' => APP_PACKAGE_NAME
 ];

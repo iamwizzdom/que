@@ -6,10 +6,9 @@
  * Time: 1:35 PM
  */
 
-namespace que\common\validate;
+namespace que\common\validator;
 
 use que\common\exception\QueException;
-use que\http\input\Input;
 use que\http\request\Files;
 
 class File extends FileBase
@@ -18,12 +17,12 @@ class File extends FileBase
     /**
      * @var Files
      */
-    private $files;
+    private Files $files;
 
     /**
      * @var File
      */
-    private static $instance;
+    private static File $instance;
 
     protected function __construct(Files $files)
     {
@@ -51,34 +50,31 @@ class File extends FileBase
         return self::$instance;
     }
 
+    /**
+     * @param string $name
+     */
     public function validate(string $name) {
 
-
-        if (empty($this->uploadDir))
-            $this->uploadDir = dirname(__FILE__) . '/';
+        $uploadDir = "{$this->storageDir}{$this->uploadDir}";
 
         try {
 
-            if (!is_dir($this->uploadDir) && !mkdir($this->uploadDir, 0777, true))
-                throw new QueException("Directory [{$this->uploadDir}] does not exist");
+            if (!is_dir($uploadDir) && !mkdir($uploadDir, 0777, true))
+                throw new QueException("Directory [" . str_start_from($uploadDir, 'storage/') . "] does not exist");
 
-            if (!$this->checkDir($this->uploadDir)) {
-                throw new QueException("Directory [{$this->uploadDir}] is not writable");
-            }
+            if (!$this->checkDir($uploadDir))
+                throw new QueException("Directory [" . str_start_from($uploadDir, 'storage/') . "] is not writable");
 
-            if (!array_key_exists($name, $this->files->_get()))
-                throw new QueException("No file was uploaded with the name '{$name}'");
+            if (!$this->files->_isset($name)) throw new QueException("No file was uploaded with the name '{$name}'");
 
             $files = $this->files[$name];
 
             if (!isset($files['name']))
                 throw new QueException("Can't find uploaded file");
 
-            if ($error = $this->checkUploadError($files['error']))
-                throw new QueException($error);
+            if ($error = $this->checkUploadError($files['error'])) throw new QueException($error);
 
-            if ($files['size'] <= 0)
-                throw new QueException("{$files['name']} is empty");
+            if ($files['size'] <= 0) throw new QueException("{$files['name']} is empty");
 
             $ext = pathinfo($files['name'], PATHINFO_EXTENSION);
             $ext = strtolower($ext);
@@ -106,34 +102,31 @@ class File extends FileBase
         }
     }
 
+    /**
+     * @param string $name
+     * @param int $index
+     */
     public function validateMulti(string $name, int $index) {
 
-
-        if (empty($this->uploadDir))
-            $this->uploadDir = dirname(__FILE__) . '/';
+        $uploadDir = "{$this->storageDir}{$this->uploadDir}";
 
         try {
 
-            if (!is_dir($this->uploadDir) && !mkdir($this->uploadDir, 0777, true))
-                throw new QueException("Directory [{$this->uploadDir}] does not exist");
+            if (!is_dir($uploadDir) && !mkdir($uploadDir, 0777, true))
+                throw new QueException("Directory [" . str_start_from($uploadDir, 'storage/') . "] does not exist");
 
-            if (!$this->checkDir($this->uploadDir)) {
-                throw new QueException("Directory [{$this->uploadDir}] is not writable");
-            }
+            if (!$this->checkDir($uploadDir))
+                    throw new QueException("Directory [" . str_start_from($uploadDir, 'storage/') . "] is not writable");
 
-            if (!array_key_exists($name, $this->files->_get()))
-                throw new QueException("No file was uploaded with the name '{$name}'");
+            if (!$this->files->_isset($name)) throw new QueException("No file was uploaded with the name '{$name}'");
 
             $files = $this->files[$name];
 
-            if (!isset($files['name'][$index]))
-                throw new QueException("Can't find uploaded file");
+            if (!isset($files['name'][$index])) throw new QueException("Can't find uploaded file");
 
-            if ($error = $this->checkUploadError($files['error'][$index]))
-                throw new QueException($error);
+            if ($error = $this->checkUploadError($files['error'][$index])) throw new QueException($error);
 
-            if ($files['size'][$index] <= 0)
-                throw new QueException("{$files['name'][$index]} is empty");
+            if ($files['size'][$index] <= 0) throw new QueException("{$files['name'][$index]} is empty");
 
             $ext = pathinfo($files['name'][$index], PATHINFO_EXTENSION);
             $ext = strtolower($ext);
@@ -187,12 +180,13 @@ class File extends FileBase
 
         $newName = $files['name'];
 
-        if ($this->uploadOverwrite)
-            if (file_exists($this->uploadDir . DIRECTORY_SEPARATOR . $newName))
-                unlink($this->uploadDir . DIRECTORY_SEPARATOR . $newName);
+        if ($this->uploadOverwrite) {
+            if (is_file($this->storageDir . $this->uploadDir . $newName))
+                unlink($this->storageDir . $this->uploadDir . $newName);
+        }
 
         $x = 0;
-        while (!$this->uploadOverwrite && file_exists($this->uploadDir . DIRECTORY_SEPARATOR . $newName)) {
+        while (!$this->uploadOverwrite && is_file($this->storageDir . $this->uploadDir . $newName)) {
             $newName = basename($files['name'], ".{$ext}") . "_{$x}.{$ext}";
             $x++;
 
@@ -203,19 +197,20 @@ class File extends FileBase
         }
 
         $files['name'] = $newName;
-
-        if (!move_uploaded_file($files['tmp_name'], $this->uploadDir . DIRECTORY_SEPARATOR . $files['name'])) {
+        
+        if (!move_uploaded_file($files['tmp_name'], $this->storageDir . $this->uploadDir . $newName)) {
             $this->addError($name, "{$files['name']} could not be uploaded");
             return false;
         }
 
         $this->fileInfo['name'] = $files['name'];
         $this->fileInfo['dir'] = $this->uploadDir;
-        $this->fileInfo['path'] = $this->uploadDir . DIRECTORY_SEPARATOR . $files['name'];
+        $this->fileInfo['path'] = $this->uploadDir . $files['name'];
+        $this->fileInfo['full_path'] = $this->storageDir . $this->fileInfo['path'];
         $this->fileInfo['ext'] = $ext;
         $this->fileInfo['size'] = $files['size'];
         $this->fileInfo['type'] = $files['type'];
-        $this->fileInfo['hash'] = sha1_file($this->fileInfo['path']);
+        $this->fileInfo['hash'] = sha1_file($this->fileInfo['full_path']);
 
         return true;
     }
@@ -249,17 +244,17 @@ class File extends FileBase
             if ($this->getFileName() !== null)
                 $files['name'][$current] = $this->getFileName();
 
-            if ($this->formatName)
-                $files['name'][$current] = $this->formatName($files['name'][$current]);
+            if ($this->formatName) $files['name'][$current] = $this->formatName($files['name'][$current]);
 
             $newName = $files['name'][$current];
 
-            if ($this->uploadOverwrite)
-                if (file_exists($this->uploadDir . DIRECTORY_SEPARATOR . $newName))
-                    unlink($this->uploadDir . DIRECTORY_SEPARATOR . $newName);
+            if ($this->uploadOverwrite) {
+                if (is_file($this->storageDir . $this->uploadDir . $newName))
+                    unlink($this->storageDir . $this->uploadDir . $newName);
+            }
 
             $x = 0;
-            while (!$this->uploadOverwrite && file_exists($this->uploadDir . $files['name'][$current])) {
+            while (!$this->uploadOverwrite && is_file($this->storageDir . $this->uploadDir . $newName)) {
                 $newName = basename($files['name'][$current], ".{$ext}") . "_{$x}.{$ext}";
                 $x++;
 
@@ -271,8 +266,8 @@ class File extends FileBase
             }
 
             $files['name'][$current] = $newName;
-
-            if (!move_uploaded_file($files['tmp_name'][$current], $this->uploadDir . $files['name'][$current])) {
+            
+            if (!move_uploaded_file($files['tmp_name'][$current], $this->storageDir . $this->uploadDir . $newName)) {
                 $this->addError($name, "{$files['name'][$current]} could not be uploaded");
                 $this->unlinkMulti($uploaded);
                 return false;
@@ -281,11 +276,12 @@ class File extends FileBase
             $uploaded[] = $files['name'][$current];
             $this->fileInfo[$current]['name'] = $files['name'][$current];
             $this->fileInfo[$current]['dir'] = $this->uploadDir;
-            $this->fileInfo[$current]['path'] = $this->uploadDir . $files['name'][$current];
+            $this->fileInfo[$current]['path'] = $this->uploadDir . $files['name'];
+            $this->fileInfo[$current]['full_path'] = $this->storageDir . $this->fileInfo[$current]['path'];
             $this->fileInfo[$current]['ext'] = $ext;
             $this->fileInfo[$current]['size'] = $files['size'][$current];
             $this->fileInfo[$current]['type'] = $files['type'][$current];
-            $this->fileInfo[$current]['hash1'] = sha1_file($this->fileInfo[$current]['path']);
+            $this->fileInfo[$current]['hash'] = sha1_file($this->fileInfo[$current]['full_path']);
         }
 
         return true;
@@ -296,7 +292,7 @@ class File extends FileBase
      * @return bool
      */
     public function unlink(string $fileName) {
-        return unlink($this->uploadDir . DIRECTORY_SEPARATOR . $fileName);
+        return unlink($this->storageDir . $this->uploadDir . DIRECTORY_SEPARATOR . $fileName);
     }
 
     /**
@@ -306,7 +302,7 @@ class File extends FileBase
     public function unlinkMulti(array $fileNames) {
         $status = [];
         foreach ($fileNames as $fileName)
-            $status[] = unlink($this->uploadDir . DIRECTORY_SEPARATOR . $fileName);
+            $status[] = unlink($this->storageDir . $this->uploadDir . DIRECTORY_SEPARATOR . $fileName);
         return $status;
     }
 
@@ -317,7 +313,7 @@ class File extends FileBase
      */
     public function readFile($name) {
 
-        if (!array_key_exists($name, $this->files->_get()))
+        if (!$this->files->_isset($name))
             throw new QueException("No file was uploaded with the name '{$name}'", "Read File");
 
         $files = $this->files[$name];
@@ -341,7 +337,7 @@ class File extends FileBase
      */
     public function readFileMulti($name) {
 
-        if (!array_key_exists($name, $this->files->_get()))
+        if (!$this->files->_isset($name))
             throw new QueException("No file was uploaded with the name {$name}", "Read File");
 
         $files = $this->files[$name];
@@ -381,7 +377,7 @@ class File extends FileBase
      */
     public function getTmpName($name) {
 
-        if (!array_key_exists($name, $this->files->_get()))
+        if (!$this->files->_isset($name))
             throw new QueException("No file was uploaded with the name '{$name}'", "Read File");
 
         $files = $this->files[$name];
@@ -402,7 +398,7 @@ class File extends FileBase
      */
     public function getTmpNameMulti($name) {
 
-        if (!array_key_exists($name, $this->files->_get()))
+        if (!$this->files->_isset($name))
             throw new QueException("No file was uploaded with the name {$name}", "Read File");
 
         $files = $this->files[$name];

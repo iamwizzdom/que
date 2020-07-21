@@ -23,21 +23,21 @@ class Mailer
     /**
      * @var Composer
      */
-    protected $composer;
+    protected Composer $composer;
 
     /**
      * @var array
      */
-    private $mailQueue = [];
+    private array $mailQueue = [];
 
     /**
      * @var array
      */
-    protected $error = [];
+    protected array $error = [];
     /**
-     * @var Http
+     * @var Mailer
      */
-    private static $instance;
+    private static ?Mailer $instance = null;
 
     /**
      * Mailer constructor.
@@ -71,6 +71,7 @@ class Mailer
             $mail->Password = config('mail.smtp.password', ''); // SMTP account password
             $mail->SMTPOptions = config('mail.smtp.options', []); // SMTP Options
             $mail->SMTPAuth = config('mail.smtp.auth', false); // enable SMTP authentication
+            $mail->Timeout = config('mail.smtp.timeout', 300); // enable SMTP authentication
 
             // Set Mail
             $this->mail = $mail;
@@ -79,7 +80,6 @@ class Mailer
             $this->mail->AddReplyTo(config('mail.address.reply', ''), config('template.app.header.name'));
 
             $this->composer = Composer::getInstance(false);
-            $this->composer->_flush();
 
         } catch (\Exception $exception) {
 
@@ -200,7 +200,7 @@ class Mailer
                     $attachment['encoding'], $attachment['type'], $attachment['disposition']);
             }
 
-            $status = (bool)$this->mail->Send();
+            $status = (bool) $this->mail->Send();
 
             $mail->setError($this->mail->ErrorInfo);
             $this->error[$mail->getKey()] = $mail->getError();

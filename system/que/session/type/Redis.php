@@ -10,6 +10,7 @@ namespace que\session\type;
 
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
+use que\support\Arr;
 
 class Redis
 {
@@ -114,22 +115,33 @@ class Redis
     private function connect() {
 
         if (!$this->enable)
-            throw new QueRuntimeException("Can't use redis, redis is disabled from config", "Session Error",
-                E_USER_ERROR, 0, PreviousException::getInstance(2));
+            throw new QueRuntimeException("Can't use redis, redis is disabled from config.", "Redis Error",
+                E_USER_ERROR, 0, PreviousException::getInstance(4));
 
-        $this->redis = new \Redis();
+        if (class_exists(\Redis::class)) $this->redis = new \Redis();
+        else throw new QueRuntimeException("Redis is not installed on this server.", "Redis Error",
+            E_USER_ERROR, 0, PreviousException::getInstance(4));
 
         if (!$this->redis->connect($this->host, $this->port))
-            throw new QueRuntimeException("Unable to connect to redis", "Session Error",
-                E_USER_ERROR, 0, PreviousException::getInstance(2));
+            throw new QueRuntimeException("Unable to connect to redis.", "Redis Error",
+                E_USER_ERROR, 0, PreviousException::getInstance(4));
     }
 
     /**
      * @param $key
-     * @return mixed|null
+     * @return bool
      */
-    public function get($key) {
-        return $this->data[$key] ?? null;
+    public function isset($key): bool {
+        return Arr::isset($this->data, $key);
+    }
+
+    /**
+     * @param $key
+     * @param null $default
+     * @return array|mixed
+     */
+    public function get($key, $default = null) {
+        return Arr::get($this->data, $key, $default);
     }
 
     /**
@@ -139,7 +151,7 @@ class Redis
      * @return bool
      */
     public function set($key, $value, int $expire = null): bool {
-        $this->data[$key] = $value;
+        Arr::set($this->data, $key, $value);
         return $this->redis->set($this->session_id, json_encode($this->data, JSON_PRETTY_PRINT), $expire);
     }
 
@@ -150,7 +162,7 @@ class Redis
     public function del(...$keys): int {
         $count = 0;
         foreach ($keys as $key) {
-            unset($this->data[$key]);
+            Arr::unset($this->data, $key);
             $count++;
         }
         $this->redis->del($this->session_id, json_encode($this->data, JSON_PRETTY_PRINT));
@@ -182,8 +194,8 @@ class Redis
     }
 
     private function fetch_data() {
-        $this->data = $this->redis->get($this->session_id);
-        $this->data = !empty($this->data) && is_string($this->data) ? json_decode($this->data, true) : [];
+        $data = $this->redis->get($this->session_id);
+        $this->data = !empty($data) && is_string($data) ? json_decode($data, true) : [];
     }
 
 }

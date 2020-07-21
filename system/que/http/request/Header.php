@@ -9,21 +9,16 @@
 namespace que\http\request;
 
 
-use ArrayAccess;
 use ArrayIterator;
-use Countable;
-use IteratorAggregate;
-use JsonSerializable;
-use que\support\Arr;
-use Serializable;
+use que\support\interfaces\QueArrayAccess;
 use Traversable;
 
-class Header implements ArrayAccess, Countable, JsonSerializable, IteratorAggregate, Serializable
+class Header implements QueArrayAccess
 {
     /**
      * @var Header
      */
-    private static $instance;
+    private static Header $instance;
 
     /**
      * @var array|false
@@ -58,17 +53,19 @@ class Header implements ArrayAccess, Countable, JsonSerializable, IteratorAggreg
         return self::$instance;
     }
 
+    public function setBulk(array $headers, bool $replace = true) {
+        foreach ($headers as $key => $header) $this->set($key, $header, $replace);
+    }
+
     /**
      * @param string $offset
      * @param string $data
      * @param bool $replace
-     * @param int|null $http_response_code
-     * @return $this
      */
-    public function add(string $offset, string $data, bool $replace = true, ?int $http_response_code = null): Header {
+    public function set(string $offset, string $data, bool $replace = true): void {
+        if ($this->_isset($offset) && !$replace) return;
         $this->pointer[$offset] = $data;
-        header("{$offset}: {$data}", $replace, $http_response_code);
-        return $this;
+        header("{$offset}: {$data}", $replace);
     }
 
     /**
@@ -84,15 +81,7 @@ class Header implements ArrayAccess, Countable, JsonSerializable, IteratorAggreg
      * @return mixed|null
      */
     public function get($offset, $default = null) {
-        return Arr::get($this->pointer, $offset, $default);
-    }
-
-    /**
-     * @param string $offset
-     * @return bool
-     */
-    public function has(string $offset): bool {
-        return $this->get($offset, false) !== false;
+        return $this->pointer[$offset] ?? $default;
     }
 
     /**
@@ -149,9 +138,7 @@ class Header implements ArrayAccess, Countable, JsonSerializable, IteratorAggreg
     public function offsetSet($offset, $value)
     {
         // TODO: Implement offsetSet() method.
-        if (is_null($offset)) $this->pointer[] = $value;
-        else $this->pointer[$offset] = $value;
-        header("{$offset}: {$value}", true);
+        $this->set($offset, $value);
     }
 
     /**
@@ -229,7 +216,36 @@ class Header implements ArrayAccess, Countable, JsonSerializable, IteratorAggreg
     public function unserialize($serialized)
     {
         // TODO: Implement unserialize() method.
-        return $this->pointer = unserialize($serialized);
+        $this->pointer = unserialize($serialized);
     }
 
+    public function array_keys(): array
+    {
+        // TODO: Implement array_keys() method.
+        return array_keys($this->pointer);
+    }
+
+    public function array_values(): array
+    {
+        // TODO: Implement array_values() method.
+        return array_values($this->pointer);
+    }
+
+    public function key()
+    {
+        // TODO: Implement key() method.
+        return key($this->pointer);
+    }
+
+    public function current()
+    {
+        // TODO: Implement current() method.
+        return current($this->pointer);
+    }
+
+    public function shuffle(): void
+    {
+        // TODO: Implement shuffle() method.
+        shuffle($this->pointer);
+    }
 }

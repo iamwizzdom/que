@@ -11,9 +11,9 @@ namespace que\database\mysql;
 use Closure;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
-use que\database\interfaces\DriverQueryBuilder;
-use que\database\interfaces\DriverResponse;
-use que\database\model\interfaces\Model;
+use que\database\interfaces\drivers\DriverQueryBuilder;
+use que\database\interfaces\drivers\DriverResponse;
+use que\database\interfaces\model\Model;
 use que\database\model\ModelStack;
 
 class QueryResponse
@@ -113,7 +113,7 @@ class QueryResponse
             "No database model was found with the key '{$modelKey}', check your database configuration to fix this issue.",
             "Que Runtime Error", E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
-        if (!($implements = class_implements($model)) || !in_array(Model::class, $implements)) throw new QueRuntimeException(
+        if (!($implements = class_implements($model)) || !isset($implements[Model::class])) throw new QueRuntimeException(
             "The specified model ({$model}) with key '{$modelKey}' does not implement the Que database model interface.",
             "Que Runtime Error", E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
@@ -258,7 +258,7 @@ class QueryResponse
             "No database model was found with the key '{$modelKey}', check your database configuration to fix this issue.",
             "Que Runtime Error", E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
-        if (!($implements = class_implements($model)) || !in_array(Model::class, $implements)) throw new QueRuntimeException(
+        if (!($implements = class_implements($model)) || !isset($implements[Model::class])) throw new QueRuntimeException(
             "The specified model ({$model}) with key '{$modelKey}' does not implement the Que database model interface.",
             "Que Runtime Error", E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 

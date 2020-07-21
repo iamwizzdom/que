@@ -73,9 +73,7 @@
 <div class="flex-center position-ref full-height">
 
     <div class="content">
-        <div class="title m-b-md">
-            Welcome to Que
-        </div>
+        <div class="title m-b-md">{$data.hello}</div>
 
         <div class="links">
             <a href="{base_url('/api')}">Que Docs</a>

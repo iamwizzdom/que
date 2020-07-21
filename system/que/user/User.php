@@ -12,7 +12,7 @@ namespace que\user;
 use ArrayAccess;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
-use que\database\model\interfaces\Model;
+use que\database\interfaces\model\Model;
 use que\session\Session;
 use que\utility\client\Browser;
 use que\utility\client\IP;
@@ -42,27 +42,18 @@ class User extends State implements ArrayAccess
     /**
      * @var array
      */
-    private static $database_config;
+    private static array $database_config = [];
 
     /**
      * @var array
      */
-    private static $session_config;
-
-    /**
-     * @var array
-     */
-    private static $cache_config;
+    private static array $session_config = [];
 
     /**
      * User constructor.
      */
     protected function __construct()
     {
-        parent::__construct();
-        self::$database_config = config('database');
-        self::$session_config = config('session');
-        self::$cache_config = config('cache');
     }
 
     private function __clone()
@@ -84,6 +75,10 @@ class User extends State implements ArrayAccess
         if (!self::isLoggedIn())
             throw new QueRuntimeException("Trying to get a user instance when you're not logged in.",
                 "User Error", E_USER_ERROR, 0, PreviousException::getInstance(1));
+
+        self::$database_config = config('database', []);
+        self::$session_config = config('session', []);
+        self::$cache_config = config('cache', []);
 
         if (!isset(self::$instance)) {
 
@@ -127,7 +122,7 @@ class User extends State implements ArrayAccess
             "No database model was found with the key '{$modelKey}', check your database configuration to fix this issue.",
             "Que Runtime Error", E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
-        if (!($implements = class_implements($model)) || !in_array(Model::class, $implements)) throw new QueRuntimeException(
+        if (!($implements = class_implements($model)) || !isset($implements[Model::class])) throw new QueRuntimeException(
             "The specified model ({$model}) with key '{$modelKey}' does not implement the Que database model interface.",
             "Que Runtime Error", E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
@@ -267,6 +262,9 @@ class User extends State implements ArrayAccess
     private static function regenerate()
     {
 
+        if (empty(self::$cache_config))
+            self::$cache_config = config('cache', []);
+
         $memcached = $redis = $quekip = null;
 
         if ((self::$cache_config['memcached']['enable'] ?? false) === true)
@@ -287,8 +285,8 @@ class User extends State implements ArrayAccess
 
         $primaryKey = (self::$database_config['tables']['user']['primary_key'] ?? 'id');
 
-        $user = db()->find((self::$database_config['tables']['user']['name'] ?? 'users'), $primaryKey,
-            self::$state['data']->{$primaryKey} ?? 0);
+        $user = db()->find((self::$database_config['tables']['user']['name'] ?? 'users'),
+            self::$state['data']->{$primaryKey} ?? 0, $primaryKey);
 
         if ($user->isSuccessful()) {
             $userData = $user->getQueryResponseArray(0);
@@ -339,7 +337,7 @@ class User extends State implements ArrayAccess
      */
     public static function logout($message = null, string $redirect_to = null)
     {
-        $redirect_to = $redirect_to ?? (current_route()->isRequireLogIn() ? current_route()->getLoginUrl() : current_uri());
+        $redirect_to = $redirect_to ?? (current_route()->isRequireLogIn() ? current_route()->getRedirectUrl() : current_uri());
         $message = $message ?? sprintf("Good bye, see you soon. Log-out successful (IP::%s)", self::getLastIP());
         self::flush();
         if (current_route()->getType() != 'web') throw new QueRuntimeException($message, "User Error",

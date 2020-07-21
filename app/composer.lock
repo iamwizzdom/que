@@ -1,0 +1,68 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "57db372b688f0836145973eb71920d70",
+    "packages": [
+        {
+            "name": "iamwizzdom/netty-finder-php",
+            "version": "1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/iamwizzdom/netty-finder-php.git",
+                "reference": "f6f98069fb949767ec7d26c6326c61bced6b5d77"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/iamwizzdom/netty-finder-php/zipball/f6f98069fb949767ec7d26c6326c61bced6b5d77",
+                "reference": "f6f98069fb949767ec7d26c6326c61bced6b5d77",
+                "shasum": ""
+            },
+            "require": {
+                "php": "~7.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^6.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Netty\\": "src/Netty"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Wisdom Emenike",
+                    "email": "wisdomemenike70@gmail.com",
+                    "homepage": "http://wizdom.dev",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Check a Nigerian telephone number and detect which network it belongs to.",
+            "keywords": [
+                "check network",
+                "find network",
+                "netty",
+                "netty finder",
+                "netty-finder",
+                "nigerian networks",
+                "phone number checker"
+            ],
+            "time": "2020-04-09T23:38:09+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}

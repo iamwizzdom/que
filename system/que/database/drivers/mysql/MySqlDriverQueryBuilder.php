@@ -11,7 +11,7 @@ namespace que\database\drivers\mysql;
 
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
-use que\database\interfaces\DriverQueryBuilder;
+use que\database\interfaces\drivers\DriverQueryBuilder;
 
 class MySqlDriverQueryBuilder implements DriverQueryBuilder
 {

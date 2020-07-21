@@ -8,10 +8,12 @@
 
 namespace que\database\model;
 
+use ArrayIterator;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
-use que\database\model\interfaces\Condition;
-use que\database\model\interfaces\Model as ModelAlias;
+use que\common\validator\interfaces\Condition;
+use que\database\interfaces\model\Model as ModelAlias;
+use que\database\model\builder\Builder;
 
 class Model implements ModelAlias
 {
@@ -153,76 +155,21 @@ class Model implements ModelAlias
             throw new QueRuntimeException("Undefined key: '{$key}' not found in current model object", "Model error",
                 0, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
-        return new \que\database\model\Condition($key, $this->getValue($key));
+        return new \que\common\validator\condition\Condition($key, $this->getValue($key));
     }
 
     /**
-     * @param array $columns
-     * @param string $dataType
-     * @param array|null $join
-     * @param string|null $primaryKey
-     * @return array|object|ModelAlias|null
+     * @return Builder
      */
-    public function getNextRecord(array $columns = ['*'], string $dataType = 'model', array $join = null, string $primaryKey = null) {
-
-        if ($primaryKey === null) $primaryKey = $this->getPrimaryKey();
-
-        if (!$this->offsetExists($primaryKey)) return null;
-
-        $record = db()->select($this->getTable(), implode(',', $columns), [
-            'AND' => [
-                "{$primaryKey}[>]" => $this->getValue($primaryKey)
-            ]
-        ], $join, 1);
-
-        if (!$record->isSuccessful()) return null;
-
-        switch (strtolower($dataType)) {
-            case 'model':
-                return $record->getQueryResponseWithModel(0);
-            case 'array':
-                return $record->getQueryResponseArray(0);
-            default:
-                return $record->getQueryResponse(0);
-        }
-
+    public function getNextRecord(): Builder {
+        return new Builder($this, Builder::NEXT);
     }
 
     /**
-     * @param array $columns
-     * @param string $dataType
-     * @param array|null $join
-     * @param string|null $primaryKey
-     * @return array|object|ModelAlias|null
+     * @return Builder
      */
-    public function getPreviousRecord(array $columns = ['*'], string $dataType = 'model', array $join = null, string $primaryKey = null) {
-
-        if ($primaryKey === null) $primaryKey = $this->getPrimaryKey();
-
-        if (!$this->offsetExists($primaryKey)) return null;
-
-        if (!$this->get($primaryKey)->isNumeric()) {
-            throw new QueRuntimeException("Invalid primary key: Value for key '{$primaryKey}' is expected to be numeric, got {$this->get($primaryKey)->getType()}",
-                "Model error", 0, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
-        }
-
-        $record = db()->select($this->getTable(), implode(',', $columns), [
-            'AND' => [
-                "{$primaryKey}[<]" => $this->getValue($primaryKey)
-            ]
-        ], $join, 1, [$primaryKey => 'DESC']);
-
-        if (!$record->isSuccessful()) return null;
-
-        switch (strtolower($dataType)) {
-            case 'model':
-                return $record->getQueryResponseWithModel(0);
-            case 'array':
-                return $record->getQueryResponseArray(0);
-            default:
-                return $record->getQueryResponse(0);
-        }
-
+    public function getPreviousRecord(): Builder {
+        return new Builder($this, Builder::PREVIOUS);
     }
 
     /**
@@ -230,9 +177,7 @@ class Model implements ModelAlias
      */
     public function refresh(): bool
     {
-        $data = db()->find($this->getTable(), $this->getPrimaryKey(), $this->getValue(
-            $this->getPrimaryKey()
-        ));
+        $data = db()->find($this->getTable(), $this->getValue($this->getPrimaryKey()), $this->getPrimaryKey());
         if (!$data->isSuccessful()) return false;
         $this->object = $data->getQueryResponse(0);
         return true;
@@ -369,5 +314,79 @@ class Model implements ModelAlias
     {
         // TODO: Implement __clone() method.
         $this->object = clone $this->object;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getIterator()
+    {
+        // TODO: Implement getIterator() method.
+        return new ArrayIterator($this->getArray());
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function serialize()
+    {
+        // TODO: Implement serialize() method.
+        return serialize($this->object);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function unserialize($serialized)
+    {
+        // TODO: Implement unserialize() method.
+        $this->object = unserialize($serialized);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function count()
+    {
+        // TODO: Implement count() method.
+        array_size($this->getArray());
+    }
+
+    public function array_keys(): array
+    {
+        // TODO: Implement array_keys() method.
+        return array_keys($this->getArray());
+    }
+
+    public function array_values(): array
+    {
+        // TODO: Implement array_values() method.
+        return array_values($this->getArray());
+    }
+
+    public function key()
+    {
+        // TODO: Implement key() method.
+        return key($this->getArray());
+    }
+
+    public function current()
+    {
+        // TODO: Implement current() method.
+        return current($this->getArray());
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function jsonSerialize()
+    {
+        // TODO: Implement jsonSerialize() method.
+        return json_encode($this->getArray());
+    }
+
+    public function shuffle(): void
+    {
+        // TODO: Implement shuffle() method.
     }
 }

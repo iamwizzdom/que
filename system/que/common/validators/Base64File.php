@@ -6,7 +6,7 @@
  * Time: 10:31 PM
  */
 
-namespace que\common\validate;
+namespace que\common\validator;
 
 
 use que\common\exception\QueException;
@@ -16,7 +16,7 @@ class Base64File extends FileBase
     /**
      * @var Base64File
      */
-    private static $instance;
+    private static Base64File $instance;
 
     protected function __construct()
     {
@@ -81,18 +81,16 @@ class Base64File extends FileBase
      */
     public function validate(string $name, $data) {
 
-        if (empty($this->uploadDir))
-            $this->uploadDir = dirname(__FILE__) . '/';
+        $uploadDir = "{$this->storageDir}{$this->uploadDir}";
 
         try {
 
-            if (!$this->checkDir($this->uploadDir)) {
-                throw new QueException("Directory [{$this->uploadDir}] is not writable");
-            }
+            if (!is_dir($uploadDir) && !mkdir($uploadDir, 0777, true))
+                throw new QueException("Directory [" . str_start_from($uploadDir, 'storage/') . "] does not exist");
 
-            if (!($files = $this->parse($name, $data))) {
-                throw new QueException("Can't parse file. Invalid / Wrongly formatted base64 file");
-            }
+            if (!$this->checkDir($uploadDir)) throw new QueException("Directory [" . str_start_from($uploadDir, 'storage/') . "] is not writable");
+
+            if (!($files = $this->parse($name, $data))) throw new QueException("Can't parse file. Invalid / Wrongly formatted base64 file");
 
             if ($files['size'] <= 0)
                 throw new QueException("{$files['name']} is empty");
@@ -150,10 +148,10 @@ class Base64File extends FileBase
         $newName = $files['name'];
 
         if ($this->uploadOverwrite)
-            if (file_exists($this->uploadDir . DIRECTORY_SEPARATOR . $newName))
-                unlink($this->uploadDir . DIRECTORY_SEPARATOR . $newName);
+            if (is_file($this->storageDir . $this->uploadDir . $newName))
+                unlink($this->storageDir . $this->uploadDir . $newName);
 
-        while (!$this->uploadOverwrite && file_exists($this->uploadDir . DIRECTORY_SEPARATOR . $newName)) {
+        while (!$this->uploadOverwrite && file_exists($this->storageDir . $this->uploadDir . $newName)) {
             $newName = basename($files['name'], ".{$files['ext']}") . "_{$x}.{$files['ext']}";
             $x++;
 
@@ -164,21 +162,20 @@ class Base64File extends FileBase
         }
 
         $files['name'] = $newName;
-
-        $files['name'] = $newName;
-
-        if (!move_uploaded_file($files['tmp_name'], $this->uploadDir . DIRECTORY_SEPARATOR . $files['name'])) {
+        
+        if (!move_uploaded_file($files['tmp_name'], $this->storageDir . $this->uploadDir . $files['name'])) {
             $this->addError($name, "{$files['name']} could not be uploaded");
             return false;
         }
 
         $this->fileInfo['name'] = $files['name'];
         $this->fileInfo['dir'] = $this->uploadDir;
-        $this->fileInfo['path'] = $this->uploadDir . DIRECTORY_SEPARATOR . $files['name'];
+        $this->fileInfo['path'] = $this->uploadDir . $files['name'];
+        $this->fileInfo['full_path'] = $this->storageDir . $this->fileInfo['path'];
         $this->fileInfo['ext'] = $files['ext'];
         $this->fileInfo['size'] = $files['size'];
         $this->fileInfo['type'] = $files['type'];
-        $this->fileInfo['hash'] = sha1_file($this->fileInfo['path']);
+        $this->fileInfo['hash'] = sha1_file($this->fileInfo['full_path']);
 
         return true;
     }

@@ -8,6 +8,7 @@
 
 namespace que\common\structure;
 
+use que\http\input\Input;
 use que\template\Composer;
 
 interface Page
@@ -15,10 +16,10 @@ interface Page
 
     /**
      * This method will run when the module is accessed via GET request
-     * @param array $uri_args - This parameter provides the arguments found in the uri
+     * @param Input $input
      * @note Que will run this method for you automatically
      */
-    public function onLoad(array $uri_args): void;
+    public function onLoad(Input $input): void;
 
     /**
      * This method will run last, to finalize your Composer and render your template

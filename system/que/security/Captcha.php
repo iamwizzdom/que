@@ -123,7 +123,7 @@ class Captcha
             $x += $size + 2;
         }
 
-        header('Content-Type: image/png');
+        http()->_header()->set('Content-Type', 'image/png');
         imagepng($image);
         ImageDestroy($image);
     }

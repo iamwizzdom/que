@@ -228,7 +228,7 @@ class ImageGenerator
         imagettftext($image, $this->font_size, 0, $x, $y, $shadow, $this->font, $this->image_txt);
         imagettftext($image, $this->font_size, 0.1, $x, $y, $color, $this->font, $this->image_txt);
 
-        header('Content-Type: image/png');
+        http()->_header()->set('Content-Type', 'image/png');
         imagepng($image);
         ImageDestroy($image);
     }

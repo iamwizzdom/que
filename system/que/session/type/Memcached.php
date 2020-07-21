@@ -11,6 +11,7 @@ namespace que\session\type;
 use Memcache;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
+use que\support\Arr;
 
 class Memcached
 {
@@ -40,9 +41,9 @@ class Memcached
     private static Memcached $instance;
 
     /**
-     * @var \Memcached
+     * @var \Memcached|Memcache
      */
-    private \Memcached $memcached;
+    private $memcached;
 
     /**
      * @var array
@@ -119,22 +120,34 @@ class Memcached
     private function connect() {
 
         if (!$this->enable)
-            throw new QueRuntimeException("Can't use memcached, memcached is disabled from config",
-                "Session Error", E_USER_ERROR, 0, PreviousException::getInstance(2));
+            throw new QueRuntimeException("Can't use memcached, memcached is disabled from config.",
+                "Memcached Error", E_USER_ERROR, 0, PreviousException::getInstance(4));
 
-        $this->memcached = new \Memcached();
+        if (class_exists(\Memcached::class)) $this->memcached = new \Memcached();
+        elseif (class_exists(Memcache::class)) $this->memcached = new Memcache();
+        else throw new QueRuntimeException("Memcached is not installed on this server.", "Memcached Error",
+            E_USER_ERROR, 0, PreviousException::getInstance(4));
 
         if (!$this->memcached->addserver($this->host, $this->port))
-            throw new QueRuntimeException("Unable to connect to memcached", "Session Error",
-                E_USER_ERROR, 0, PreviousException::getInstance(2));
+            throw new QueRuntimeException("Unable to connect to memcached.", "Memcached Error",
+                E_USER_ERROR, 0, PreviousException::getInstance(4));
     }
 
     /**
      * @param $key
-     * @return mixed|null
+     * @return bool
      */
-    public function get($key) {
-        return $this->data[$key] ?? null;
+    public function isset($key): bool {
+        return Arr::isset($this->data, $key);
+    }
+
+    /**
+     * @param $key
+     * @param null $default
+     * @return array|mixed
+     */
+    public function get($key, $default = null) {
+        return Arr::get($this->data, $key, $default);
     }
 
     /**
@@ -144,8 +157,9 @@ class Memcached
      * @return bool
      */
     public function set($key, $value, int $expire = null): bool {
-        $this->data[$key] = $value;
-        return $this->memcached->set($this->session_id, $this->data, $expire);
+        Arr::set($this->data, $key, $value);
+        if ($this->memcached instanceof \Memcached) return $this->memcached->set($this->session_id, $this->data, $expire);
+        else return $this->memcached->set($this->session_id, $this->data, null, $expire);
     }
 
     /**
@@ -153,8 +167,9 @@ class Memcached
      * @return bool
      */
     public function delete($key): bool {
-        unset($this->data[$key]);
-        return $this->memcached->set($this->session_id, $this->data);
+        Arr::unset($this->data, $key);
+        if ($this->memcached instanceof \Memcached) return $this->memcached->set($this->session_id, $this->data);
+        else return $this->memcached->set($this->session_id, $this->data);
     }
 
     /**
@@ -182,7 +197,7 @@ class Memcached
     }
 
     private function fetch_data() {
-        $this->data = $this->memcached->get($this->session_id);
+        $this->data = $this->memcached->get($this->session_id) ?: [];
     }
 
 }

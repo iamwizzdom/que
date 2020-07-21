@@ -17,17 +17,17 @@ class Redirect
     /**
      * @var Redirect
      */
-    private static $instance;
+    private static Redirect $instance;
 
     /**
      * @var bool
      */
-    private $preventRedirect = false;
+    private bool $preventRedirect = false;
 
     /**
      * @var string
      */
-    private $url = "";
+    private string $url = "";
 
     /**
      * CurlRequest constructor.
@@ -76,12 +76,21 @@ class Redirect
     }
 
     /**
+     * @param string $name
+     * @param array $args
+     * @return Redirect
+     */
+    public function setRouteName(string $name, array $args = [])
+    {
+        return $this->setUrl(route_uri($name, $args));
+    }
+
+    /**
      * @return array
      */
     public function getHeader(): array
     {
-        return (isset(Session::getInstance()->getFiles()->_get()['http']['http-header']) ?
-            Session::getInstance()->getFiles()->_get()['http']['http-header'] : []);
+        return Session::getInstance()->getFiles()->get("http.header", []);
     }
 
     /**
@@ -91,8 +100,10 @@ class Redirect
      */
     public function setHeader(string $message, int $status)
     {
-        if ($this->isPreventRedirect()) return $this;
-        Session::getInstance()->getFiles()->_get()['http']['http-header'][] = ['message' => $message, 'status' => $status];
+        if ($this->isPreventRedirect()) return $this;;
+        $header = Session::getInstance()->getFiles()->get("http.header", []);
+        $header[] = ['message' => $message, 'status' => $status];
+        Session::getInstance()->getFiles()->set("http.header", $header);
         return $this;
     }
 
@@ -120,7 +131,9 @@ class Redirect
                         "Http redirect error", E_USER_ERROR, 0, PreviousException::getInstance());
                 }
 
-                Session::getInstance()->getFiles()->_get()['http']['http-header'][] = $header;
+                $headers = Session::getInstance()->getFiles()->get("http.header", []);
+                $headers[] = $header;
+                Session::getInstance()->getFiles()->set("http.header", $headers);
 
             }
         }
@@ -132,8 +145,7 @@ class Redirect
      */
     public function getData(): array
     {
-        return (isset(Session::getInstance()->getFiles()->_get()['http']['http-data']) ?
-            Session::getInstance()->getFiles()->_get()['http']['http-data'] : []);
+        return Session::getInstance()->getFiles()->get("http.data", []);
     }
 
     /**
@@ -144,13 +156,15 @@ class Redirect
     public function setData($key, $data)
     {
         if ($this->isPreventRedirect()) return $this;
-        Session::getInstance()->getFiles()->_get()['http']['http-data'][$key] = $data;
+        Session::getInstance()->getFiles()->set("http.data.{$key}",$data);
         return $this;
     }
 
     public function initiate() {
         if ($this->isPreventRedirect()) return;
-        header("Location: {$this->getUrl()}");
+        if (!str_contains(($current_url = current_url()), 'logout'))
+            Session::getInstance()->getFiles()->set("http.referer", $current_url);
+        http()->_header()->set('Location', $this->getUrl());
         die();
     }
 

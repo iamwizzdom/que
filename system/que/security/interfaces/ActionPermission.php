@@ -6,7 +6,7 @@
  * Time: 12:20 PM
  */
 
-namespace que\security\permission;
+namespace que\security\interfaces;
 
 
 interface ActionPermission

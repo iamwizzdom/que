@@ -9,8 +9,11 @@
 namespace que\security;
 
 use Exception;
+use que\common\exception\QueException;
 use que\session\type\Files;
 use que\session\Session;
+use que\support\Arr;
+use que\utility\hash\Hash;
 
 class CSRF
 {
@@ -53,16 +56,25 @@ class CSRF
     /**
      * @param string $token
      * @return bool
+     * @throws QueException
      */
-    public function isValidToken(string $token) {
-        return !empty($tk = $this->getToken()) && strcmp($token, $tk) == 0;
+    public function validateToken(string $token) {
+
+        if (empty($token) || strcmp($token, $this->getToken()) != 0) {
+            $decodedToken = $this->decodeToken($token);
+            if (!$this->isValidToken($decodedToken)) throw new QueException('Cross Site Request Forgery (CSRF) are forbidden. [Invalid Token]', 'CSRF Error');
+            if (!$this->isValidSignature($decodedToken)) throw new QueException('Cross Site Request Forgery (CSRF) are forbidden. [Invalid Signature]', 'CSRF Error');
+            if ($this->isExpiredToken($decodedToken)) throw new QueException('Cross Site Request Forgery (CSRF) are forbidden. [Expired Token]', 'CSRF Error');
+        }
+
+        return true;
     }
 
     /**
      * @return mixed|null
      */
     public function getToken() {
-        return $this->session->get("csrf-token", '');
+        return $this->session->get("csrf.token", '');
     }
 
     /**
@@ -70,13 +82,49 @@ class CSRF
      */
     public function generateToken() {
 
-        try {
-            $this->session->add("csrf-token", "csrf:" .
-                wordwrap(str_shuffle(unique_id(40) . session_id() .
-                    (is_logged_in() ? user(config('database.tables.user.primary_key', 'id')) : '')), 4, ":", true));
-        } catch (Exception $exception) {
-        }
+        $data = [
+            'signature' => $this->getSignature(),
+            'unique' => unique_id(32),
+            'expire' => APP_TIME + (60 * 10)
+        ];
+        $data['hash'] = Hash::sha(json_encode($data));
+
+        $token = base64_encode(json_encode($data));
+        $this->session->set("csrf.token", "csrf:" . wordwrap($token, 4, ":", true));
         return $this;
+    }
+
+    private function getSignature()
+    {
+        return sprintf("%s-%s-%s", config("auth.app.salt", APP_PACKAGE_NAME), Session::getSessionID(),
+            (is_logged_in() ? user(config('database.tables.user.primary_key', 'id')) : ''));
+    }
+
+    private function decodeToken(string $token)
+    {
+        $token = base64_decode(str_strip(str_start_from($token, "csrf:") ?: '', ":") ?: '');
+        return $token ? json_decode($token, true) : false;
+    }
+
+    private function isValidToken($decodedToken)
+    {
+        return $decodedToken &&
+            (
+                isset($decodedToken['signature']) &&
+                isset($decodedToken['expire']) &&
+                isset($decodedToken['unique']) &&
+                isset($decodedToken['hash'])
+            ) && strcmp($decodedToken['hash'], Hash::sha(json_encode(Arr::exclude($decodedToken, ['hash'])))) == 0;
+    }
+
+    private function isValidSignature($decodedToken)
+    {
+        return $decodedToken && (strcmp(($decodedToken['signature'] ?? ''), $this->getSignature()) == 0);
+    }
+
+    private function isExpiredToken($decodedToken)
+    {
+        return $decodedToken && (($decodedToken['expire'] ?? 0) < APP_TIME);
     }
 
 }

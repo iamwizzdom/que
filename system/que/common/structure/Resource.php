@@ -9,14 +9,16 @@
 namespace que\common\structure;
 
 
+use que\http\input\Input;
+
 interface Resource
 {
 
     /**
      * This method will run when the module is accessed, to read/render the processed resource
-     * @param array $uri_args - This parameter provides the arguments found in the uri
+     * @param Input $input
      * @note Que will run this method for you automatically
      */
-    public function render(array $uri_args): void;
+    public function render(Input $input): void;
 
 }

@@ -12,12 +12,12 @@ use Exception;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use que\database\connection\Connect;
-use que\database\interfaces\Driver;
-use que\database\interfaces\DriverQueryBuilder;
-use que\database\interfaces\DriverResponse;
-use que\database\interfaces\Observer;
-use que\database\interfaces\ObserverSignal;
-use que\database\model\interfaces\Model;
+use que\database\interfaces\drivers\Driver;
+use que\database\interfaces\drivers\DriverQueryBuilder;
+use que\database\interfaces\drivers\DriverResponse;
+use que\database\interfaces\drivers\Observer;
+use que\database\interfaces\drivers\ObserverSignal;
+use que\database\interfaces\model\Model;
 use que\database\model\ModelStack as ModelStackInterface;
 use que\database\model\ModelStack;
 use que\support\Config;
@@ -666,50 +666,50 @@ class Query extends Connect
      */
     public function check(string $table, array $where = null, array $join = null): QueryResponse
     {
-        return $this->count($table, "*", $where, $join, 1);
+        return $this->select($table, "*", $where, $join, 1);
     }
 
     /**
      * @param string $table
-     * @param string $primaryKey
      * @param $id
      * @param string $column
+     * @param string $columns
      * @param array|null $join
      * @return QueryResponse
      */
-    public function find(string $table, string $primaryKey, $id, $column = '*', array $join = null)
+    public function find(string $table, $id, string $column = 'id', $columns = '*', array $join = null)
     {
-        return $this->select($table, $column, [
+        return $this->select($table, $columns, [
             'AND' => [
-                $primaryKey => $id
+                $column => $id
             ]
         ], $join, 1);
     }
 
     /**
      * @param string $table
-     * @param string|null $key
      * @param null $id
      * @param string $column
+     * @param string $columns
      * @param array|null $join
      * @param array|null $order_by
      * @param string|null $group_by
      * @return QueryResponse
      */
-    public function findAll(string $table, string $key = null,
-                            $id = null, $column = '*', array $join = null,
+    public function findAll(string $table, $id = null, string $column = 'id',
+                            $columns = '*', array $join = null,
                             array $order_by = null, string $group_by = null)
     {
         $where = null;
 
-        if (!empty($key)) {
+        if (!empty($id)) {
             $where = [
                 'AND' => [
-                    $key => $id
+                    $column => $id
                 ]
             ];
         }
-        return $this->select($table, $column, $where, $join, null, $order_by, $group_by);
+        return $this->select($table, $columns, $where, $join, null, $order_by, $group_by);
     }
 
     /**
@@ -1112,7 +1112,7 @@ class Query extends Connect
                 $m = clone $m;
                 $updatedStack->addModel($m);
             }
-            $updatedStack->runOnAll(function (Model $model) use ($columns) {
+            $updatedStack->map(function (Model $model) use ($columns) {
                 foreach ($columns as $key => $value) $model->offsetSet($key, $value);
             });
             $observer->onUpdated($updatedStack, $modelStack);
@@ -1323,7 +1323,8 @@ class Query extends Connect
     {
         $type = gettype($data);
         $can_wakeup = "false";
-        if (is_object($data) && (($class_name = get_class($data)) != "stdClass") && class_exists($class_name, true)) {
+        if (is_object($data) && (($class_name = get_class($data)) != \stdClass::class)
+            && class_exists($class_name, true)) {
             $type = "class";
             if (method_exists($data, '__wakeup') &&
                 is_callable([$data, '__wakeup'])) $can_wakeup = "true";
@@ -1338,8 +1339,11 @@ class Query extends Connect
     private function validateWhereQuery(array $where = null) {
         if ($where !== null) {
             $keys = array_keys($where);
+            $keys = array_map(function ($key) {
+                return strtoupper($key);
+            }, $keys);
             if (!in_array('AND', $keys) &&
-                !in_array('AND', $keys)) throw new QueRuntimeException(
+                !in_array('OR', $keys)) throw new QueRuntimeException(
                 "Invalid WHERE query. Your WHERE query must start with an 'OR' or 'AND' index",
                 "Database Error", E_USER_ERROR, 0, PreviousException::getInstance(2));
         }

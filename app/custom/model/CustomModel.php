@@ -8,12 +8,22 @@
 
 namespace custom\model;
 
-
-use que\database\model\interfaces\Condition;
-use que\database\model\interfaces\Model;
+use Exception;
+use que\common\validator\interfaces\Condition;
+use que\database\interfaces\model\Model;
+use que\database\model\builder\Builder;
+use Traversable;
 
 class CustomModel implements Model
 {
+    /**
+     * @inheritDoc
+     */
+    public function getIterator()
+    {
+        // TODO: Implement getIterator() method.
+    }
+
     /**
      * @inheritDoc
      */
@@ -46,14 +56,35 @@ class CustomModel implements Model
         // TODO: Implement offsetUnset() method.
     }
 
-    private object $tableRow;
+    /**
+     * @inheritDoc
+     */
+    public function serialize()
+    {
+        // TODO: Implement serialize() method.
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function unserialize($serialized)
+    {
+        // TODO: Implement unserialize() method.
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function count()
+    {
+        // TODO: Implement count() method.
+    }
 
     /**
      * @inheritDoc
      */
     public function __construct(object &$tableRow, string $tableName, string $primaryKey = 'id')
     {
-        $this->tableRow = $tableRow;
     }
 
     /**
@@ -139,7 +170,7 @@ class CustomModel implements Model
     /**
      * @inheritDoc
      */
-    public function getNextRecord(array $columns = ['*'], string $dataType = 'model', array $join = null, string $primaryKey = null)
+    public function getNextRecord(): Builder
     {
         // TODO: Implement getNextRecord() method.
     }
@@ -147,9 +178,17 @@ class CustomModel implements Model
     /**
      * @inheritDoc
      */
-    public function getPreviousRecord(array $columns = ['*'], string $dataType = 'model', array $join = null, string $primaryKey = null)
+    public function getPreviousRecord(): Builder
     {
         // TODO: Implement getPreviousRecord() method.
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function refresh(): bool
+    {
+        // TODO: Implement refresh() method.
     }
 
     /**
@@ -174,5 +213,38 @@ class CustomModel implements Model
     public function offsetRename($offset, $to): void
     {
         // TODO: Implement offsetRename() method.
+    }
+
+    public function array_keys(): array
+    {
+        // TODO: Implement array_keys() method.
+    }
+
+    public function array_values(): array
+    {
+        // TODO: Implement array_values() method.
+    }
+
+    public function key()
+    {
+        // TODO: Implement key() method.
+    }
+
+    public function current()
+    {
+        // TODO: Implement current() method.
+    }
+
+    public function shuffle(): void
+    {
+        // TODO: Implement shuffle() method.
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function jsonSerialize()
+    {
+        // TODO: Implement jsonSerialize() method.
     }
 }

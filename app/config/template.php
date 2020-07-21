@@ -36,6 +36,10 @@ return [
                     'origin' => ''
                 ]
             ],
+
+            /*
+             | Allowed SEO robots
+             */
             'robots' => 'index, follow',
 
             /*
@@ -46,14 +50,14 @@ return [
         ],
 
         /*
-         | Your default template css files
+         | Path to your default css files
          */
         'css' => [
 
         ],
 
         /*
-         | Your default template js files
+         | Path to your default js files
          */
         'js' => [
 
@@ -61,8 +65,11 @@ return [
     ],
 
     /*
-     | This page will receive a 'Title', a 'Message' and a 'Code'
-     | Capture data as follows
+     | This page will be used as your custom page for outputting errors,
+     | the page will receive a 'Title', a 'Message' and a 'Code'
+     | ----------------------------------------------------------
+     | You are to capture the above data as follows
+     | --------------------------------------------
      | Title: $data.title
      | Message: $data.message
      | Code: $data.code -- [HTTP response code]

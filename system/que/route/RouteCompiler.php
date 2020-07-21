@@ -8,6 +8,10 @@
 
 namespace que\route;
 
+use que\http\input\Input;
+use que\security\interfaces\Middleware;
+use que\security\MiddlewareResponse;
+use que\support\Arr;
 use function http;
 use que\common\exception\RouteException;
 use que\error\RuntimeError;
@@ -44,7 +48,7 @@ class RouteCompiler
 
         try {
 
-            $routeEntry = null; $routeArgs = []; $error = ''; $percentage = 0;
+            $routeEntry = null; $routeArgs = []; $error = ''; $code = HTTP_OK; $percentage = 0;
 
             $foundRoutes = $routeInspector->getFoundRoutes();
 
@@ -73,29 +77,32 @@ class RouteCompiler
                         if (implode('--', $uriTokens) != implode('--', $routeEntry->uriTokens)) $routeEntry = null;
                     }
 
-                } else $error = $foundRoute['error'] ?? 'An unexpected error occurred while resolving the current route';
+                } else {
+                    $code = $foundRoute['code'] ?? HTTP_NOT_FOUND;
+                    $error = $foundRoute['error'] ?? 'An unexpected error occurred while resolving the current route';
+                }
             }
 
             if ($routeEntry === null || !$routeEntry instanceof RouteEntry) {
 
                 if (empty($error)) throw new RouteException(sprintf("%s is an invalid url", current_url()), "Route Error", HTTP_NOT_FOUND);
-                else throw new RouteException($error, "Route Error", HTTP_NOT_FOUND);
+                else throw new RouteException($error, "Route Error", $code);
             }
 
-            self::setUriArgs($routeArgs);
+            self::setRouteParams($routeArgs);
             self::setCurrentRoute($routeEntry);
 
             if ($routeEntry->isUnderMaintenance() === true) {
 
                 throw new RouteException("This route is currently under maintenance, please try again later",
-                    "Access denied", HTTP_MAINTENANCE);
+                    "Access Denied", HTTP_MAINTENANCE);
             }
 
             if ($routeEntry->isRequireLogIn() === true && !is_logged_in()) {
 
-                if (!empty($routeEntry->getLoginUrl())) {
+                if (!empty($routeEntry->getRedirectUrl())) {
 
-                    redirect($routeEntry->getLoginUrl(), [
+                    redirect($routeEntry->getRedirectUrl(), [
                         [
                             'message' => sprintf(
                                 "You don't have access to this route (%s), login and try again.",
@@ -106,14 +113,14 @@ class RouteCompiler
 
                 } else {
                     throw new RouteException("You don't have access to the current route, login and try again.",
-                        "Access denied", HTTP_UNAUTHORIZED);
+                        "Access Denied", HTTP_UNAUTHORIZED);
                 }
 
             } elseif ($routeEntry->isRequireLogIn() === false && is_logged_in()) {
 
-                if (!empty($routeEntry->getLoginUrl())) {
+                if (!empty($routeEntry->getRedirectUrl())) {
 
-                    redirect($routeEntry->getLoginUrl(), [
+                    redirect($routeEntry->getRedirectUrl(), [
                         [
                             'message' => sprintf(
                                 "You don't have access to this route (%s), logout and try again.",
@@ -124,9 +131,39 @@ class RouteCompiler
 
                 } else {
                     throw new RouteException("You don't have access to the current route, logout and try again.",
-                        "Access denied", HTTP_UNAUTHORIZED);
+                        "Access Denied", HTTP_UNAUTHORIZED);
                 }
 
+            }
+
+            if ($routeEntry->getMiddleware() !== null) {
+
+                $middleware = Arr::get(config("middleware", []), $routeEntry->getMiddleware());
+
+                if (!empty($middleware) && (class_exists($middleware, true) && in_array(
+                        Middleware::class, class_implements($middleware, true)))) {
+
+                    $middleware = new $middleware();
+
+                    if ($middleware instanceof Middleware) {
+
+                        $response = new MiddlewareResponse();
+
+                        $middleware->handle(Input::getInstance(), $response);
+
+                        if ($response->hasAccess() === false) {
+                            throw new RouteException("MIDDLEWARE CONSTRAINT: " .
+                                ($response->getResponseMessage() ?: "You don't have access to the current route (" . current_url() . ")"),
+                                "Access Denied", HTTP_UNAUTHORIZED);
+                        }
+                        return;
+                    }
+                }
+
+                throw new RouteException(
+                    "This route is registered with a middleware [Key: {$routeEntry->getMiddleware()}]," .
+                    " but a valid middleware was not found with that key.",
+                    "Middleware Error", HTTP_EXPECTATION_FAILED);
             }
 
         } catch (RouteException $e) {
@@ -140,14 +177,14 @@ class RouteCompiler
      */
     protected static function setCurrentRoute(RouteEntry $routeEntry)
     {
-        http()->_server()->add('CURRENT_ROUTE', $routeEntry);
+        http()->_server()->set('route.entry', $routeEntry);
     }
 
     /**
      * @param array $uriArgs
      */
-    protected static function setUriArgs(array $uriArgs) {
-        http()->_server()->add("URI_ARGS", $uriArgs);
+    protected static function setRouteParams(array $uriArgs) {
+        http()->_server()->set("route.params", $uriArgs);
     }
 
     /**
@@ -179,7 +216,7 @@ class RouteCompiler
      */
     public static function getCurrentRoute()
     {
-        return http()->_server()->get('CURRENT_ROUTE', null);
+        return http()->_server()->get('route.entry', null);
     }
 
     /**

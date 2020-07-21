@@ -6,7 +6,7 @@
  * Time: 2:32 PM
  */
 
-namespace que\common\validate;
+namespace que\common\validator;
 
 
 use que\http\input\Input;
@@ -18,7 +18,7 @@ class Track
     /**
      * @var Track
      */
-    private static $instance;
+    private static Track $instance;
 
     protected function __construct()
     {
@@ -56,12 +56,25 @@ class Track
 
         if (is_null($key)) {
             $key = Input::getInstance()->get('X-Track-Token');
-            if (empty($key)) $key = Input::getInstance()->get('track');
+            if (empty($key)) {
+                foreach (
+                    [
+                        'X-TRACK-TOKEN',
+                        'x-track-token',
+                        'TRACK',
+                        'Track',
+                        'track'
+                    ] as $k
+                ) {
+                    $key = Input::getInstance()->get($k);
+                    if (!empty($key)) break;
+                }
+            }
         }
 
         $ref = empty($ref) ? post() : $ref;
         if (!is_null($key)) {
-            Session::getInstance()->getFiles()->_get()['session']['validator']['form-data'][$key] = $ref;
+            Session::getInstance()->getFiles()->set("session.validator.form.track.{$key}", $ref);
         }
     }
 
@@ -73,18 +86,25 @@ class Track
 
         if (is_null($key)) {
             $key = Input::getInstance()->get('X-Track-Token');
-            if (empty($key)) $key = Input::getInstance()->get('track');
+            if (empty($key)) {
+                foreach (
+                    [
+                        'X-TRACK-TOKEN',
+                        'x-track-token',
+                        'TRACK',
+                        'Track',
+                        'track'
+                    ] as $k
+                ) {
+                    $key = Input::getInstance()->get($k);
+                    if (!empty($key)) break;
+                }
+            }
         }
 
         if (empty($key)) return false;
 
-        $ref = Session::getInstance()->getFiles()->get([
-            'session' => [
-                'validator' => [
-                    'form-data' => $key
-                ]
-            ]
-        ]);
+        $ref = Session::getInstance()->getFiles()->get("session.validator.form.track.{$key}");
 
         if (!$ref) return false;
 

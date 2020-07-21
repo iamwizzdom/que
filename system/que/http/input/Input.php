@@ -8,57 +8,73 @@
 
 namespace que\http\input;
 
-use ArrayAccess;
 use ArrayIterator;
-use Countable;
-use IteratorAggregate;
-use JsonSerializable;
+use que\common\validator\condition\Condition;
 use que\http\Http;
+use que\http\request\Delete;
 use que\http\request\Files;
 use que\http\request\Get;
 use que\http\request\Header;
+use que\http\request\Patch;
 use que\http\request\Post;
+use que\http\request\Put;
 use que\http\request\Server;
 use que\support\Arr;
-use Serializable;
+use que\support\interfaces\QueArrayAccess;
+use que\user\User;
 use Traversable;
 
-class Input implements ArrayAccess, Countable, JsonSerializable, IteratorAggregate, Serializable
+class Input implements QueArrayAccess
 {
     /**
      * @var Input
      */
-    private static $instance;
+    private static Input $instance;
 
     /**
      * @var array
      */
-    private $pointer = [];
+    private array $pointer = [];
 
     /**
      * @var Post
      */
-    private $post;
+    private Post $post;
+
+    /**
+     * @var Put
+     */
+    private Put $put;
+
+    /**
+     * @var Patch
+     */
+    private Patch $patch;
+
+    /**
+     * @var Delete
+     */
+    private Delete $delete;
 
     /**
      * @var Get
      */
-    private $get;
-
-    /**
-     * @var Files
-     */
-    private $files;
+    private Get $get;
 
     /**
      * @var Server
      */
-    private $server;
+    private Server $server;
+
+    /**
+     * @var Files
+     */
+    private Files $files;
 
     /**
      * @var Header
      */
-    private $header;
+    private Header $header;
 
     protected function __construct()
     {
@@ -86,17 +102,50 @@ class Input implements ArrayAccess, Countable, JsonSerializable, IteratorAggrega
     }
 
     /**
+     * @param string $offset
+     * @return Condition
+     */
+    public function validate(string $offset): Condition
+    {
+        return new Condition($offset, $this->get($offset));
+    }
+
+    /**
      * @return Post
      */
-    public function &getPost(): Post
+    public function getPost(): Post
     {
         return $this->post;
     }
 
     /**
+     * @return Put
+     */
+    public function getPut(): Put
+    {
+        return $this->put;
+    }
+
+    /**
+     * @return Patch
+     */
+    public function getPatch(): Patch
+    {
+        return $this->patch;
+    }
+
+    /**
+     * @return Delete
+     */
+    public function getDelete(): Delete
+    {
+        return $this->delete;
+    }
+
+    /**
      * @return Get
      */
-    public function &getGet(): Get
+    public function getGet(): Get
     {
         return $this->get;
     }
@@ -104,7 +153,7 @@ class Input implements ArrayAccess, Countable, JsonSerializable, IteratorAggrega
     /**
      * @return Files
      */
-    public function &getFiles(): Files
+    public function getFiles(): Files
     {
         return $this->files;
     }
@@ -112,7 +161,7 @@ class Input implements ArrayAccess, Countable, JsonSerializable, IteratorAggrega
     /**
      * @return Server
      */
-    public function &getServer(): Server
+    public function getServer(): Server
     {
         return $this->server;
     }
@@ -131,6 +180,9 @@ class Input implements ArrayAccess, Countable, JsonSerializable, IteratorAggrega
     private function get_all_input(): array {
         return array_merge(
             ($this->post = Http::getInstance()->_post())->_get(),
+            ($this->put = Http::getInstance()->_put())->_get(),
+            ($this->patch = Http::getInstance()->_patch())->_get(),
+            ($this->delete = Http::getInstance()->_delete())->_get(),
             ($this->get = Http::getInstance()->_get())->_get(),
             ($this->server = Http::getInstance()->_server())->_get(),
             ($this->header = Http::getInstance()->_header())->_get(),
@@ -139,13 +191,18 @@ class Input implements ArrayAccess, Countable, JsonSerializable, IteratorAggrega
     }
 
     /**
-     * @param string $offset
-     * @param $data
-     * @return $this
+     * @return User|null
      */
-    public function add(string $offset, $data): Input {
-        $this->pointer[$offset] = $data;
-        return $this;
+    public function user(): ?User {
+        return User::isLoggedIn() ? User::getInstance() : null;
+    }
+
+    /**
+     * @param $offset
+     * @param $value
+     */
+    public function set($offset, $value) {
+        Arr::set($this->pointer, $offset, $value);
     }
 
     /**
@@ -165,26 +222,18 @@ class Input implements ArrayAccess, Countable, JsonSerializable, IteratorAggrega
     }
 
     /**
-     * @param string $offset
-     * @return bool
+     * @param $offset
      */
-    public function has(string $offset): bool {
-        return $this->get($offset, false) !== false;
+    public function _unset($offset) {
+        Arr::unset($this->pointer, $offset);
     }
 
     /**
-     * @param string $offset
-     */
-    public function _unset(string $offset) {
-        unset($this->pointer[$offset]);
-    }
-
-    /**
-     * @param string $offset
+     * @param $offset
      * @return bool
      */
-    public function _isset(string $offset): bool {
-        return isset($this->pointer[$offset]);
+    public function _isset($offset): bool {
+        return $this->get($offset, $id = unique_id(16)) !== $id;
     }
 
     /**
@@ -205,7 +254,7 @@ class Input implements ArrayAccess, Countable, JsonSerializable, IteratorAggrega
     public function offsetExists($offset)
     {
         // TODO: Implement offsetExists() method.
-        return isset($this->pointer[$offset]);
+        return $this->_isset($offset);
     }
 
     /**
@@ -215,7 +264,7 @@ class Input implements ArrayAccess, Countable, JsonSerializable, IteratorAggrega
     public function offsetGet($offset)
     {
         // TODO: Implement offsetGet() method.
-        return $this->pointer[$offset] ?? null;
+        return $this->get($offset);
     }
 
     /**
@@ -225,8 +274,7 @@ class Input implements ArrayAccess, Countable, JsonSerializable, IteratorAggrega
     public function offsetSet($offset, $value)
     {
         // TODO: Implement offsetSet() method.
-        if (is_null($offset)) $this->pointer[] = $value;
-        else $this->pointer[$offset] = $value;
+        $this->set($offset, $value);
     }
 
     /**
@@ -235,7 +283,7 @@ class Input implements ArrayAccess, Countable, JsonSerializable, IteratorAggrega
     public function offsetUnset($offset)
     {
         // TODO: Implement offsetUnset() method.
-        unset($this->pointer[$offset]);
+        $this->_unset($offset);
     }
 
     /**
@@ -303,7 +351,36 @@ class Input implements ArrayAccess, Countable, JsonSerializable, IteratorAggrega
     public function unserialize($serialized)
     {
         // TODO: Implement unserialize() method.
-        return $this->pointer = unserialize($serialized);
+        $this->pointer = unserialize($serialized);
     }
 
+    public function array_keys(): array
+    {
+        // TODO: Implement array_keys() method.
+        return array_keys($this->pointer);
+    }
+
+    public function array_values(): array
+    {
+        // TODO: Implement array_values() method.
+        return array_values($this->pointer);
+    }
+
+    public function key()
+    {
+        // TODO: Implement key() method.
+        return key($this->pointer);
+    }
+
+    public function current()
+    {
+        // TODO: Implement current() method.
+        return current($this->pointer);
+    }
+
+    public function shuffle(): void
+    {
+        // TODO: Implement shuffle() method.
+        shuffle($this->pointer);
+    }
 }

@@ -50,17 +50,17 @@ class HttpResponse
     /**
      * @param array $data
      * @param int $status
-     * @param array $headers
-     * @param bool $replaceHeaders
      * @param int $jsonOption
      * @param int $jsonDepth
+     * @param array $headers
+     * @param bool $replaceHeaders
      * @return Json
      */
-    public function json(array $data, int $status = HTTP_OK, array $headers = [],
-                         bool $replaceHeaders = true, int $jsonOption = 0, int $jsonDepth = 512): Json {
+    public function json(array $data, int $status = HTTP_OK, int $jsonOption = 0,
+                         int $jsonDepth = 512, array $headers = [], bool $replaceHeaders = true): Json {
         if (!isset($data['code'])) $data['code'] = $status;
         http()->http_response_code($status);
-        foreach ($headers as $header) header($header, $replaceHeaders);
+        foreach ($headers as $key => $header) http()->_header()->set($key, $header, $replaceHeaders);
         return new Json($data, $jsonOption, $jsonDepth);
     }
 
@@ -68,17 +68,18 @@ class HttpResponse
      * @param string $callback
      * @param array $data
      * @param int $status
-     * @param array $headers
-     * @param bool $replaceHeaders
      * @param int $jsonOption
      * @param int $jsonDepth
+     * @param array $headers
+     * @param bool $replaceHeaders
      * @return Jsonp
      */
-    public function jsonp(string $callback, array $data, int $status = HTTP_OK, array $headers = [],
-                          bool $replaceHeaders = true, int $jsonOption = 0, int $jsonDepth = 512): Jsonp {
+    public function jsonp(string $callback, array $data, int $status = HTTP_OK,
+                          int $jsonOption = 0, int $jsonDepth = 512,
+                          array $headers = [], bool $replaceHeaders = true): Jsonp {
         if (!isset($data['code'])) $data['code'] = $status;
         http()->http_response_code($status);
-        foreach ($headers as $header) header($header, $replaceHeaders);
+        foreach ($headers as $key => $header) http()->_header()->set($key, $header, $replaceHeaders);
         return new Jsonp($callback, $data, $jsonOption, $jsonDepth);
     }
 
@@ -86,11 +87,13 @@ class HttpResponse
      * @param string $content
      * @param int $status
      * @param array $headers
+     * @param bool $replaceHeaders
      * @return Html
      */
-    public function html(string $content, int $status = HTTP_OK, array $headers = []): Html {
+    public function html(string $content, int $status = HTTP_OK,
+                         array $headers = [], bool $replaceHeaders = true): Html {
         http()->http_response_code($status);
-        foreach ($headers as $header) header($header, true);
+        foreach ($headers as $key => $header) http()->_header()->set($key, $header, $replaceHeaders);
         return new Html($content);
     }
 
@@ -98,11 +101,13 @@ class HttpResponse
      * @param string $content
      * @param int $status
      * @param array $headers
+     * @param bool $replaceHeaders
      * @return Plain
      */
-    public function plain(string $content, int $status = HTTP_OK, array $headers = []): Plain {
+    public function plain(string $content, int $status = HTTP_OK,
+                          array $headers = [], bool $replaceHeaders = true): Plain {
         http()->http_response_code($status);
-        foreach ($headers as $header) header($header, true);
+        foreach ($headers as $key => $header) http()->_header()->set($key, $header, $replaceHeaders);
         return new Plain($content);
     }
 }

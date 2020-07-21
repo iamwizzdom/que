@@ -6,20 +6,19 @@
  * Time: 2:04 PM
  */
 
-namespace que\common\validate;
-
-use que\common\exception\QueException;
+namespace que\common\validator;
 
 abstract class FileBase
 {
-    protected $uploadDir = APP_PATH . "/storage";
-    protected $uploadMax = 0;
-    protected $uploadOverwrite = false;
-    protected $allowedExtensions = array();
-    protected $allowedMimeType = array();
-    protected $formatName = true;
-    protected $fileInfo = array();
-    protected $errors = array();
+    protected string $storageDir = APP_PATH . "/storage/";
+    protected string $uploadDir = "";
+    protected int $uploadMax = 0;
+    protected bool $uploadOverwrite = false;
+    protected array $allowedExtensions = [];
+    protected array $allowedMimeType = [];
+    protected bool $formatName = true;
+    protected array $fileInfo = [];
+    protected array $errors = [];
     private $fileName = null;
 
     /**
@@ -70,16 +69,12 @@ abstract class FileBase
     }
 
     /**
-     * @param string $key
-     * @return array|bool|mixed
+     * @param null $key
+     * @return array|mixed|null
      */
-    public function getFileInfo($key = "") {
+    public function getFileInfo($key = null) {
         if (empty($key)) return $this->fileInfo;
-
-        if (array_key_exists($key, $this->fileInfo))
-            return $this->fileInfo[$key];
-
-        return false;
+        return $this->fileInfo[$key] ?? null;
     }
 
     /**
@@ -113,7 +108,10 @@ abstract class FileBase
      */
     public function setUploadDir(string $dir) {
 
-        $this->uploadDir = preg_replace("/\/\//", "/", "{$this->uploadDir}/{$dir}");
+        $this->uploadDir = $dir;
+        $this->uploadDir = ($this->uploadDir !== null ? rtrim($this->uploadDir, '/') : '');
+        if (!empty($this->uploadDir) && !str_ends_with($this->uploadDir, '/') &&
+            !str_ends_with($this->uploadDir, "\\")) $this->uploadDir = "{$this->uploadDir}/";
     }
 
     /**
@@ -160,7 +158,7 @@ abstract class FileBase
      */
     public function formatName(string $fileName) {
         $fileName = trim($fileName);
-        $fileName = preg_replace('/ /', '_', $fileName);
+        $fileName = preg_replace('/\s/', '_', $fileName);
         $fileName = strtolower($fileName);
         return $fileName;
     }

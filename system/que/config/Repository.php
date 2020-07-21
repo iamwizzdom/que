@@ -9,19 +9,20 @@
 namespace que\config;
 
 
+use ArrayAccess;
 use que\support\Arr;
 
-class Repository implements \ArrayAccess
+class Repository implements ArrayAccess
 {
     /**
      * @var Repository
      */
-    private static $instance;
+    private static Repository $instance;
 
     /**
      * @var array
      */
-    private $repository = [];
+    private array $repository = [];
 
     /**
      * Repository constructor.

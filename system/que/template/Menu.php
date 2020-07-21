@@ -5,19 +5,19 @@ namespace que\template;
 
 use que\route\Route;
 use que\route\RouteEntry;
-use que\security\permission\RoutePermission;
+use que\security\interfaces\RoutePermission;
 
 class Menu
 {
     /**
      * @var array
      */
-    private $menus;
+    private array $menus;
 
     /**
      * @var \Menu
      */
-    private $menuInstance;
+    private \Menu $menuInstance;
 
     /**
      * @var bool
@@ -30,8 +30,7 @@ class Menu
     public function __construct()
     {
         $this->menuInstance = new \Menu();
-        $implements = class_implements($this->menuInstance);
-        if ($implements) $this->checkPermission = in_array(RoutePermission::class, $implements);
+        $this->checkPermission = in_array(RoutePermission::class, class_implements($this->menuInstance) ?: []);
         $appMenu = $this->menuInstance->menuList();
         $this->filter($appMenu);
         $this->menus = $appMenu;
@@ -64,9 +63,7 @@ class Menu
                 if (str_contains($menu['href'], $host = server_host()))
                     $menu['href'] = str_start_from($menu['href'], $host);
 
-
-                $menu['href'] = strlen($menu['href']) > 1 && str_ends_with($menu['href'], '/') ? rtrim($menu['href'], '/') : $menu['href'];
-                $menu['href'] = strlen($menu['href']) > 1 && str_starts_with($menu['href'], '/') ? ltrim($menu['href'], '/') : $menu['href'];
+                if ($menu['href']) $menu['href'] = trim($menu['href'], '/');
 
                 $children = [];
 
@@ -126,7 +123,7 @@ class Menu
      * @return RouteEntry|null
      */
     private function getRouteEntry(string $uri): ?RouteEntry {
-        return Route::getRouteEntry($uri);
+        return Route::getRouteEntryFromUri($uri);
     }
 
 }

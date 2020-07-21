@@ -318,14 +318,14 @@ class Arr
     /**
      * Set an item on an array using dot notation.
      *
-     * @param array $array
+     * @param array|object $array
      * @param $key
      * @param null $default
      * @return array|mixed
      */
-    public static function get (array $array, $key, $default = null) {
+    public static function get ($array, $key, $default = null) {
 
-        if (! static::is_accessible($array)) {
+        if (!static::is_accessible($array)) {
             return value($default);
         }
 

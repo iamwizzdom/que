@@ -21,6 +21,11 @@ class Session
      */
     private static Session $instance;
 
+    /**
+     * @var string
+     */
+    private static string $package_name;
+
     protected function __construct()
     {
     }
@@ -50,7 +55,8 @@ class Session
      * @return string
      */
     public static function getSessionID(string $session_id = null) {
-        return "session-id:" . wordwrap($session_id ?: session_id(), 4, ":", true);
+        self::$package_name = config('session.partition', APP_PACKAGE_NAME);
+        return self::$package_name . "-session-id:" . wordwrap($session_id ?: session_id(), 4, ":", true);
     }
 
     /**

@@ -6,7 +6,7 @@
  * Time: 9:38 PM
  */
 
-namespace que\database\interfaces;
+namespace que\database\interfaces\drivers;
 
 
 interface DriverResponse

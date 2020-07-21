@@ -9,20 +9,18 @@
 namespace que\database\model;
 
 
-use ArrayAccess;
 use ArrayIterator;
 use Closure;
-use Countable;
-use IteratorAggregate;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
-use que\database\model\interfaces\Model;
+use que\database\interfaces\model\Model;
+use que\support\interfaces\QueArrayAccess;
 
-class ModelStack implements ArrayAccess, IteratorAggregate, Countable
+class ModelStack implements QueArrayAccess
 {
 
     /**
-     * @var array
+     * @var Model[]
      */
     private array $models = [];
 
@@ -96,7 +94,7 @@ class ModelStack implements ArrayAccess, IteratorAggregate, Countable
 
 
     /**
-     * @return array
+     * @return Model[]
      */
     public function getModels(): array
     {
@@ -179,7 +177,7 @@ class ModelStack implements ArrayAccess, IteratorAggregate, Countable
      * @param Closure $callback | This callback will receive a Model instance as it's first param
      * @return array || Array of response from all models
      */
-    public function runOnAll(Closure $callback): array
+    public function map(Closure $callback): array
     {
         $response = [];
         foreach ($this->models as $model) {
@@ -219,5 +217,62 @@ class ModelStack implements ArrayAccess, IteratorAggregate, Countable
     {
         // TODO: Implement __clone() method.
         $this->clear();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function serialize()
+    {
+        // TODO: Implement serialize() method.
+        return serialize($this->models);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function unserialize($serialized)
+    {
+        // TODO: Implement unserialize() method.
+       $this->models = unserialize($serialized);
+    }
+
+    public function array_keys(): array
+    {
+        // TODO: Implement array_keys() method.
+        return array_keys($this->models);
+    }
+
+    public function array_values(): array
+    {
+        // TODO: Implement array_values() method.
+        return array_values($this->models);
+    }
+
+    public function key()
+    {
+        // TODO: Implement key() method.
+        return key($this->models);
+    }
+
+    public function current()
+    {
+        // TODO: Implement current() method.
+        return current($this->models);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function jsonSerialize()
+    {
+        // TODO: Implement jsonSerialize() method.
+        return json_encode($this->models);
+    }
+
+    public function shuffle(): void
+    {
+        // TODO: Implement shuffle() method.
+        shuffle($this->models);
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use que\http\input\Input;
 use que\http\output\response\Html;
 use que\http\output\response\Json;
 use que\http\output\response\Jsonp;
@@ -17,16 +18,16 @@ class App implements \que\common\structure\Api
 
     /**
      * This method will run when the module is accessed
-     * @param array $uri_args - This parameter provides the arguments found in the uri
-     * @note Que will run this method for you automatically
+     * @param Input $input
      * @return array|Json|Jsonp|Html|Plain - This method must return an array or a valid Que HTTP response object
+     * @note Que will run this method for you automatically
      * @recommendation When returning an array, the returned array should have an index 'code' which will define
      * the HTTP response code (optional)
      */
-    public function process(array $uri_args)
+    public function process(Input $input)
     {
         // TODO: Implement process() method.
 
-        return http()->output()->json([], 201, [], false, JSON_PRETTY_PRINT);
+        return http()->output()->json($input['route.params'], 201, JSON_PRETTY_PRINT);
     }
 }

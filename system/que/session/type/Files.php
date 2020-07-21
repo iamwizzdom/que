@@ -8,15 +8,13 @@
 
 namespace que\session\type;
 
-use ArrayAccess;
 use ArrayIterator;
-use Countable;
-use IteratorAggregate;
-use JsonSerializable;
-use Serializable;
+use que\session\Session;
+use que\support\Arr;
+use que\support\interfaces\QueArrayAccess;
 use Traversable;
 
-class Files implements  ArrayAccess, Countable, JsonSerializable, IteratorAggregate, Serializable
+class Files implements QueArrayAccess
 {
     /**
      * @var Files
@@ -28,14 +26,11 @@ class Files implements  ArrayAccess, Countable, JsonSerializable, IteratorAggreg
      */
     private array $pointer;
 
-    /**
-     * @var mixed
-     */
-    private $iterator = null;
-
     protected function __construct()
     {
-        $this->pointer = &$_SESSION;
+        $session_id = Session::getSessionID();
+        $_SESSION[$session_id] ??= [];
+        $this->pointer = &$_SESSION[$session_id];
     }
 
     private function __clone()
@@ -59,11 +54,12 @@ class Files implements  ArrayAccess, Countable, JsonSerializable, IteratorAggreg
     }
 
     /**
-     * @param string $offset
-     * @param $data
+     * @param $offset
+     * @param $value
+     * @return array|mixed
      */
-    public function add(string $offset, $data) {
-        $this->pointer[$offset] = $data;
+    public function set($offset, $value) {
+        return Arr::set($this->pointer, $offset, $value);
     }
 
     /**
@@ -79,85 +75,22 @@ class Files implements  ArrayAccess, Countable, JsonSerializable, IteratorAggreg
      * @return mixed
      */
     public function get($offset, $default = null) {
-        if (is_array($offset)) {
-
-            $offset_value = current($offset);
-
-            $key = key($offset);
-
-            if (is_array($offset_value)) {
-
-                if ($this->iterator === null && !isset($this->pointer[$key])) return $default;
-
-                if ($this->iterator === null) {
-
-                    $this->iterator = $this->pointer[$key];
-                    $this->reset_pointer($this->iterator);
-                    return $this->get($offset_value, $default);
-
-                } else {
-
-                    if (isset($this->iterator[$key])) {
-                        $this->iterator = $this->iterator[$key];
-                        $this->reset_pointer($this->iterator);
-                    }
-
-                    return $this->get($offset_value, $default);
-                }
-
-
-            } else {
-
-                if ($this->iterator === null) {
-
-                    if (isset($this->pointer[$key])) {
-                        $this->iterator = $this->pointer[$key];
-                        $this->reset_pointer($this->iterator);
-                    }
-
-                    return $this->get($offset_value, $default);
-                }
-
-                if (isset($this->iterator[$key])) $this->iterator = $this->iterator[$key];
-                $this->reset_pointer($this->iterator);
-                return $this->get($offset_value, $default);
-            }
-
-        } else {
-            $value = isset($this->pointer[$offset]) ? $this->pointer[$offset] : $default;
-            $this->reset_pointer($_SESSION);
-            return $value;
-        }
+        return Arr::get($this->pointer, $offset, $default);
     }
 
     /**
-     * @param $pointer
+     * @param $offset
      */
-    private function reset_pointer(&$pointer) {
-        $this->pointer = &$pointer;
+    public function _unset($offset) {
+        Arr::unset($this->pointer, $offset);
     }
 
     /**
-     * @param string $offset
+     * @param $offset
      * @return bool
      */
-    public function has(string $offset): bool {
-        return $this->get($offset, false) !== false;
-    }
-
-    /**
-     * @param string $offset
-     */
-    public function _unset(string $offset) {
-        unset($this->pointer[$offset]);
-    }
-
-    /**
-     * @param string $offset
-     * @return bool
-     */
-    public function _isset(string $offset): bool {
-        return isset($this->pointer[$offset]);
+    public function _isset($offset): bool {
+        return $this->get($offset, $id = unique_id(16)) !== $id;
     }
 
     /**
@@ -276,7 +209,36 @@ class Files implements  ArrayAccess, Countable, JsonSerializable, IteratorAggreg
     public function unserialize($serialized)
     {
         // TODO: Implement unserialize() method.
-        return $this->pointer = unserialize($serialized);
+        $this->pointer = unserialize($serialized);
     }
 
+    public function array_keys(): array
+    {
+        // TODO: Implement array_keys() method.
+        return array_keys($this->pointer);
+    }
+
+    public function array_values(): array
+    {
+        // TODO: Implement array_values() method.
+        return array_values($this->pointer);
+    }
+
+    public function key()
+    {
+        // TODO: Implement key() method.
+        return key($this->pointer);
+    }
+
+    public function current()
+    {
+        // TODO: Implement current() method.
+        return current($this->pointer);
+    }
+
+    public function shuffle(): void
+    {
+        // TODO: Implement shuffle() method.
+        shuffle($this->pointer);
+    }
 }

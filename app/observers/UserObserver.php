@@ -9,9 +9,9 @@
 namespace observers;
 
 
-use que\database\interfaces\Observer;
-use que\database\interfaces\ObserverSignal;
-use que\database\model\interfaces\Model;
+use que\database\interfaces\drivers\Observer;
+use que\database\interfaces\drivers\ObserverSignal;
+use que\database\interfaces\model\Model;
 use que\database\model\ModelStack;
 
 class UserObserver implements Observer

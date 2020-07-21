@@ -11,6 +11,7 @@ namespace que\session\type;
 use que\common\exception\PreviousException;
 use que\common\exception\QueException;
 use que\common\exception\QueRuntimeException;
+use que\support\Arr;
 
 class QueKip
 {
@@ -41,9 +42,7 @@ class QueKip
     protected function __construct($session_id)
     {
         $this->session_id = $session_id;
-
         $this->sessionFilePath = session_save_path();
-
         $this->fetch_data();
     }
 
@@ -76,13 +75,21 @@ class QueKip
      * @return mixed|null
      */
     public function get($key, $default = null) {
-        if (!isset($this->data[$key])) return $default;
-        $data = $this->data[$key];
-        if (is_int($data['expire']) && APP_TIME > $data['expire']) {
+        $data = Arr::get($this->data, $key, $default);
+        if ($data == $default) return $data;
+        if (isset($data['expire']) && is_int($data['expire']) && APP_TIME > $data['expire']) {
             $this->unset($key);
             return $default;
         }
-        return $data['data'];
+        return $data['data'] ?? $default;
+    }
+
+    /**
+     * @param $key
+     * @return bool
+     */
+    public function isset($key): bool {
+        return Arr::isset($this->data, $key);
     }
 
     /**
@@ -95,10 +102,10 @@ class QueKip
      * @return bool
      */
     public function set($key, $value, int $expire = null): bool {
-        $this->data[$key] = [
+        Arr::set($this->data, $key, [
             'data' => $value,
             'expire' => is_int($expire) ? (APP_TIME + $expire) : null
-        ];
+        ]);
         return $this->write_data() !== false;
     }
 
@@ -110,7 +117,7 @@ class QueKip
     public function unset(...$keys): int {
         $count = 0;
         foreach ($keys as $key) {
-            unset($this->data[$key]);
+            Arr::unset($this->data, $key);
             $count++;
         }
         $this->write_data();
@@ -157,33 +164,31 @@ class QueKip
     public function delete($session_id) {
         $fileName = sha1($session_id);
         $filePath = "{$this->sessionFilePath}/quekip/que_session_{$fileName}.tmp";
-        if (!file_exists($filePath)) return false;
+        if (!is_file($filePath)) return false;
         $this->data = [];
         return unlink($filePath);
     }
 
     private function fetch_data() {
 
-        $filePath = "{$this->sessionFilePath}/quekip";
-
-        if (!is_dir($filePath)) {
+        if (!is_dir("{$this->sessionFilePath}/quekip")) {
 
             try {
-                $this->mk_dir($filePath);
+                $this->mk_dir("{$this->sessionFilePath}/quekip");
             } catch (QueException $e) {
-                throw new QueRuntimeException($e->getMessage(), "Session Error",
+                throw new QueRuntimeException($e->getMessage(), $e->getTitle(),
                     E_USER_ERROR, 0, PreviousException::getInstance(2));
             }
         }
 
         $fileName = sha1($this->session_id);
 
-        if (!file_exists("{$filePath}/que_session_{$fileName}.tmp"))
-            $this->create_file("{$filePath}/que_session_{$fileName}.tmp");
+        if (!is_file("{$this->sessionFilePath}/quekip/que_session_{$fileName}.tmp"))
+            $this->create_file("{$this->sessionFilePath}/quekip/que_session_{$fileName}.tmp");
 
-        if (($cache = @file_get_contents("{$filePath}/que_session_{$fileName}.tmp")) === false)
-            throw new QueRuntimeException("Unable to read from quekip cache file!", "Session Error",
-                E_USER_ERROR, 0, PreviousException::getInstance(2));
+        if (($cache = @file_get_contents("{$this->sessionFilePath}/quekip/que_session_{$fileName}.tmp")) === false)
+            throw new QueRuntimeException("Unable to read from quekip cache file!", "QueKip Error",
+                E_USER_ERROR, 0, PreviousException::getInstance(5));
 
         $this->data = !empty($cache) && strlen($cache) > 0 ? unserialize($cache) : [];
 
@@ -199,20 +204,19 @@ class QueKip
             try {
                 $this->mk_dir($this->sessionFilePath);
             } catch (QueException $e) {
-                throw new QueRuntimeException($e->getMessage(), "Session Error",
-                    E_USER_ERROR, 0, PreviousException::getInstance(2));
+                throw new QueRuntimeException($e->getMessage(), $e->getTitle(),
+                    E_USER_ERROR, 0, PreviousException::getInstance(5));
             }
         }
 
         $fileName = sha1($this->session_id);
 
-        if (!file_exists("{$this->sessionFilePath}/que_session_{$fileName}.tmp"))
-            $this->create_file("{$this->sessionFilePath}/que_session_{$fileName}.tmp");
+        if (!is_file("{$this->sessionFilePath}/quekip/que_session_{$fileName}.tmp"))
+            $this->create_file("{$this->sessionFilePath}/quekip/que_session_{$fileName}.tmp");
 
-        if (($status = @file_put_contents("{$this->sessionFilePath}/que_session_{$fileName}.tmp",
-            serialize($this->data))) === false)
-            throw new QueRuntimeException("Unable to write to quekip cache file!", "Session Error",
-                E_USER_ERROR, 0, PreviousException::getInstance(2));
+        if (($status = file_put_contents("{$this->sessionFilePath}/quekip/que_session_{$fileName}.tmp",
+            serialize($this->data))) === false) throw new QueRuntimeException("Unable to write to quekip cache file!",
+            "QueKip Error", E_USER_ERROR, 0, PreviousException::getInstance(5));
 
         return $status;
     }
@@ -224,13 +228,11 @@ class QueKip
      */
     private function mk_dir($dir) {
 
-        if (!is_dir($dir) && !mkdir($dir, 0777, true))
-            throw new QueException("System cache directory could not be created", "Session Error");
-
-        if ($dir === null || !is_dir($dir) || !is_writable($dir))
-            throw new QueException("System cache directory not writable", "Session Error");
-
-        return true;
+        try {
+            return mk_dir($dir);
+        } catch (QueException $e) {
+            throw new QueException("System cache " . strtolower($e->getMessage()), "QueKip Error");
+        }
     }
 
     /**

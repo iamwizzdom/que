@@ -2,6 +2,7 @@
 
 use que\common\manager\Manager;
 use que\common\structure\Page;
+use que\http\input\Input;
 use que\template\Composer;
 
 /**
@@ -11,21 +12,21 @@ use que\template\Composer;
  * Time: 1:16 AM
  */
 
-class View extends Manager implements Page
+class View extends Manager implements Page, \que\security\interfaces\RoutePermission
 {
 
     /**
      * This method will run when the module is accessed via GET request
-     * @param array $uri_args - This parameter provides the arguments found in the uri
+     * @param Input $input
      * @note Que will run this method for you automatically
      */
-    public function onLoad(array $uri_args): void
+    public function onLoad(Input $input): void
     {
         // TODO: Implement onLoad() method.
         current_route()->setTitle('Welcome Que');
-
         $this->composer()->data([
-            'hello' => 'Hello world'
+//            'hello' => 'Hello world, Welcome to Que'
+            'hello' => 'Welcome to Que'
         ]);
 
     }
@@ -38,7 +39,16 @@ class View extends Manager implements Page
     public function setTemplate(Composer $composer): void
     {
         // TODO: Implement setTemplate() method.
-        $composer->setTmpFileName('module/view.html');
+        $composer->setTmpFileName('module/view.tpl');
         $composer->prepare()->renderWithSmarty();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasPermission(\que\route\RouteEntry $route): bool
+    {
+        // TODO: Implement hasPermission() method.
+        return true;
     }
 }

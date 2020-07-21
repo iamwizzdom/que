@@ -20,6 +20,10 @@ RewriteRule ^(([^/]+/)*[^.]+)\.php /$1 [R=301,L]
 Options -Indexes
 DirectoryIndex ^(.*)$ app/app.route.php
 
+# ALLOW ONLY QUE SUPPORTED REQUEST REQUEST METHODS
+#RewriteCond %{REQUEST_METHOD} !^(GET|POST|PUT|PATCH|DELETE) [NC]
+#RewriteRule .* - [F,L]
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes

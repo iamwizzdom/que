@@ -13,7 +13,7 @@ return [
     | Caching system Connections
     |--------------------------------------------------------------------------
     |
-    | Here are each of the caching system connections setup for your application.
+    | Here are each of the caching system connection setup for your application.
     | Of course, examples and explanation of configuring each caching platform that is
     | supported by Que is shown below to make development simple.
     |
@@ -37,7 +37,7 @@ return [
         /*
          | Set to [bool](true) to enable memcached, otherwise [bool](false) to disable
          */
-        'enable' => true
+        'enable' => false
     ],
 
     'redis' => [
@@ -55,13 +55,13 @@ return [
         /*
          | Set to [bool](true) to enable redis, otherwise [bool](false) to disable
          */
-        'enable' => true
+        'enable' => false
     ]
 
     /**
      * @Note: For optimum performance make sure to enable either memcached or redis;
-     * better still, have both enabled.
-     * However, if both are disabled, Que will fall back to its native caching system (QueKip)
+     * better still, have them both enabled.
+     * However, if both are disabled, Que will fallback to its native caching system (QueKip)
      */
 
 ];

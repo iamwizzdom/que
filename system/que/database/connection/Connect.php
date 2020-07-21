@@ -4,7 +4,8 @@ namespace que\database\connection;
 
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
-use que\database\interfaces\Driver;
+use que\database\interfaces\drivers\Driver;
+use que\support\Arr;
 use que\support\Config;
 
 abstract class Connect
@@ -41,7 +42,7 @@ abstract class Connect
 
         if (!isset($this->drivers[$this->driver])) {
 
-            $driver = Config::get("database.drivers.{$this->driver}", null);
+            $driver = Arr::get(Config::get("database.drivers", []), $this->driver);
 
             if (is_null($driver)) throw new QueRuntimeException(
                 "Invalid Driver: No database driver exists with the key '{$this->driver}', check your database configuration to fix this issue.",

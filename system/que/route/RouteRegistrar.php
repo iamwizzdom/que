@@ -21,7 +21,7 @@ class RouteRegistrar
     private static RouteRegistrar $instance;
 
     /**
-     * @var array
+     * @var RouteEntry[]
      */
     private array $queue = [];
 
@@ -55,9 +55,14 @@ class RouteRegistrar
     /**
      * @param string $prefix
      * @param Closure $callback
+     * @param string|null $middleware
+     * @param bool|null $requireLogin
+     * @param string|null $redirectUrl
      * @return RouteRegistrar
      */
-    public function group(string $prefix, Closure $callback): RouteRegistrar {
+    public function group(string $prefix, Closure $callback,
+                          string $middleware = null, bool $requireLogin = null,
+                          string $redirectUrl = null): RouteRegistrar {
 
         try {
             $group_arr = call_user_func($callback, $prefix);
@@ -67,6 +72,7 @@ class RouteRegistrar
 
             foreach ($group_arr as $key => $callback) {
 
+
                 if (!$callback instanceof Closure || !is_callable($callback))
                     throw new RouteException("All elements in route group list must be callable", "Route Error");
 
@@ -74,14 +80,21 @@ class RouteRegistrar
 
                 call_user_func($callback, $entry);
 
+
                 $entry->setType(strtolower($entry->getType()));
 
                 if ('web' !== $entry->getType() && 'api' !== $entry->getType() && 'resource' !== $entry->getType())
                     throw new RouteException("Invalid group route type for {$prefix}[::]{$entry->getUri()}", "Route Error");
 
-                $route = $entry->getUri();
+                if ($middleware !== null) $entry->setMiddleware($middleware);
+                if ($requireLogin !== null) $entry->setRequireLogIn($requireLogin, $redirectUrl);
 
-                if (!empty($prefix)) $route = "{$prefix}/{$route}";
+                $route = trim($entry->getUri());
+
+                if (!empty($prefix)) {
+                    $prefix = trim($prefix);
+                    $route = "{$prefix}/{$route}";
+                }
 
                 $route = str_strip_repeated_char('\/', $route);
                 $route = str_strip_repeated_char('\\\\', $route);
@@ -109,6 +122,13 @@ class RouteRegistrar
 
         call_user_func($callback, $entry);
 
+        $route = $entry->getUri();
+
+        $route = str_strip_repeated_char('\/', $route);
+        $route = str_strip_repeated_char('\\\\', $route);
+
+        $entry->setUri($route);
+
         $entry->setType('web');
 
         array_push($this->queue, $entry);
@@ -125,6 +145,13 @@ class RouteRegistrar
         $entry = new RouteEntry();
 
         call_user_func($callback, $entry);
+
+        $route = $entry->getUri();
+
+        $route = str_strip_repeated_char('\/', $route);
+        $route = str_strip_repeated_char('\\\\', $route);
+
+        $entry->setUri($route);
 
         $entry->setType('api');
 
@@ -143,6 +170,13 @@ class RouteRegistrar
 
         call_user_func($callback, $entry);
 
+        $route = $entry->getUri();
+
+        $route = str_strip_repeated_char('\/', $route);
+        $route = str_strip_repeated_char('\\\\', $route);
+
+        $entry->setUri($route);
+
         $entry->setType('resource');
 
         array_push($this->queue, $entry);
@@ -151,7 +185,7 @@ class RouteRegistrar
     }
 
     /**
-     * @return array
+     * @return RouteEntry[]
      */
     public function &getRouteEntries(): array {
         return $this->queue;

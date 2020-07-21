@@ -16,6 +16,7 @@ require "../../../app/app.settings.php";
 
 //echo $startTime;
 
+echo preg_match("/^[a-zA-Z0-9]+$/", 'jfh76') == 1 ? 'true' : 'false';
 
 //$mds = [90,6,78,9];
 //array_callback($mds, function ($md) {

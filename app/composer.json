@@ -1,0 +1,18 @@
+{
+    "require": {
+        "iamwizzdom/netty-finder-php": "^1.0",
+      "ext-json": "*",
+      "ext-pdo": "*",
+      "ext-mysqli": "*",
+      "ext-memcache": "*",
+      "ext-redis": "*",
+      "ext-openssl": "*",
+      "ext-zlib": "*",
+      "ext-fileinfo": "*",
+      "ext-gd": "*",
+      "ext-memcached": "*",
+      "ext-apache": "*",
+      "ext-bcmath": "*",
+      "ext-curl": "*"
+    }
+}

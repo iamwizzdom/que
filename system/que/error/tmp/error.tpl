@@ -115,7 +115,7 @@
 
     </div>
 
-    {if $data.backtrace === true}
+    {if !empty($data.trace)}
 
     <div class="alert alert-info">
         <h3>Back Trace</h3>
@@ -123,7 +123,7 @@
         {if !empty($data.level)}<p><b>Error Level:</b> {$data.level}</p>{/if}
         {if !empty($data.file)}<p><b>Error File:</b> {$data.file}</p>{/if}
         {if !empty($data.line)}<p><b>Error Line:</b> {$data.line}</p>{/if}
-        {if !empty($data.context)}<p><b>Error Context:</b> {debug_print($data.context)}</p>{/if}
+        {if !empty($data.trace)}<p><b>Error Trace:</b> {debug_print($data.trace, true)}</p>{/if}
     </div>
 
     {/if}

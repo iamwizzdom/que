@@ -9,22 +9,27 @@ namespace que\http;
  * Time: 9:44 AM
  */
 
+use que\http\input\Input;
 use que\http\network\Redirect;
 use que\http\curl\CurlRequest;
 use que\http\output\HttpResponse;
+use que\http\request\Delete;
 use que\http\request\Files;
 use que\http\request\Get;
 use que\http\request\Header;
+use que\http\request\Patch;
 use que\http\request\Post;
+use que\http\request\Put;
 use que\http\request\Request;
 use que\http\request\Server;
+use que\session\Session;
 
 class Http
 {
     /**
      * @var Http
      */
-    private static $instance;
+    private static Http $instance;
 
     /**
      * CurlRequest constructor.
@@ -59,8 +64,14 @@ class Http
      */
     public function getReferer($default = null)
     {
+
+        $referer = Session::getInstance()->getFiles()->get("http.referer");
+        if (!empty($referer)) {
+            Session::getInstance()->getFiles()->_unset("http.referer");
+            return $referer;
+        }
         $referer = $this->_header()->get("Referer");
-        return $referer ? ($referer != current_url() ? $referer : $default) : $default;
+        return !empty($referer) ? $referer : $default;
     }
 
     /**
@@ -101,6 +112,27 @@ class Http
     }
 
     /**
+     * @return Put
+     */
+    public function _put(): Put {
+        return Put::getInstance();
+    }
+
+    /**
+     * @return Patch
+     */
+    public function _patch(): Patch {
+        return Patch::getInstance();
+    }
+
+    /**
+     * @return Delete
+     */
+    public function _delete(): Delete {
+        return Delete::getInstance();
+    }
+
+    /**
      * @return Files
      */
     public function _files(): Files {
@@ -126,6 +158,13 @@ class Http
      */
     public function _header(): Header {
         return Header::getInstance();
+    }
+
+    /**
+     * @return Input
+     */
+    public function input(): Input {
+        return Input::getInstance();
     }
 
     /**

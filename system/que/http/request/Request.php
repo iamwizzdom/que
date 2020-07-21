@@ -9,26 +9,22 @@
 namespace que\http\request;
 
 
-use ArrayAccess;
 use ArrayIterator;
-use Countable;
-use IteratorAggregate;
-use JsonSerializable;
 use que\support\Arr;
-use Serializable;
+use que\support\interfaces\QueArrayAccess;
 use Traversable;
 
-class Request implements ArrayAccess, Countable, JsonSerializable, IteratorAggregate, Serializable
+class Request implements QueArrayAccess
 {
     /**
      * @var Request
      */
-    private static $instance;
+    private static Request $instance;
 
     /**
      * @var array
      */
-    private $pointer;
+    private array $pointer;
 
     /**
      * Request constructor.
@@ -59,13 +55,11 @@ class Request implements ArrayAccess, Countable, JsonSerializable, IteratorAggre
     }
 
     /**
-     * @param string $offset
-     * @param $data
-     * @return $this
+     * @param $offset
+     * @param $value
      */
-    public function add(string $offset, $data): Request {
-        $this->pointer[$offset] = $data;
-        return $this;
+    public function set($offset, $value) {
+        Arr::set($this->pointer, $offset, $value);
     }
 
     /**
@@ -76,42 +70,27 @@ class Request implements ArrayAccess, Countable, JsonSerializable, IteratorAggre
     }
 
     /**
-     * @param string $offset
+     * @param $offset
      * @param null $default
-     * @return mixed|null
+     * @return array|mixed
      */
     public function get($offset, $default = null) {
         return Arr::get($this->pointer, $offset, $default);
     }
 
     /**
-     * @param $pointer
+     * @param $offset
      */
-    private function reset_pointer(&$pointer) {
-        $this->pointer = &$pointer;
+    public function _unset($offset) {
+        Arr::unset($this->pointer, $offset);
     }
 
     /**
-     * @param string $offset
+     * @param $offset
      * @return bool
      */
-    public function has(string $offset): bool {
-        return $this->get($offset, false) !== false;
-    }
-
-    /**
-     * @param string $offset
-     */
-    public function _unset(string $offset) {
-        unset($this->pointer[$offset]);
-    }
-
-    /**
-     * @param string $offset
-     * @return bool
-     */
-    public function _isset(string $offset): bool {
-        return isset($this->pointer[$offset]);
+    public function _isset($offset): bool {
+        return $this->get($offset, $id = unique_id(16)) !== $id;
     }
 
     /**
@@ -132,7 +111,7 @@ class Request implements ArrayAccess, Countable, JsonSerializable, IteratorAggre
     public function offsetExists($offset)
     {
         // TODO: Implement offsetExists() method.
-        return isset($this->pointer[$offset]);
+        return $this->_isset($offset);
     }
 
     /**
@@ -142,7 +121,7 @@ class Request implements ArrayAccess, Countable, JsonSerializable, IteratorAggre
     public function offsetGet($offset)
     {
         // TODO: Implement offsetGet() method.
-        return $this->pointer[$offset] ?? null;
+        return $this->get($offset);
     }
 
     /**
@@ -152,8 +131,7 @@ class Request implements ArrayAccess, Countable, JsonSerializable, IteratorAggre
     public function offsetSet($offset, $value)
     {
         // TODO: Implement offsetSet() method.
-        if (is_null($offset)) $this->pointer[] = $value;
-        else $this->pointer[$offset] = $value;
+        $this->set($offset, $value);
     }
 
     /**
@@ -162,7 +140,7 @@ class Request implements ArrayAccess, Countable, JsonSerializable, IteratorAggre
     public function offsetUnset($offset)
     {
         // TODO: Implement offsetUnset() method.
-        unset($this->pointer[$offset]);
+        $this->_unset($offset);
     }
 
     /**
@@ -230,7 +208,36 @@ class Request implements ArrayAccess, Countable, JsonSerializable, IteratorAggre
     public function unserialize($serialized)
     {
         // TODO: Implement unserialize() method.
-        return $this->pointer = unserialize($serialized);
+        $this->pointer = unserialize($serialized);
     }
 
+    public function array_keys(): array
+    {
+        // TODO: Implement array_keys() method.
+        return array_keys($this->pointer);
+    }
+
+    public function array_values(): array
+    {
+        // TODO: Implement array_values() method.
+        return array_values($this->pointer);
+    }
+
+    public function key()
+    {
+        // TODO: Implement key() method.
+        return key($this->pointer);
+    }
+
+    public function current()
+    {
+        // TODO: Implement current() method.
+        return current($this->pointer);
+    }
+
+    public function shuffle(): void
+    {
+        // TODO: Implement shuffle() method.
+        shuffle($this->pointer);
+    }
 }

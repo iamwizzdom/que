@@ -26,6 +26,7 @@ return [
         'user' => '',
         'pass' => '',
         'transport' => '',
+        'timeout' => 100,
         'debug' => '',
         'options' => [
 

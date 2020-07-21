@@ -1,18 +1,20 @@
 <?php
 
 use que\common\exception\PreviousException;
+use que\common\exception\QueException;
 use que\common\exception\QueRuntimeException;
-use que\config\Repository;
 use que\common\time\Time;
-use que\common\validate\Track;
+use que\common\validator\Track;
 use que\database\mysql\Query;
+use que\error\Logger;
 use que\error\RuntimeError;
 use que\http\Http;
-use que\database\model\interfaces\Model;
 use que\route\Route;
-use que\route\structure\RouteEntry;
+use que\route\RouteEntry;
 use que\security\CSRF;
+use que\security\interfaces\RoutePermission;
 use que\session\Session;
+use que\support\Arr;
 use que\support\Config;
 use que\template\Composer;
 use que\template\Form;
@@ -35,7 +37,7 @@ use que\utility\Converter;
 /**
  * @param int $length
  * @param bool $hex
- * @return bool|string
+ * @return false|string
  */
 function unique_id(int $length = 32, bool $hex = true)
 {
@@ -48,8 +50,7 @@ function unique_id(int $length = 32, bool $hex = true)
         $r = "";
         while ($i++ < $length) $r .= chr(mt_rand(0, 255));
     }
-
-    return substr($hex ? bin2hex($r) : $r, 0, $length);
+    return $hex ? substr(bin2hex($r), 0, $length) : $r;
 }
 
 /**
@@ -181,11 +182,10 @@ function str_ellipsis(string $string, int $length = 50, string $ellipsis = null)
 }
 
 /**
- * This function will remove all occurrences
- * of the needle from the string
+ * This function will remove all occurrences of the needle from the string
  * @param string $string
  * @param string $needle
- * @return bool|string
+ * @return string|string[]|null
  */
 function str_strip(string $string, string $needle) {
     if (!str_contains($string, $needle)) return $string;
@@ -442,7 +442,7 @@ function filter_email(string $email, int $option = null)
  * @return bool
  */
 function is_date(string $format, string $date): bool {
-    return date($format, (int) strtotime($date)) == $date;
+    return DateTime::createFromFormat($format, $date) instanceof DateTime;
 }
 
 /**
@@ -455,9 +455,11 @@ function get_date(string $format, string $date, string $default = ''): string {
     try {
         $dateTime = new DateTime($date);
     } catch (Exception $e) {
+        log_error($e->getMessage(), $e->getFile(), $e->getLine(),
+            $e->getCode(), HTTP_INTERNAL_SERVER_ERROR, $e->getTrace());
         $dateTime = false;
     }
-    return !$dateTime ? $default : $dateTime->format($format);
+    return $dateTime ? $dateTime->format($format) : $default;
 }
 
 /**
@@ -997,15 +999,15 @@ function array_make_key_from_value(array $array): array
 }
 
 /**
- * @param array $main | Array being reduced
+ * @param array $array | Array being reduced
  * @param array $exclude | Keys to be excluded
  * @return array
  */
-function array_exclude(array $main, array $exclude = []): array
+function array_exclude(array $array, array $exclude = []): array
 {
     foreach ($exclude as $value)
-        if (array_key_exists($value, $main)) unset($main[$value]);
-    return $main;
+        if (array_key_exists($value, $array)) unset($array[$value]);
+    return $array;
 }
 
 /**
@@ -1092,9 +1094,9 @@ function is_numeric_array(array $array): bool {
  * @param array $arr
  * @return int
  */
-function array_size(array $arr): int
+function array_size($arr): int
 {
-    return count($arr);
+    return array_is_accessible($arr) ? count($arr) : 0;
 }
 
 /**
@@ -1115,6 +1117,16 @@ function array_multi($value, int $range) {
     for ($i = 0; $i < $range; $i++)
         $list[] = $value;
     return $list;
+}
+
+/**
+ * @param array $haystack
+ * @param $needle
+ * @param null $default
+ * @return mixed|null
+ */
+function find_in_array($haystack, $needle, $default = null) {
+    return Arr::get($haystack, $needle, $default);
 }
 
 /**
@@ -1746,22 +1758,21 @@ function is_filled($value): bool
  *
  * @param callable $callback
  * @param int $times
- * @param float $sleep | retrial interval in milliseconds
- * @param Closure|null $when
+ * @param float $interval | retrial interval in milliseconds
+ * @param callable|null $when
  * @return mixed
  * @throws Exception
  */
-function retry(callable $callback, int $times, float $sleep = 0, Closure $when = null)
+function retry(callable $callback, int $times, float $interval = 0, callable $when = null)
 {
     $attempts = 0;
-
     beginning:
     $attempts++;
     $times--;
 
     try {
 
-        $data = $callback($attempts, $times);
+        $data = $callback($attempts);
         if ($when && $when($data)) return $data;
         if ($times < 1) return $data;
 
@@ -1770,7 +1781,7 @@ function retry(callable $callback, int $times, float $sleep = 0, Closure $when =
         if ($times < 1) throw $e;
     }
 
-    if ($sleep) usleep($sleep * 1000);
+    if ($interval) usleep($interval * 1000);
 
     goto beginning;
 }
@@ -1937,8 +1948,7 @@ function db(): Query
  * @return mixed|null
  */
 function model(string $model) {
-    if ($model === null) return null;
-    $model = config("database.models.{$model}", null);
+    $model = Arr::get(config("database.models", []), $model);
     if ($model === null) return null;
     if (!class_exists($model, true)) return null;
     return $model;
@@ -2006,9 +2016,9 @@ function is_logged_in(): bool
 function has_route_permission(RouteEntry $entry): bool {
     $module = $entry->getModule();
     if (!class_exists($module, true)) return false;
-    $implement = class_implements($module, true);
-    if (!isset($implement['que\security\permission\RoutePermission'])) return true;
-    return (new $module())->hasPermission($entry);
+    $module = new $module();
+    if (!$module instanceof RoutePermission) return true;
+    return $module->hasPermission($entry);
 }
 
 /**
@@ -2022,6 +2032,21 @@ function user(string $key = null)
 }
 
 /**
+ * @param string $route_name
+ * @param array $route_args
+ * @param array $header
+ * @param array $data
+ */
+function redirect_with_name(string $route_name, array $route_args = [],
+                            array $header = [], array $data = []) {
+    $redirect = \http()->redirect();
+    $redirect->setRouteName($route_name, $route_args);
+    if (!empty($header)) $redirect->setHeaderArray($header);
+    if (!empty($data)) foreach ($data as $key => $value) $redirect->setData($key, $value);
+    $redirect->initiate();
+}
+
+/**
  * @param string $url
  * @param array $header
  * @param array $data
@@ -2032,6 +2057,23 @@ function redirect(string $url, array $header = [], array $data = []) {
     if (!empty($header)) $redirect->setHeaderArray($header);
     if (!empty($data)) foreach ($data as $key => $value) $redirect->setData($key, $value);
     $redirect->initiate();
+}
+
+/**
+ * Determines the mimetype of a file by looking at its extension or the file itself.
+ *
+ * @param string $filepath
+ * @return null|string
+ */
+function mime_type_from_filepath(string $filepath)
+{
+    if ($mime_type = mime_type_from_extension(pathinfo($filepath, PATHINFO_EXTENSION)))
+        return $mime_type;
+
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $finfo_file = finfo_file($finfo, $filepath);
+    finfo_close($finfo);
+    return $finfo_file;
 }
 
 /**
@@ -2158,7 +2200,6 @@ function mime_type_from_extension(string $extension)
     ];
 
     $extension = strtolower($extension);
-
     return $mime_types[$extension] ?? null;
 }
 
@@ -2279,6 +2320,30 @@ function extension_from_mime_type(string $mime_type)
 }
 
 /**
+ * @param string $path
+ * @return string|string[]
+ */
+function extention_from_filepath(string $path) {
+    return pathinfo($path, PATHINFO_EXTENSION);
+}
+
+/**
+ * @param $dir
+ * @return bool
+ * @throws QueException
+ */
+function mk_dir($dir) {
+
+    if (!is_dir($dir) && !mkdir($dir, 0777, true))
+        throw new QueException("Directory could not be created");
+
+    if (!is_dir($dir) || !is_writable($dir))
+        throw new QueException("Directory not writable");
+
+    return true;
+}
+
+/**
  * Output a gz-file
  * @link https://php.net/manual/en/function.readgzfile.php
  *
@@ -2295,17 +2360,18 @@ function extension_from_mime_type(string $mime_type)
  * @return bool
  */
 function render_file($filepath, $filename = 'download', bool $auto_download = false) {
-    header('Content-Description: Que File Transfer');
-    header("Content-Disposition: " . ($auto_download ? "attachment; " : '') .
-        "filename={$filename}." . pathinfo($filepath, PATHINFO_EXTENSION));
-    header("Content-type:" . mime_type_from_filename($filepath));
-    header('Content-Transfer-Encoding: binary');
-    header('Expires: Fri, 30 Dec 2050 00:00:00 GMT');
-    header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-    header('Pragma: public');
-    header('Content-Length: ' . filesize($filepath));
+    http()->_header()->setBulk([
+        'Content-Description' => 'Que File Transfer',
+        'Content-Disposition' => (($auto_download ? "attachment; " : '') .
+            "filename={$filename}." . pathinfo($filepath, PATHINFO_EXTENSION)),
+        'Content-Transfer-Encoding' => 'binary',
+        'Content-type' => mime_type_from_filepath($filepath),
+        'Content-Length' => filesize($filepath),
+        'Expires' => 'Fri, 30 Dec 2050 00:00:00 GMT',
+        'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+        'Pragma' => 'public'
+    ]);
     ob_clean();
-    flush();
     $limit = 0;
     while (($status = readgzfile($filepath)) === false && $limit < MAX_RETRY) $limit++;
     return $status !== false;
@@ -2353,6 +2419,40 @@ function current_url(): string
 }
 
 /**
+ * This function would return the base url of a route
+ * based on its name and args
+ * @param string $name
+ * @param array $args
+ * @param bool $addBaseUrl
+ * @return string
+ */
+function route_uri(string $name, array $args = []) {
+    try {
+        return \route($name, $args, false);
+    } catch (Exception $e) {
+        throw new QueRuntimeException($e->getMessage(), method_exists($e, 'getTitle') ? $e->getTitle() : 'Route Error',
+            E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+    }
+}
+
+/**
+ * This function would return the base url of a route
+ * based on its name and args
+ * @param string $name
+ * @param array $args
+ * @param bool $addBaseUrl
+ * @return string
+ */
+function route(string $name, array $args = [], bool $addBaseUrl = true) {
+    try {
+        return Route::getRouteUrl($name, $args, $addBaseUrl);
+    } catch (Exception $e) {
+        throw new QueRuntimeException($e->getMessage(), method_exists($e, 'getTitle') ? $e->getTitle() : 'Route Error',
+            E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+    }
+}
+
+/**
  * This function returns a string of the base url
  *
  * @param string|null $url
@@ -2379,8 +2479,8 @@ function base_url(string $url = null, bool $forceUrl = false): string
             return trim($m, '?');
         }, $matches[1]);
 
+        $uriArgs = get_uri_args();
         foreach ($args as $arg) {
-            $uriArgs = get_uri_args();
             if (isset($uriArgs[$arg])) $url = str_replace('{' . $arg . '}', $uriArgs[$arg], $url);
         }
     }
@@ -2388,7 +2488,7 @@ function base_url(string $url = null, bool $forceUrl = false): string
     if (!$isNull && str_contains($url, $host)) $url = str_start_from($url, $host);
 
     if (!$isNull) {
-        $routeEntry = Route::getRouteEntry($url);
+        $routeEntry = Route::getRouteEntryFromUri($url);
         if ($routeEntry instanceof RouteEntry) {
             if ($routeEntry->isRequireLogIn() === true && !is_logged_in()) {
                 if (!$forceUrl) return '#';
@@ -2421,7 +2521,7 @@ function base_url(string $url = null, bool $forceUrl = false): string
  */
 function get_uri_args($arg = null, $default = null)
 {
-    $args = http()->_server()->get("URI_ARGS");
+    $args = http()->_server()->get("route.params");
     return !is_null($arg) ? (isset($args[$arg]) ? $args[$arg] : $default) : $args;
 }
 
@@ -2437,6 +2537,25 @@ function csrf_token() {
  */
 function track_token() {
     return Track::generateToken();
+}
+
+/**
+ * @param string $message
+ * @param string $file
+ * @param int $line
+ * @param $level
+ * @param int $status
+ * @param array $trace
+ * @param string|null $destination - directory to store logs
+ * @return bool|false|int
+ */
+function log_error(string $message, string $file, int $line, $level,
+                   int $status, array $trace, string $destination = null) {
+    return Logger::getInstance()
+        ->setMessage($message)->setFile($file)
+        ->setLine($line)->setStatus($status)
+        ->setLevel($level)->setTrace($trace)
+        ->setDestination($destination)->log();
 }
 
 /**

@@ -10,7 +10,7 @@ namespace que\template;
 
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
-use que\common\validate\Track;
+use que\common\validator\Track;
 use que\route\Route;
 use que\security\CSRF;
 use que\session\Session;
@@ -22,49 +22,54 @@ class Composer
     /**
      * @var Composer
      */
-    private static $instance;
+    private static ?Composer $instance = null;
 
     /**
      * @var string
      */
-    private $tmpDir = (APP_PATH . "/template/");
+    private string $tmpDir = (APP_PATH . "/template/");
+
+    /**
+     * @var bool
+     */
+    private bool $singleton;
 
     /**
      * @var string
      */
-    private $tmpFileName = '';
+    private string $tmpFileName = '';
 
     /**
      * @var Menu
      */
-    private static $menu;
+    private static ?Menu $menu = null;
 
     /**
      * @var array
      */
-    private $context = [];
+    private array $context = [];
 
     /**
      * @var array
      */
-    private $header = [];
+    private array $misc = [];
 
     /**
      * @var array
      */
-    private $data = [];
+    private array $header = [];
 
     /**
      * @var array
      */
-    private $alert = [];
+    private array $data = [];
 
     /**
      * @var array
      */
-    private $form = [];
+    private array $alert = [];
 
-    private $tmp_module_suffix = [
+    private array $tmp_module_suffix = [
         '.js',
         '.min.js',
         '.css',
@@ -75,20 +80,21 @@ class Composer
     /**
      * @var array
      */
-    private $css = [];
+    private array $css = [];
 
     /**
      * @var array
      */
-    private $script = [];
+    private array $script = [];
 
     /**
      * @var bool
      */
-    private $prepared = false;
+    private bool $prepared = false;
 
-    protected function __construct()
+    protected function __construct(bool $singleton)
     {
+        $this->singleton = $singleton;
     }
 
     private function __clone()
@@ -107,11 +113,27 @@ class Composer
      */
     public static function getInstance(bool $singleton = true)
     {
-        if (!$singleton) return new self();
+        if (!$singleton) return new self($singleton);
 
         if (!isset(self::$instance))
-            self::$instance = new self();
+            self::$instance = new self($singleton);
         return self::$instance;
+    }
+
+    /**
+     * @param array $misc
+     */
+    public function misc(array $misc)
+    {
+        $this->misc = array_merge_recursive($this->misc, $misc);
+    }
+
+    /**
+     * @return array
+     */
+    public function getMisc(): array
+    {
+        return $this->misc;
     }
 
     /**
@@ -233,21 +255,19 @@ class Composer
     }
 
     /**
-     * @param string $key
-     * @param $data
+     * @param array $formData
      */
-    public function form(string $key, $data)
+    public function form(array $formData)
     {
-        $this->form[$key] = $data;
+        Form::getInstance($this->singleton)->setFormData($formData);
     }
 
     /**
-     * @param null $key
-     * @return array
+     * @return Form
      */
-    public function getForm($key = null): array
+    public function getForm(): Form
     {
-        return !is_null($key) && isset($this->form[$key]) ? $this->form[$key] : $this->form;
+        return Form::getInstance($this->singleton);
     }
 
     /**
@@ -298,6 +318,14 @@ class Composer
         return $this->tmpFileName;
     }
 
+    /**
+     * @return string
+     */
+    public function getTmpDir(): string
+    {
+        return $this->tmpDir;
+    }
+
     public function resetTmpDir(string $dir)
     {
         $this->tmpDir = $dir;
@@ -307,10 +335,9 @@ class Composer
     {
         $http_header = http()->redirect()->getHeader();
         $header = [];
-        foreach ($http_header as $key => $value)
-            $header['http'][$key] = $value;
+        foreach ($http_header as $key => $value) $header['http'][$key] = $value;
         $this->headerExtra($header);
-        unset(Session::getInstance()->getFiles()->_get()['http']['http-header']);
+        Session::getInstance()->getFiles()->_unset("http.header");
     }
 
     private function http_data()
@@ -319,7 +346,7 @@ class Composer
         $data = [];
         foreach ($http_data as $key => $value) $data['http'][$key] = $value;
         $this->dataExtra($data);
-        unset(Session::getInstance()->getFiles()->_get()['http']['http-data']);
+        Session::getInstance()->getFiles()->_unset("http.data");
     }
 
     /**
@@ -407,6 +434,7 @@ class Composer
         $route = Route::getCurrentRoute();
 
         $tmpHeader['title'] = ((!empty($route) && !empty($route->getTitle())) ? $route->getTitle() : $tmpHeader['title'] ?? '');
+        $tmpHeader['desc'] = ((!empty($route) && !empty($route->getDescription())) ? $route->getDescription() : $tmpHeader['desc'] ?? '');
 
         $css = (!$ignoreDefaultCss ? array_merge(config('template.app.css', []), $this->getCss()) : $this->getCss());
         $js = (!$ignoreDefaultScript ? array_merge(config('template.app.js', []), $this->getScript()) : $this->getScript());
@@ -451,12 +479,15 @@ class Composer
 
         $this->css($css);
         $this->script($js);
-        $this->form('track', Track::generateToken());
-        $this->form('csrf', (config('auth.csrf', false) === true ? CSRF::getInstance()->getToken() : ""));
+        $this->form([
+            'track' => Track::generateToken(),
+            'csrf' => (config('auth.csrf', false) === true ? CSRF::getInstance()->getToken() : null)
+        ]);
         $this->header((!$ignoreDefaultHeader ? array_merge($tmpHeader, $this->getHeader()) : $this->getHeader()));
 
         $this->setContext("script", $this->getScript());
         $this->setContext("css", $this->getCss());
+        $this->setContext("misc", $this->getMisc());
         $this->setContext("data", $this->getData());
         $this->setContext("alert", $this->getAlert());
         $this->setContext("form", $this->getForm());
@@ -482,7 +513,7 @@ class Composer
             'Composer error', E_USER_ERROR, 0, PreviousException::getInstance(1));
 
         $smarty = SmartyEngine::getInstance();
-        $smarty->setTmpDir($this->tmpDir);
+        $smarty->setTmpDir($this->getTmpDir());
         $smarty->setCacheDir((QUE_PATH . "/cache/tmp/smarty"));
         $smarty->setTmpFileName($this->getTmpFileName());
         $smarty->setContext($this->getContext());
@@ -511,7 +542,7 @@ class Composer
                 'Composer error', E_USER_ERROR, 0, PreviousException::getInstance(1));
 
         $twig = TwigEngine::getInstance();
-        $twig->setTmpDir($this->tmpDir);
+        $twig->setTmpDir($this->getTmpDir());
         $twig->setCacheDir((QUE_PATH . "/cache/tmp/twig"));
         $twig->setTmpFileName($this->getTmpFileName());
         $twig->setContext($this->getContext());
@@ -531,8 +562,8 @@ class Composer
      */
     public function _flush()
     {
-        $this->data = $this->header = $this->script = $this->css =
-        $this->form = $this->alert = $this->context = [];
+        $this->data = $this->header = $this->script =
+        $this->css = $this->alert = $this->context = [];
         $this->prepared = false;
     }
 

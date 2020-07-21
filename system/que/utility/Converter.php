@@ -13,7 +13,7 @@ class Converter
     /**
      * @var Converter
      */
-    private static $instance;
+    private static ?Converter $instance = null;
 
     /**
      * @var array

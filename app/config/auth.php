@@ -18,7 +18,7 @@ return [
     |
     */
 
-    'csrf' => true,
+    'csrf' => LIVE,
     'jwt' => [
         'key' => '',
         'algo' => JWT::ALGORITHM_HS512
@@ -26,6 +26,6 @@ return [
     'app' => [
         'salt' => '',
         'secret' => '',
-        'version' => '',
+        'version' => ''
     ]
 ];

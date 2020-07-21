@@ -6,7 +6,7 @@
  * Time: 10:45 AM
  */
 
-namespace que\database\interfaces;
+namespace que\database\interfaces\drivers;
 
 interface Driver
 {

@@ -6,7 +6,7 @@
  * Time: 1:03 AM
  */
 
-namespace que\database\model\interfaces;
+namespace que\common\validator\interfaces;
 
 
 use DateTime;
@@ -37,14 +37,14 @@ interface Condition
     public function is($variable): bool;
 
     /**
-     * @return string
+     * @return bool
      */
-    public function getType(): string;
+    public function isEmpty(): bool;
 
     /**
      * @return bool
      */
-    public function isEmpty(): bool;
+    public function isNotEmpty(): bool;
 
     /**
      * @param $variable
@@ -95,28 +95,57 @@ interface Condition
     public function isNotEqualToAny(array $variable): bool;
 
     /**
-     * @param $variable
+     * @param $number
      * @return bool
      */
-    public function isNumberGreaterThan($variable): bool;
+    public function isNumberGreaterThan(int $number): bool;
 
     /**
-     * @param $variable
+     * @param $number
      * @return bool
      */
-    public function isNumberGreaterThanOrEqual($variable): bool;
+    public function isNumberGreaterThanOrEqual(int $number): bool;
 
     /**
-     * @param $variable
+     * @param $number
      * @return bool
      */
-    public function isNumberLessThan($variable): bool;
+    public function isNumberLessThan(int $number): bool;
 
     /**
-     * @param $variable
+     * @param $number
      * @return bool
      */
-    public function isNumberLessThanOrEqual($variable): bool;
+    public function isNumberLessThanOrEqual(int $number): bool;
+
+    /**
+     * @return bool
+     */
+    public function isFloatingNumber(): bool;
+
+    /**
+     * @param $number
+     * @return bool
+     */
+    public function isFloatingNumberGreaterThan(int $number): bool;
+
+    /**
+     * @param $number
+     * @return bool
+     */
+    public function isFloatingNumberGreaterThanOrEqual(int $number): bool;
+
+    /**
+     * @param $number
+     * @return bool
+     */
+    public function isFloatingNumberLessThan(int $number): bool;
+
+    /**
+     * @param $number
+     * @return bool
+     */
+    public function isFloatingNumberLessThanOrEqual(int $number): bool;
 
     /**
      * @return bool
@@ -154,14 +183,15 @@ interface Condition
     public function isNumberFormat(): bool;
 
     /**
+     * @param string|null $pattern
      * @return bool
      */
-    public function isBlank(): bool;
+    public function isUrl(string $pattern = null): bool;
 
     /**
      * @return bool
      */
-    public function isUrl(): bool;
+    public function isPhoneNumber(): bool;
 
     /**
      * @return bool
@@ -184,6 +214,42 @@ interface Condition
     public function isEmail(): bool;
 
     /**
+     * @return bool
+     */
+    public function isUUID(): bool;
+
+    /**
+     * @param $table
+     * @param $column
+     * @param null $ignoreID
+     * @param string $ignoreColumn
+     * @return bool
+     */
+    public function isUniqueInDB($table, $column, $ignoreID = null, string $ignoreColumn = 'id'): bool;
+
+    /**
+     * @param $table
+     * @param $column
+     * @param bool $considerIsActive
+     * @param null $ignoreID
+     * @param string $ignoreColumn
+     * @return bool
+     */
+    public function isFoundInDB($table, $column, bool $considerIsActive = false,
+                                $ignoreID = null, string $ignoreColumn = 'id'): bool;
+
+    /**
+     * @param $table
+     * @param $column
+     * @param bool $considerIsActive
+     * @param null $ignoreID
+     * @param string $ignoreColumn
+     * @return bool
+     */
+    public function isNotFoundInDB($table, $column, bool $considerIsActive = false,
+                                   $ignoreID = null, string $ignoreColumn = 'id'): bool;
+
+    /**
      * @param string $format
      * @return bool
      */
@@ -194,14 +260,14 @@ interface Condition
      * @param DateTime $compare
      * @return bool
      */
-    public function isDateGraterThan(string $format, DateTime $compare): bool;
+    public function isDateGreaterThan(string $format, DateTime $compare): bool;
 
     /**
      * @param string $format
      * @param DateTime $compare
      * @return bool
      */
-    public function isDateGraterThanOrEqual(string $format, DateTime $compare): bool;
+    public function isDateGreaterThanOrEqual(string $format, DateTime $compare): bool;
 
     /**
      * @param string $format
@@ -224,20 +290,21 @@ interface Condition
     public function matches(string $regex): bool;
 
     /**
-     * @param $format
-     * @return string
-     */
-    public function getDate($format): string;
-
-    /**
-     * @return string
-     */
-    public function getAge(): string;
-
-    /**
      * @return bool
      */
     public function isBool(): bool;
+
+    /**
+     * @param callable $test
+     * @return bool
+     */
+    public function isTrue(callable $test): bool;
+
+    /**
+     * @param callable $test
+     * @return bool
+     */
+    public function isFalse(callable $test): bool;
 
     /**
      * @return bool
@@ -292,7 +359,7 @@ interface Condition
      * @param string $algo
      * @return Condition
      */
-    public function hash(string $algo): Condition;
+    public function hash(string $algo = "SHA256"): Condition;
 
     /**
      * @return Condition
@@ -315,9 +382,16 @@ interface Condition
     public function toUcWords(): Condition;
 
     /**
+     * @param string $charlist
      * @return Condition
      */
-    public function trim(): Condition;
+    public function trim(string $charlist = " \t\n\r\0\x0B"): Condition;
+
+    /**
+     * @param string $format
+     * @return Condition
+     */
+    public function toDate(string $format): Condition;
 
     /**
      * @param $function

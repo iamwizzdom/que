@@ -6,7 +6,7 @@
  * Time: 10:07 PM
  */
 
-namespace que\database\interfaces;
+namespace que\database\interfaces\drivers;
 
 
 interface DriverQueryBuilder

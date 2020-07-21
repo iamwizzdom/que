@@ -15,7 +15,7 @@ class CurlResponse
     /**
      * @var array
      */
-    private $response = array();
+    private array $response = [];
 
     /**
      * Response constructor.
@@ -37,15 +37,24 @@ class CurlResponse
     /**
      * @return bool
      */
-    public function isSuccessful(): bool
+    public function status(): bool
     {
-        return $this->response['status'];
+        return $this->response['status'] ?? false;
     }
 
     /**
-     * @return mixed
+     * @param $key
+     * @return mixed|null
      */
-    public function getResponse()
+    public function getCurlInfo($key)
+    {
+        return $this->response['info'][$key] ?? null;
+    }
+
+    /**
+     * @return array
+     */
+    public function getResponse(): array
     {
         return $this->response;
     }
@@ -55,7 +64,7 @@ class CurlResponse
      */
     public function getResponseArray(): array
     {
-        return json_decode($this->response['response'], true) ?: [];
+        return json_decode($this->getResponseString(), true) ?: [];
     }
 
     /**
@@ -63,7 +72,7 @@ class CurlResponse
      */
     public function getResponseString(): string
     {
-        return $this->response['response'];
+        return $this->response['response'] ?? "";
     }
 
 }

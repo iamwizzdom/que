@@ -1,7 +1,7 @@
 <?php
 
 use que\route\RouteEntry;
-use que\security\permission\RoutePermission;
+use que\security\interfaces\RoutePermission;
 
 /**
  * Created by PhpStorm.

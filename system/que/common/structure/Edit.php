@@ -8,26 +8,27 @@
 
 namespace que\common\structure;
 
-use que\database\model\interfaces\Model;
+use que\database\interfaces\model\Model;
+use que\http\input\Input;
 use que\template\Composer;
 
 interface Edit extends Receiver
 {
     /**
      * This method will run each time the module is accessed
-     * @param array $uri_args - This parameter provides the arguments found in the uri
+     * @param Input $input
      * @return Model|null - This method must return a model of the record being edited or null
      * @note Que will run this method for you automatically
      */
-    public function info(array $uri_args): ?Model;
+    public function info(Input $input): ?Model;
 
     /**
      * This method will run when the module is accessed via GET request
-     * @param array $uri_args - This parameter provides the arguments found in the uri
+     * @param Input $input
      * @param Model|null $info - This parameter will provide the data returned by $this->info()
      * @note Que will run this method for you automatically
      */
-    public function onLoad(array $uri_args, ?Model $info): void;
+    public function onLoad(Input $input, ?Model $info): void;
 
     /**
      * This method will run last, to finalize your Composer and render your template

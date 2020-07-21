@@ -6,11 +6,13 @@
  * Time: 9:26 PM
  */
 
-namespace que\database\model\interfaces;
+namespace que\database\interfaces\model;
 
-use ArrayAccess as ArrayAccessAlias;
+use que\common\validator\interfaces\Condition;
+use que\database\model\builder\Builder;
+use que\support\interfaces\QueArrayAccess;
 
-interface Model extends ArrayAccessAlias
+interface Model extends QueArrayAccess
 {
     /**
      * Model constructor.
@@ -84,32 +86,14 @@ interface Model extends ArrayAccessAlias
     public function get($key): Condition;
 
     /**
-     * @param array $columns
-     * @param string $dataType
-     * @param array|null $join
-     * @param string|null $primaryKey
-     * @return array|object|Model|null
+     * @return Builder
      */
-    public function getNextRecord(
-        array $columns = ['*'],
-        string $dataType = 'model',
-        array $join = null,
-        string $primaryKey = null
-    );
+    public function getNextRecord(): Builder;
 
     /**
-     * @param array $columns
-     * @param string $dataType
-     * @param array|null $join
-     * @param string|null $primaryKey
-     * @return array|object|Model|null
+     * @return Builder
      */
-    public function getPreviousRecord(
-        array $columns = ['*'],
-        string $dataType = 'model',
-        array $join = null,
-        string $primaryKey = null
-    );
+    public function getPreviousRecord(): Builder;
 
     /**
      * @return bool
