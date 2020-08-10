@@ -13,6 +13,7 @@ use ArrayAccess;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use que\database\interfaces\model\Model;
+use que\http\HTTP;
 
 class XUser implements ArrayAccess
 {
@@ -72,11 +73,11 @@ class XUser implements ArrayAccess
 
         if ($model === null) throw new QueRuntimeException(
             "No database model was found with the key '{$modelKey}', check your database configuration to fix this issue.",
-            "Que Runtime Error", E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+            "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         if (!($implements = class_implements($model)) || !isset($implements[Model::class])) throw new QueRuntimeException(
             "The specified model ({$model}) with key '{$modelKey}' does not implement the Que database model interface.",
-            "Que Runtime Error", E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+            "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         return new $model($this->user,
             self::$database_config['tables']['user']['name'] ?? 'users',
@@ -101,11 +102,9 @@ class XUser implements ArrayAccess
 
         $primaryKey = self::$database_config['tables']['user']['primary_key'] ?? 'id';
 
-        $update = db()->update(self::$database_config['tables']['user']['name'] ?? 'users', $columnsToUpdate, [
-            'AND' => [
-                $primaryKey => $this->getValue($primaryKey, 0)
-            ]
-        ]);
+        $update = db()->update()->table(
+            self::$database_config['tables']['user']['name'] ?? 'users'
+        )->columns($columnsToUpdate)->where($primaryKey, $this->getValue($primaryKey, 0))->exec();
 
         if ($status = $update->isSuccessful())
             foreach ($columnsToUpdate as $key => $value)
@@ -124,7 +123,7 @@ class XUser implements ArrayAccess
         if (!object_key_exists($primaryKey, $this->user))
             throw new QueRuntimeException("The key '{$primaryKey}' was not found in the present user object",
                 "User Error", E_USER_ERROR, 0, PreviousException::getInstance());
-        
+
         return User::isLoggedIn() && User::getInstance()->getModel()
                 ->get($primaryKey)->is($this->getValue($primaryKey));
     }

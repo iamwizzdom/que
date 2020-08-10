@@ -6,7 +6,7 @@
  * Time: 10:14 PM
  */
 
-namespace que\database\mysql;
+namespace que\database;
 
 use Closure;
 use que\common\exception\PreviousException;
@@ -15,6 +15,7 @@ use que\database\interfaces\drivers\DriverQueryBuilder;
 use que\database\interfaces\drivers\DriverResponse;
 use que\database\interfaces\model\Model;
 use que\database\model\ModelStack;
+use que\http\HTTP;
 
 class QueryResponse
 {
@@ -111,11 +112,11 @@ class QueryResponse
 
         if ($model === null) throw new QueRuntimeException(
             "No database model was found with the key '{$modelKey}', check your database configuration to fix this issue.",
-            "Que Runtime Error", E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+            "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         if (!($implements = class_implements($model)) || !isset($implements[Model::class])) throw new QueRuntimeException(
             "The specified model ({$model}) with key '{$modelKey}' does not implement the Que database model interface.",
-            "Que Runtime Error", E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+            "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         $response = $this->getQueryResponse($key);
 
@@ -256,11 +257,11 @@ class QueryResponse
 
         if ($model === null) throw new QueRuntimeException(
             "No database model was found with the key '{$modelKey}', check your database configuration to fix this issue.",
-            "Que Runtime Error", E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+            "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         if (!($implements = class_implements($model)) || !isset($implements[Model::class])) throw new QueRuntimeException(
             "The specified model ({$model}) with key '{$modelKey}' does not implement the Que database model interface.",
-            "Que Runtime Error", E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+            "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         $response = $this->getQueryResponse();
 

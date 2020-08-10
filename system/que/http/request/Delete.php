@@ -31,7 +31,7 @@ class Delete implements QueArrayAccess
      */
     protected function __construct()
     {
-        if (strtoupper(http()->_server()->get("REQUEST_METHOD")) == "DELETE") {
+        if (http()->_request()->getMethod() == Request::METHOD_DELETE) {
             $data = file_get_contents("php://input");
             parse_str($data, $this->pointer);
         }

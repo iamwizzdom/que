@@ -12,7 +12,7 @@ class ConditionErrorStack
     /**
      * @var Validator
      */
-    private $validator;
+    private Validator $validator;
 
     /**
      * @var ConditionError[]|ConditionErrorStack[]
@@ -27,13 +27,26 @@ class ConditionErrorStack
     /**
      * @var array
      */
-    private $value = [];
+    private array $value = [];
 
-    public function __construct($key, array $value, Validator $validator)
+    /**
+     * @var bool
+     */
+    private bool $nullable = false;
+
+    /**
+     * ConditionErrorStack constructor.
+     * @param $key
+     * @param array $value
+     * @param Validator $validator
+     * @param bool $nullable
+     */
+    public function __construct($key, array $value, Validator $validator, bool $nullable = false)
     {
         $this->key = $key;
         $this->value = $value;
         $this->validator = $validator;
+        $this->nullable = $nullable;
         $this->stackConditions($this->value);
     }
 
@@ -82,7 +95,7 @@ class ConditionErrorStack
     /**
      * @param Closure $callback
      * callback param 1: Condition instance
-     * callback param 2: Condition instance of siblings
+     * callback param 2: Condition[] | ConditionStack[] instances of siblings
      * @return ConditionErrorStack
      */
     public function validateChildren(Closure $callback): ConditionErrorStack {
@@ -90,8 +103,8 @@ class ConditionErrorStack
         $conditions = $this->getConditions();
 
         foreach ($conditions as &$condition) {
-            $con = &$condition['condition'];
-            call_user_func($callback, $con, $condition['siblings']);
+            $conObj = &$condition['condition'];
+            call_user_func($callback, $conObj, $condition['siblings']);
         }
 
         return $this;
@@ -158,14 +171,14 @@ class ConditionErrorStack
     }
 
     /**
-     * @param $values
+     * @param $array
      */
-    private function stackConditions($values) {
-        foreach ($values as $key => $value) {
+    private function stackConditions($array) {
+        foreach ($array as $key => $value) {
             if (is_array($value)) {
-                $this->conditions[$key] = new ConditionErrorStack($key, $value, $this->validator);
+                $this->conditions[$key] = new ConditionErrorStack($key, $value, $this->validator, $this->nullable);
             } else {
-                $this->conditions[$key] = new ConditionError($key, $value, $this->validator);
+                $this->conditions[$key] = new ConditionError($key, $value, $this->validator, $this->nullable);
             }
         }
     }
@@ -180,8 +193,8 @@ class ConditionErrorStack
                 $list = array_merge($list, $condition->getConditions());
             } elseif ($condition instanceof ConditionError) {
                 $list[] = [
-                    'condition' => &$condition,
-                    'siblings' => array_exclude($this->conditions, [$condition->getKey()])
+                    'condition' => $condition,
+                    'siblings' => array_exclude($this->conditions, $condition->getKey())
                 ];
             }
         }

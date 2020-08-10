@@ -13,7 +13,8 @@ use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use que\common\validator\interfaces\Condition;
 use que\database\interfaces\model\Model as ModelAlias;
-use que\database\model\builder\Builder;
+use que\database\interfaces\Builder;
+use que\http\HTTP;
 
 class Model implements ModelAlias
 {
@@ -153,7 +154,7 @@ class Model implements ModelAlias
         // TODO: Implement get() method.
         if (!$this->offsetExists($key))
             throw new QueRuntimeException("Undefined key: '{$key}' not found in current model object", "Model error",
-                0, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+                0, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         return new \que\common\validator\condition\Condition($key, $this->getValue($key));
     }
@@ -162,14 +163,16 @@ class Model implements ModelAlias
      * @return Builder
      */
     public function getNextRecord(): Builder {
-        return new Builder($this, Builder::NEXT);
+        return db()->select()->table($this->getTable())
+            ->where($this->getPrimaryKey(), $this->getValue($this->getPrimaryKey()), '>');
     }
 
     /**
      * @return Builder
      */
     public function getPreviousRecord(): Builder {
-        return new Builder($this, Builder::PREVIOUS);
+        return db()->select()->table($this->getTable())
+            ->where($this->getPrimaryKey(), $this->getValue($this->getPrimaryKey()), '<');
     }
 
     /**
@@ -201,11 +204,8 @@ class Model implements ModelAlias
 
         if (empty($columnsToUpdate)) return false;
 
-        $update = db()->update($this->getTable(), $columnsToUpdate, [
-            'AND' => [
-                $primaryKey => $this->getValue($primaryKey)
-            ]
-        ]);
+        $update = db()->update()->table($this->getTable())->columns($columnsToUpdate)
+            ->where($primaryKey, $this->getValue($primaryKey))->exec();
 
         if ($status = $update->isSuccessful())
             foreach ($columnsToUpdate as $key => $value) $this->offsetSet($key, $value);
@@ -223,11 +223,7 @@ class Model implements ModelAlias
 
         if (!$this->offsetExists($primaryKey)) return false;
 
-        $delete = db()->delete($this->getTable(), [
-            'AND' => [
-                $primaryKey => $this->getValue($primaryKey)
-            ]
-        ]);
+        $delete = db()->delete()->table($this->getTable())->where($primaryKey, $this->getValue($primaryKey))->exec();
 
         if ($status = $delete->isSuccessful()) $this->object = (object)[];
 

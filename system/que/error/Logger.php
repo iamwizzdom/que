@@ -10,6 +10,7 @@ namespace que\error;
 
 
 use que\common\exception\QueException;
+use que\http\request\Request;
 use que\utility\client\IP;
 
 class Logger
@@ -197,6 +198,7 @@ class Logger
             ],
             'request' => [
                 'url' => current_url(),
+                'method' => Request::getInstance()->getMethod(),
                 'ip' => IP::real()
             ]
         ];

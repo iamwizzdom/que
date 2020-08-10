@@ -61,11 +61,12 @@ class Header implements QueArrayAccess
      * @param string $offset
      * @param string $data
      * @param bool $replace
+     * @param int $response_code
      */
-    public function set(string $offset, string $data, bool $replace = true): void {
+    public function set(string $offset, string $data, bool $replace = true, int $response_code = null): void {
         if ($this->_isset($offset) && !$replace) return;
         $this->pointer[$offset] = $data;
-        header("{$offset}: {$data}", $replace);
+        header("{$offset}: {$data}", $replace, $response_code);
     }
 
     /**

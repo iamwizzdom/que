@@ -40,8 +40,7 @@ abstract class IP
             return self::serverVar("HTTP_FORWARDED");
         elseif (self::isValid(self::serverVar("HTTP_X_FORWARDED")))
             return self::serverVar("HTTP_X_FORWARDED");
-        else
-            return self::serverVar("REMOTE_ADDR");
+        else return self::serverVar("REMOTE_ADDR");
 
     }
 
@@ -51,7 +50,7 @@ abstract class IP
      */
     public static function serverVar($key)
     {
-        return $_SERVER[$key] = $_SERVER[$key] ?? '';
+        return server($key, '');
     }
 
     /**

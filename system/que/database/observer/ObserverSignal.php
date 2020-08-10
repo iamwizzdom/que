@@ -39,35 +39,29 @@ class ObserverSignal
     /**
      * @return bool
      */
-    public function continueOperation(): bool {
+    public function isContinueOperation(): bool {
         return $this->continue;
     }
 
-    /**
-     * @param bool $continue
-     */
-    public function setContinueOperation(bool $continue): void {
-        $this->continue = $continue;
+    public function discontinueOperation(): void {
+        $this->continue = false;
     }
 
     /**
      * @return bool
      */
-    public function undoOperation(): bool {
+    public function isUndoOperation(): bool {
         return $this->undo;
     }
 
-    /**
-     * @param bool $undo
-     */
-    public function setUndoOperation(bool $undo): void {
-        $this->undo = $undo;
+    public function undoOperation(): void {
+        $this->undo = true;
     }
 
     /**
      * @return bool
      */
-    public function retryOperation(): bool {
+    public function isRetryOperation(): bool {
         return $this->retry;
     }
 
@@ -88,13 +82,12 @@ class ObserverSignal
     }
 
     /**
-     * @param bool $retry
      * @param int $trials | number of times you want to retry the operation
      * @param float $interval | retrial interval in milliseconds
      * @return mixed
      */
-    public function setRetryOperation(bool $retry, int $trials = 1, float $interval = 0.1) {
-        $this->retry = $retry;
+    public function retryOperation(int $trials = 1, float $interval = 0.1) {
+        $this->retry = true;
         $this->trials = $trials;
         $this->interval = $interval;
     }

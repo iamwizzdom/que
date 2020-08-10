@@ -53,7 +53,7 @@ class UserObserver implements Observer
     public function onCreateFailed(Model $model, array $errors, $errorCode)
     {
         // TODO: Implement onCreateFailed() method.
-        $this->getSignal()->setRetryOperation(true, 2);
+        $this->getSignal()->retryOperation(2);
         debug_print(['onCreateFailed' => $model, $errors, $errorCode]);
     }
 
@@ -92,7 +92,7 @@ class UserObserver implements Observer
     {
         // TODO: Implement onUpdated() method.
         debug_print([['$newModels' => $newModels], ['$previousModels' => $previousModels], 'onUpdated']);
-        $this->getSignal()->setUndoOperation(true);
+//        $this->getSignal()->setUndoOperation(true);
     }
 
     /**
@@ -101,7 +101,7 @@ class UserObserver implements Observer
     public function onUpdateFailed(ModelStack $models, array $errors, $errorCode)
     {
         // TODO: Implement onUpdateFailed() method.
-        $this->getSignal()->setRetryOperation(true, 1);
+        $this->getSignal()->retryOperation(1);
         debug_print(['onUpdateFailed' => $models, $errors, $errorCode]);
     }
 
@@ -129,9 +129,9 @@ class UserObserver implements Observer
     public function onDeleting(ModelStack $models)
     {
         // TODO: Implement onDeleting() method.
-//        $models->unsetWhen(function (Model $model) {
-//            return $model->get('id')->isEqualToAny([75,76]);
-//        });
+        $models->unsetWhen(function (Model $model) {
+            return $model->get('id')->isEqualToAny([106, 109]);
+        });
         debug_print([$models,'onDeleting']);
     }
 
@@ -151,7 +151,7 @@ class UserObserver implements Observer
     public function onDeleteFailed(ModelStack $models, array $errors, $errorCode)
     {
         // TODO: Implement onDeleteFailed() method.
-        $this->getSignal()->setRetryOperation(true, 3);
+        $this->getSignal()->retryOperation(3);
         debug_print(['onDeleteFailed' => $models, $errors, $errorCode]);
     }
 

@@ -17,12 +17,12 @@ class Pagination
     /**
      * @var Pagination
      */
-    private static $instance;
+    private static Pagination $instance;
 
     /**
-     * @var array
+     * @var Paginator[]
      */
-    private static $pagination = [];
+    private static array $paginators = [];
 
     /**
      * Query constructor.
@@ -52,136 +52,49 @@ class Pagination
     }
 
     /**
-     * @param int $currentPage
-     * @param int $pageStart
-     * @param int $pageEnd
-     * @param int $totalPages
-     * @param int $totalRecords
+     * @param Paginator $paginator
      * @param string $tag
      */
-    public function paginate(int $currentPage, int $pageStart,
-                                    int $pageEnd, int $totalPages, int $totalRecords, string $tag)
+    public function add(Paginator $paginator, string $tag)
     {
-        $params = get();
-        unset($params['p']);
-        $currentUrl = serializer($params);
-        $count = 0;
-
-        $pagination = "<ul class='pagination'>";
-
-        if ($pageStart > 10) {
-            $pagination .= '<li class="page-item"><a class="page-link" href="?' .  $currentUrl . '">' .
-                '<i class="fa fa-angle-left"></i><i class="fa fa-angle-left"></i></a></li>';
-        }
-
-        $pagination .= '<li class="page-item ' . ($pageStart <= 10 ? 'disabled' : '') .'"><a class="page-link" href="' . ($pageStart <= 10 ? '#' :
-                '?' . $currentUrl . '&p=' . ($pageStart - 1)) . '"><i class="fa fa-angle-left"></i></a></li>';
-
-        for ($i = $pageStart; $i < ($pageEnd + 1); $i++) {
-
-            $pagination .= '<li class="page-item ' . ($i == $currentPage ? "active" : "") .
-                '"><a class="page-link" href="?' . $currentUrl . '&p=' . $i . '">' . $i . '</a></li>';
-
-            $count++;
-
-        }
-
-        $pagination .= '<li class="page-item ' . (($pageEnd + 1) > $totalPages ? 'disabled' : '') .'"><a class="page-link" href="' . (($pageEnd + 1) > $totalPages ? '#' :
-                '?' . $currentUrl . '&p=' . ($pageEnd + 1)) . '"><i class="fa fa-angle-right"></i></a></li>';
-
-        if (($pageEnd + 1) < $totalPages) {
-            $pagination .= '<li class="page-item"><a class="page-link" href="?' .  $currentUrl . '&p=' . $totalPages . '">' .
-                '<i class="fa fa-angle-right"></i><i class="fa fa-angle-right"></i></a></li>';
-        }
-
-        $pagination .= "</ul>";
-
-        self::$pagination[$tag] = [
-            'currentPage' => $currentPage,
-            'pageStart' => $pageStart,
-            'pageEnd' => $pageEnd,
-            'totalPages' => $totalPages,
-            'totalRecords' => $totalRecords,
-            'links' => $pagination
-        ];
+        self::$paginators[$tag] = $paginator;
     }
 
     /**
-     * @param $tag
-     * @return int
+     * @param string $tag
+     * @return mixed|Paginator|null
      */
-    public function getCurrentPage($tag): int
+    public function getPaginator(string $tag)
     {
-        if (!isset(self::$pagination[$tag])) {
-
-            throw new QueRuntimeException("Undefined tag: No Database Query was found paginated with tag '{$tag}'",
-                "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(2));
-        }
-
-        return self::$pagination[$tag]['currentPage'];
+        return self::$paginators[$tag] ?? null;
     }
 
     /**
-     * @return array
+     * @param string $tag
+     * @param bool $returnUrl
+     * @return string
      */
-    public function getCurrentPageFlat(): array
+    public function getNextPage(string $tag, bool $returnUrl = false)
     {
-        $currentPage = [];
-        foreach (self::$pagination as $k => $v)
-            $currentPage[$k] = $v['currentPage'];
-        return $currentPage;
+        if (!isset(self::$paginators[$tag]))
+            throw new QueRuntimeException("Undefined Tag: No Database Query was found paginated with the tag '{$tag}'",
+                "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(1));
+
+        return self::$paginators[$tag]->_show_next($returnUrl);
     }
 
     /**
-     * @param $tag
-     * @return int
+     * @param string $tag
+     * @param bool $returnUrl
+     * @return string
      */
-    public function getPageStart($tag): int
+    public function getPreviousPage(string $tag, bool $returnUrl = false)
     {
-        if (!isset(self::$pagination[$tag])) {
+        if (!isset(self::$paginators[$tag]))
+            throw new QueRuntimeException("Undefined Tag: No Database Query was found paginated with the tag '{$tag}'",
+                "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(1));
 
-            throw new QueRuntimeException("Undefined tag: No Database Query was found paginated with tag '{$tag}'",
-                "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(2));
-        }
-
-        return self::$pagination[$tag]['pageStart'];
-    }
-
-    /**
-     * @return array
-     */
-    public function getPageStartFlat(): array
-    {
-        $pageStart = [];
-        foreach (self::$pagination as $k => $v)
-            $pageStart[$k] = $v['pageStart'];
-        return $pageStart;
-    }
-
-    /**
-     * @param $tag
-     * @return int
-     */
-    public function getPageEnd($tag): int
-    {
-        if (!isset(self::$pagination[$tag])) {
-
-            throw new QueRuntimeException("Undefined tag: No Database Query was found paginated with tag '{$tag}'",
-                "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(2));
-        }
-
-        return self::$pagination[$tag]['pageEnd'];
-    }
-
-    /**
-     * @return array
-     */
-    public function getPageEndFlat(): array
-    {
-        $pageEnd = [];
-        foreach (self::$pagination as $k => $v)
-            $pageEnd[$k] = $v['pageEnd'];
-        return $pageEnd;
+        return self::$paginators[$tag]->_show_previous($returnUrl);
     }
 
     /**
@@ -190,13 +103,11 @@ class Pagination
      */
     public function getTotalPages($tag): int
     {
-        if (!isset(self::$pagination[$tag])) {
+        if (!isset(self::$paginators[$tag]))
+            throw new QueRuntimeException("Undefined Tag: No Database Query was found paginated with the tag '{$tag}'",
+                "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(1));
 
-            throw new QueRuntimeException("Undefined tag: No Database Query was found paginated with tag '{$tag}'",
-                "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(2));
-        }
-
-        return self::$pagination[$tag]['totalPages'];
+        return self::$paginators[$tag]->getTotalPages();
     }
 
     /**
@@ -205,8 +116,8 @@ class Pagination
     public function getTotalPagesFlat(): array
     {
         $totalPages = [];
-        foreach (self::$pagination as $k => $v)
-            $totalPages[$k] = $v['totalPages'];
+        foreach (self::$paginators as $tag => $paginator)
+            $totalPages[$tag] = $paginator->getTotalPages();
         return $totalPages;
     }
 
@@ -216,13 +127,11 @@ class Pagination
      */
     public function getTotalRecords($tag): int
     {
-        if (!isset(self::$pagination[$tag])) {
+        if (!isset(self::$paginators[$tag]))
+            throw new QueRuntimeException("Undefined Tag: No Database Query was found paginated with the tag '{$tag}'",
+                "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(1));
 
-            throw new QueRuntimeException("Undefined tag: No Database Query was found paginated with tag '{$tag}'",
-                "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(2));
-        }
-
-        return self::$pagination[$tag]['totalRecords'];
+        return self::$paginators[$tag]->getTotalRecords();
     }
 
     /**
@@ -231,8 +140,8 @@ class Pagination
     public function getTotalRecordsFlat(): array
     {
         $totalRecords = [];
-        foreach (self::$pagination as $k => $v)
-            $totalRecords[$k] = $v['totalRecords'];
+        foreach (self::$paginators as $tag => $paginator)
+            $totalRecords[$tag] = $paginator->getTotalRecords();
         return $totalRecords;
     }
 
@@ -242,13 +151,16 @@ class Pagination
      */
     public function getLinks($tag): string
     {
-        if (!isset(self::$pagination[$tag])) {
+        if (!isset(self::$paginators[$tag]))
+            throw new QueRuntimeException("Undefined Tag: No Database Query was found paginated with the tag '{$tag}'",
+                "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(1));
 
-            throw new QueRuntimeException("Undefined tag: No Database Query was found paginated with tag '{$tag}'",
-                "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(2));
+        try {
+            return self::$paginators[$tag]->render(true);
+        } catch (\Exception $e) {
         }
 
-        return self::$pagination[$tag]['links'];
+        return '';
     }
 
     /**
@@ -257,8 +169,12 @@ class Pagination
     public function getLinksFlat(): array
     {
         $pagination = [];
-        foreach (self::$pagination as $k => $v)
-            $pagination[$k] = $v['links'];
+        foreach (self::$paginators as $tag => $paginator) {
+            try {
+                $pagination[$tag] = $paginator->render(true);
+            } catch (\Exception $e) {
+            }
+        }
         return $pagination;
     }
 }

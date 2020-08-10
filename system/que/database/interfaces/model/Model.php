@@ -9,7 +9,7 @@
 namespace que\database\interfaces\model;
 
 use que\common\validator\interfaces\Condition;
-use que\database\model\builder\Builder;
+use que\database\interfaces\Builder;
 use que\support\interfaces\QueArrayAccess;
 
 interface Model extends QueArrayAccess

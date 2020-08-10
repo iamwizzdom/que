@@ -11,6 +11,7 @@ namespace que\common\validator\condition;
 use DateTime;
 use Exception;
 use que\common\validator\interfaces\Condition as ConditionAlias;
+use que\database\interfaces\Builder;
 use que\support\Arr;
 use que\utility\client\IP;
 use que\utility\hash\Hash;
@@ -365,19 +366,13 @@ class Condition implements ConditionAlias
                                 $ignoreID = null, string $ignoreColumn = 'id'): bool
     {
         // TODO: Implement isFoundInDB() method.
-        $where = [
-            $column => $this->getValue()
-        ];
 
-        if ($considerIsActive === true) {
-            $where[config('database.table_status_key', 'is_active')] = STATE_ACTIVE;
-        }
-
-        if (!empty($ignoreID)) {
-            $where["{$ignoreColumn}[!=]"] = $ignoreID;
-        }
-
-        return db()->check($table, ['AND' => $where])->isSuccessful();
+        return db()->check(function (Builder $builder) use ($table, $column, $considerIsActive, $ignoreID, $ignoreColumn) {
+            $builder->table($table)->where($column, $this->getValue());
+            if (!empty($ignoreID)) $builder->where($ignoreColumn, $ignoreID, '!=');
+            if ($considerIsActive === true) $builder->where(
+                config('database.table_status_key', 'is_active'), STATE_ACTIVE);
+        })->isSuccessful();
     }
 
     /**

@@ -13,7 +13,7 @@ class FlatList
     /**
      * @var FlatList
      */
-    private static $instance;
+    private static FlatList $instance;
 
     /**
      * @var array
@@ -425,11 +425,10 @@ class FlatList
      */
     private function getCountries()
     {
-        $countries = db()->select((self::$database_config['tables']['country']['name'] ?? 'countries'), '*', [
-            'AND' => [
-                (self::$database_config['table_status_key'] ?? 'is_active') => STATE_ACTIVE
-            ]
-        ]);
+        $countries = db()->select()->table(
+            (self::$database_config['tables']['country']['name'] ?? 'countries')
+        )->where((self::$database_config['table_status_key'] ?? 'is_active'), STATE_ACTIVE)->exec();
+
         return ($countries->isSuccessful() ? $countries->getQueryResponseArray() : []);
     }
 
@@ -439,12 +438,11 @@ class FlatList
      */
     private function getStates(int $countryID)
     {
-        $states = db()->select((self::$database_config['tables']['state']['name'] ?? 'states'), '*', [
-            'AND' => [
-                (self::$database_config['tables']['country']['primary_key'] ?? 'id') => $countryID,
-                (self::$database_config['table_status_key'] ?? 'is_active') => STATE_ACTIVE
-            ]
-        ]);
+        $states = db()->select()->table(
+            (self::$database_config['tables']['state']['name'] ?? 'states')
+        )->where((self::$database_config['tables']['state']['primary_key'] ?? 'id'), $countryID)
+        ->where((self::$database_config['table_status_key'] ?? 'is_active'), STATE_ACTIVE)->exec();
+
         return ($states->isSuccessful() ? $states->getQueryResponseArray() : []);
     }
 
@@ -454,13 +452,11 @@ class FlatList
      */
     private function getAreas(int $stateID)
     {
-        $states = db()->select((self::$database_config['tables']['area']['name'] ?? 'areas'), '*', [
-            'AND' => [
-                (self::$database_config['tables']['state']['primary_key'] ?? 'id') => $stateID,
-                (self::$database_config['table_status_key'] ?? 'is_active') => STATE_ACTIVE
-            ]
-        ]);
-        return ($states->isSuccessful() ? $states->getQueryResponseArray() : []);
+        $areas = db()->select()->table((self::$database_config['tables']['area']['name'] ?? 'states'))
+            ->where((self::$database_config['tables']['area']['primary_key'] ?? 'id'), $stateID)
+            ->where((self::$database_config['table_status_key'] ?? 'is_active'), STATE_ACTIVE)->exec();
+
+        return ($areas->isSuccessful() ? $areas->getQueryResponseArray() : []);
     }
 
     /**
@@ -468,11 +464,9 @@ class FlatList
      */
     private function getLanguages()
     {
-        $language = db()->select((self::$database_config['tables']['language']['name'] ?? 'languages'), '*', [
-            'AND' => [
-                (self::$database_config['table_status_key'] ?? 'is_active') => STATE_ACTIVE
-            ]
-        ]);
+        $language = db()->select()->table((self::$database_config['tables']['language']['name'] ?? 'languages'))
+            ->where((self::$database_config['table_status_key'] ?? 'is_active'), STATE_ACTIVE)->exec();
+
         return ($language->isSuccessful() ? $language->getQueryResponseArray() : []);
     }
 }

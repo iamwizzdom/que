@@ -10,12 +10,43 @@ namespace que\http\request;
 
 
 use ArrayIterator;
+use Exception;
+use que\common\exception\PreviousException;
+use que\common\exception\QueRuntimeException;
+use que\http\HTTP;
+use que\http\input\Input;
 use que\support\Arr;
 use que\support\interfaces\QueArrayAccess;
+use que\utility\client\IP;
+use ReflectionClass;
 use Traversable;
 
 class Request implements QueArrayAccess
 {
+    /**
+     * Que supported HTTP Request Methods
+     */
+    const METHOD_GET = 'GET';
+    const METHOD_POST = 'POST';
+    const METHOD_PUT = 'PUT';
+    const METHOD_PATCH = 'PATCH';
+    const METHOD_DELETE = 'DELETE';
+
+    /**
+     * @var bool
+     */
+    protected static bool $httpMethodOverride = false;
+
+    /**
+     * @var string
+     */
+    protected ?string $method = null;
+
+    /**
+     * @var array
+     */
+    protected array $supportedMethods = [];
+
     /**
      * @var Request
      */
@@ -52,6 +83,313 @@ class Request implements QueArrayAccess
         if (!isset(self::$instance))
             self::$instance = new self;
         return self::$instance;
+    }
+
+    /**
+     * Enables support for the _method request parameter to determine the intended HTTP method.
+     *
+     * If the HTTP method parameter override is enabled, an incoming "POST" request can be altered
+     * and used to send a "PUT" or "DELETE" request via the _method request parameter.
+     *
+     * The HTTP method can only be overridden when the real HTTP method is POST.
+     */
+    public static function enableHttpMethodOverride()
+    {
+        self::$httpMethodOverride = true;
+    }
+
+    /**
+     * Disables support for the _method request parameter
+     */
+    public static function disableHttpMethodOverride()
+    {
+        self::$httpMethodOverride = false;
+    }
+
+    /**
+     * Checks whether support for the _method request parameter is enabled.
+     *
+     * @return bool True when the _method request parameter is enabled, false otherwise
+     */
+    public static function getHttpMethodOverrideStatus()
+    {
+        return self::$httpMethodOverride;
+    }
+
+    /**
+     * Sets the request method.
+     * @param string $method
+     */
+    public function setMethod(string $method)
+    {
+        if (!$this->isSupportedMethod($method))
+            throw new QueRuntimeException(sprintf('Unsupported HTTP request method override "%s".', $method),
+                "HTTP Request Error", E_USER_ERROR, HTTP::BAD_REQUEST, PreviousException::getInstance(1));
+        $this->method = null;
+        http()->_server()->set('REQUEST_METHOD', $method);
+    }
+
+    /**
+     * Gets the request "intended" method.
+     *
+     * If the X-HTTP-Method-Override header is set, and if the method is a POST,
+     * then it is used to determine the "real" intended HTTP method.
+     *
+     * The _method request parameter can also be used to determine the HTTP method,
+     * but only if enableHttpMethodParameterOverride() has been called.
+     *
+     * The method is always an uppercased string.
+     *
+     * @return string The request method
+     *
+     * @see getRealMethod()
+     */
+    public function getMethod()
+    {
+        if (null !== $this->method) return $this->method;
+
+        $this->method = $this->getRealMethod();
+
+        if ('POST' !== $this->method) return $this->method;
+
+        $method = headers('X-HTTP-METHOD-OVERRIDE');
+
+        if (!$method && self::$httpMethodOverride) {
+            $method = $this->get('_method', \input('_method', 'POST'));
+        }
+
+        if (!is_string($method)) return $this->method;
+
+        $method = strtoupper($method);
+
+        if (!\in_array($method, [self::METHOD_GET, self::METHOD_POST, self::METHOD_PUT, self::METHOD_PATCH, self::METHOD_DELETE], true)) {
+            throw new QueRuntimeException(sprintf('Unsupported HTTP request method override "%s".', $method),
+                "HTTP Request Error", E_USER_ERROR, HTTP::BAD_REQUEST, PreviousException::getInstance(1));
+        }
+
+        return $this->method = $method;
+    }
+
+    /**
+     * Gets the "real" request method.
+     *
+     * @return string The request method
+     *
+     * @see getMethod()
+     */
+    public function getRealMethod()
+    {
+        return strtoupper(server('REQUEST_METHOD', 'GET'));
+    }
+
+    /**
+     * Checks whether or not the method is supported by Que
+     *
+     * @param string|null $method
+     * @return bool
+     */
+    public function isSupportedMethod(string $method = null)
+    {
+        return \in_array(($method !== null ? strtoupper($method) : $this->getMethod()), $this->getSupportedMethods(), true);
+    }
+
+    /**
+     * @return array
+     */
+    private function getSupportedMethods()
+    {
+        if (!empty($this->supportedMethods)) return $this->supportedMethods;
+        try {
+            $const = (new ReflectionClass(self::class))->getConstants();
+            return $this->supportedMethods = array_filter($const, function ($key) {
+                return str_starts_with($key, "METHOD");
+            }, ARRAY_FILTER_USE_KEY);
+        } catch (Exception $exception) {
+            return ["GET"];
+        }
+    }
+
+    /**
+     * Returns the clients real IP address
+     *
+     * @return mixed|null
+     */
+    public function getClientIp()
+    {
+        return IP::real();
+    }
+
+    /**
+     * Returns the user.
+     *
+     * @return string|null
+     */
+    public function getAuthUser()
+    {
+        return headers('PHP_AUTH_USER');
+    }
+
+    /**
+     * Returns the password.
+     *
+     * @return string|null
+     */
+    public function getAuthPassword()
+    {
+        return headers('PHP_AUTH_PW');
+    }
+
+    /**
+     * Returns the protocol version.
+     *
+     * @return string
+     */
+    public function getProtocolVersion()
+    {
+        return server('SERVER_PROTOCOL');
+    }
+
+    /**
+     * Checks whether the request is secure or not.
+     *
+     * This method can read the client protocol from the "X-Forwarded-Proto" header
+     *
+     * The "X-Forwarded-Proto" header must contain the protocol: "https" or "http".
+     *
+     * @return bool
+     */
+    public function isSecure()
+    {
+        $proto = server("X-Forwarded-Proto");
+        if (!empty($proto)) return in_array(strtolower($proto), ['https', 'ssl', '1', 'on'], true);
+        $https = server('HTTPS');
+        return !empty($https) && 'off' !== strtolower($https);
+    }
+
+    /**
+     * Returns the host name.
+     *
+     * This method can read the client host name from the "X-Forwarded-Host" header
+     *
+     * The "X-Forwarded-Host" header must contain the client host name.
+     *
+     * @return string
+     */
+    public function getHost()
+    {
+        $host = server('X-Forwarded-Host');
+
+        if (empty($host)) {
+            if (!$host = headers('HOST')) {
+                if (!$host = server('SERVER_NAME')) {
+                    $host = server('SERVER_ADDR', '');
+                }
+            }
+        }
+
+        // trim and remove port number from host
+        // host is lowercase as per RFC 952/2181
+        $host = strtolower(preg_replace('/:\d+$/', '', trim($host)));
+
+        // as the host can come from the user (HTTP_HOST and depending on the configuration, SERVER_NAME too can come from the user)
+        // check that it does not contain forbidden characters (see RFC 952 and RFC 2181)
+        // use preg_replace() instead of preg_match() to prevent DoS attacks with long host names
+        if ($host && '' !== preg_replace('/(?:^\[)?[a-zA-Z0-9-:\]_]+\.?/', '', $host)) {
+            throw new QueRuntimeException(sprintf('Invalid Host "%s".', $host), "HTTP Request Error",
+                E_USER_ERROR, HTTP::BAD_REQUEST, PreviousException::getInstance(1));
+        }
+
+        return $host;
+    }
+
+    /**
+     * Returns the port on which the request is made.
+     *
+     * This method can read the client port from the "X-Forwarded-Port" header
+     *
+     * The "X-Forwarded-Port" header must contain the client port.
+     *
+     * @return int|string can be a string if fetched from the server bag
+     */
+    public function getPort()
+    {
+
+        if ($host = headers('X-Forwarded-Port')) {
+            GOTO PROCEED;
+        } elseif ($host = headers('X-Forwarded-Host')) {
+            GOTO PROCEED;
+        } elseif (!$host = headers('HOST')) {
+            return server('SERVER_PORT');
+        }
+
+        PROCEED:
+
+        if ('[' === $host[0]) {
+            $pos = strpos($host, ':', strrpos($host, ']'));
+        } else {
+            $pos = strrpos($host, ':');
+        }
+
+        if (false !== $pos && $port = substr($host, $pos + 1)) {
+            return (int) $port;
+        }
+
+        return 'https' === $this->getScheme() ? 443 : 80;
+    }
+
+    /**
+     * Gets the request's scheme.
+     *
+     * @return string
+     */
+    public function getScheme()
+    {
+        return $this->isSecure() ? 'https' : 'http';
+    }
+
+    /**
+     * Returns the HTTP host being requested.
+     *
+     * The port name will be appended to the host if it's non-standard.
+     *
+     * @return string
+     */
+    public function getHttpHost()
+    {
+        $scheme = $this->getScheme();
+        $port = $this->getPort();
+
+        if (('http' == $scheme && 80 == $port) || ('https' == $scheme && 443 == $port)) {
+            return $this->getHost();
+        }
+
+        return "{$this->getHost()}:{$port}";
+    }
+
+    /**
+     * Returns the request URI
+     *
+     * This method return the URI from your project root,
+     * ignoring any uri before the root.
+     *
+     * To get the full URI at all times
+     * @see getUriOriginal()
+     *
+     * @return array|mixed|null
+     */
+    public function getUri()
+    {
+        return server('REQUEST_URI');
+    }
+
+    /**
+     * Returns the full URI at all times
+     *
+     * @return array|mixed|null
+     */
+    public function getUriOriginal()
+    {
+        return server('REQUEST_URI_ORIGINAL');
     }
 
     /**

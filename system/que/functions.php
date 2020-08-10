@@ -5,10 +5,10 @@ use que\common\exception\QueException;
 use que\common\exception\QueRuntimeException;
 use que\common\time\Time;
 use que\common\validator\Track;
-use que\database\mysql\Query;
+use que\database\Query;
 use que\error\Logger;
 use que\error\RuntimeError;
-use que\http\Http;
+use que\http\HTTP;
 use que\route\Route;
 use que\route\RouteEntry;
 use que\security\CSRF;
@@ -456,7 +456,7 @@ function get_date(string $format, string $date, string $default = ''): string {
         $dateTime = new DateTime($date);
     } catch (Exception $e) {
         log_error($e->getMessage(), $e->getFile(), $e->getLine(),
-            $e->getCode(), HTTP_INTERNAL_SERVER_ERROR, $e->getTrace());
+            $e->getCode(), HTTP::INTERNAL_SERVER_ERROR, $e->getTrace());
         $dateTime = false;
     }
     return $dateTime ? $dateTime->format($format) : $default;
@@ -1000,13 +1000,12 @@ function array_make_key_from_value(array $array): array
 
 /**
  * @param array $array | Array being reduced
- * @param array $exclude | Keys to be excluded
+ * @param string ...$exclude | Keys to be excluded
  * @return array
  */
-function array_exclude(array $array, array $exclude = []): array
+function array_exclude(array $array, ...$exclude): array
 {
-    foreach ($exclude as $value)
-        if (array_key_exists($value, $array)) unset($array[$value]);
+    foreach ($exclude as $key) unset($array[$key]);
     return $array;
 }
 
@@ -1018,13 +1017,13 @@ function array_exclude(array $array, array $exclude = []): array
  * @param int $end | Extraction ending point
  * @return array
  */
-function array_extract(array $array, int $start, int $end): array
+function array_extract(array $array, int $start, int $end = null): array
 {
     $extracted = [];
     $size = count($array); $keys = array_keys($array);
     for ($i = $start; $i < $size; $i++) {
         $extracted[$keys[$i]] = $array[$keys[$i]];
-        if ($i >= $end) break;
+        if ($end && $i >= $end) break;
     }
     return $extracted;
 }
@@ -1127,6 +1126,16 @@ function array_multi($value, int $range) {
  */
 function find_in_array($haystack, $needle, $default = null) {
     return Arr::get($haystack, $needle, $default);
+}
+
+/**
+ * @param array $input
+ * @param callable $callback
+ * @return mixed|null
+ */
+function array_find(array $input, callable $callback) {
+    foreach ($input as $v) if ($callback($v)) return $v;
+    return null;
 }
 
 /**
@@ -1422,13 +1431,12 @@ function object_make_key_from_value(object $object): object
 
 /**
  * @param object $main | Object being reduced
- * @param array $exclude | Keys to be excluded
+ * @param mixed ...$exclude | Keys to be excluded
  * @return object
  */
-function object_exclude(object $main, array $exclude = []): object
+function object_exclude(object $main, ...$exclude): object
 {
-    foreach ($exclude as $value)
-        if (isset($main->{$value})) unset($main->{$value});
+    foreach ($exclude as $key) unset($main->{$key});
     return $main;
 }
 
@@ -1685,6 +1693,19 @@ function headers($param = null, $default = null)
     if (is_null($param)) return \http()->_header()->_get();
 
     return \http()->_header()->get($param, $default);
+}
+
+/**
+ * @param null $param
+ * @param null $default
+ * @return array|false|mixed|null
+ */
+function input($param = null, $default = null)
+{
+
+    if (is_null($param)) return \http()->input()->_get();
+
+    return \http()->input()->get($param, $default);
 }
 
 /**
@@ -1971,11 +1992,11 @@ function form(): Form {
 }
 
 /**
- * @return Http
+ * @return HTTP
  */
-function http(): Http
+function http(): HTTP
 {
-    return Http::getInstance();
+    return HTTP::getInstance();
 }
 
 /**
@@ -2423,7 +2444,6 @@ function current_url(): string
  * based on its name and args
  * @param string $name
  * @param array $args
- * @param bool $addBaseUrl
  * @return string
  */
 function route_uri(string $name, array $args = []) {
@@ -2431,7 +2451,7 @@ function route_uri(string $name, array $args = []) {
         return \route($name, $args, false);
     } catch (Exception $e) {
         throw new QueRuntimeException($e->getMessage(), method_exists($e, 'getTitle') ? $e->getTitle() : 'Route Error',
-            E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+            E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
     }
 }
 
@@ -2448,7 +2468,7 @@ function route(string $name, array $args = [], bool $addBaseUrl = true) {
         return Route::getRouteUrl($name, $args, $addBaseUrl);
     } catch (Exception $e) {
         throw new QueRuntimeException($e->getMessage(), method_exists($e, 'getTitle') ? $e->getTitle() : 'Route Error',
-            E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+            E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
     }
 }
 

@@ -31,7 +31,7 @@ class Put implements QueArrayAccess
      */
     protected function __construct()
     {
-        if (strtoupper(http()->_server()->get("REQUEST_METHOD")) == "PUT") {
+        if (http()->_request()->getMethod() == Request::METHOD_PUT) {
             $data = file_get_contents("php://input");
             parse_str($data, $this->pointer);
         }

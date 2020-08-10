@@ -8,6 +8,7 @@
 
 namespace que\common\exception;
 
+use que\http\HTTP;
 use RuntimeException;
 use Throwable;
 
@@ -17,12 +18,12 @@ class QueRuntimeException extends RuntimeException
     /**
      * @var string
      */
-    private $title;
+    private string $title = "";
 
     /**
      * @var int
      */
-    private $http_code;
+    private int $http_code = HTTP::INTERNAL_SERVER_ERROR;
 
     /**
      * QueRuntimeException constructor.
@@ -33,7 +34,7 @@ class QueRuntimeException extends RuntimeException
      * @param Throwable|null $previous
      */
     public function __construct(string $message = "", string $title = "", int $code = 0,
-                                int $http_code = HTTP_INTERNAL_SERVER_ERROR,
+                                int $http_code = HTTP::INTERNAL_SERVER_ERROR,
                                 Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);

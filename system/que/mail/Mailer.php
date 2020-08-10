@@ -5,7 +5,7 @@ namespace que\mail;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 use que\common\exception\QueException;
-use que\http\Http;
+use que\http\HTTP;
 use que\template\Composer;
 
 class Mailer
@@ -52,7 +52,7 @@ class Mailer
             $mail->IsSMTP();
 
             // Set mailer
-            $mail->XMailer = "Que Mailer 1.0 (https://www.quidvis.com/que)";
+            $mail->XMailer = sprintf("Que Mailer v%s (https://www.quidvis.com/que)", QUE_VERSION);
 
             // Set Debug options
             $mail->SMTPDebug = config('mail.smtp.debug', false);
@@ -71,7 +71,7 @@ class Mailer
             $mail->Password = config('mail.smtp.password', ''); // SMTP account password
             $mail->SMTPOptions = config('mail.smtp.options', []); // SMTP Options
             $mail->SMTPAuth = config('mail.smtp.auth', false); // enable SMTP authentication
-            $mail->Timeout = config('mail.smtp.timeout', 300); // enable SMTP authentication
+            $mail->Timeout = config('mail.smtp.timeout', 60); // enable SMTP authentication
 
             // Set Mail
             $this->mail = $mail;

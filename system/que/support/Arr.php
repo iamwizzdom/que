@@ -187,11 +187,11 @@ class Arr
 
     /**
      * @param array $main
-     * @param array $exclude
+     * @param string ...$exclude
      * @return array
      */
-    public static function exclude (array $main, array $exclude = []) {
-        return array_exclude($main, $exclude);
+    public static function exclude (array $main, ...$exclude) {
+        return array_exclude($main, ...$exclude);
     }
 
     /**

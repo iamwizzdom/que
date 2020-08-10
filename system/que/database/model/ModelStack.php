@@ -175,7 +175,7 @@ class ModelStack implements QueArrayAccess
 
     /**
      * @param Closure $callback | This callback will receive a Model instance as it's first param
-     * @return array || Array of response from all models
+     * @return array || Array of callback responses for all callbacks
      */
     public function map(Closure $callback): array
     {

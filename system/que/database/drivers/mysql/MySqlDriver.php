@@ -235,7 +235,7 @@ class MySqlDriver implements Driver
     public function getQueryBuilder(): DriverQueryBuilder
     {
         // TODO: Implement getQueryBuilder() method.
-        return new MySqlDriverQueryBuilder();
+        return new MySqlDriverQueryBuilder($this);
     }
 
     /**
@@ -272,7 +272,26 @@ class MySqlDriver implements Driver
 
         try {
 
-            $status = $stmt->execute($builder->getQueryBindValues());
+            foreach ($builder->getQueryBindings() as $key => $value) {
+                if (!str_contains($builder->getQuery(), $key)) continue;
+                switch ($value) {
+                    case is_bool($value):
+                        $stmt->bindValue($key, $value, PDO::PARAM_BOOL);
+                        break;
+                    case is_integer($value):
+                        $stmt->bindValue($key, $value, PDO::PARAM_INT);
+                        break;
+                    case is_null($value):
+                        $stmt->bindValue($key, $value, PDO::PARAM_NULL);
+                        break;
+                    default:
+                        $stmt->bindValue($key, $value);
+                        break;
+                }
+            }
+
+            $status = $stmt->execute();
+
         } catch (PDOException $e) {
 
             if ($this->isInDebugMode()) throw new QueRuntimeException($e->getMessage(), "Database Error",
@@ -286,7 +305,7 @@ class MySqlDriver implements Driver
 
                 return new MySqlDriverResponse(
                     null, $status,
-                    $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindValues()), $stmt->errorInfo(),
+                    $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()), $stmt->errorInfo(),
                     $stmt->errorCode(), $conn->lastInsertId()
                 );
 
@@ -297,7 +316,8 @@ class MySqlDriver implements Driver
 
                 return new MySqlDriverResponse(
                     $data = $stmt->fetchAll(), $status,
-                    $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindValues()), $stmt->errorInfo(),
+                    $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()),
+                    (empty($data) && $stmt->errorCode() === "00000" ? ['No records found'] : $stmt->errorInfo()),
                     $stmt->errorCode()
                 );
 
@@ -306,7 +326,8 @@ class MySqlDriver implements Driver
 
                 return new MySqlDriverResponse(
                     null, $status,
-                    $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindValues()), $stmt->errorInfo(),
+                    $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()),
+                    ($stmt->rowCount() == 0 ? ['No records deleted'] : $stmt->errorInfo()),
                     $stmt->errorCode(), 0, $stmt->rowCount()
                 );
 
@@ -316,14 +337,14 @@ class MySqlDriver implements Driver
 
                 return new MySqlDriverResponse(
                     $stmt->fetch(PDO::FETCH_ASSOC)['aggregate'] ?? 0, $status,
-                    $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindValues()), $stmt->errorInfo(),
+                    $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()), $stmt->errorInfo(),
                     $stmt->errorCode()
                 );
             case DriverQueryBuilder::RAW_OBJECT:
 
                 return new MySqlDriverResponse(
                     $stmt->fetch(PDO::FETCH_OBJ), $status,
-                    $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindValues()), $stmt->errorInfo(),
+                    $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()), $stmt->errorInfo(),
                     $stmt->errorCode()
                 );
 
@@ -331,15 +352,15 @@ class MySqlDriver implements Driver
 
                 return new MySqlDriverResponse(
                     null, $status,
-                    $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindValues()), $stmt->errorInfo(),
+                    $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()), $stmt->errorInfo(),
                     $stmt->errorCode()
                 );
 
             case DriverQueryBuilder::SHOW:
 
                 return new MySqlDriverResponse(
-                    $stmt->fetch(PDO::FETCH_ASSOC)['Column_name'], $status,
-                    $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindValues()), $stmt->errorInfo(),
+                    $stmt->fetch(PDO::FETCH_ASSOC)['Column_name'] ?? '', $status,
+                    $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()), $stmt->errorInfo(),
                     $stmt->errorCode()
                 );
 
@@ -355,7 +376,11 @@ class MySqlDriver implements Driver
      * @return string|string[]
      */
     private function interpolateQuery(string $query, array $params) {
-        foreach ($params as $key => $value) $query = str_replace($key, "'{$value}'", $query);
+        foreach ($params as $key => $value) {
+            if ($value === null) $value = 'NULL';
+            elseif (!is_numeric($value)) $value = "'{$value}'";
+            $query = str_replace($key, "{$value}", $query);
+        }
         return $query;
     }
 }

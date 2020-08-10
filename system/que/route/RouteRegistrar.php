@@ -87,7 +87,7 @@ class RouteRegistrar
                     throw new RouteException("Invalid group route type for {$prefix}[::]{$entry->getUri()}", "Route Error");
 
                 if ($middleware !== null) $entry->setMiddleware($middleware);
-                if ($requireLogin !== null) $entry->setRequireLogIn($requireLogin, $redirectUrl);
+                if ($requireLogin !== null) $entry->requireLogIn($requireLogin, $redirectUrl);
 
                 $route = trim($entry->getUri());
 

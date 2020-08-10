@@ -11,12 +11,12 @@ namespace que\common\manager;
 use que\common\exception\PreviousException;
 use que\common\exception\QueException;
 use que\common\exception\QueRuntimeException;
-use que\database\mysql\Query;
+use que\database\Query;
 use que\common\exception\AlertException;
 use que\common\exception\BaseException;
 use que\common\exception\BulkException;
 use que\common\validator\Validator;
-use que\http\Http;
+use que\http\HTTP;
 use que\http\input\Input;
 use que\mail\Mailer;
 use que\common\time\Time;
@@ -182,20 +182,20 @@ abstract class Manager
 
         if ($model === null) throw new QueRuntimeException(
             "No database model was found with the key '{$modelKey}', check your database configuration to fix this issue.",
-            "Que Runtime Error", E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+            "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         if (!($implements = class_implements($model)) || !isset($implements[Model::class])) throw new QueRuntimeException(
             "The specified model ({$model}) with key '{$modelKey}' does not implement the Que database model interface.",
-            "Que Runtime Error", E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+            "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         return new $model($tableRow, $tableName, $primaryKey);
     }
 
     /**
-     * @return Http
+     * @return HTTP
      */
-    protected function http(): Http {
-        return Http::getInstance();
+    protected function http(): HTTP {
+        return HTTP::getInstance();
     }
 
     /**

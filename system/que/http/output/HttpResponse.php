@@ -9,6 +9,7 @@
 namespace que\http\output;
 
 
+use que\http\HTTP;
 use que\http\output\response\Html;
 use que\http\output\response\Json;
 use que\http\output\response\Jsonp;
@@ -56,7 +57,7 @@ class HttpResponse
      * @param bool $replaceHeaders
      * @return Json
      */
-    public function json(array $data, int $status = HTTP_OK, int $jsonOption = 0,
+    public function json(array $data, int $status = HTTP::OK, int $jsonOption = 0,
                          int $jsonDepth = 512, array $headers = [], bool $replaceHeaders = true): Json {
         if (!isset($data['code'])) $data['code'] = $status;
         http()->http_response_code($status);
@@ -74,7 +75,7 @@ class HttpResponse
      * @param bool $replaceHeaders
      * @return Jsonp
      */
-    public function jsonp(string $callback, array $data, int $status = HTTP_OK,
+    public function jsonp(string $callback, array $data, int $status = HTTP::OK,
                           int $jsonOption = 0, int $jsonDepth = 512,
                           array $headers = [], bool $replaceHeaders = true): Jsonp {
         if (!isset($data['code'])) $data['code'] = $status;
@@ -90,7 +91,7 @@ class HttpResponse
      * @param bool $replaceHeaders
      * @return Html
      */
-    public function html(string $content, int $status = HTTP_OK,
+    public function html(string $content, int $status = HTTP::OK,
                          array $headers = [], bool $replaceHeaders = true): Html {
         http()->http_response_code($status);
         foreach ($headers as $key => $header) http()->_header()->set($key, $header, $replaceHeaders);
@@ -104,7 +105,7 @@ class HttpResponse
      * @param bool $replaceHeaders
      * @return Plain
      */
-    public function plain(string $content, int $status = HTTP_OK,
+    public function plain(string $content, int $status = HTTP::OK,
                           array $headers = [], bool $replaceHeaders = true): Plain {
         http()->http_response_code($status);
         foreach ($headers as $key => $header) http()->_header()->set($key, $header, $replaceHeaders);

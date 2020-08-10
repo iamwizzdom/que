@@ -10,7 +10,7 @@ namespace que\http\input;
 
 use ArrayIterator;
 use que\common\validator\condition\Condition;
-use que\http\Http;
+use que\http\HTTP;
 use que\http\request\Delete;
 use que\http\request\Files;
 use que\http\request\Get;
@@ -179,14 +179,14 @@ class Input implements QueArrayAccess
      */
     private function get_all_input(): array {
         return array_merge(
-            ($this->post = Http::getInstance()->_post())->_get(),
-            ($this->put = Http::getInstance()->_put())->_get(),
-            ($this->patch = Http::getInstance()->_patch())->_get(),
-            ($this->delete = Http::getInstance()->_delete())->_get(),
-            ($this->get = Http::getInstance()->_get())->_get(),
-            ($this->server = Http::getInstance()->_server())->_get(),
-            ($this->header = Http::getInstance()->_header())->_get(),
-            ($this->files = Http::getInstance()->_files())->_get()
+            ($this->post = HTTP::getInstance()->_post())->_get(),
+            ($this->put = HTTP::getInstance()->_put())->_get(),
+            ($this->patch = HTTP::getInstance()->_patch())->_get(),
+            ($this->delete = HTTP::getInstance()->_delete())->_get(),
+            ($this->get = HTTP::getInstance()->_get())->_get(),
+            ($this->server = HTTP::getInstance()->_server())->_get(),
+            ($this->header = HTTP::getInstance()->_header())->_get(),
+            ($this->files = HTTP::getInstance()->_files())->_get()
         );
     }
 

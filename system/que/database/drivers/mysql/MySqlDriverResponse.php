@@ -15,7 +15,7 @@ class MySqlDriverResponse implements DriverResponse
 {
 
     /**
-     * @var array|null
+     * @var mixed
      */
     private $response;
 

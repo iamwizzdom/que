@@ -8,7 +8,9 @@
 
 namespace que\route;
 
+use que\http\HTTP;
 use que\http\input\Input;
+use que\http\request\Request;
 use que\security\interfaces\Middleware;
 use que\security\MiddlewareResponse;
 use que\support\Arr;
@@ -48,7 +50,7 @@ class RouteCompiler
 
         try {
 
-            $routeEntry = null; $routeArgs = []; $error = ''; $code = HTTP_OK; $percentage = 0;
+            $routeEntry = null; $routeArgs = []; $error = ''; $code = HTTP::OK; $percentage = 0;
 
             $foundRoutes = $routeInspector->getFoundRoutes();
 
@@ -78,24 +80,40 @@ class RouteCompiler
                     }
 
                 } else {
-                    $code = $foundRoute['code'] ?? HTTP_NOT_FOUND;
+                    $code = $foundRoute['code'] ?? HTTP::NOT_FOUND;
                     $error = $foundRoute['error'] ?? 'An unexpected error occurred while resolving the current route';
                 }
             }
 
             if ($routeEntry === null || !$routeEntry instanceof RouteEntry) {
 
-                if (empty($error)) throw new RouteException(sprintf("%s is an invalid url", current_url()), "Route Error", HTTP_NOT_FOUND);
+                if (empty($error)) throw new RouteException(sprintf("%s is an invalid url", current_url()), "Route Error", HTTP::NOT_FOUND);
                 else throw new RouteException($error, "Route Error", $code);
             }
 
             self::setRouteParams($routeArgs);
             self::setCurrentRoute($routeEntry);
 
+            http()->_header()->setBulk([
+                'Access-Control-Allow-Origin' => '*',
+                'Access-Control-Allow-Methods' => !empty($routeEntry->getAllowedMethods()) ? implode(
+                    ", ", $routeEntry->getAllowedMethods()) : 'GET, POST, PUT, PATCH, DELETE',
+                'Cache-Control' => 'no-cache, must-revalidate',
+                'Expires' => 'Mon, 26 Jul 1997 05:00:00 GMT',
+                'Content-Type' => 'text/html'
+            ]);
+
+            if (!empty($routeEntry->getAllowedMethods()) && !in_array(Request::getInstance()->getMethod(), $routeEntry->getAllowedMethods())) {
+
+                throw new RouteException(
+                    "The ". Request::getInstance()->getMethod() . " method is not supported for this route. Supported methods: "
+                    . implode(", ", $routeEntry->getAllowedMethods()) . ".", "Access Denied", HTTP::EXPIRED_AUTHENTICATION);
+            }
+
             if ($routeEntry->isUnderMaintenance() === true) {
 
                 throw new RouteException("This route is currently under maintenance, please try again later",
-                    "Access Denied", HTTP_MAINTENANCE);
+                    "Access Denied", HTTP::MAINTENANCE);
             }
 
             if ($routeEntry->isRequireLogIn() === true && !is_logged_in()) {
@@ -113,7 +131,7 @@ class RouteCompiler
 
                 } else {
                     throw new RouteException("You don't have access to the current route, login and try again.",
-                        "Access Denied", HTTP_UNAUTHORIZED);
+                        "Access Denied", HTTP::UNAUTHORIZED);
                 }
 
             } elseif ($routeEntry->isRequireLogIn() === false && is_logged_in()) {
@@ -131,7 +149,7 @@ class RouteCompiler
 
                 } else {
                     throw new RouteException("You don't have access to the current route, logout and try again.",
-                        "Access Denied", HTTP_UNAUTHORIZED);
+                        "Access Denied", HTTP::UNAUTHORIZED);
                 }
 
             }
@@ -153,8 +171,8 @@ class RouteCompiler
 
                         if ($response->hasAccess() === false) {
                             throw new RouteException("MIDDLEWARE CONSTRAINT: " .
-                                ($response->getResponseMessage() ?: "You don't have access to the current route (" . current_url() . ")"),
-                                "Access Denied", HTTP_UNAUTHORIZED);
+                                ($response->getMessage() ?: "You don't have access to the current route (" . current_url() . ")"),
+                                "Access Denied", HTTP::UNAUTHORIZED);
                         }
                         return;
                     }
@@ -163,12 +181,12 @@ class RouteCompiler
                 throw new RouteException(
                     "This route is registered with a middleware [Key: {$routeEntry->getMiddleware()}]," .
                     " but a valid middleware was not found with that key.",
-                    "Middleware Error", HTTP_EXPECTATION_FAILED);
+                    "Middleware Error", HTTP::METHOD_NOT_ALLOWED);
             }
 
         } catch (RouteException $e) {
             RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(),
-                $e->getLine(), $e->getTrace(), $e->getTitle(), $e->getCode() ?: HTTP_UNAUTHORIZED);
+                $e->getLine(), $e->getTrace(), $e->getTitle(), $e->getCode() ?: HTTP::UNAUTHORIZED);
         }
     }
 
@@ -246,7 +264,10 @@ class RouteCompiler
         if (str_contains($uri, "?"))
             $uri = substr($uri, 0, strpos($uri, "?"));
 
-        $uri_arr = array_filter(explode("/", $uri), 'str_strip_excess_whitespace');
+        $uri_arr = array_filter(array_map('str_strip_excess_whitespace',
+            explode("/", $uri)), function ($value) {
+            return !empty($value);
+        });
 
         foreach ($uri_arr as $token) {
             if ($token != " " || $token == "0" || !empty($token)) {

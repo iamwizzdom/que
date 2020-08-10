@@ -12,7 +12,7 @@ return [
     | Middleware register
     |--------------------------------------------------------------------------
     |
-    | Here are a list of middleware you could use for route registrations
+    | Here are a list of middleware you can use for route registrations
     |
     */
 

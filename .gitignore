@@ -6,4 +6,6 @@
 .gitignore
 .idea
 app/storage
+app/error
+app/lab
 system/que/cache

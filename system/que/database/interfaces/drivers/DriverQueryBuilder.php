@@ -9,6 +9,8 @@
 namespace que\database\interfaces\drivers;
 
 
+use Closure;
+
 interface DriverQueryBuilder
 {
     const INSERT = 1;
@@ -24,26 +26,310 @@ interface DriverQueryBuilder
     const SHOW = 11;
 
     /**
-     * @param $table
-     * @param $columns
-     * @param null $where
-     * @param null $join
-     * @param null $limit
-     * @param null $order_by
-     * @param null $group_by
+     * DriverQueryBuilder constructor.
+     * @param Driver $driver
+     * @param array $bindings
+     * @param bool $isSubQuery
      */
-    public function buildQuery($table, $columns, $where = null, $join = null, $limit = null, $order_by = null, $group_by = null): void;
+    public function __construct(Driver $driver, array $bindings = [], bool $isSubQuery = false);
 
     /**
-     * @param bool $paginated
+     * @param string $table
+     * @return DriverQueryBuilder
+     */
+    public function setTable(string $table): DriverQueryBuilder;
+
+    /**
+     * @return string
+     */
+    public function getTable(): string;
+
+    /**
+     * @param mixed ...$columns
+     * @return DriverQueryBuilder
+     */
+    public function setColumns(...$columns): DriverQueryBuilder;
+
+    /**
+     * @return array
+     */
+    public function getColumns(): array;
+
+    public function clearColumns(): void;
+
+    /**
+     * @param Closure $callback
+     * @param $as
+     * @return DriverQueryBuilder
+     */
+    public function setSelectSub(Closure $callback, $as): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @param $alias
+     * @param null $path
+     * @return DriverQueryBuilder
+     */
+    public function setSelectJsonQuery($column, $alias, $path = null): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @param $alias
+     * @param $path
+     * @return DriverQueryBuilder
+     */
+    public function setSelectJsonValue($column, $alias, $path): DriverQueryBuilder;
+
+    /**
+     * @return DriverQueryBuilder
+     */
+    public function setDistinct(): DriverQueryBuilder;
+
+    public function clearWhereQuery(): void;
+
+    /**
+     * @param $column
+     * @param $value
+     * @param null $operator
+     * @return DriverQueryBuilder
+     */
+    public function setWhere($column, $value, $operator = null): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @param $value
+     * @param null $operator
+     * @return DriverQueryBuilder
+     */
+    public function setOrWhere($column, $value, $operator = null): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @return DriverQueryBuilder
+     */
+    public function setWhereIsNull($column): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @return DriverQueryBuilder
+     */
+    public function setOrWhereIsNull($column): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @return DriverQueryBuilder
+     */
+    public function setWhereIsNotNull($column): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @return DriverQueryBuilder
+     */
+    public function setOrWhereIsNotNull($column): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @param array|Closure $values
+     * @return DriverQueryBuilder
+     */
+    public function setWhereIn($column, $values): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @param array|Closure $values
+     * @return DriverQueryBuilder
+     */
+    public function setOrWhereIn($column, $values): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @param array|Closure $values
+     * @return DriverQueryBuilder
+     */
+    public function setWhereNotIn($column, $values): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @param array|Closure $values
+     * @return DriverQueryBuilder
+     */
+    public function setOrWhereNotIn($column, $values): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @param $value1
+     * @param $value2
+     * @return DriverQueryBuilder
+     */
+    public function setWhereBetween($column, $value1, $value2): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @param $value1
+     * @param $value2
+     * @return DriverQueryBuilder
+     */
+    public function setOrWhereBetween($column, $value1, $value2): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @param $value1
+     * @param $value2
+     * @return DriverQueryBuilder
+     */
+    public function setWhereNotBetween($column, $value1, $value2): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @param $value1
+     * @param $value2
+     * @return DriverQueryBuilder
+     */
+    public function setOrWhereNotBetween($column, $value1, $value2): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @return DriverQueryBuilder
+     */
+    public function setWhereIsJson($column): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @return DriverQueryBuilder
+     */
+    public function setOrWhereIsJson($column): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @return DriverQueryBuilder
+     */
+    public function setWhereIsNotJson($column): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @return DriverQueryBuilder
+     */
+    public function setOrWhereIsNotJson($column): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @param $value
+     * @param null $path
+     * @return DriverQueryBuilder
+     */
+    public function setWhereJsonValue($column, $value, $path): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @param $value
+     * @param null $path
+     * @return DriverQueryBuilder
+     */
+    public function setOrWhereJsonValue($column, $value, $path): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @param $value
+     * @param null $path
+     * @return DriverQueryBuilder
+     */
+    public function setWhereJsonContains($column, $value, $path = null): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @param $value
+     * @param null $path
+     * @return DriverQueryBuilder
+     */
+    public function setOrWhereJsonContains($column, $value, $path = null): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @param $value
+     * @param null $path
+     * @return DriverQueryBuilder
+     */
+    public function setWhereJsonNotContains($column, $value, $path = null): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @param $value
+     * @param null $path
+     * @return DriverQueryBuilder
+     */
+    public function setOrWhereJsonNotContains($column, $value, $path = null): DriverQueryBuilder;
+
+    /**
+     * @param Closure $callback
+     * @return DriverQueryBuilder
+     */
+    public function setExists(Closure $callback): DriverQueryBuilder;
+
+    /**
+     * @param Closure $callback
+     * @return DriverQueryBuilder
+     */
+    public function setOrExists(Closure $callback): DriverQueryBuilder;
+
+    /**
+     * @param Closure $callback
+     * @return DriverQueryBuilder
+     */
+    public function setNotExists(Closure $callback): DriverQueryBuilder;
+
+    /**
+     * @param Closure $callback
+     * @return DriverQueryBuilder
+     */
+    public function setOrNotExists(Closure $callback): DriverQueryBuilder;
+
+    /**
+     * @param $column
+     * @param $operator
+     * @param $value
+     * @return DriverQueryBuilder
+     */
+    public function setHaving($column, $operator, $value): DriverQueryBuilder;
+
+    /**
+     * @param Closure $callback
+     * @return DriverQueryBuilder
+     */
+    public function setUnion(Closure $callback): DriverQueryBuilder;
+
+    /**
+     * @param Closure $callback
+     * @return DriverQueryBuilder
+     */
+    public function setUnionAll(Closure $callback): DriverQueryBuilder;
+
+    /**
+     * @param $table
+     * @param $first
+     * @param $second
+     * @param string $type
      * @return mixed
      */
-    public function setPaginated(bool $paginated);
+    public function setJoin($table, $first, $second, $type = 'inner'): DriverQueryBuilder;
 
     /**
-     * @return bool
+     * @param $limit
+     * @return mixed
      */
-    public function isPaginated(): bool;
+    public function setLimit($limit): DriverQueryBuilder;
+
+    /**
+     * @param $direction
+     * @param mixed ...$column
+     * @return DriverQueryBuilder
+     */
+    public function setOrderBy($direction, ...$column): DriverQueryBuilder;
+
+    /**
+     * @param mixed ...$groups
+     * @return DriverQueryBuilder
+     */
+    public function setGroupBy(...$groups): DriverQueryBuilder;
 
     /**
      * @param int $queryType
@@ -66,13 +352,15 @@ interface DriverQueryBuilder
     public function getQuery(): string;
 
     /**
-     * @param array $values
+     * @param array $bindings
      */
-    public function setQueryBindValues(array $values): void;
+    public function setQueryBindings(array $bindings): void;
 
     /**
      * @return array
      */
-    public function getQueryBindValues(): array;
+    public function getQueryBindings(): array;
+
+    public function buildQuery(): void;
 
 }

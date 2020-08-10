@@ -19,7 +19,7 @@ class MiddlewareResponse
     /**
      * @var string
      */
-    private string $responseMessage = '';
+    private string $message = '';
 
     /**
      * @return bool|null
@@ -30,26 +30,26 @@ class MiddlewareResponse
     }
 
     /**
-     * @param bool $access
+     * @param bool $hasAccess
      */
-    public function setAccess(bool $access): void
+    public function setAccess(bool $hasAccess): void
     {
-        $this->access = $access;
+        $this->access = $hasAccess;
     }
 
     /**
      * @return string
      */
-    public function getResponseMessage(): string
+    public function getMessage(): string
     {
-        return $this->responseMessage;
+        return $this->message;
     }
 
     /**
-     * @param string $responseMessage
+     * @param string $message
      */
-    public function setResponseMessage(string $responseMessage): void
+    public function setMessage(string $message): void
     {
-        $this->responseMessage = $responseMessage;
+        $this->message = $message;
     }
 }

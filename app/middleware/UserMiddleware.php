@@ -24,7 +24,7 @@ class UserMiddleware implements Middleware
         // TODO: Implement handle() method.
         if (!$input->user()) {
             $response->setAccess(true);
-            $response->setResponseMessage("Sorry, you must be logged in to access this route.");
+            $response->setMessage("Sorry, you must be logged in to access this route.");
         }
     }
 }

@@ -13,6 +13,7 @@ use ArrayAccess;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use que\database\interfaces\model\Model;
+use que\http\HTTP;
 use que\session\Session;
 use que\utility\client\Browser;
 use que\utility\client\IP;
@@ -120,11 +121,11 @@ class User extends State implements ArrayAccess
 
         if ($model === null) throw new QueRuntimeException(
             "No database model was found with the key '{$modelKey}', check your database configuration to fix this issue.",
-            "Que Runtime Error", E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+            "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         if (!($implements = class_implements($model)) || !isset($implements[Model::class])) throw new QueRuntimeException(
             "The specified model ({$model}) with key '{$modelKey}' does not implement the Que database model interface.",
-            "Que Runtime Error", E_USER_ERROR, HTTP_INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+            "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         if (!isset(self::$model[$modelKey]))
             self::$model[$modelKey] = new $model(self::$user,
@@ -199,11 +200,9 @@ class User extends State implements ArrayAccess
 
         $primaryKey = self::$database_config['tables']['user']['primary_key'] ?? 'id';
 
-        $update = db()->update((self::$database_config['tables']['user']['name'] ?? 'users'), $columnsToUpdate, [
-            'AND' => [
-                $primaryKey => $this->getValue($primaryKey, 0)
-            ]
-        ]);
+        $update = db()->update()->table(
+            (self::$database_config['tables']['user']['name'] ?? 'users')
+        )->columns($columnsToUpdate)->where($primaryKey, $this->getValue($primaryKey, 0))->exec();
 
         if ($status = $update->isSuccessful()) {
             foreach ($columnsToUpdate as $key => $value)

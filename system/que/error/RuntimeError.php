@@ -9,6 +9,7 @@
 namespace que\error;
 
 use que\common\exception\QueRuntimeException;
+use que\http\HTTP;
 use que\route\Route;
 use que\utility\ImageGenerator;
 
@@ -30,7 +31,7 @@ abstract class RuntimeError
      */
     public static function render($error_level, $error_message, $error_file = "", $error_line = "",
                                   $error_trace = [], $error_title = "Que Runtime Error",
-                                  int $http_code = HTTP_INTERNAL_SERVER_ERROR) {
+                                  int $http_code = HTTP::INTERNAL_SERVER_ERROR) {
 
         if (self::$hasError === true) return; else self::$hasError = true;
 
@@ -60,7 +61,7 @@ abstract class RuntimeError
 
         }
 
-        log_error($error_message, $error_file, $error_line, $error_level, $http_code, $error_trace);
+        log_error($error_message, $error_file, (int) $error_line, $error_level, $http_code, $error_trace);
 
         if (PHP_SAPI == 'cli') die(debug_print($error, true));
 

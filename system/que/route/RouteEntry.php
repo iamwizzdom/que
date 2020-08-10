@@ -12,6 +12,11 @@ class RouteEntry
     public array $uriTokens = [];
 
     /**
+     * @var array
+     */
+    private array $allowedMethods = [];
+
+    /**
      * @var string
      */
     private ?string $name = null;
@@ -54,7 +59,7 @@ class RouteEntry
     /**
      * @var bool
      */
-    private bool $requireCSRFAuth;
+    private bool $requireCSRFAuth = false;
 
     /**
      * @var bool
@@ -76,7 +81,7 @@ class RouteEntry
      */
     public function __construct()
     {
-        $this->setRequireCSRFAuth(config('auth.csrf', false));
+        $this->requireCSRFAuth();
     }
 
     /**
@@ -187,7 +192,7 @@ class RouteEntry
      * @param bool $requireLogIn
      * @param string|null $redirectUrl
      */
-    public function setRequireLogIn(bool $requireLogIn, string $redirectUrl = null)
+    public function requireLogIn(bool $requireLogIn, string $redirectUrl = null)
     {
         $this->requireLogIn = $requireLogIn;
         $this->redirectUrl = $redirectUrl;
@@ -209,12 +214,9 @@ class RouteEntry
         return $this->requireJWTAuth;
     }
 
-    /**
-     * @param bool $requireJWTAuth
-     */
-    public function setRequireJWTAuth(bool $requireJWTAuth)
+    public function requireJWTAuth()
     {
-        $this->requireJWTAuth = $requireJWTAuth;
+        $this->requireJWTAuth = true;
     }
 
     /**
@@ -226,11 +228,10 @@ class RouteEntry
     }
 
     /**
-     * @param bool $requireCSRFAuth
      */
-    public function setRequireCSRFAuth(bool $requireCSRFAuth): void
+    public function requireCSRFAuth(): void
     {
-        $this->requireCSRFAuth = $requireCSRFAuth;
+        $this->requireCSRFAuth = true;
     }
 
     /**
@@ -241,12 +242,9 @@ class RouteEntry
         return $this->underMaintenance;
     }
 
-    /**
-     * @param bool $underMaintenance
-     */
-    public function setUnderMaintenance(bool $underMaintenance): void
+    public function underMaintenance(): void
     {
-        $this->underMaintenance = $underMaintenance;
+        $this->underMaintenance = true;
     }
 
     /**
@@ -263,6 +261,59 @@ class RouteEntry
     public function setMiddleware(string $middleware): void
     {
         $this->middleware = $middleware;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAllowedMethods(): array
+    {
+        return $this->allowedMethods;
+    }
+
+    /**
+     * @return RouteEntry
+     */
+    public function allowGetRequest(): RouteEntry
+    {
+        $this->allowedMethods[] = "GET";
+        return $this;
+    }
+
+    /**
+     * @return RouteEntry
+     */
+    public function allowPostRequest(): RouteEntry
+    {
+        $this->allowedMethods[] = "POST";
+        return $this;
+    }
+
+    /**
+     * @return RouteEntry
+     */
+    public function allowPutRequest(): RouteEntry
+    {
+        $this->allowedMethods[] = "PUT";
+        return $this;
+    }
+
+    /**
+     * @return RouteEntry
+     */
+    public function allowPatchRequest(): RouteEntry
+    {
+        $this->allowedMethods[] = "PATCH";
+        return $this;
+    }
+
+    /**
+     * @return RouteEntry
+     */
+    public function allowDeleteRequest(): RouteEntry
+    {
+        $this->allowedMethods[] = "DELETE";
+        return $this;
     }
 
 }

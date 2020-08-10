@@ -11,8 +11,6 @@ namespace custom\model;
 use Exception;
 use que\common\validator\interfaces\Condition;
 use que\database\interfaces\model\Model;
-use que\database\model\builder\Builder;
-use Traversable;
 
 class CustomModel implements Model
 {
@@ -167,18 +165,12 @@ class CustomModel implements Model
         // TODO: Implement get() method.
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getNextRecord(): Builder
+    public function getNextRecord(): \que\database\interfaces\Builder
     {
         // TODO: Implement getNextRecord() method.
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getPreviousRecord(): Builder
+    public function getPreviousRecord(): \que\database\interfaces\Builder
     {
         // TODO: Implement getPreviousRecord() method.
     }

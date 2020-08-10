@@ -7,7 +7,7 @@ namespace que\route;
 use Exception;
 use que\common\exception\QueException;
 use que\common\exception\RouteException;
-use que\http\Http;
+use que\http\HTTP;
 use que\http\input\Input;
 use que\security\CSRF;
 use que\security\JWT\TokenEncoded;
@@ -105,7 +105,7 @@ class RouteInspector
                 'routeEntry' => $this->routeEntry,
                 'percentage' => $percentage,
                 'error' => "You are passing more arguments than required by the current route",
-                'code' => HTTP_UNAUTHORIZED
+                'code' => HTTP::UNAUTHORIZED
             ];
             return;
         }
@@ -116,7 +116,7 @@ class RouteInspector
                 'routeEntry' => $this->routeEntry,
                 'percentage' => $percentage,
                 'error' => "You are passing fewer arguments than required by the current route",
-                'code' => HTTP_UNAUTHORIZED
+                'code' => HTTP::UNAUTHORIZED
             ];
             return;
         }
@@ -133,7 +133,7 @@ class RouteInspector
                         'routeEntry' => $this->routeEntry,
                         'percentage' => $percentage,
                         'error' => "Invalid route argument",
-                        'code' => HTTP_UNAUTHORIZED
+                        'code' => HTTP::UNAUTHORIZED
                     ];
                     return;
                 }
@@ -151,7 +151,7 @@ class RouteInspector
                         'routeEntry' => $this->routeEntry,
                         'percentage' => $percentage,
                         'error' => "Expected uri argument not found in the current route",
-                        'code' => HTTP_EXPECTATION_FAILED
+                        'code' => HTTP::EXPECTATION_FAILED
                     ];
                     return;
                 }
@@ -182,7 +182,7 @@ class RouteInspector
             'routeEntry' => $this->routeEntry,
             'percentage' => $percentage,
             'error' => null,
-            'code' => HTTP_OK
+            'code' => HTTP::OK
         ];
     }
 
@@ -245,7 +245,7 @@ class RouteInspector
             $value = str_ellipsis($value ?? '', 70);
             throw new RouteException(
                 "Invalid data type found in route argument [Arg: {$value}]",
-                "Route Error", HTTP_EXPECTATION_FAILED
+                "Route Error", HTTP::EXPECTATION_FAILED
             );
 
         } elseif (strcmp($regex, "num") == 0) $regex = "/^[0-9]+$/";
@@ -255,7 +255,7 @@ class RouteInspector
             $value = str_ellipsis($value ?? '', 70);
             throw new RouteException(
                 "Invalid data type found in route argument [Arg: {$value}]",
-                "Route Error", HTTP_EXPECTATION_FAILED
+                "Route Error", HTTP::EXPECTATION_FAILED
             );
         }
     }
@@ -289,16 +289,16 @@ class RouteInspector
         } catch (QueException $e) {
 
             CSRF::getInstance()->generateToken();
-            throw new RouteException($e->getMessage(), $e->getTitle(), HTTP_EXPIRED_AUTH);
+            throw new RouteException($e->getMessage(), $e->getTitle(), HTTP::EXPIRED_AUTHENTICATION);
         }
 
     }
 
     /**
-     * @param Http $http
+     * @param HTTP $http
      * @throws RouteException
      */
-    public static function validateJWT(Http $http) {
+    public static function validateJWT(HTTP $http) {
         try {
 
             $token = get_bearer_token();
@@ -325,27 +325,7 @@ class RouteInspector
             $http->_server()->offsetSet("JWT_HEADER", $tokenDecoded->getHeader());
 
         } catch (Exception $e) {
-            throw new RouteException($e->getMessage(), "JWT Auth Error", HTTP_EXPIRED_AUTH);
-        }
-    }
-
-    /**
-     * @param string $method
-     * @return bool
-     */
-    public static function isSupportedMethod(string $method): bool
-    {
-        if (!preg_match('/^[a-z-A-Z]+$/', $method)) return false;
-
-        switch (strtoupper($method)) {
-            case 'GET':
-            case 'POST':
-            case 'PUT':
-            case 'PATCH':
-            case 'DELETE':
-                return true;
-            default:
-                return false;
+            throw new RouteException($e->getMessage(), "JWT Auth Error", HTTP::EXPIRED_AUTHENTICATION);
         }
     }
 }

@@ -31,7 +31,7 @@ class Patch implements QueArrayAccess
      */
     protected function __construct()
     {
-        if (strtoupper(http()->_server()->get("REQUEST_METHOD")) == "PATCH") {
+        if (http()->_request()->getMethod() == Request::METHOD_PATCH) {
             $data = file_get_contents("php://input");
             parse_str($data, $this->pointer);
         }
