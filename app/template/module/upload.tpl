@@ -143,6 +143,8 @@
 
         {$form->formOpen(route('file-upload'), ['method' => 'post'], true)}
             <div>
+                {$form->formElement('input', '', ['type' => 'text', 'name' => 'filename', 'placeholder' => 'File name'])}
+                <span>{$form['error.filename']}</span> |
                 {$form->formElement('input', '', ['type' => 'file', 'name' => 'file'])}
                 <span>{$form['error.file']}</span>
             </div>

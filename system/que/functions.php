@@ -1005,7 +1005,7 @@ function array_make_key_from_value(array $array): array
  */
 function array_exclude(array $array, ...$exclude): array
 {
-    foreach ($exclude as $key) unset($array[$key]);
+    foreach ($exclude as $key) if (isset($array[$key])) unset($array[$key]);
     return $array;
 }
 

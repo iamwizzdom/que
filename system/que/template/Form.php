@@ -141,11 +141,9 @@ class Form implements ArrayAccess
 
         switch ($tagName) {
             case 'input':
-                if (isset($attributes['value'])) unset($attributes['value']);
-
-                if (($attributes['type'] ?? '') == 'file') $elem = "<input {$this->attributesToString($attributes)} />\n";
-                else $elem = "<input value='{$value}' {$this->attributesToString($attributes)} />\n";
-
+                $attributes['value'] = $value;
+                if (($attributes['type'] ?? '') == 'file') unset($attributes['value']);
+                $elem = "<input {$this->attributesToString($attributes)} />\n";
                 break;
             case 'textarea':
                 $elem = "<textarea {$this->attributesToString($attributes)} >{$value}</textarea>\n";

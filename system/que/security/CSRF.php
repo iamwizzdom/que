@@ -114,7 +114,7 @@ class CSRF
                 isset($decodedToken['expire']) &&
                 isset($decodedToken['unique']) &&
                 isset($decodedToken['hash'])
-            ) && strcmp($decodedToken['hash'], Hash::sha(json_encode(Arr::exclude($decodedToken, ['hash'])))) == 0;
+            ) && strcmp($decodedToken['hash'], Hash::sha(json_encode(Arr::exclude($decodedToken, 'hash')))) == 0;
     }
 
     private function isValidSignature($decodedToken)

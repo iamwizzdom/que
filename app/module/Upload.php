@@ -61,6 +61,8 @@ class Upload extends Manager implements Page, Receiver
                 goto LOAD;
             }
 
+            $validate->validate('filename', true)->isEmail("Please enter a valid file name");
+
             if (!$validate->hasFile('file')) {
                 $validate->addConditionError('file', "Please select a file", true);
             }
