@@ -54,6 +54,11 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
     /**
      * @var array
      */
+    private array $select = [];
+
+    /**
+     * @var array
+     */
     private array $where = [];
 
     private array $having = [];
@@ -117,63 +122,81 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
         return $this->table;
     }
 
-
-    /**
-     * @inheritDoc
-     */
-    public function setColumns(...$columns): DriverQueryBuilder
+    public function setColumns($columns): DriverQueryBuilder
     {
-        // TODO: Implement setColumns() method.
-        if ($this->queryType == self::INSERT || $this->queryType == self::UPDATE) $this->columns = $columns[0];
-        else {
-            array_callback($columns, function ($column) {
-                return [
-                    'type' => 'normal',
-                    'column' => $column
-                ];
-            });
-            $this->columns = array_merge($this->columns, $columns);
-        }
+        // TODO: Implement setInsertColumns() method.
+        $this->columns = $columns;
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getColumns(): array
     {
         // TODO: Implement getColumns() method.
-        if ($this->queryType == self::INSERT || $this->queryType == self::UPDATE) return $this->columns;
-        return array_map(function ($column) {
-            return $column['column'];
-        }, array_filter($this->columns, function ($column) {
-            return $column['type'] ?? '' === 'normal';
-        }));
+        return $this->columns;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function clearColumns(): void
     {
         // TODO: Implement clearColumns() method.
         $this->columns = [];
     }
 
+
+    public function setSelect(...$columns): DriverQueryBuilder
+    {
+        // TODO: Implement setSelect() method.
+        array_callback($columns, function ($column) {
+            return [
+                'type' => 'normal',
+                'column' => $column
+            ];
+        });
+        $this->select = array_merge($this->select, $columns);
+        return $this;
+    }
+
+    public function getSelect(): array
+    {
+        // TODO: Implement getSelect() method.
+        return array_map(function ($column) {
+            $type = $column['type'] ?? '';
+            return $column[$type == 'normal' ? 'column' : 'alias'] ?? '';
+        }, $this->select);
+    }
+
+    public function clearSelect(): void
+    {
+        // TODO: Implement clearSelect() method.
+        $this->select = [];
+    }
+
     public function setSelectSub(Closure $callback, $as): DriverQueryBuilder
     {
         // TODO: Implement setSelectSub() method.
-        $this->columns[] = [
+        $this->select[] = [
             'type' => 'normal',
             'column' => [$callback, $as]
         ];
+        return $this;
+    }
+
+    public function setSelectSubRaw($query, $as, array $bindings = null): DriverQueryBuilder
+    {
+        // TODO: Implement setSelectSubRaw() method.
+        $this->select[] = [
+            'type' => 'raw',
+            'column' => $query,
+            'alias' => $as,
+            'bindings' => $bindings
+        ];
+        return $this;
     }
 
 
     public function setSelectJsonQuery($column, $alias, $path = null): DriverQueryBuilder
     {
         // TODO: Implement setSelectJsonQuery() method.
-        $this->columns[] = [
+        $this->select[] = [
             'type' => 'json_query',
             'column' => $column,
             'alias' => $alias,
@@ -185,7 +208,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
     public function setSelectJsonValue($column, $alias, $path): DriverQueryBuilder
     {
         // TODO: Implement setSelectJsonValue() method.
-        $this->columns[] = [
+        $this->select[] = [
             'type' => 'json_value',
             'column' => $column,
             'alias' => $alias,
@@ -512,6 +535,29 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
         ];
         return $this;
     }
+
+    public function setWhereRaw($query, array $bindings = null): DriverQueryBuilder
+    {
+        // TODO: Implement setWhereRaw() method.
+        $this->where[] = [
+            'type' => 'raw_and',
+            'column' => $query,
+            'bindings' => $bindings
+        ];
+        return $this;
+    }
+
+    public function setOrWhereRaw($query, array $bindings = null): DriverQueryBuilder
+    {
+        // TODO: Implement setOrWhereRaw() method.
+        $this->where[] = [
+            'type' => 'raw_or',
+            'column' => $query,
+            'bindings' => $bindings
+        ];
+        return $this;
+    }
+
 
     /**
      * @inheritDoc
@@ -922,7 +968,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
         $select = '';
 
-        foreach ($this->columns as $column) {
+        foreach ($this->select as $column) {
 
             switch ($column['type'] ?? '') {
                 case 'normal':
@@ -950,6 +996,12 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
                     } else $select .= (!empty($select) ? ', ' : '') . $this->formatColumn($column);
 
+                    break;
+                case 'raw':
+
+                    $binders = $this->addBindings($column['bindings'] ?: []);
+                    foreach ($binders as $bind) $column['column'] = str_replace_first("?", $bind, $column['column']);
+                    $select .= (!empty($select) ? ', ' : '') . "{$column['column']} as {$column['alias']}";
                     break;
                 case 'json_query':
                 case 'json_value':
@@ -1051,6 +1103,16 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
                     break;
                 case 'or':
                     $where['OR'][] = $this->decode_where_query_expression($where['OR'], $expression);
+                    break;
+                case 'raw_and':
+                    $binders = $this->addBindings($expression['bindings'] ?: []);
+                    foreach ($binders as $bind) $expression['column'] = str_replace_first("?", $bind, $expression['column']);
+                    $where['AND'][] = $expression['column'];
+                    break;
+                case 'raw_or':
+                    $binders = $this->addBindings($expression['bindings'] ?: []);
+                    foreach ($binders as $bind) $expression['column'] = str_replace_first("?", $bind, $expression['column']);
+                    $where['OR'][] = $expression['column'];
                     break;
                 case 'exists_and':
 
@@ -1233,7 +1295,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
         if (preg_match('/\((.*?)\)/', $column, $matches))
             $column = trim($matches[1], '?');
 
-        $column = preg_replace("/[\.,]/", '_', str_strip_spaces($column));
+        $column = preg_replace("/[.,]/", '_', str_strip_spaces($column));
 
         if (!isset($this->bindings[":{$column}"])) {
             $this->bindings[":{$column}"] = $value;
@@ -1250,6 +1312,16 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
         $this->bindings[$column] = $value;
         return $column;
+    }
+
+    /**
+     * @param array $bindings
+     * @return array
+     */
+    private function addBindings(array $bindings) {
+        $binders = [];
+        foreach ($bindings as $key => $value) $binders[$key] = $this->addBinding($key, $value);
+        return $binders;
     }
 
     /**

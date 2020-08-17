@@ -45,10 +45,10 @@ interface DriverQueryBuilder
     public function getTable(): string;
 
     /**
-     * @param mixed ...$columns
+     * @param mixed $columns
      * @return DriverQueryBuilder
      */
-    public function setColumns(...$columns): DriverQueryBuilder;
+    public function setColumns($columns): DriverQueryBuilder;
 
     /**
      * @return array
@@ -58,11 +58,32 @@ interface DriverQueryBuilder
     public function clearColumns(): void;
 
     /**
+     * @param mixed ...$columns
+     * @return DriverQueryBuilder
+     */
+    public function setSelect(...$columns): DriverQueryBuilder;
+
+    /**
      * @param Closure $callback
      * @param $as
      * @return DriverQueryBuilder
      */
     public function setSelectSub(Closure $callback, $as): DriverQueryBuilder;
+
+    /**
+     * @param $query
+     * @param $as
+     * @param array|null $bindings
+     * @return DriverQueryBuilder
+     */
+    public function setSelectSubRaw($query, $as, array $bindings = null): DriverQueryBuilder;
+
+    /**
+     * @return array
+     */
+    public function getSelect(): array;
+
+    public function clearSelect(): void;
 
     /**
      * @param $column
@@ -258,6 +279,20 @@ interface DriverQueryBuilder
      * @return DriverQueryBuilder
      */
     public function setOrWhereJsonNotContains($column, $value, $path = null): DriverQueryBuilder;
+
+    /**
+     * @param $query
+     * @param array $bindings
+     * @return DriverQueryBuilder
+     */
+    public function setWhereRaw($query, array $bindings = null): DriverQueryBuilder;
+
+    /**
+     * @param $query
+     * @param array $bindings
+     * @return DriverQueryBuilder
+     */
+    public function setOrWhereRaw($query, array $bindings = null): DriverQueryBuilder;
 
     /**
      * @param Closure $callback

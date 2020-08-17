@@ -34,7 +34,13 @@ interface Builder
      * @param mixed ...$columns
      * @return Builder
      */
-    public function columns(...$columns): Builder;
+    public function columns($columns): Builder;
+
+    /**
+     * @param mixed ...$columns
+     * @return Builder
+     */
+    public function select(...$columns): Builder;
 
     /**
      * @param Closure $callback
@@ -42,6 +48,14 @@ interface Builder
      * @return Builder
      */
     public function selectSub(Closure $callback, $as): Builder;
+
+    /**
+     * @param $query
+     * @param $as
+     * @param array|null $bindings
+     * @return Builder
+     */
+    public function selectSubRaw($query, $as, array $bindings = null): Builder;
 
     /**
      * @param $column
@@ -235,6 +249,20 @@ interface Builder
      * @return Builder
      */
     public function orWhereJsonNotContains($column, $value, $path = null): Builder;
+
+    /**
+     * @param $query
+     * @param array $bindings
+     * @return Builder
+     */
+    public function whereRaw($query, array $bindings = null): Builder;
+
+    /**
+     * @param $query
+     * @param array $bindings
+     * @return Builder
+     */
+    public function orWhereRaw($query, array $bindings = null): Builder;
 
     /**
      * @param Closure $query

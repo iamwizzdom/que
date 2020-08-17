@@ -182,6 +182,22 @@ function str_ellipsis(string $string, int $length = 50, string $ellipsis = null)
 }
 
 /**
+ * This function will replace the first occurrence of $search in $subject
+ *
+ * @param $search
+ * @param $replace
+ * @param $subject
+ * @return string|string[]
+ */
+function str_replace_first($search, $replace, $subject) {
+    $pos = strpos($subject, $search);
+    if ($pos !== false) {
+        return substr_replace($subject, $replace, $pos, strlen($search));
+    }
+    return $subject;
+}
+
+/**
  * This function will remove all occurrences of the needle from the string
  * @param string $string
  * @param string $needle

@@ -85,12 +85,20 @@ class QueryBuilder implements Builder
     /**
      * @inheritDoc
      */
-    public function columns(...$columns): Builder
+    public function columns($columns): Builder
     {
         // TODO: Implement columns() method.
-        $this->builder->setColumns(...$columns);
+        $this->builder->setColumns($columns);
         return $this;
     }
+
+    public function select(...$columns): Builder
+    {
+        // TODO: Implement selectColumns() method.
+        $this->builder->setSelect(...$columns);
+        return $this;
+    }
+
 
     /**
      * @inheritDoc
@@ -99,6 +107,13 @@ class QueryBuilder implements Builder
     {
         // TODO: Implement selectSub() method.
         $this->builder->setSelectSub($callback, $as);
+        return $this;
+    }
+
+    public function selectSubRaw($query, $as, array $bindings = null): Builder
+    {
+        // TODO: Implement selectSubRaw() method.
+        $this->builder->setSelectSubRaw($query, $as, $bindings ?: []);
         return $this;
     }
 
@@ -373,6 +388,21 @@ class QueryBuilder implements Builder
         return $this;
     }
 
+    public function whereRaw($query, array $bindings = null): Builder
+    {
+        // TODO: Implement whereRaw() method.
+        $this->builder->setWhereRaw($query, $bindings ?: []);
+        return $this;
+    }
+
+    public function orWhereRaw($query, array $bindings = null): Builder
+    {
+        // TODO: Implement orWhereRaw() method.
+        $this->builder->setOrWhereRaw($query, $bindings ?: []);
+        return $this;
+    }
+
+
     /**
      * @inheritDoc
      */
@@ -546,7 +576,7 @@ class QueryBuilder implements Builder
             case DriverQueryBuilder::INSERT:
                 return $this->insert();
             case DriverQueryBuilder::SELECT:
-                return $this->select();
+                return $this->selectQuery();
             case DriverQueryBuilder::UPDATE:
                 return $this->update();
             case DriverQueryBuilder::DELETE:
@@ -758,7 +788,7 @@ class QueryBuilder implements Builder
                 in_array(Model::class, $implements)) {
 
                 $this->builder->setQueryType(DriverQueryBuilder::SELECT);
-                $record = $this->select();
+                $record = $this->selectQuery();
                 $this->builder->setQueryType(DriverQueryBuilder::DELETE);
 
                 if ($record->isSuccessful()) {
@@ -780,7 +810,7 @@ class QueryBuilder implements Builder
         if (!$modelStack instanceof ModelStack) {
 
             $this->builder->setQueryType(DriverQueryBuilder::SELECT);
-            $record = $this->select();
+            $record = $this->selectQuery();
             $this->builder->setQueryType(DriverQueryBuilder::DELETE);
 
             if ($record->isSuccessful()) {
@@ -946,18 +976,14 @@ class QueryBuilder implements Builder
     /**
      * @return QueryResponse
      */
-    private function select(): QueryResponse
+    private function selectQuery(): QueryResponse
     {
 
         if ($this->pagination['status'] === true) {
 
-            $col = $this->builder->getColumns();
             $this->builder->setQueryType(DriverQueryBuilder::COUNT);
-            $this->builder->clearColumns();
             $count = $this->count();
             $this->builder->setQueryType(DriverQueryBuilder::SELECT);
-            $this->builder->clearColumns();
-            $this->builder->setColumns(...$col);
 
             $totalRecord = (($count->isSuccessful() ? $count->getQueryResponse() : 0) / $this->pagination['perPage']);
 
@@ -980,7 +1006,7 @@ class QueryBuilder implements Builder
 
         }
 
-        if (empty($this->builder->getColumns())) $this->builder->setColumns('*');
+        if (empty($this->builder->getSelect())) $this->builder->setSelect('*');
 
         $this->builder->buildQuery();
 
@@ -1106,19 +1132,12 @@ class QueryBuilder implements Builder
             if (($implements = class_implements($model)) &&
                 in_array(Model::class, $implements)) {
 
-                $col = $this->builder->getColumns();
-                $this->builder->clearColumns();
-                $this->builder->setQueryType(DriverQueryBuilder::SELECT);
-                $this->builder->setColumns('*');
-                $record = $this->select();
+                $this->builder->setSelect('*')->setQueryType(DriverQueryBuilder::SELECT);
+                $record = $this->selectQuery();
                 $this->builder->setQueryType(DriverQueryBuilder::UPDATE);
-                if (!empty($col)) {
-                    $this->builder->clearColumns();
-                    $this->builder->setColumns($col);
-                }
 
                 if ($record->isSuccessful()) {
-                    $records = $record->getQueryResponse();
+                    $records = $record->getQueryResponseArray();
                     if (is_array($records)) {
                         array_callback($records, function ($record) use ($model) {
                             return new $model($record, $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
@@ -1136,16 +1155,9 @@ class QueryBuilder implements Builder
 
         if (!$modelStack instanceof ModelStack) {
 
-            $col = $this->builder->getColumns();
-            $this->builder->clearColumns();
-            $this->builder->setQueryType(DriverQueryBuilder::SELECT);
-            $this->builder->setColumns('*');
-            $record = $this->select();
+            $this->builder->setSelect('*')->setQueryType(DriverQueryBuilder::SELECT);
+            $record = $this->selectQuery();
             $this->builder->setQueryType(DriverQueryBuilder::UPDATE);
-            if (!empty($col)) {
-                $this->builder->clearColumns();
-                $this->builder->setColumns($col);
-            }
 
             if ($record->isSuccessful()) {
                 $records = $record->getQueryResponse();
@@ -1324,7 +1336,7 @@ class QueryBuilder implements Builder
      */
     private function count(): QueryResponse
     {
-        if (empty($this->builder->getColumns())) {
+        if (empty($this->builder->getSelect())) {
 
             if (!isset(self::$primaryKeys[$this->builder->getTable()])) {
 
@@ -1334,7 +1346,7 @@ class QueryBuilder implements Builder
                 self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? $showTable->getQueryResponse() : 'id';
             }
 
-            $this->builder->setColumns(self::$primaryKeys[$this->builder->getTable()]);
+            $this->builder->setSelect(self::$primaryKeys[$this->builder->getTable()]);
         }
 
         $this->builder->buildQuery();
@@ -1365,7 +1377,7 @@ class QueryBuilder implements Builder
      */
     private function avg(): QueryResponse
     {
-        if (empty($this->builder->getColumns())) {
+        if (empty($this->builder->getSelect())) {
 
             if (!isset(self::$primaryKeys[$this->builder->getTable()])) {
 
@@ -1375,7 +1387,7 @@ class QueryBuilder implements Builder
                 self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? $showTable->getQueryResponse() : 'id';
             }
 
-            $this->builder->setColumns(self::$primaryKeys[$this->builder->getTable()]);
+            $this->builder->setSelect(self::$primaryKeys[$this->builder->getTable()]);
         }
 
         $this->builder->buildQuery();
@@ -1406,7 +1418,7 @@ class QueryBuilder implements Builder
      */
     private function sum(): QueryResponse
     {
-        if (empty($this->builder->getColumns())) {
+        if (empty($this->builder->getSelect())) {
 
             if (!isset(self::$primaryKeys[$this->builder->getTable()])) {
 
@@ -1416,7 +1428,7 @@ class QueryBuilder implements Builder
                 self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? $showTable->getQueryResponse() : 'id';
             }
 
-            $this->builder->setColumns(self::$primaryKeys[$this->builder->getTable()]);
+            $this->builder->setSelect(self::$primaryKeys[$this->builder->getTable()]);
         }
 
         $this->builder->buildQuery();

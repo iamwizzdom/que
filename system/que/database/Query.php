@@ -201,16 +201,16 @@ class Query extends Connect
      * @param string $table
      * @param $id
      * @param string $column
-     * @param Closure|null $extraQuery
+     * @param Closure|null $extraQueryCallback
      * @return QueryResponse
      */
-    public function find(string $table, $id, string $column = 'id', Closure $extraQuery = null): QueryResponse
+    public function find(string $table, $id, string $column = 'id', Closure $extraQueryCallback = null): QueryResponse
     {
         $builder = $this->select();
         $builder->table($table);
         $builder->where($column, $id);
         $builder->limit(1);
-        if ($extraQuery !== null) $extraQuery($builder);
+        if ($extraQueryCallback !== null) $extraQueryCallback($builder);
         return $builder->exec();
     }
 
@@ -218,15 +218,15 @@ class Query extends Connect
      * @param string $table
      * @param null $id
      * @param string $column
-     * @param Closure|null $extraQuery
+     * @param Closure|null $extraQueryCallback
      * @return QueryResponse
      */
-    public function findAll(string $table, $id = null, string $column = 'id', Closure $extraQuery = null): QueryResponse
+    public function findAll(string $table, $id = null, string $column = 'id', Closure $extraQueryCallback = null): QueryResponse
     {
         $builder = $this->select();
         $builder->table($table);
         $builder->where($column, $id);
-        if ($extraQuery !== null) $extraQuery($builder);
+        if ($extraQueryCallback !== null) $extraQueryCallback($builder);
         return $builder->exec();
     }
 

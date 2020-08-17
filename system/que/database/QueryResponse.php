@@ -320,7 +320,7 @@ class QueryResponse
 
         iterable_callback_recursive($data, function ($value) {
             if (is_iterable($value) || is_object($value)) return $this->normalize_data($value);
-            return is_null($value) ? null : ($this->get_mark_down($value) ?: stripslashes($value));
+            return is_null($value) ? null : ((json_decode($value) ?: $this->get_mark_down($value)) ?: stripslashes($value));
         });
 
         return $data;
