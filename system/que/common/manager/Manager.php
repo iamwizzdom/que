@@ -11,7 +11,7 @@ namespace que\common\manager;
 use que\common\exception\PreviousException;
 use que\common\exception\QueException;
 use que\common\exception\QueRuntimeException;
-use que\database\Query;
+use que\database\DB;
 use que\common\exception\AlertException;
 use que\common\exception\BaseException;
 use que\common\exception\BulkException;
@@ -41,10 +41,10 @@ abstract class Manager
 {
 
     /**
-     * @return Query
+     * @return DB
      */
-    protected function db(): Query {
-        return Query::getInstance();
+    protected function db(): DB {
+        return DB::getInstance();
     }
 
     /**

@@ -5,7 +5,7 @@ use que\common\exception\QueException;
 use que\common\exception\QueRuntimeException;
 use que\common\time\Time;
 use que\common\validator\Track;
-use que\database\Query;
+use que\database\DB;
 use que\error\Logger;
 use que\error\RuntimeError;
 use que\http\HTTP;
@@ -1973,11 +1973,11 @@ function config(string $offset, $default = null) {
 }
 
 /**
- * @return Query
+ * @return DB
  */
-function db(): Query
+function db(): DB
 {
-    return Query::getInstance();
+    return DB::getInstance();
 }
 
 /**

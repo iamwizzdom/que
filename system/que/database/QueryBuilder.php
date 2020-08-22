@@ -34,9 +34,9 @@ class QueryBuilder implements Builder
     private Driver $driver;
 
     /**
-     * @var Query
+     * @var DB
      */
-    private Query $query;
+    private DB $query;
 
     /**
      * @var DriverQueryBuilder
@@ -63,9 +63,9 @@ class QueryBuilder implements Builder
      * QueryBuilder constructor.
      * @param Driver $driver
      * @param DriverQueryBuilder $builder
-     * @param Query $query
+     * @param DB $query
      */
-    public function __construct(Driver $driver, DriverQueryBuilder $builder, Query $query)
+    public function __construct(Driver $driver, DriverQueryBuilder $builder, DB $query)
     {
         $this->driver = $driver;
         $this->builder = $builder;
@@ -523,7 +523,7 @@ class QueryBuilder implements Builder
         // TODO: Implement paginate() method.
 
         if ($this->builder->getQueryType() !== DriverQueryBuilder::SELECT)
-            throw new QueRuntimeException("You can only paginate a [::select] query", "Database Query Error",
+            throw new QueRuntimeException("You can only paginate a [::select] query", "Database DB Error",
                 E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         $this->pagination['status'] = true;
@@ -596,7 +596,7 @@ class QueryBuilder implements Builder
             case DriverQueryBuilder::SHOW:
                 return $this->show_table();
             default:
-                throw new QueRuntimeException("Invalid query type", "Query Builder Error",
+                throw new QueRuntimeException("Invalid query type", "DB Builder Error",
                     E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(3));
 
         }
@@ -734,7 +734,7 @@ class QueryBuilder implements Builder
                     return !empty($error);
                 });
 
-                throw new QueRuntimeException("Error: {$errors} \nQuery: '{$response->getQueryString()}'\n",
+                throw new QueRuntimeException("Error: {$errors} \nDB: '{$response->getQueryString()}'\n",
                     "Database Error", E_USER_ERROR, 0,
                     PreviousException::getInstance());
             }
@@ -944,7 +944,7 @@ class QueryBuilder implements Builder
                     return !empty($error);
                 });
 
-                throw new QueRuntimeException("Error: {$errors} \nQuery: '{$response->getQueryString()}'\n",
+                throw new QueRuntimeException("Error: {$errors} \nDB: '{$response->getQueryString()}'\n",
                     "Database Error", E_USER_ERROR, 0,
                     PreviousException::getInstance());
             }
@@ -1022,7 +1022,7 @@ class QueryBuilder implements Builder
                     return !empty($error);
                 });
 
-                throw new QueRuntimeException("Error: {$errors} \nQuery: '{$response->getQueryString()}'\n",
+                throw new QueRuntimeException("Error: {$errors} \nDB: '{$response->getQueryString()}'\n",
                     "Database Error", E_USER_ERROR, 0,
                     PreviousException::getInstance());
             }
@@ -1049,7 +1049,7 @@ class QueryBuilder implements Builder
                     return !empty($error);
                 });
 
-                throw new QueRuntimeException("Error: {$errors} \nQuery: '{$response->getQueryString()}'\n",
+                throw new QueRuntimeException("Error: {$errors} \nDB: '{$response->getQueryString()}'\n",
                     "Database Error", E_USER_ERROR, 0,
                     PreviousException::getInstance());
             }
@@ -1076,7 +1076,7 @@ class QueryBuilder implements Builder
                     return !empty($error);
                 });
 
-                throw new QueRuntimeException("Error: {$errors} \nQuery: '{$response->getQueryString()}'\n",
+                throw new QueRuntimeException("Error: {$errors} \nDB: '{$response->getQueryString()}'\n",
                     "Database Error", E_USER_ERROR, 0,
                     PreviousException::getInstance());
             }
@@ -1103,7 +1103,7 @@ class QueryBuilder implements Builder
                     return !empty($error);
                 });
 
-                throw new QueRuntimeException("Error: {$errors} \nQuery: '{$response->getQueryString()}'\n",
+                throw new QueRuntimeException("Error: {$errors} \nDB: '{$response->getQueryString()}'\n",
                     "Database Error", E_USER_ERROR, 0,
                     PreviousException::getInstance());
             }
@@ -1291,7 +1291,7 @@ class QueryBuilder implements Builder
                     return !empty($error);
                 });
 
-                throw new QueRuntimeException("Error: {$errors} \nQuery: '{$response->getQueryString()}'\n",
+                throw new QueRuntimeException("Error: {$errors} \nDB: '{$response->getQueryString()}'\n",
                     "Database Error", E_USER_ERROR, 0,
                     PreviousException::getInstance());
             }
@@ -1363,7 +1363,7 @@ class QueryBuilder implements Builder
                     return !empty($error);
                 });
 
-                throw new QueRuntimeException("Error: {$errors} \nQuery: '{$response->getQueryString()}'\n",
+                throw new QueRuntimeException("Error: {$errors} \nDB: '{$response->getQueryString()}'\n",
                     "Database Error", E_USER_ERROR, 0,
                     PreviousException::getInstance());
             }
@@ -1404,7 +1404,7 @@ class QueryBuilder implements Builder
                     return !empty($error);
                 });
 
-                throw new QueRuntimeException("Error: {$errors} \nQuery: '{$response->getQueryString()}'\n",
+                throw new QueRuntimeException("Error: {$errors} \nDB: '{$response->getQueryString()}'\n",
                     "Database Error", E_USER_ERROR, 0,
                     PreviousException::getInstance());
             }
@@ -1445,7 +1445,7 @@ class QueryBuilder implements Builder
                     return !empty($error);
                 });
 
-                throw new QueRuntimeException("Error: {$errors} \nQuery: '{$response->getQueryString()}'\n",
+                throw new QueRuntimeException("Error: {$errors} \nDB: '{$response->getQueryString()}'\n",
                     "Database Error", E_USER_ERROR, 0,
                     PreviousException::getInstance());
             }

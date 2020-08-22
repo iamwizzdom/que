@@ -25,7 +25,7 @@ class Pagination
     private static array $paginators = [];
 
     /**
-     * Query constructor.
+     * Pagination constructor.
      */
     protected function __construct()
     {

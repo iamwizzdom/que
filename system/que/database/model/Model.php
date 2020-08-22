@@ -13,11 +13,14 @@ use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use que\common\validator\interfaces\Condition;
 use que\database\interfaces\model\Model as ModelAlias;
-use que\database\interfaces\Builder;
 use que\http\HTTP;
 
 class Model implements ModelAlias
 {
+    /**
+     * @var string
+     */
+    protected string $key = "que";
 
     /**
      * @var object
@@ -42,6 +45,12 @@ class Model implements ModelAlias
         $this->setObject($tableRow);
         $this->setTable($tableName);
         $this->setPrimaryKey($primaryKey);
+    }
+
+    public function getModelKey(): string
+    {
+        // TODO: Implement getModelKey() method.
+        return $this->key;
     }
 
     /**
@@ -104,7 +113,8 @@ class Model implements ModelAlias
      * @param $key
      * @return bool
      */
-    public function has($key): bool {
+    public function has($key): bool
+    {
         return $this->offsetExists($key);
     }
 
@@ -112,7 +122,8 @@ class Model implements ModelAlias
      * @param $key
      * @return bool
      */
-    public function isEmpty($key): bool {
+    public function isEmpty($key): bool
+    {
         return empty($this->object->{$key}) && $this->object->{$key} != "0";
     }
 
@@ -133,7 +144,7 @@ class Model implements ModelAlias
      */
     public function getInt($key, int $default = 0): int
     {
-        return (int) $this->getValue($key, $default);
+        return (int)$this->getValue($key, $default);
     }
 
     /**
@@ -143,7 +154,7 @@ class Model implements ModelAlias
      */
     public function getFloat($key, float $default = 0.0): float
     {
-        return (float) $this->getValue($key, $default);
+        return (float)$this->getValue($key, $default);
     }
 
     /**
@@ -160,19 +171,25 @@ class Model implements ModelAlias
     }
 
     /**
-     * @return Builder
+     * @return ModelAlias
      */
-    public function getNextRecord(): Builder {
-        return db()->select()->table($this->getTable())
-            ->where($this->getPrimaryKey(), $this->getValue($this->getPrimaryKey()), '>');
+    public function getNextRecord(): ModelAlias
+    {
+        $record = db()->select()->table($this->getTable())
+            ->where($this->getPrimaryKey(), $this->getValue($this->getPrimaryKey()), '>')->exec();
+        if ($record->isSuccessful()) return $record->getQueryResponseWithModel($this->getModelKey(), 0, $this->primaryKey);
+        return null;
     }
 
     /**
-     * @return Builder
+     * @return ModelAlias
      */
-    public function getPreviousRecord(): Builder {
-        return db()->select()->table($this->getTable())
-            ->where($this->getPrimaryKey(), $this->getValue($this->getPrimaryKey()), '<');
+    public function getPreviousRecord(): ModelAlias
+    {
+        $record = db()->select()->table($this->getTable())
+            ->where($this->getPrimaryKey(), $this->getValue($this->getPrimaryKey()), '<')->exec();
+        if ($record->isSuccessful()) return $record->getQueryResponseWithModel($this->getModelKey(), 0, $this->primaryKey);
+        return null;
     }
 
     /**
@@ -191,7 +208,8 @@ class Model implements ModelAlias
      * @param string|null $primaryKey
      * @return bool
      */
-    public function update(array $columns, string $primaryKey = null): bool {
+    public function update(array $columns, string $primaryKey = null): bool
+    {
 
         if ($primaryKey === null) $primaryKey = $this->getPrimaryKey();
 
@@ -217,7 +235,8 @@ class Model implements ModelAlias
      * @param string|null $primaryKey
      * @return bool
      */
-    public function delete(string $primaryKey = null): bool {
+    public function delete(string $primaryKey = null): bool
+    {
 
         if ($primaryKey === null) $primaryKey = $this->getPrimaryKey();
 

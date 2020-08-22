@@ -87,14 +87,14 @@ class QueryResponse
     {
         $response = $this->getQueryResponse($key);
 
-        if (empty($response)) return (array) $response;
+        if (empty($response)) return (array)$response;
 
-        if (!is_null($key)) return (array) $response;
+        if (!is_null($key)) return (array)$response;
 
-        if (!is_array($response)) $response = (array) $response;
+        if (!is_array($response)) $response = (array)$response;
 
         array_callback($response, function ($row) {
-            return (array) $this->normalize_data($row);
+            return (array)$this->normalize_data($row);
         });
 
         return $response;
@@ -106,9 +106,9 @@ class QueryResponse
      * @param string $primaryKey
      * @return Model|ModelStack|null
      */
-    public function getQueryResponseWithModel(string $model = null, $key = null,string $primaryKey = "id")
+    public function getQueryResponseWithModel(string $model = null, $key = null, string $primaryKey = "id")
     {
-        $model = \model(($modelKey = $model ?? config("database.default.model")));
+        $model = \model(($modelKey = $model ?: config("database.default.model")));
 
         if ($model === null) throw new QueRuntimeException(
             "No database model was found with the key '{$modelKey}', check your database configuration to fix this issue.",
@@ -132,7 +132,7 @@ class QueryResponse
             return new $model($response, $this->getTable(), $primaryKey);
         }
 
-        if (!is_array($response)) $response = (array) $response;
+        if (!is_array($response)) $response = (array)$response;
 
         array_callback($response, function ($row, $key) use ($model, $primaryKey) {
 
@@ -230,7 +230,8 @@ class QueryResponse
      * @param Closure $callback
      * @return bool
      */
-    public function query_response_walk(Closure $callback): bool {
+    public function query_response_walk(Closure $callback): bool
+    {
 
         if (!$this->isSuccessful() || !is_callable($callback)) return false;
 
@@ -249,7 +250,8 @@ class QueryResponse
      * @param string $primaryKey
      * @return bool
      */
-    public function query_response_walk_with_model(Closure $callback, string $model = null, string $primaryKey = "id"): bool {
+    public function query_response_walk_with_model(Closure $callback, string $model = null, string $primaryKey = "id"): bool
+    {
 
         if (!$this->isSuccessful() || !is_callable($callback)) return false;
 
@@ -330,7 +332,8 @@ class QueryResponse
      * @param $data
      * @return mixed|null
      */
-    private function get_mark_down($data) {
+    private function get_mark_down($data)
+    {
         if (preg_match('/\[(.*?)\]\((.*?)\)\((.*?)\)/', $data, $matches)) {
             if ($matches[2] == "array" || $matches[2] == "object" || $matches[2] == "class") {
 
@@ -349,7 +352,8 @@ class QueryResponse
      * @param $data
      * @return string
      */
-    private function getType($data) {
+    private function getType($data)
+    {
         return gettype($data);
     }
 

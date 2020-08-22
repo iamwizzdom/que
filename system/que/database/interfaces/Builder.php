@@ -11,7 +11,7 @@ namespace que\database\interfaces;
 use Closure;
 use que\database\interfaces\drivers\Driver;
 use que\database\interfaces\drivers\DriverQueryBuilder;
-use que\database\Query;
+use que\database\DB;
 use que\database\QueryResponse;
 
 interface Builder
@@ -20,9 +20,9 @@ interface Builder
      * Builder constructor.
      * @param Driver $driver
      * @param DriverQueryBuilder $builder
-     * @param Query $query
+     * @param DB $query
      */
-    public function __construct(Driver $driver, DriverQueryBuilder $builder, Query $query);
+    public function __construct(Driver $driver, DriverQueryBuilder $builder, DB $query);
 
     /**
      * @param string $table

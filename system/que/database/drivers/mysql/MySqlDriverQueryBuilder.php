@@ -14,7 +14,7 @@ use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use que\database\interfaces\drivers\Driver;
 use que\database\interfaces\drivers\DriverQueryBuilder;
-use que\database\Query;
+use que\database\DB;
 use que\database\QueryBuilder;
 use que\http\HTTP;
 
@@ -850,7 +850,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
                     $driverBuilder = new MySqlDriverQueryBuilder($this->driver, $this->bindings);
                     $driverBuilder->setQueryType($this->queryType);
-                    $builder = new QueryBuilder($this->driver, $driverBuilder, Query::getInstance());
+                    $builder = new QueryBuilder($this->driver, $driverBuilder, DB::getInstance());
                     $builder->table($this->table);
                     $this->union['query']($builder);
                     $driverBuilder->buildQuery();
@@ -984,7 +984,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
                             $driverBuilder = new MySqlDriverQueryBuilder($this->driver, $this->bindings);
                             $driverBuilder->setQueryType($this->queryType);
-                            $builder = new QueryBuilder($this->driver, $driverBuilder, Query::getInstance());
+                            $builder = new QueryBuilder($this->driver, $driverBuilder, DB::getInstance());
                             $builder->table($this->table);
                             $alias($builder);
                             $driverBuilder->buildQuery();
@@ -1060,7 +1060,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
                         $driverBuilder = new MySqlDriverQueryBuilder($this->driver, $this->bindings);
                         $driverBuilder->setQueryType($this->queryType);
-                        $builder = new QueryBuilder($this->driver, $driverBuilder, Query::getInstance());
+                        $builder = new QueryBuilder($this->driver, $driverBuilder, DB::getInstance());
                         $builder->table($this->table);
                         $expression['value']($builder);
                         $driverBuilder->buildQuery();
@@ -1118,7 +1118,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
                     $driverBuilder = new MySqlDriverQueryBuilder($this->driver, $this->bindings);
                     $driverBuilder->setQueryType($this->queryType);
-                    $builder = new QueryBuilder($this->driver, $driverBuilder, Query::getInstance());
+                    $builder = new QueryBuilder($this->driver, $driverBuilder, DB::getInstance());
                     $builder->table($this->table);
                     $expression['column']($builder);
                     $driverBuilder->buildQuery();
@@ -1129,7 +1129,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
                 case 'exists_or':
                     $driverBuilder = new MySqlDriverQueryBuilder($this->driver, $this->bindings);
                     $driverBuilder->setQueryType($this->queryType);
-                    $builder = new QueryBuilder($this->driver, $driverBuilder, Query::getInstance());
+                    $builder = new QueryBuilder($this->driver, $driverBuilder, DB::getInstance());
                     $builder->table($this->table);
                     $expression['column']($builder);
                     $driverBuilder->buildQuery();
@@ -1141,7 +1141,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
                     $driverBuilder = new MySqlDriverQueryBuilder($this->driver, $this->bindings);
                     $driverBuilder->setQueryType($this->queryType);
-                    $builder = new QueryBuilder($this->driver, $driverBuilder, Query::getInstance());
+                    $builder = new QueryBuilder($this->driver, $driverBuilder, DB::getInstance());
                     $builder->table($this->table);
                     $expression['column']($builder);
                     $driverBuilder->buildQuery();
@@ -1153,7 +1153,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
                     $driverBuilder = new MySqlDriverQueryBuilder($this->driver, $this->bindings);
                     $driverBuilder->setQueryType($this->queryType);
-                    $builder = new QueryBuilder($this->driver, $driverBuilder, Query::getInstance());
+                    $builder = new QueryBuilder($this->driver, $driverBuilder, DB::getInstance());
                     $builder->table($this->table);
                     $expression['column']($builder);
                     $driverBuilder->buildQuery();
@@ -1248,7 +1248,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
             $driverBuilder = new MySqlDriverQueryBuilder($this->driver, $this->bindings);
             $driverBuilder->setQueryType($this->queryType);
-            $builder = new QueryBuilder($this->driver, $driverBuilder, Query::getInstance());
+            $builder = new QueryBuilder($this->driver, $driverBuilder, DB::getInstance());
             $builder->table($this->table);
             $expression['value']($builder);
             $driverBuilder->buildQuery();

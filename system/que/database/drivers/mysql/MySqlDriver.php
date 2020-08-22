@@ -379,7 +379,7 @@ class MySqlDriver implements Driver
         foreach ($params as $key => $value) {
             if ($value === null) $value = 'NULL';
             elseif (!is_numeric($value)) $value = "'{$value}'";
-            $query = str_replace($key, "{$value}", $query);
+            $query = str_replace_first($key, "{$value}", $query);
         }
         return $query;
     }

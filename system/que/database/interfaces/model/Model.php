@@ -27,6 +27,11 @@ interface Model extends QueArrayAccess
     );
 
     /**
+     * @return string
+     */
+    public function getModelKey(): string;
+
+    /**
      * @return object
      */
     public function &getObject(): object;
@@ -86,14 +91,14 @@ interface Model extends QueArrayAccess
     public function get($key): Condition;
 
     /**
-     * @return Builder
+     * @return Model|null
      */
-    public function getNextRecord(): Builder;
+    public function getNextRecord(): ?Model;
 
     /**
-     * @return Builder
+     * @return Model|null
      */
-    public function getPreviousRecord(): Builder;
+    public function getPreviousRecord(): ?Model;
 
     /**
      * @return bool

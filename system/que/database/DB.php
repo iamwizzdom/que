@@ -15,16 +15,16 @@ use que\database\interfaces\drivers\Driver;
 use que\database\interfaces\drivers\DriverQueryBuilder;
 use que\support\Config;
 
-class Query extends Connect
+class DB extends Connect
 {
 
     /**
-     * @var Query
+     * @var DB
      */
-    private static Query $instance;
+    private static DB $instance;
 
     /**
-     * Query constructor.
+     * DB constructor.
      */
     public function __construct()
     {
@@ -48,9 +48,9 @@ class Query extends Connect
     }
 
     /**
-     * @return Query
+     * @return DB
      */
-    public static function getInstance(): Query
+    public static function getInstance(): DB
     {
         if (!isset(self::$instance))
             self::$instance = new self;
