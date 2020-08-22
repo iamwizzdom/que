@@ -4,6 +4,8 @@
 namespace que\route;
 
 
+use que\http\request\Request;
+
 class RouteEntry
 {
     /**
@@ -59,7 +61,7 @@ class RouteEntry
     /**
      * @var bool
      */
-    private bool $requireCSRFAuth = false;
+    private bool $forbidCSRF = false;
 
     /**
      * @var bool
@@ -76,7 +78,7 @@ class RouteEntry
      */
     public function __construct()
     {
-        $this->requireCSRFAuth();
+        $this->forbidCSRF();
     }
 
     /**
@@ -204,16 +206,16 @@ class RouteEntry
     /**
      * @return bool
      */
-    public function isRequireCSRFAuth(): bool
+    public function isForbidCSRF(): bool
     {
-        return $this->requireCSRFAuth;
+        return $this->forbidCSRF;
     }
 
     /**
      */
-    public function requireCSRFAuth(): void
+    public function forbidCSRF(): void
     {
-        $this->requireCSRFAuth = true;
+        $this->forbidCSRF = true;
     }
 
     /**
@@ -258,7 +260,7 @@ class RouteEntry
      */
     public function allowGetRequest(): RouteEntry
     {
-        $this->allowedMethods[] = "GET";
+        $this->allowedMethods[] = Request::METHOD_GET;
         return $this;
     }
 
@@ -267,7 +269,7 @@ class RouteEntry
      */
     public function allowPostRequest(): RouteEntry
     {
-        $this->allowedMethods[] = "POST";
+        $this->allowedMethods[] = Request::METHOD_POST;
         return $this;
     }
 
@@ -276,7 +278,7 @@ class RouteEntry
      */
     public function allowPutRequest(): RouteEntry
     {
-        $this->allowedMethods[] = "PUT";
+        $this->allowedMethods[] = Request::METHOD_PUT;
         return $this;
     }
 
@@ -285,7 +287,7 @@ class RouteEntry
      */
     public function allowPatchRequest(): RouteEntry
     {
-        $this->allowedMethods[] = "PATCH";
+        $this->allowedMethods[] = Request::METHOD_PATCH;
         return $this;
     }
 
@@ -294,7 +296,7 @@ class RouteEntry
      */
     public function allowDeleteRequest(): RouteEntry
     {
-        $this->allowedMethods[] = "DELETE";
+        $this->allowedMethods[] = Request::METHOD_DELETE;
         return $this;
     }
 

@@ -114,12 +114,12 @@ class Form implements ArrayAccess
 
             if ($this->formAction == '#') {
 
-                if (($currentRoute = current_route()) && $currentRoute->isRequireCSRFAuth())
+                if (($currentRoute = current_route()) && $currentRoute->isForbidCSRF())
                     $formClose .= "<input type='hidden' name='csrf' value='{$this->getCsrfToken()}'/>";
 
             } elseif (($currentRoute = Route::getRouteEntryFromUri($this->formAction))) {
 
-                if ($currentRoute->isRequireCSRFAuth())
+                if ($currentRoute->isForbidCSRF())
                     $formClose .= "<input type='hidden' name='csrf' value='{$this->getCsrfToken()}'/>";
             }
         }

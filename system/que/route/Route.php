@@ -151,27 +151,27 @@ final class Route extends RouteCompiler
             if ($instance instanceof Add) {
 
                 if (self::$method === "GET") {
-                    if ($route->isRequireCSRFAuth() === true) CSRF::getInstance()->generateToken();
+                    if ($route->isForbidCSRF() === true) CSRF::getInstance()->generateToken();
                     $instance->onLoad($http->input());
                 } else {
-                    if ($route->isRequireCSRFAuth() === true) RouteInspector::validateCSRF();
+                    if ($route->isForbidCSRF() === true) RouteInspector::validateCSRF();
                     $instance->onReceive($http->input());
                 }
 
             } elseif ($instance instanceof Edit) {
 
                 if (self::$method === "GET") {
-                    if ($route->isRequireCSRFAuth() === true) CSRF::getInstance()->generateToken();
+                    if ($route->isForbidCSRF() === true) CSRF::getInstance()->generateToken();
                     $instance->onLoad($http->input(), $instance->info($http->input()));
                 } else {
-                    if ($route->isRequireCSRFAuth() === true) RouteInspector::validateCSRF();
+                    if ($route->isForbidCSRF() === true) RouteInspector::validateCSRF();
                     $instance->onReceive($http->input(), $instance->info($http->input()));
                 }
 
             } elseif ($instance instanceof Info) {
 
                 if (self::$method === "GET") {
-                    if ($route->isRequireCSRFAuth() === true) CSRF::getInstance()->generateToken();
+                    if ($route->isForbidCSRF() === true) CSRF::getInstance()->generateToken();
                     $instance->onLoad($http->input(), $instance->info($http->input()));
                 } else {
 
@@ -180,14 +180,14 @@ final class Route extends RouteCompiler
                             "The module bound to this route is not compatible with the %s request method.\n Compatible method: GET",
                             self::$method), "Route Error", HTTP::METHOD_NOT_ALLOWED);
 
-                    if ($route->isRequireCSRFAuth() === true) RouteInspector::validateCSRF();
+                    if ($route->isForbidCSRF() === true) RouteInspector::validateCSRF();
                     $instance->onReceive($http->input(), $instance->info($http->input()));
                 }
 
             } elseif ($instance instanceof Page) {
 
                 if (self::$method === "GET") {
-                    if ($route->isRequireCSRFAuth() === true) CSRF::getInstance()->generateToken();
+                    if ($route->isForbidCSRF() === true) CSRF::getInstance()->generateToken();
                     $instance->onLoad($http->input());
                 } else {
 
@@ -196,7 +196,7 @@ final class Route extends RouteCompiler
                             "The module bound to this route is not compatible with the %s request method.\n Compatible method: GET",
                             self::$method), "Route Error", HTTP::METHOD_NOT_ALLOWED);
 
-                    if ($route->isRequireCSRFAuth() === true) RouteInspector::validateCSRF();
+                    if ($route->isForbidCSRF() === true) RouteInspector::validateCSRF();
                     $instance->onReceive($http->input());
                 }
 
@@ -238,7 +238,7 @@ final class Route extends RouteCompiler
                 "a valid API module interface\n"
             );
 
-            if ($route->isRequireCSRFAuth() === true) {
+            if ($route->isForbidCSRF() === true) {
                 RouteInspector::validateCSRF();
                 $http->_header()->set('X-Xsrf-Token', CSRF::getInstance()->getToken());
                 $http->_header()->set('X-Track-Token', Track::generateToken());
@@ -319,7 +319,7 @@ final class Route extends RouteCompiler
 
             $http = http();
 
-            if ($route->isRequireCSRFAuth() === true) {
+            if ($route->isForbidCSRF() === true) {
                 RouteInspector::validateCSRF();
                 $http->_header()->set('X-Xsrf-Token', CSRF::getInstance()->getToken());
                 $http->_header()->set('X-Track-Token', Track::generateToken());
