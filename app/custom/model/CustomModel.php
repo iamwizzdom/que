@@ -8,10 +8,9 @@
 
 namespace custom\model;
 
-use Exception;
-use que\database\interfaces\model\Model;
+use que\database\model\Model;
 
-class CustomModel extends \que\database\model\Model
+class CustomModel extends Model
 {
     protected string $key = 'custom';
 }

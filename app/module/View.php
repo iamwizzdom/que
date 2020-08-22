@@ -25,8 +25,8 @@ class View extends Manager implements Page, \que\security\interfaces\RoutePermis
         // TODO: Implement onLoad() method.
         current_route()->setTitle('Welcome Que');
         $this->composer()->data([
-//            'hello' => 'Hello world, Welcome to Que'
-            'hello' => 'Welcome to Que'
+            'hello' => 'Hello world, Welcome to Que'
+//            'hello' => 'Welcome to Que'
         ]);
 
     }

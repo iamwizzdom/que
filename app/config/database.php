@@ -203,7 +203,7 @@ return [
              | Set to [bool](true) to shutdown Que and output all MySQL/SQL errors,
              | otherwise [bool](false) to output only FATAL errors
              */
-            'debug' => false
+            'debug' => true
         ]
 
     ],

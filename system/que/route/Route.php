@@ -99,6 +99,13 @@ final class Route extends RouteCompiler
 
             if (!empty($route)) {
 
+                if (empty($module = $route->getModule()))  throw new RouteException(
+                    "This route is not bound to a module\n", "Route Error", HTTP::NOT_FOUND);
+
+                if (!class_exists($module, true)) throw new RouteException(
+                        sprintf("The module [%s] bound to this route does not exist\n", $module),
+                        "Route Error", HTTP::NOT_FOUND);
+
                 switch ($route->getType()) {
                     case "web":
                         self::render_web_route($route);
@@ -134,17 +141,7 @@ final class Route extends RouteCompiler
 
         try {
 
-            //check if JWT is required
-            if ($route->isRequireJWTAuth() === true) RouteInspector::validateJWT($http);
-
-            if (empty($module = $route->getModule()))  throw new RouteException(
-                "This route is not bound to a module\n", "Route Error", HTTP::NOT_FOUND);
-
-            if (!class_exists($module, true))
-                throw new RouteException(
-                    sprintf("The module (%s) bound to this route does not exist\n", $module)
-                    , "Route Error", HTTP::NOT_FOUND);
-
+            $module = $route->getModule();
             $instance = new $module();
 
             if ($instance instanceof RoutePermission && !$instance->hasPermission($route))
@@ -229,17 +226,7 @@ final class Route extends RouteCompiler
 
         try {
 
-            //check if JWT is required
-            if ($route->isRequireJWTAuth() === true) RouteInspector::validateJWT($http);
-
-            if (empty($module = $route->getModule()))  throw new RouteException(
-                "This route is not bound to a module\n", "Route Error", HTTP::NOT_FOUND);
-
-            if (!class_exists($module, true))
-                throw new RouteException(
-                    sprintf("The module (%s) bound to this route does not exist\n", $module)
-                    , "Route Error", HTTP::NOT_FOUND);
-
+            $module = $route->getModule();
             $instance = new $module();
 
             if ($instance instanceof RoutePermission && !$instance->hasPermission($route))
@@ -316,19 +303,9 @@ final class Route extends RouteCompiler
      */
     private static function render_resource_route(RouteEntry $route) {
 
-        $http = http();
-
         try {
 
-            //check if JWT is required
-            if ($route->isRequireJWTAuth() === true) RouteInspector::validateJWT($http);
-
-            if (empty($module = $route->getModule()))  throw new RouteException(
-                "This route is not bound to a module\n", "Route Error", HTTP::NOT_FOUND);
-
-            if (!class_exists($module, true)) throw new RouteException(
-                    sprintf("The module (%s) bound to this route does not exist\n", $module));
-
+            $module = $route->getModule();
             $instance = new $module();
 
             if ($instance instanceof RoutePermission && !$instance->hasPermission($route))
@@ -339,6 +316,8 @@ final class Route extends RouteCompiler
                 "The module bound to this route is registered\n as an resource module but does not implement \n" .
                 "a valid resource module interface\n"
             );
+
+            $http = http();
 
             if ($route->isRequireCSRFAuth() === true) {
                 RouteInspector::validateCSRF();
@@ -374,13 +353,12 @@ final class Route extends RouteCompiler
     public static function getRouteUrl(string $routeName, array $args = [], bool $addBaseUrl = true): string
     {
         $routeEntry = Route::getRouteEntryFromName($routeName);
-        if (!$routeEntry instanceof RouteEntry)
-            throw new QueRuntimeException("Route [{$routeName}] not found", "Route Error",
+        if (!$routeEntry instanceof RouteEntry) throw new QueRuntimeException("Route [{$routeName}] not found", "Route Error",
                 E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
         if ($routeEntry->isRequireLogIn() === true && !is_logged_in()) return '#';
         if ($routeEntry->isRequireLogIn() === false && is_logged_in()) return '#';
 
-        if (preg_match_all('/\{(.*?)\}/', $routeEntry->getUri(), $matches)) {
+        if (preg_match_all('/{(.*?)}/', $routeEntry->getUri(), $matches)) {
 
             $argParams = array_map(function ($m) {
                 return trim($m, '?');
@@ -392,8 +370,7 @@ final class Route extends RouteCompiler
                 if (str_contains($arg, ':')) {
 
                     $_arg = explode(':', $arg, 2);
-                    if (!Arr::exists($args, $_arg[0]))
-                        throw new QueRuntimeException(
+                    if (!Arr::exists($args, $_arg[0])) throw new QueRuntimeException(
                             "Missing required parameter for [URI: {$uri}] [Param: {$_arg[0]}] [Route: {$routeEntry->getName()}]", "Route Error");
 
                     try {
@@ -407,8 +384,7 @@ final class Route extends RouteCompiler
 
                 } else {
 
-                    if (!isset($args[$arg]))
-                        throw new QueRuntimeException(
+                    if (!isset($args[$arg])) throw new QueRuntimeException(
                             "Missing required parameter for [URI: {$uri}] [Param: {$arg}] [Route: {$routeEntry->getName()}]", "Route Error");
 
                     $uri = str_replace('{' . $arg . '}', $args[$arg], $uri);
@@ -507,7 +483,7 @@ final class Route extends RouteCompiler
 
         if (($size = array_size($routeArgs)) > 0) {
             if ($size != $matches) return null;
-            $entryUri = preg_replace("/\{(.*?)\}/", "--", implode('/', $routeEntry->uriTokens));
+            $entryUri = preg_replace("/{(.*?)}/", "--", implode('/', $routeEntry->uriTokens));
             if (strcmp($entryUri, implode('/', $uriTokens)) == 0) return $routeEntry;
         }
 

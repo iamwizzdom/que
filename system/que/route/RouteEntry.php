@@ -64,11 +64,6 @@ class RouteEntry
     /**
      * @var bool
      */
-    private bool $requireJWTAuth = false;
-
-    /**
-     * @var bool
-     */
     private bool $underMaintenance = false;
 
     /**
@@ -204,19 +199,6 @@ class RouteEntry
     public function getRedirectUrl(): ?string
     {
         return $this->redirectUrl;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isRequireJWTAuth(): bool
-    {
-        return $this->requireJWTAuth;
-    }
-
-    public function requireJWTAuth()
-    {
-        $this->requireJWTAuth = true;
     }
 
     /**

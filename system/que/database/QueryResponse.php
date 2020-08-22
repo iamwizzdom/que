@@ -36,7 +36,7 @@ class QueryResponse
     private int $query_type;
 
     /**
-     * MySQL_Handler constructor.
+     * QueryResponse constructor.
      * @param DriverResponse $response
      * @param int $query_type
      * @param string $table
@@ -50,6 +50,42 @@ class QueryResponse
     }
 
     /**
+     * @return array|object|null
+     */
+    public function getFirst()
+    {
+        return $this->getQueryResponse(0);
+    }
+
+    /**
+     * @param string|null $model
+     * @param string $primaryKey
+     * @return Model|ModelStack|null
+     */
+    public function getFirstWithModel(string $model = null, string $primaryKey = "id")
+    {
+        return $this->getQueryResponseWithModel($model, 0, $primaryKey);
+    }
+
+    /**
+     * @return array|object|null
+     */
+    public function getAll()
+    {
+        return $this->getQueryResponse();
+    }
+
+    /**
+     * @param string|null $model
+     * @param string $primaryKey
+     * @return Model|ModelStack|null
+     */
+    public function getAllWithModel(string $model = null, string $primaryKey = "id")
+    {
+        return $this->getQueryResponseWithModel($model, null, $primaryKey);
+    }
+
+    /**
      * @param null $key
      * @return array|object|null
      */
@@ -59,19 +95,11 @@ class QueryResponse
 
         if (!is_null($key)) {
 
-            if (is_array($response)) {
+            if (is_array($response))
+                return isset($response[$key]) ? $this->normalize_data($response[$key]) : null;
 
-                if (!isset($response[$key])) return null;
-
-                return $this->normalize_data($response[$key]);
-            }
-
-            if (is_object($response)) {
-
-                if (!object_key_exists($key, $response)) return null;
-
-                return $this->normalize_data($response->{$key});
-            }
+            if (is_object($response))
+                return object_key_exists($key, $response) ? $this->normalize_data($response->{$key}) : null;
 
             return null;
         }
@@ -87,14 +115,14 @@ class QueryResponse
     {
         $response = $this->getQueryResponse($key);
 
-        if (empty($response)) return (array)$response;
+        if (empty($response)) return (array) $response;
 
-        if (!is_null($key)) return (array)$response;
+        if (!is_null($key)) return (array) $response;
 
-        if (!is_array($response)) $response = (array)$response;
+        if (!is_array($response)) $response = (array) $response;
 
         array_callback($response, function ($row) {
-            return (array)$this->normalize_data($row);
+            return (array) $this->normalize_data($row);
         });
 
         return $response;
@@ -125,19 +153,21 @@ class QueryResponse
         if (!is_null($key)) {
 
             if (!is_object($response)) throw new QueRuntimeException(
-                self::class . "::getQueryResponseWithModel method expects data from database driver with key '{$key}' to be an object, but got '{$this->getType($response)}' instead",
+                self::class . "::getQueryResponseWithModel method expects data from database driver" .
+                " with key '{$key}' to be an object, but got '{$this->getType($response)}' instead",
                 "Database Response Error", E_USER_ERROR, 0,
                 PreviousException::getInstance(1));
 
             return new $model($response, $this->getTable(), $primaryKey);
         }
 
-        if (!is_array($response)) $response = (array)$response;
+        if (!is_array($response)) $response = (array) $response;
 
         array_callback($response, function ($row, $key) use ($model, $primaryKey) {
 
             if (!is_object($row)) throw new QueRuntimeException(
-                self::class . "::getQueryResponseWithModel method expects data with key '{$key}' from database driver to be an object, but got '{$this->getType($row)}' instead",
+                self::class . "::getQueryResponseWithModel method expects data with key '{$key}' from " .
+                "database driver to be an object, but got '{$this->getType($row)}' instead",
                 "Database Response Error", E_USER_ERROR, 0,
                 PreviousException::getInstance(2));
 
@@ -242,42 +272,6 @@ class QueryResponse
         foreach ($response as $row) $callback($row);
 
         return true;
-    }
-
-    /**
-     * @param Closure $callback
-     * @param string|null $model
-     * @param string $primaryKey
-     * @return bool
-     */
-    public function query_response_walk_with_model(Closure $callback, string $model = null, string $primaryKey = "id"): bool
-    {
-
-        if (!$this->isSuccessful() || !is_callable($callback)) return false;
-
-        $model = \model(($modelKey = $model ?? config("database.default.model")));
-
-        if ($model === null) throw new QueRuntimeException(
-            "No database model was found with the key '{$modelKey}', check your database configuration to fix this issue.",
-            "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
-
-        if (!($implements = class_implements($model)) || !isset($implements[Model::class])) throw new QueRuntimeException(
-            "The specified model ({$model}) with key '{$modelKey}' does not implement the Que database model interface.",
-            "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
-
-        $response = $this->getQueryResponse();
-
-        if (!is_iterable($response)) return false;
-
-        $count = 0;
-
-        foreach ($response as $row) {
-            if (!is_object($row)) continue;
-            $callback(new $model($row, $this->getTable(), $primaryKey));
-            $count++;
-        }
-
-        return $count > 0;
     }
 
     /**

@@ -293,39 +293,4 @@ class RouteInspector
         }
 
     }
-
-    /**
-     * @param HTTP $http
-     * @throws RouteException
-     */
-    public static function validateJWT(HTTP $http) {
-        try {
-
-            $token = get_bearer_token();
-            if (empty($token)) {
-                foreach (
-                    [
-                        'X-JWT-TOKEN',
-                        'X-Jwt-Token',
-                        'x-jwt-token',
-                        'jwt',
-                        'Jwt',
-                        'JWT'
-                    ] as $key
-                ) {
-                    $token = Input::getInstance()->get($key);
-                    if (!empty($token)) break;
-                }
-            }
-
-            $tokenEncoded = new TokenEncoded($token);
-            $tokenEncoded->validate(config('auth.jwt.key', ''), config('auth.jwt.algo'));
-            $tokenDecoded = $tokenEncoded->decode();
-            $http->_server()->offsetSet("JWT_PAYLOAD", $tokenDecoded->getPayload());
-            $http->_server()->offsetSet("JWT_HEADER", $tokenDecoded->getHeader());
-
-        } catch (Exception $e) {
-            throw new RouteException($e->getMessage(), "JWT Auth Error", HTTP::EXPIRED_AUTHENTICATION);
-        }
-    }
 }

@@ -175,9 +175,9 @@ class Model implements ModelAlias
      */
     public function getNextRecord(): ModelAlias
     {
-        $record = db()->select()->table($this->getTable())
+        $record = db()->select()->table($this->getTable())->limit(1)
             ->where($this->getPrimaryKey(), $this->getValue($this->getPrimaryKey()), '>')->exec();
-        if ($record->isSuccessful()) return $record->getQueryResponseWithModel($this->getModelKey(), 0, $this->primaryKey);
+        if ($record->isSuccessful()) return $record->getFirstWithModel($this->getModelKey(), $this->primaryKey);
         return null;
     }
 
@@ -186,9 +186,9 @@ class Model implements ModelAlias
      */
     public function getPreviousRecord(): ModelAlias
     {
-        $record = db()->select()->table($this->getTable())
+        $record = db()->select()->table($this->getTable())->limit(1)
             ->where($this->getPrimaryKey(), $this->getValue($this->getPrimaryKey()), '<')->exec();
-        if ($record->isSuccessful()) return $record->getQueryResponseWithModel($this->getModelKey(), 0, $this->primaryKey);
+        if ($record->isSuccessful()) return $record->getFirstWithModel($this->getModelKey(), $this->primaryKey);
         return null;
     }
 

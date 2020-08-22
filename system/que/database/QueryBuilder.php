@@ -596,7 +596,7 @@ class QueryBuilder implements Builder
             case DriverQueryBuilder::SHOW:
                 return $this->show_table();
             default:
-                throw new QueRuntimeException("Invalid query type", "DB Builder Error",
+                throw new QueRuntimeException("Invalid query type", "Query Builder Error",
                     E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(3));
 
         }
