@@ -106,7 +106,7 @@ class MySqlDriver implements Driver
     private function connect(): PDO
     {
         // re-establish a new PDO connection every 1 hour
-        if (APP_TIME > ($this->connTime + TIMEOUT_TRACK))
+        if (APP_TIME > ($this->connTime + TIMEOUT_ONE_HOUR))
             $this->establish_connection();
 
         $limit = 0;

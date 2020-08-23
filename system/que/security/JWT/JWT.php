@@ -12,6 +12,8 @@ use \Exception;
 use que\security\JWT\Exceptions\SigningFailedException;
 use que\security\JWT\Exceptions\IntegrityViolationException;
 use que\security\JWT\Exceptions\UnsupportedAlgorithmException;
+use que\security\JWTGenerator;
+use que\user\User;
 
 /**
  * This class contains basic set of methods for handling JSON Web Tokens (JWT).
@@ -227,6 +229,63 @@ class JWT
         Validation::checkAlgorithmSupported($algorithm);
 
         return self::ALGORITHMS[$algorithm];
+    }
+
+    /**
+     * @param User $user
+     * @return string|null
+     */
+    public static function fromUser(User $user)
+    {
+        $generator = new JWTGenerator();
+        $generator->setAlgorithm(JWT::ALGORITHM_HS512);
+        $generator->setID($user->getValue(config('database.tables.user.primary_key', 'id')));
+        $generator->setSubject(config('template.app.header.name') . " user JWT");
+        try {
+            return $generator->generate();
+        } catch (Exceptions\EmptyTokenException $e) {
+        } catch (Exceptions\InsecureTokenException $e) {
+        } catch (Exceptions\InvalidClaimTypeException $e) {
+        } catch (Exceptions\InvalidStructureException $e) {
+        } catch (Exceptions\MissingClaimException $e) {
+        } catch (SigningFailedException $e) {
+        } catch (Exceptions\UndefinedAlgorithmException $e) {
+        } catch (UnsupportedAlgorithmException $e) {
+        } catch (Exceptions\UnsupportedTokenTypeException $e) {
+        }
+        return null;
+    }
+
+
+    /**
+     * @param string $token
+     * @return User|null
+     */
+    public static function toUser(string $token)
+    {
+        try {
+            $tokenEncoded = new TokenEncoded($token);
+            $tokenEncoded->validate((string) config('auth.jwt.secret', ''), JWT::ALGORITHM_HS512);
+            $tokenDecoded = $tokenEncoded->decode();
+            $payload = $tokenDecoded->getPayload();
+            $config = config('database.tables.user', []);
+            $user = db()->find($config['name'] ?? 'users', $payload['jti'], $config['primary_key'] ?? 'id')->getFirst();
+            if (!$user) return null;
+            User::login($user);
+            return User::getInstance();
+        } catch (Exceptions\EmptyTokenException $e) {
+        } catch (Exceptions\InsecureTokenException $e) {
+        } catch (Exceptions\InvalidClaimTypeException $e) {
+        } catch (Exceptions\InvalidStructureException $e) {
+        } catch (Exceptions\MissingClaimException $e) {
+        } catch (Exceptions\UndefinedAlgorithmException $e) {
+        } catch (UnsupportedAlgorithmException $e) {
+        } catch (Exceptions\UnsupportedTokenTypeException $e) {
+        } catch (IntegrityViolationException $e) {
+        } catch (Exceptions\TokenExpiredException $e) {
+        } catch (Exceptions\TokenInactiveException $e) {
+        }
+        return null;
     }
 
 }

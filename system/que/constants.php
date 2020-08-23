@@ -319,15 +319,10 @@ const WHEN_CENTURY = 256;
 /**
  * Timeout Settings
  */
-const TIME_LOCK_INVALID_PASSWORD = 600; // 10 mins
-const TIME_LOCK_CAPTCHA = 300; // 5 mins
-
-/**
- * Timeout Settings
- */
-const TIMEOUT_DEFAULT = 3600; // 1hr
-const TIMEOUT_TRACK = 3600; // 1hr
-const TIMEOUT_LOCK_LOGIN = 300; // 5 mins
+const TIMEOUT_ONE_HOUR = 3600; // 1hr
+const TIMEOUT_THIRTY_MIN = 1800; // 1hr
+const TIMEOUT_TEN_MIN = 600; // 10 mins
+const TIMEOUT_FIVE_MIN = 300; // 5 mins
 
 define('APP_TIME', time());
 define('APP_YEAR', date('Y'));

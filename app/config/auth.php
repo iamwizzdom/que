@@ -54,6 +54,23 @@ return [
 
         /*
         |--------------------------------------------------------------------------
+        | JWT time to live
+        |--------------------------------------------------------------------------
+        |
+        | Specify the length of time (in minutes) that the token will be valid for.
+        | Defaults to 1 hour.
+        |
+        | You can also set this to null, to yield a never expiring token.
+        | This behaviour might come in handy for e.g. a mobile app.
+        | This is not particularly recommended, so make sure you have appropriate
+        | systems in place to revoke the token if necessary.
+        | Notice: If you set this to null you should remove 'exp' element from 'required_claims' list.
+        |
+        */
+        'ttl' => TIMEOUT_ONE_HOUR,
+
+        /*
+        |--------------------------------------------------------------------------
         | Required JWT Claims
         |--------------------------------------------------------------------------
         |

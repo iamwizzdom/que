@@ -85,6 +85,7 @@ class TokenDecoded
      * @throws Exceptions\InsecureTokenException
      * @throws Exceptions\InvalidClaimTypeException
      * @throws Exceptions\InvalidStructureException
+     * @throws Exceptions\MissingClaimException
      * @throws Exceptions\SigningFailedException
      * @throws Exceptions\UndefinedAlgorithmException
      * @throws Exceptions\UnsupportedAlgorithmException

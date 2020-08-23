@@ -73,17 +73,16 @@ class User extends State implements ArrayAccess
     public static function getInstance(): User
     {
 
-        if (!self::isLoggedIn())
-            throw new QueRuntimeException("Trying to get a user instance when you're not logged in.",
+        if (!self::isLoggedIn()) throw new QueRuntimeException("Trying to get a user instance when you're not logged in.",
                 "User Error", E_USER_ERROR, 0, PreviousException::getInstance(1));
 
-        self::$database_config = config('database', []);
-        self::$session_config = config('session', []);
-        self::$cache_config = config('cache', []);
+        self::$database_config = (array) config('database', []);
+        self::$session_config = (array) config('session', []);
+        self::$cache_config = (array) config('cache', []);
 
         if (!isset(self::$instance)) {
 
-            self::$state = self::get_state();
+            self::$state = (array) self::get_state() ?: [];
 
             if (!self::is_equal_state()) {
                 self::logout(vsprintf("Your connection state got corrupted due to access from (IP::%s) using " .

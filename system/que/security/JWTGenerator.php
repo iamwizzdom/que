@@ -8,6 +8,7 @@ use que\security\JWT\Exceptions\EmptyTokenException;
 use que\security\JWT\Exceptions\InsecureTokenException;
 use que\security\JWT\Exceptions\InvalidClaimTypeException;
 use que\security\JWT\Exceptions\InvalidStructureException;
+use que\security\JWT\Exceptions\MissingClaimException;
 use que\security\JWT\Exceptions\SigningFailedException;
 use que\security\JWT\Exceptions\UndefinedAlgorithmException;
 use que\security\JWT\Exceptions\UnsupportedAlgorithmException;
@@ -51,7 +52,7 @@ class JWTGenerator
      * Expiration time
      * @var int
      */
-    private int $exp;
+    private ?int $exp = null;
 
     /**
      * Subject
@@ -81,8 +82,9 @@ class JWTGenerator
         $this->jti = unique_id();
         $this->iss = 'Que/v' . QUE_VERSION;
         $this->nbf = $this->iat;
-        $this->exp = ($this->iat + ((60 * 60) * 10));
-        $this->secret = (string)config('auth.jwt.secret', '');
+        $ttl = config('auth.jwt.ttl', TIMEOUT_ONE_HOUR);
+        if ($ttl) $this->exp = ($this->iat + $ttl);
+        $this->secret = (string) config('auth.jwt.secret', '');
     }
 
     /**
@@ -163,6 +165,7 @@ class JWTGenerator
      * @throws InsecureTokenException
      * @throws InvalidClaimTypeException
      * @throws InvalidStructureException
+     * @throws MissingClaimException
      * @throws SigningFailedException
      * @throws UndefinedAlgorithmException
      * @throws UnsupportedAlgorithmException
@@ -174,10 +177,10 @@ class JWTGenerator
             'iat' => $this->iat,
             'jti' => $this->jti,
             'iss' => $this->iss,
-            'nbf' => $this->nbf,
-            'exp' => $this->exp,
+            'nbf' => $this->nbf
         ];
 
+        if ($this->exp) $claims['exp'] = $this->exp;
         if ($this->aud) $claims['aud'] = $this->aud;
         if ($this->sub) $claims['sub'] = $this->sub;
 
