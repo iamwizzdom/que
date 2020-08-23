@@ -269,7 +269,7 @@ class JWT
             $tokenDecoded = $tokenEncoded->decode();
             $payload = $tokenDecoded->getPayload();
             $config = config('database.tables.user', []);
-            $user = db()->find($config['name'] ?? 'users', $payload['jti'], $config['primary_key'] ?? 'id')->getFirst();
+            $user = db()->find($config['name'] ?? 'users', $payload['jti'] ?? 0, $config['primary_key'] ?? 'id')->getFirst();
             if (!$user) return null;
             User::login($user);
             return User::getInstance();
