@@ -39,6 +39,7 @@ class TokenEncoded
     /**
      * TokenEncoded constructor.
      * @param string|null $token
+     * @param array|null $requiredClaims
      * @throws EmptyTokenException
      * @throws Exceptions\InsecureTokenException
      * @throws Exceptions\InvalidClaimTypeException
@@ -46,8 +47,9 @@ class TokenEncoded
      * @throws Exceptions\UndefinedAlgorithmException
      * @throws Exceptions\UnsupportedAlgorithmException
      * @throws Exceptions\UnsupportedTokenTypeException
+     * @throws Exceptions\MissingClaimException
      */
-    public function __construct(?string $token = null)
+    public function __construct(?string $token = null, ?array $requiredClaims = null)
     {
         if ($token === null || $token === '') {
             throw new EmptyTokenException('Token not provided');
@@ -65,6 +67,10 @@ class TokenEncoded
         Validation::checkAlgorithmDefined($headerArray);
         Validation::checkAlgorithmSupported($headerArray['alg']);
         Validation::checkSignatureMissing($signature);
+
+        if ($requiredClaims === null) $requiredClaims = config('auth.jwt.required_claims', []);
+
+        Validation::checkRequiredClaims($requiredClaims, $payloadArray);
         
         Validation::checkClaimType('nbf', 'integer', $payloadArray);
         Validation::checkClaimType('exp', 'integer', $payloadArray);
@@ -135,18 +141,19 @@ class TokenEncoded
      *
      * Performs auto validation using given key.
      *
-     * @param string $key Key
+     * @param string $secret Key
      * @param string|null $algorithm Force algorithm to signature verification (recommended)
      * @param int|null $leeway Optional leeway
      * @throws Exceptions\InsecureTokenException
      * @throws Exceptions\IntegrityViolationException
+     * @throws Exceptions\MissingClaimException
      * @throws Exceptions\TokenExpiredException
      * @throws Exceptions\TokenInactiveException
      * @throws Exceptions\UnsupportedAlgorithmException
      */
-    public function validate(string $key, ?string $algorithm = null, ?int $leeway = null): void
+    public function validate(string $secret, ?string $algorithm = null, ?int $leeway = null): void
     {
-        JWT::validate($this, $key, $algorithm, $leeway);
+        JWT::validate($this, $secret, $algorithm, $leeway);
     }
 
     /**

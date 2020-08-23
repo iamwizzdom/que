@@ -261,8 +261,7 @@ class User extends State implements ArrayAccess
     private static function regenerate()
     {
 
-        if (empty(self::$cache_config))
-            self::$cache_config = config('cache', []);
+        if (empty(self::$cache_config)) self::$cache_config = (array) config('cache', []);
 
         $memcached = $redis = $quekip = null;
 

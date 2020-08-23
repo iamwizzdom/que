@@ -10,6 +10,7 @@ namespace que\security\JWT;
 
 use \DateTime;
 use que\security\JWT\Exceptions\InsecureTokenException;
+use que\security\JWT\Exceptions\MissingClaimException;
 use que\security\JWT\Exceptions\UnsupportedAlgorithmException;
 use que\security\JWT\Exceptions\TokenExpiredException;
 use que\security\JWT\Exceptions\TokenInactiveException;
@@ -55,6 +56,22 @@ class Validation
         $time = time() + ($leeway ? $leeway : 0);
         if ($time < $nbf) {
             throw new TokenInactiveException('Token is not valid before: ' . date(DateTime::ISO8601, $nbf));
+        }
+    }
+
+    /**
+     * Checks if issued at date has been reached.
+     *
+     * @param int $iat Timestamp of issue (issued at) date
+     * @param int|null $leeway Some optional period to avoid clock synchronization issues
+     *
+     * @throws TokenInactiveException
+     */
+    public static function checkIssuedAtDate(int $iat, ?int $leeway = null): void
+    {
+        $time = time() + ($leeway ? $leeway : 0);
+        if ($time < $iat) {
+            throw new TokenInactiveException("Token is not valid before it's issue time: " . date(DateTime::ISO8601, $iat));
         }
     }
 
@@ -149,6 +166,21 @@ class Validation
                     throw new InvalidClaimTypeException(sprintf('Invalid %s claim - %s value required', $claim, $type));
                 }
                 break;
+        }
+    }
+
+    /**
+     * Check if all required claims are present in payload
+     *
+     * @param array $claims
+     * @param array $payload
+     * @throws MissingClaimException
+     */
+    public static function checkRequiredClaims(array $claims, array $payload) {
+        foreach ($claims as $claim) {
+            if (!array_key_exists($claim, $payload)) {
+                throw new MissingClaimException(sprintf('Missing %s claim - required', $claim));
+            }
         }
     }
 

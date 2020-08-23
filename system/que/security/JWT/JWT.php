@@ -63,19 +63,20 @@ class JWT
      * Encodes decoded token.
      *
      * @param TokenDecoded $tokenDecoded Decoded token
-     * @param string $key Key used to sign the token
+     * @param string $secret Secret Key used to sign the token
      * @param string|null $algorithm Force algorithm even if defined in token's header
      * @return TokenEncoded Encoded token
      * @throws Exceptions\EmptyTokenException
      * @throws Exceptions\InsecureTokenException
      * @throws Exceptions\InvalidClaimTypeException
      * @throws Exceptions\InvalidStructureException
+     * @throws Exceptions\MissingClaimException
      * @throws Exceptions\UndefinedAlgorithmException
      * @throws Exceptions\UnsupportedTokenTypeException
      * @throws SigningFailedException
      * @throws UnsupportedAlgorithmException
      */
-    public static function encode(TokenDecoded $tokenDecoded, string $key, ?string $algorithm = null): TokenEncoded
+    public static function encode(TokenDecoded $tokenDecoded, string $secret, ?string $algorithm = null): TokenEncoded
     {
         $header = array_merge($tokenDecoded->getHeader(), [
             'typ' => array_key_exists('typ', $tokenDecoded->getHeader()) ? $tokenDecoded->getHeader()['typ'] : 'JWT',
@@ -87,10 +88,10 @@ class JWT
         $elements[] = Base64Url::encode(json_encode($header));
         $elements[] = Base64Url::encode(json_encode($tokenDecoded->getPayload()));
 
-        $signature = self::sign(implode('.', $elements), $key, $header['alg']);
+        $signature = self::sign(implode('.', $elements), $secret, $header['alg']);
         $elements[] = Base64Url::encode($signature);
 
-        return new TokenEncoded(implode('.', $elements));
+        return new TokenEncoded(implode('.', $elements), config('auth.jwt.required_claims', []));
     }
 
 
@@ -99,21 +100,21 @@ class JWT
      * Generates signature for given message.
      *
      * @param string $message Message to sign, which is base64 encoded values of header and payload separated by dot
-     * @param string $key Key used to sign the token
+     * @param string $secret Secret Key used to sign the token
      * @param string $algorithm Algorithm to use for signing the token
      * @return string
      * @throws SigningFailedException
      * @throws UnsupportedAlgorithmException
      * @throws Exceptions\InsecureTokenException
      */
-    protected static function sign(string $message, string $key, string $algorithm): string
+    protected static function sign(string $message, string $secret, string $algorithm): string
     {
         list($function, $type) = self::getAlgorithmData($algorithm);
 
         switch ($function) {
             case 'hash_hmac':
                 try {
-                    $signature = hash_hmac($type, $message, $key, true);
+                    $signature = hash_hmac($type, $message, $secret, true);
                 } catch (Exception $e) {
                     throw new SigningFailedException(sprintf('Signing failed: %s', $e->getMessage()));
                 }
@@ -126,7 +127,7 @@ class JWT
                 $signature = '';
                 
                 try {
-                    $sign = openssl_sign($message, $signature, $key, $type);
+                    $sign = openssl_sign($message, $signature, $secret, $type);
                 } catch (Exception $e) {
                     throw new SigningFailedException(sprintf('Signing failed: %s', $e->getMessage()));
                 }
@@ -157,17 +158,18 @@ class JWT
      * - if token contains issued at date (iat) in its payload - current time against this date
      *
      * @param TokenEncoded $tokenEncoded Encoded token
-     * @param string $key Key used to signature verification
+     * @param string $secret Key used to signature verification
      * @param string|null $algorithm Force algorithm to signature verification (recommended)
      * @param int|null $leeway Some optional period to avoid clock synchronization issues
-     * @param array|null $claimsExclusions Claims to be excluded from validation
+     * @param array|null $requiredClaims Claims to be required for validation
      * @throws Exceptions\TokenExpiredException
      * @throws Exceptions\TokenInactiveException
      * @throws IntegrityViolationException
      * @throws UnsupportedAlgorithmException
      * @throws Exceptions\InsecureTokenException
+     * @throws Exceptions\MissingClaimException
      */
-    public static function validate(TokenEncoded $tokenEncoded, string $key, ?string $algorithm, ?int $leeway = null, ?array $claimsExclusions = null): void
+    public static function validate(TokenEncoded $tokenEncoded, string $secret, ?string $algorithm, ?int $leeway = null, ?array $requiredClaims = null): void
     {
         $tokenDecoded = self::decode($tokenEncoded);
 
@@ -179,18 +181,27 @@ class JWT
 
         switch ($function) {
             case 'hash_hmac':
-                if (hash_equals($signature, hash_hmac($type, $tokenEncoded->getMessage(), $key, true)) !== true) {
+                if (hash_equals($signature, hash_hmac($type, $tokenEncoded->getMessage(), $secret, true)) !== true) {
                     throw new IntegrityViolationException('Invalid signature');
                 }
                 break;
             case 'openssl':
-                if (openssl_verify($tokenEncoded->getMessage(), $signature, $key, $type) !== 1) {
+                if (openssl_verify($tokenEncoded->getMessage(), $signature, $secret, $type) !== 1) {
                     throw new IntegrityViolationException('Invalid signature');
                 }
                 break;
             default:
                 throw new UnsupportedAlgorithmException('Unsupported algorithm type');
                 break;
+        }
+        if ($requiredClaims === null) $requiredClaims = config('auth.jwt.required_claims', []);
+
+        Validation::checkRequiredClaims($requiredClaims, $payload);
+
+        if ($leeway === null) $leeway = config('auth.jwt.leeway');
+
+        if (array_key_exists('iat', $payload)) {
+            Validation::checkIssuedAtDate($payload['iat'], $leeway);
         }
            
         if (array_key_exists('exp', $payload)) {

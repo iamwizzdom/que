@@ -78,7 +78,7 @@ class TokenDecoded
     /**
      * Performs auto encoding.
      *
-     * @param string $key Key used to signing token.
+     * @param string $secret Secret Key used for signing token.
      * @param string|null $algorithm Optional algorithm to be used when algorithm is not yet defined in token's header.
      * @return TokenEncoded
      * @throws Exceptions\EmptyTokenException
@@ -90,8 +90,8 @@ class TokenDecoded
      * @throws Exceptions\UnsupportedAlgorithmException
      * @throws Exceptions\UnsupportedTokenTypeException
      */
-    public function encode(string $key, ?string $algorithm = null) : TokenEncoded
+    public function encode(string $secret, ?string $algorithm = null) : TokenEncoded
     {
-        return JWT::encode($this, $key, $algorithm);
+        return JWT::encode($this, $secret, $algorithm);
     }
 }
