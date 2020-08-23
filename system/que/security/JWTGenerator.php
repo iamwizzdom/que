@@ -77,7 +77,7 @@ class JWTGenerator
      */
     public function __construct()
     {
-        $this->algo = JWT::ALGORITHM_HS256;
+        $this->algo = JWT::DEFAULT_ALGORITHM;
         $this->iat = APP_TIME;
         $this->jti = unique_id();
         $this->iss = 'Que/v' . QUE_VERSION;
