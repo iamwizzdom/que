@@ -16,7 +16,7 @@ interface Receiver
 {
 
     /**
-     * This method will run when the module is accessed via POST request
+     * This method will run when the module is accessed via any request method other than a GET request
      * @param Input $input
      * @param Model|null $info - This parameter will provide the data returned by $this->info() if the info method exist otherwise null
      * @note Que will run this method for you automatically
