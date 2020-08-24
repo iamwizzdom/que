@@ -129,7 +129,7 @@ class ConditionErrorStack
 
         foreach ($condition as $con) {
 
-            if (!is_array($con)) throw new QueRuntimeException(
+            if (!(isset($con['condition']) && isset($con['siblings']))) throw new QueRuntimeException(
                 "The index {$index} does not exist in condition stack", "Validation Error",
                 E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
