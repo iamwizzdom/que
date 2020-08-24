@@ -139,6 +139,22 @@ class DB extends Connect
     /**
      * @return bool
      */
+    public function transRollBackAll()
+    {
+        if ($this->getTransDepth() > 0) $this->setTransSuccessful(false);
+
+        $depth = null;
+        while ($this->getTransDepth() !== 0) {
+            $depth = $this->getTransDepth();
+            $this->transComplete();
+            if ($depth === $this->getTransDepth()) break;
+        }
+        return $depth !== null;
+    }
+
+    /**
+     * @return bool
+     */
     private function trans_begin(): bool
     {
         return $this->getDriver()->beginTransaction();
@@ -354,16 +370,5 @@ class DB extends Connect
         $builder = new QueryBuilder($this->getDriver(), $driverBuilder, $this);
         $builder->table($table);
         return $builder->exec();
-    }
-
-    public function rollbackTrans() {
-
-        if ($this->getTransDepth() > 0) $this->setTransSuccessful(false);
-
-        while ($this->getTransDepth() !== 0) {
-            $depth = $this->getTransDepth();
-            $this->transComplete();
-            if ($depth === $this->getTransDepth()) break;
-        }
     }
 }
