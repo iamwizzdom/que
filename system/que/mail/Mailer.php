@@ -165,7 +165,7 @@ class Mailer
             $this->mail->Subject = $mail->getSubject();
 
             $from = $mail->getFrom();
-            $this->mail->setFrom($from['email'] ?? config('mail.address.default', ''), $from['name'] ?? config('template.app.header.name'));
+            $this->mail->setFrom($from['email'] ?: config('mail.address.default', ''), $from['name'] ?: config('template.app.header.name'));
 
             foreach ($mail->getRecipient() as $recipient) {
                 if (!isset($recipient['email']) || !is_email($recipient['email'])) continue;
