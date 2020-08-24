@@ -32,7 +32,7 @@ class ConditionErrorStack
     /**
      * @var bool
      */
-    private bool $nullable = false;
+    private bool $nullable;
 
     /**
      * ConditionErrorStack constructor.
@@ -149,8 +149,8 @@ class ConditionErrorStack
     /**
      * @return array
      */
-    public function getErrorsFlat() {
-        return $this->getConditionErrorsFlat();
+    public function getStatus() {
+        return $this->getConditionStatuses();
     }
 
     /**
@@ -161,13 +161,6 @@ class ConditionErrorStack
     {
         $this->addConditionError($error);
         return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getStatus() {
-        return $this->getConditionStatuses();
     }
 
     /**
@@ -217,19 +210,9 @@ class ConditionErrorStack
         $errors = [];
         foreach ($this->conditions as $condition) {
             if ($condition instanceof ConditionErrorStack) $errors[$condition->getKey()] = $condition->getErrors();
-            elseif($condition instanceof ConditionError) $errors[$condition->getKey()] = $condition->getError();
-        }
-        return $errors;
-    }
-
-    /**
-     * @return array
-     */
-    private function getConditionErrorsFlat() {
-        $errors = [];
-        foreach ($this->conditions as $condition) {
-            if ($condition instanceof ConditionErrorStack) $errors[$condition->getKey()] = $condition->getErrorsFlat();
-            elseif ($condition instanceof ConditionError) $errors[$condition->getKey()] = current($condition->getError());
+            elseif($condition instanceof ConditionError) {
+                if ($condition->hasError()) $errors[$condition->getKey()] = $condition->getError();
+            }
         }
         return $errors;
     }
@@ -273,8 +256,8 @@ class ConditionErrorStack
      * @param $error
      */
     private function addConditionError($error) {
-        foreach ($this->conditions as &$condition)
-            $condition->addError($error);
+        foreach ($this->conditions as $condition)
+            $condition->setError($error);
     }
 
 }

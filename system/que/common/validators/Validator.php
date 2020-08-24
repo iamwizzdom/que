@@ -294,6 +294,28 @@ class Validator
     }
 
     /**
+     * @return array
+     */
+    public function getValidated(): array {
+        $validated = [];
+        foreach($this->conditions as $condition) {
+
+            if ($condition instanceof ConditionError) {
+
+                if (!$condition->hasError())
+                    $validated[$condition->getKey()] = $condition->getValue();
+
+            } elseif ($condition instanceof ConditionErrorStack) {
+
+                if (!$condition->hasError())
+                    $validated[$condition->getKey()] = $condition->getValue();
+            }
+
+        }
+        return $validated;
+    }
+
+    /**
      * @param $key
      * @return array
      */
@@ -305,8 +327,11 @@ class Validator
             if ($condition->hasError())
                 $errors[$condition->getKey()] = $condition->getError();
 
-        } elseif ($condition instanceof ConditionErrorStack)
-            $errors[$condition->getKey()] = $condition->getErrors();
+        } elseif ($condition instanceof ConditionErrorStack) {
+
+            if ($condition->hasError())
+                $errors[$condition->getKey()] = $condition->getErrors();
+        }
 
         return $errors;
     }
@@ -323,45 +348,12 @@ class Validator
                 if ($condition->hasError())
                     $errors[$condition->getKey()] = $condition->getError();
 
-            } elseif ($condition instanceof ConditionErrorStack)
-                $errors[$condition->getKey()] = $condition->getErrors();
-
-        }
-        return $errors;
-    }
-
-    /**
-     * @param $key
-     * @return array
-     */
-    public function getErrorFlat($key): array {
-        $errors = [];
-        $condition = ($this->conditions[$key] ?? null);
-        if ($condition instanceof ConditionError) {
-
-            if ($condition->hasError())
-                $errors[$condition->getKey()] = current($condition->getError());
-
-        } elseif ($condition instanceof ConditionErrorStack)
-            $errors[$condition->getKey()] = current($condition->getErrorsFlat());
-
-        return $errors;
-    }
-
-    /**
-     * @return array
-     */
-    public function getErrorsFlat(): array {
-        $errors = [];
-        foreach($this->conditions as $condition) {
-
-            if ($condition instanceof ConditionError) {
+            } elseif ($condition instanceof ConditionErrorStack) {
 
                 if ($condition->hasError())
-                    $errors[$condition->getKey()] = current($condition->getError());
+                    $errors[$condition->getKey()] = $condition->getErrors();
+            }
 
-            } elseif ($condition instanceof ConditionErrorStack)
-                $errors[$condition->getKey()] = $condition->getErrorsFlat();
         }
         return $errors;
     }
@@ -415,7 +407,7 @@ class Validator
                 $this->conditions[$key] = new ConditionErrorStack($key, $this->input[$key], $this);
             } else $this->conditions[$key] = new ConditionError($key, $this->input[$key], $this);
         }
-        $this->conditions[$key]->addError($error);
+        $this->conditions[$key]->setError($error);
         return $this->conditions[$key];
     }
 
@@ -430,7 +422,7 @@ class Validator
                 $this->conditions[$key] = new ConditionErrorStack($key, $this->input[$key], $this);
             } else $this->conditions[$key] = new ConditionError($key, $this->input[$key], $this);
         }
-        foreach($errors as $error) $this->conditions[$key]->addError($error);
+        foreach($errors as $error) $this->conditions[$key]->setError($error);
         return $this->conditions[$key];
     }
 
@@ -449,7 +441,7 @@ class Validator
         if (!isset($this->conditions[$key]))
             $this->conditions[$key] = new ConditionError($key, $this->input[$key], $this);
 
-        $this->conditions[$key]->addError($error);
+        $this->conditions[$key]->setError($error);
         return $this->conditions[$key];
     }
 
@@ -468,7 +460,7 @@ class Validator
         if (!isset($this->conditions[$key]))
             $this->conditions[$key] = new ConditionError($key, $this->input[$key], $this);
 
-        foreach($errors as $error) $this->conditions[$key]->addError($error);
+        foreach($errors as $error) $this->conditions[$key]->setError($error);
         return $this->conditions[$key];
     }
 
@@ -487,7 +479,7 @@ class Validator
         if (!isset($this->conditions[$key]))
             $this->conditions[$key] = new ConditionErrorStack($key, $this->input[$key], $this);
 
-        $this->conditions[$key]->addError($error);
+        $this->conditions[$key]->setError($error);
         return $this->conditions[$key];
     }
 
@@ -506,7 +498,7 @@ class Validator
         if (!isset($this->conditions[$key]))
             $this->conditions[$key] = new ConditionErrorStack($key, $this->input[$key], $this);
 
-        foreach($errors as $error) $this->conditions[$key]->addError($error);
+        foreach($errors as $error) $this->conditions[$key]->setError($error);
         return $this->conditions[$key];
     }
 
