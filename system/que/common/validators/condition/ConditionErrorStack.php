@@ -5,7 +5,11 @@ namespace que\common\validator\condition;
 
 
 use Closure;
+use que\common\exception\PreviousException;
+use que\common\exception\QueRuntimeException;
 use que\common\validator\Validator;
+use que\http\HTTP;
+use que\support\Arr;
 
 class ConditionErrorStack
 {
@@ -100,11 +104,37 @@ class ConditionErrorStack
      */
     public function validateChildren(Closure $callback): ConditionErrorStack {
 
-        $conditions = $this->getConditions();
+        $conditions = $this->getConditionsFlat();
+        foreach ($conditions as $condition) {
+            call_user_func($callback, $condition['condition'], $condition['siblings']);
+        }
 
-        foreach ($conditions as &$condition) {
-            $conObj = &$condition['condition'];
-            call_user_func($callback, $conObj, $condition['siblings']);
+        return $this;
+    }
+
+    /**
+     * @param $index
+     * @param Closure $callback
+     * callback param 1: Condition instance
+     * callback param 2: Condition[] | ConditionStack[] instances of siblings
+     * @return ConditionErrorStack
+     */
+    public function validateChild($index, Closure $callback): ConditionErrorStack {
+
+        $condition = $this->getCondition($index);
+
+        if (!is_array($condition)) throw new QueRuntimeException(
+            "The index {$index} does not exist in condition stack", "Validation Error",
+            E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+
+        foreach ($condition as $con) {
+
+            if (!is_array($con)) throw new QueRuntimeException(
+                "The index {$index} does not exist in condition stack", "Validation Error",
+                E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+
+            call_user_func($callback, $con['condition'], $con['siblings']);
+
         }
 
         return $this;
@@ -179,9 +209,9 @@ class ConditionErrorStack
     /**
      * @return array
      */
-    public function getConditions() {
+    public function getConditionsFlat() {
         $list = [];
-        foreach ($this->conditions as &$condition) {
+        foreach ($this->conditions as $condition) {
             if ($condition instanceof ConditionErrorStack) {
                 $list = array_merge($list, $condition->getConditions());
             } elseif ($condition instanceof ConditionError) {
@@ -192,6 +222,34 @@ class ConditionErrorStack
             }
         }
         return $list;
+    }
+
+    /**
+     * @return array
+     */
+    public function getConditions() {
+        $list = [];
+        foreach ($this->conditions as $condition) {
+            if ($condition instanceof ConditionErrorStack) {
+                $list[$condition->getKey()] = $condition->getConditions();
+            } elseif ($condition instanceof ConditionError) {
+                $list[$condition->getKey()] = [
+                    'condition' => $condition,
+                    'siblings' => array_exclude($this->conditions, $condition->getKey())
+                ];
+            }
+        }
+        return $list;
+    }
+
+    /**
+     * @param $key
+     * @return array|null
+     */
+    public function getCondition($key) {
+        $conditions = $this->getConditions();
+        $conditions = Arr::get($conditions, $key);
+        return isset($conditions['condition']) && isset($conditions['siblings']) ? [$conditions] : $conditions;
     }
 
     /**
