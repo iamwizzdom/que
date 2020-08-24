@@ -78,7 +78,7 @@ class RouteEntry
      */
     public function __construct()
     {
-        $this->forbidCSRF();
+        $this->forbidCSRF = (bool) config('auth.csrf', false);
     }
 
     /**
