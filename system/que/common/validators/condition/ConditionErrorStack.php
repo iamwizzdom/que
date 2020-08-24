@@ -267,8 +267,9 @@ class ConditionErrorStack
     private function getConditionErrors() {
         $errors = [];
         foreach ($this->conditions as $condition) {
-            if ($condition instanceof ConditionErrorStack) $errors[$condition->getKey()] = $condition->getErrors();
-            elseif($condition instanceof ConditionError) {
+            if ($condition instanceof ConditionErrorStack) {
+                if ($condition->hasError()) $errors[$condition->getKey()] = $condition->getErrors();
+            } elseif($condition instanceof ConditionError) {
                 if ($condition->hasError()) $errors[$condition->getKey()] = $condition->getError();
             }
         }
