@@ -113,7 +113,7 @@ class ConditionErrorStack
     }
 
     /**
-     * @param $index
+     * @param $index - also supports 'dot' notation
      * @param Closure $callback
      * callback param 1: Condition instance
      * callback param 2: Condition[] | ConditionStack[] instances of siblings
