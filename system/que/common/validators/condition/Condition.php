@@ -386,55 +386,87 @@ class Condition implements ConditionAlias
     }
 
     /**
-     * @param string $format
+     * @param string|null $format
      * @return bool
      */
-    public function isDate(string $format): bool {
-        return DateTime::createFromFormat($format, $this->getValue()) instanceof DateTime;
+    public function isDate(?string $format = null): bool {
+        if ($format) $date = DateTime::createFromFormat($format, $this->getValue());
+        else {
+            try {
+                $date = new DateTime($this->getValue());
+            } catch (Exception $e) {
+                $date = null;
+            }
+        }
+        return $date instanceof DateTime;
     }
 
     /**
-     * @param string $format
      * @param DateTime $compare
+     * @param string|null $format
      * @return bool
      */
-    public function isDateGreaterThan(string $format, DateTime $compare): bool {
-        $date = DateTime::createFromFormat($format, $this->getValue());
-        if (!$date instanceof DateTime) return false;
-        return $date->getTimestamp() > $compare->getTimestamp();
+    public function isDateGreaterThan(DateTime $compare, ?string $format = null): bool {
+        if ($format) $date = DateTime::createFromFormat($format, $this->getValue());
+        else {
+            try {
+                $date = new DateTime($this->getValue());
+            } catch (Exception $e) {
+                $date = null;
+            }
+        }
+        return $date instanceof DateTime && $date->getTimestamp() > $compare->getTimestamp();
     }
 
     /**
-     * @param string $format
      * @param DateTime $compare
+     * @param string|null $format
      * @return bool
      */
-    public function isDateGreaterThanOrEqual(string $format, DateTime $compare): bool {
-        $date = DateTime::createFromFormat($format, $this->getValue());
-        if (!$date instanceof DateTime) return false;
-        return $date->getTimestamp() >= $compare->getTimestamp();
+    public function isDateGreaterThanOrEqual(DateTime $compare, ?string $format = null): bool {
+        if ($format) $date = DateTime::createFromFormat($format, $this->getValue());
+        else {
+            try {
+                $date = new DateTime($this->getValue());
+            } catch (Exception $e) {
+                $date = null;
+            }
+        }
+        return $date instanceof DateTime && $date->getTimestamp() >= $compare->getTimestamp();
     }
 
     /**
-     * @param string $format
      * @param DateTime $compare
+     * @param string|null $format
      * @return bool
      */
-    public function isDateLessThan(string $format, DateTime $compare): bool {
-        $date = DateTime::createFromFormat($format, $this->getValue());
-        if (!$date instanceof DateTime) return false;
-        return $date->getTimestamp() < $compare->getTimestamp();
+    public function isDateLessThan(DateTime $compare, ?string $format = null): bool {
+        if ($format) $date = DateTime::createFromFormat($format, $this->getValue());
+        else {
+            try {
+                $date = new DateTime($this->getValue());
+            } catch (Exception $e) {
+                $date = null;
+            }
+        }
+        return $date instanceof DateTime && $date->getTimestamp() < $compare->getTimestamp();
     }
 
     /**
-     * @param string $format
      * @param DateTime $compare
+     * @param string|null $format
      * @return bool
      */
-    public function isDateLessThanOrEqual(string $format, DateTime $compare): bool {
-        $date = DateTime::createFromFormat($format, $this->getValue());
-        if (!$date instanceof DateTime) return false;
-        return $date->getTimestamp() <= $compare->getTimestamp();
+    public function isDateLessThanOrEqual(DateTime $compare, ?string $format = null): bool {
+        if ($format) $date = DateTime::createFromFormat($format, $this->getValue());
+        else {
+            try {
+                $date = new DateTime($this->getValue());
+            } catch (Exception $e) {
+                $date = null;
+            }
+        }
+        return $date instanceof DateTime && $date->getTimestamp() <= $compare->getTimestamp();
     }
 
     /**

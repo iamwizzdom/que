@@ -250,38 +250,38 @@ interface Condition
                                    $ignoreID = null, string $ignoreColumn = 'id'): bool;
 
     /**
-     * @param string $format
+     * @param string|null $format
      * @return bool
      */
-    public function isDate(string $format): bool;
+    public function isDate(?string $format = null): bool;
 
     /**
-     * @param string $format
      * @param DateTime $compare
+     * @param string|null $format
      * @return bool
      */
-    public function isDateGreaterThan(string $format, DateTime $compare): bool;
+    public function isDateGreaterThan(DateTime $compare, ?string $format = null): bool;
 
     /**
-     * @param string $format
      * @param DateTime $compare
+     * @param string|null $format
      * @return bool
      */
-    public function isDateGreaterThanOrEqual(string $format, DateTime $compare): bool;
+    public function isDateGreaterThanOrEqual(DateTime $compare, ?string $format = null): bool;
 
     /**
-     * @param string $format
      * @param DateTime $compare
+     * @param string|null $format
      * @return bool
      */
-    public function isDateLessThan(string $format, DateTime $compare): bool;
+    public function isDateLessThan(DateTime $compare, ?string $format = null): bool;
 
     /**
-     * @param string $format
      * @param DateTime $compare
+     * @param string|null $format
      * @return bool
      */
-    public function isDateLessThanOrEqual(string $format, DateTime $compare): bool;
+    public function isDateLessThanOrEqual(DateTime $compare, ?string $format = null): bool;
 
     /**
      * @param string $regex

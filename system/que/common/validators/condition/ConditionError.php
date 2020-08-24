@@ -275,11 +275,11 @@ class ConditionError
     }
 
     /**
-     * @param $format
      * @param null $error
-     * @return ConditionError
+     * @param $format
+     * @return $this
      */
-    public function isDate($format, $error = null): ConditionError
+    public function isDate($error = null, $format = null): ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->isDate($format)) $this->setError($error);
@@ -287,54 +287,54 @@ class ConditionError
     }
 
     /**
-     * @param $format
      * @param DateTime $compare
      * @param null $error
-     * @return ConditionError
+     * @param string|null $format
+     * @return $this
      */
-    public function isDateGreaterThan($format, DateTime $compare, $error = null): ConditionError
+    public function isDateGreaterThan(DateTime $compare, $error = null, ?string $format = null): ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
-        if (!$this->condition->isDateGreaterThan($format, $compare)) $this->setError($error);
+        if (!$this->condition->isDateGreaterThan($compare, $format)) $this->setError($error);
         return $this;
     }
 
     /**
-     * @param $format
      * @param DateTime $compare
      * @param null $error
-     * @return ConditionError
+     * @param string|null $format
+     * @return $this
      */
-    public function isDateGreaterThanOrEqual($format, DateTime $compare, $error = null): ConditionError
+    public function isDateGreaterThanOrEqual(DateTime $compare, $error = null, ?string $format = null): ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
-        if (!$this->condition->isDateGreaterThanOrEqual($format, $compare)) $this->setError($error);
+        if (!$this->condition->isDateGreaterThanOrEqual($compare, $format)) $this->setError($error);
         return $this;
     }
 
     /**
-     * @param $format
      * @param DateTime $compare
      * @param null $error
-     * @return ConditionError
+     * @param string|null $format
+     * @return $this
      */
-    public function isDateLessThan($format, DateTime $compare, $error = null): ConditionError
+    public function isDateLessThan(DateTime $compare, $error = null, ?string $format = null): ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
-        if (!$this->condition->isDateLessThan($format, $compare)) $this->setError($error);
+        if (!$this->condition->isDateLessThan($compare, $format)) $this->setError($error);
         return $this;
     }
 
     /**
-     * @param $format
      * @param DateTime $compare
      * @param null $error
-     * @return ConditionError
+     * @param string|null $format
+     * @return $this
      */
-    public function isDateLessThanOrEqual($format, DateTime $compare, $error = null): ConditionError
+    public function isDateLessThanOrEqual(DateTime $compare, $error = null, ?string $format = null): ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
-        if (!$this->condition->isDateLessThanOrEqual($format, $compare)) $this->setError($error);
+        if (!$this->condition->isDateLessThanOrEqual($compare, $format)) $this->setError($error);
         return $this;
     }
 
