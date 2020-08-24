@@ -1485,13 +1485,15 @@ class QueryBuilder implements Builder
             array_callback_recursive($data, function ($value) {
                 if (is_array($value)) return json_encode($value);
                 if ($value instanceof JsonSerializable) return $value->jsonSerialize();
-                return is_object($value) ? $this->mark_down($value) : $this->query->escape_string($value);
+                return is_object($value) ? $this->mark_down($value) :
+                    (is_string($value) ? $this->query->escape_string($value) : $value);
             });
         } else {
             array_callback($data, function ($value) {
                 if (is_array($value)) return json_encode($value);
                 if ($value instanceof JsonSerializable) return $value->jsonSerialize();
-                return is_object($value) ? $this->mark_down($value) : $this->query->escape_string($value);
+                return is_object($value) ? $this->mark_down($value) :
+                    (is_string($value) ? $this->query->escape_string($value) : $value);
             });
         }
         return $data;
