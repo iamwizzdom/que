@@ -8,9 +8,16 @@
 
 namespace que\route;
 
+use que\common\exception\PreviousException;
+use que\common\validator\Track;
 use que\http\HTTP;
 use que\http\input\Input;
+use que\http\output\response\Html;
+use que\http\output\response\Json;
+use que\http\output\response\Jsonp;
+use que\http\output\response\Plain;
 use que\http\request\Request;
+use que\security\CSRF;
 use que\security\interfaces\Middleware;
 use que\security\MiddlewareResponse;
 use que\support\Arr;
@@ -165,13 +172,69 @@ class RouteCompiler
 
                     if ($middleware instanceof Middleware) {
 
-                        $response = new MiddlewareResponse();
+                        $middlewareResponse = new MiddlewareResponse();
 
-                        $middleware->handle(Input::getInstance(), $response);
+                        $middleware->handle(Input::getInstance(), $middlewareResponse);
 
-                        if ($response->hasAccess() === false) {
-                            throw new RouteException("MIDDLEWARE CONSTRAINT: " .
-                                ($response->getMessage() ?: "You don't have access to the current route (" . current_url() . ")"),
+                        if ($middlewareResponse->hasAccess() === false) {
+
+                            $http = http();
+
+                            $response = $middlewareResponse->getResponse();
+
+                            if ($response && $routeEntry->isForbidCSRF() === true) {
+                                RouteInspector::validateCSRF();
+                                $http->_header()->set('X-Xsrf-Token', CSRF::getInstance()->getToken());
+                                $http->_header()->set('X-Track-Token', Track::generateToken());
+                            }
+
+                            if ($response instanceof Json) {
+                                if (!$data = $response->getJson()) throw new RouteException(
+                                    "Failed to output response\n", "Output Error",
+                                    HTTP::NO_CONTENT, PreviousException::getInstance(1));
+                                $http->_header()->set('Content-Type', mime_type_from_extension('json'), true);
+                                echo $data;
+                                exit();
+                            } elseif ($response instanceof Jsonp) {
+                                if (!$data = $response->getJsonp()) throw new RouteException(
+                                    "Failed to output response\n", "Output Error",
+                                    HTTP::NO_CONTENT, PreviousException::getInstance(1));
+                                $http->_header()->set('Content-Type', mime_type_from_extension('js'), true);
+                                echo $data;
+                                exit();
+                            } elseif ($response instanceof Html) {
+                                $http->_header()->set('Content-Type', mime_type_from_extension('html'), true);
+                                echo $response->getHtml();
+                                exit();
+                            } elseif ($response instanceof Plain) {
+                                $http->_header()->set('Content-Type', mime_type_from_extension('txt'), true);
+                                echo $response->getData();
+                                exit();
+                            } elseif (is_array($response)) {
+
+                                if (isset($response['code']) && is_numeric($response['code']))
+                                    $http->http_response_code(intval($response['code']));
+
+                                $option = 0; $depth = 512;
+
+                                if (isset($response['option']) && is_numeric($response['option'])) {
+                                    $option = intval($response['option']);
+                                    unset($response['option']);
+                                }
+
+                                if (isset($response['depth']) && is_numeric($response['depth'])) {
+                                    $depth = intval($response['depth']);
+                                    unset($response['depth']);
+                                }
+
+                                $data = json_encode($response, $option, $depth);
+                                if (!$data) throw new RouteException("Failed to output response\n");
+                                echo $data;
+                                exit();
+                            }
+
+                            throw new RouteException(
+                                $middlewareResponse->getMessage() ?: ("MIDDLEWARE CONSTRAINT: You don't have access to the current route (" . current_url() . ")"),
                                 "Access Denied", HTTP::UNAUTHORIZED);
                         }
                         return;

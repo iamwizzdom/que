@@ -9,6 +9,11 @@
 namespace que\security;
 
 
+use que\http\output\response\Html;
+use que\http\output\response\Json;
+use que\http\output\response\Jsonp;
+use que\http\output\response\Plain;
+
 class MiddlewareResponse
 {
     /**
@@ -20,6 +25,11 @@ class MiddlewareResponse
      * @var string
      */
     private string $message = '';
+
+    /**
+     * @var Json|Jsonp|Plain|Html|array
+     */
+    private $response = null;
 
     /**
      * @return bool|null
@@ -51,5 +61,20 @@ class MiddlewareResponse
     public function setMessage(string $message): void
     {
         $this->message = $message;
+    }
+
+    /**
+     * @return Html|Json|Jsonp|Plain|array
+     */
+    public function getResponse()
+    {
+        return $this->response;
+    }
+
+    /**
+     * @param Html|Json|Jsonp|Plain|array $response
+     */
+    public function setResponse($response) {
+        $this->response = $response;
     }
 }

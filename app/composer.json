@@ -13,6 +13,7 @@
       "ext-memcached": "*",
       "ext-apache": "*",
       "ext-bcmath": "*",
-      "ext-curl": "*"
+      "ext-curl": "*",
+      "ext-tidy": "*"
     }
 }
