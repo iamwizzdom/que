@@ -212,10 +212,11 @@ class RouteEntry
     }
 
     /**
+     * @param bool $status
      */
-    public function forbidCSRF(): void
+    public function forbidCSRF(bool $status = true): void
     {
-        $this->forbidCSRF = true;
+        $this->forbidCSRF = $status;
     }
 
     /**

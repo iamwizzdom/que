@@ -260,32 +260,29 @@ class JWT
     /**
      * @param string $token
      * @return User|null
+     * @throws Exceptions\EmptyTokenException
+     * @throws Exceptions\InsecureTokenException
+     * @throws Exceptions\InvalidClaimTypeException
+     * @throws Exceptions\InvalidStructureException
+     * @throws Exceptions\MissingClaimException
+     * @throws Exceptions\TokenExpiredException
+     * @throws Exceptions\TokenInactiveException
+     * @throws Exceptions\UndefinedAlgorithmException
+     * @throws Exceptions\UnsupportedTokenTypeException
+     * @throws IntegrityViolationException
+     * @throws UnsupportedAlgorithmException
      */
     public static function toUser(string $token)
     {
-        try {
-            $tokenEncoded = new TokenEncoded($token);
-            $tokenEncoded->validate((string) config('auth.jwt.secret', ''), JWT::ALGORITHM_HS512);
-            $tokenDecoded = $tokenEncoded->decode();
-            $payload = $tokenDecoded->getPayload();
-            $config = config('database.tables.user', []);
-            $user = db()->find($config['name'] ?? 'users', $payload['jti'] ?? 0, $config['primary_key'] ?? 'id')->getFirst();
-            if (!$user) return null;
-            User::login($user);
-            return User::getInstance();
-        } catch (Exceptions\EmptyTokenException $e) {
-        } catch (Exceptions\InsecureTokenException $e) {
-        } catch (Exceptions\InvalidClaimTypeException $e) {
-        } catch (Exceptions\InvalidStructureException $e) {
-        } catch (Exceptions\MissingClaimException $e) {
-        } catch (Exceptions\UndefinedAlgorithmException $e) {
-        } catch (UnsupportedAlgorithmException $e) {
-        } catch (Exceptions\UnsupportedTokenTypeException $e) {
-        } catch (IntegrityViolationException $e) {
-        } catch (Exceptions\TokenExpiredException $e) {
-        } catch (Exceptions\TokenInactiveException $e) {
-        }
-        return null;
+        $tokenEncoded = new TokenEncoded($token);
+        $tokenEncoded->validate((string) config('auth.jwt.secret', ''), JWT::ALGORITHM_HS512);
+        $tokenDecoded = $tokenEncoded->decode();
+        $payload = $tokenDecoded->getPayload();
+        $config = config('database.tables.user', []);
+        $user = db()->find($config['name'] ?? 'users', $payload['jti'] ?? 0, $config['primary_key'] ?? 'id')->getFirst();
+        if (!$user) return null;
+        User::login($user);
+        return User::getInstance();
     }
 
 }

@@ -45,7 +45,7 @@ final class Route extends RouteCompiler
 
             ob_start();
 
-            self::$method = Request::getInstance()->getMethod();
+            self::$method = (string) Request::getInstance()->getMethod();
 
             if (!Request::getInstance()->isSupportedMethod()) {
                 throw new RouteException("Sorry, '" . self::$method . "' is an unsupported request method.",

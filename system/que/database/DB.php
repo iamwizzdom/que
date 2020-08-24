@@ -231,13 +231,16 @@ class DB extends Connect
     }
 
     /**
+     * @param array $columns
      * @return Builder
      */
-    public function select(): Builder
+    public function select(...$columns): Builder
     {
         $driverBuilder = $this->getDriver()->getQueryBuilder();
         $driverBuilder->setQueryType(DriverQueryBuilder::SELECT);
-        return new QueryBuilder($this->getDriver(), $driverBuilder, $this);
+        $builder = new QueryBuilder($this->getDriver(), $driverBuilder, $this);
+        $builder->select(...$columns);
+        return $builder;
     }
 
     /**

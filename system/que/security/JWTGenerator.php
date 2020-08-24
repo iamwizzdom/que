@@ -4,6 +4,7 @@
 namespace que\security;
 
 
+use Exception;
 use que\security\JWT\Exceptions\EmptyTokenException;
 use que\security\JWT\Exceptions\InsecureTokenException;
 use que\security\JWT\Exceptions\InvalidClaimTypeException;
@@ -23,30 +24,6 @@ class JWTGenerator
      * @var string
      */
     private string $algo;
-
-    /**
-     * Issued at
-     * @var int
-     */
-    private int $iat;
-
-    /**
-     * JWT ID
-     * @var false|string
-     */
-    private string $jti;
-
-    /**
-     * Issuer
-     * @var string
-     */
-    private string $iss;
-
-    /**
-     * Not before
-     * @var int
-     */
-    private int $nbf;
 
     /**
      * Expiration time
@@ -72,18 +49,25 @@ class JWTGenerator
      */
     private string $secret;
 
+    private array $claims = [
+        'iat' => null, // Issued at
+        'jti' => null, // JWT ID
+        'iss' => null, // Issuer
+        'nbf' => null // Not before
+    ];
+
     /**
      * JWTGenerator constructor.
      */
     public function __construct()
     {
         $this->algo = JWT::DEFAULT_ALGORITHM;
-        $this->iat = APP_TIME;
-        $this->jti = unique_id();
-        $this->iss = 'Que/v' . QUE_VERSION;
-        $this->nbf = $this->iat;
+        $this->claims['iat'] = APP_TIME;
+        $this->claims['jti'] = unique_id();
+        $this->claims['iss'] = 'Que/v' . QUE_VERSION;
+        $this->claims['nbf'] = $this->claims['iat'];
         $ttl = config('auth.jwt.ttl', TIMEOUT_ONE_HOUR);
-        if ($ttl) $this->exp = ($this->iat + $ttl);
+        if ($ttl) $this->exp = ($this->claims['iat'] + $ttl);
         $this->secret = (string) config('auth.jwt.secret', '');
     }
 
@@ -100,7 +84,7 @@ class JWTGenerator
      */
     public function setIssuedAt(int $iat): void
     {
-        $this->iat = $iat;
+        $this->claims['iat'] = $iat;
     }
 
     /**
@@ -108,7 +92,7 @@ class JWTGenerator
      */
     public function setID($jti): void
     {
-        $this->jti = $jti;
+        $this->claims['jti'] = $jti;
     }
 
     /**
@@ -116,7 +100,7 @@ class JWTGenerator
      */
     public function setIssuer(string $iss): void
     {
-        $this->iss = $iss;
+        $this->claims['iss'] = $iss;
     }
 
     /**
@@ -124,7 +108,7 @@ class JWTGenerator
      */
     public function setNotBefore(int $nbf): void
     {
-        $this->nbf = $nbf;
+        $this->claims['nbf'] = $nbf;
     }
 
     /**
@@ -160,6 +144,27 @@ class JWTGenerator
     }
 
     /**
+     * @param $claim
+     * @param $value
+     * @throws Exception
+     */
+    public function addCustomClaim($claim, $value) {
+
+        // check for standard claim
+        if (in_array($claim, [
+            'iat',
+            'jti',
+            'iss',
+            'nbf',
+            'exp',
+            'aud',
+            'sub'
+        ])) throw new Exception("Cannot override standard claim here, use designated method");
+
+        $this->claims[$claim] = $value;
+    }
+
+    /**
      * @return string
      * @throws EmptyTokenException
      * @throws InsecureTokenException
@@ -173,21 +178,15 @@ class JWTGenerator
      */
     public function generate()
     {
-        $claims = [
-            'iat' => $this->iat,
-            'jti' => $this->jti,
-            'iss' => $this->iss,
-            'nbf' => $this->nbf
-        ];
 
-        if ($this->exp) $claims['exp'] = $this->exp;
-        if ($this->aud) $claims['aud'] = $this->aud;
-        if ($this->sub) $claims['sub'] = $this->sub;
+        if ($this->exp) $this->claims['exp'] = $this->exp;
+        if ($this->aud) $this->claims['aud'] = $this->aud;
+        if ($this->sub) $this->claims['sub'] = $this->sub;
 
         $encode = new TokenDecoded([
             'alg' => $this->algo,
             'typ' => 'JWT'
-        ], $claims);
+        ], $this->claims);
 
         return $encode->encode($this->secret, $this->algo)->__toString();
     }

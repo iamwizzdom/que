@@ -171,9 +171,9 @@ class Model implements ModelAlias
     }
 
     /**
-     * @return ModelAlias
+     * @return ModelAlias|null
      */
-    public function getNextRecord(): ModelAlias
+    public function getNextRecord(): ?ModelAlias
     {
         $record = db()->select()->table($this->getTable())->limit(1)
             ->where($this->getPrimaryKey(), $this->getValue($this->getPrimaryKey()), '>')->exec();
@@ -182,9 +182,9 @@ class Model implements ModelAlias
     }
 
     /**
-     * @return ModelAlias
+     * @return ModelAlias|null
      */
-    public function getPreviousRecord(): ModelAlias
+    public function getPreviousRecord(): ?ModelAlias
     {
         $record = db()->select()->table($this->getTable())->limit(1)
             ->where($this->getPrimaryKey(), $this->getValue($this->getPrimaryKey()), '<')->exec();
@@ -199,7 +199,7 @@ class Model implements ModelAlias
     {
         $data = db()->find($this->getTable(), $this->getValue($this->getPrimaryKey()), $this->getPrimaryKey());
         if (!$data->isSuccessful()) return false;
-        $this->object = $data->getQueryResponse(0);
+        $this->object = (object) $data->getQueryResponse(0);
         return true;
     }
 

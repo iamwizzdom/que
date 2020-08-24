@@ -79,7 +79,7 @@ class TokenEncoded
         Validation::checkClaimType('iss', 'string', $payloadArray);
         Validation::checkClaimType('sub', 'string', $payloadArray);
         Validation::checkClaimType('aud', 'string', $payloadArray);
-        Validation::checkClaimType('jti', 'string', $payloadArray);
+        Validation::checkClaimType('jti', 'mixed', $payloadArray);
         
         $this->token = $token;
         $this->payload = $payload;

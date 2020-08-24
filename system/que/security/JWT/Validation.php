@@ -148,6 +148,7 @@ class Validation
      * Checks if given key exists in the payload and if so, checks if it's of integer type.
      *
      * @param string $claim Claim name
+     * @param string $type
      * @param array $payload Payload array
      *
      * @throws InvalidClaimTypeException
@@ -158,6 +159,11 @@ class Validation
             case 'integer':
                 if (array_key_exists($claim, $payload) && !is_int($payload[$claim])) {
                     throw new InvalidClaimTypeException(sprintf('Invalid %s claim - %s value required', $claim, $type));
+                }
+                break;
+            case 'mixed':
+                if (array_key_exists($claim, $payload) && !(is_string($payload[$claim]) || is_int($payload[$claim]))) {
+                    throw new InvalidClaimTypeException(sprintf('Invalid %s claim - integer or string value required', $claim));
                 }
                 break;
             case 'string':
