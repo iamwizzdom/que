@@ -238,23 +238,31 @@ class RouteInspector
      */
     public static function validateArgDataType(string $regex, $value) {
 
+        $expect = null;
+
         if (strcmp($regex, "uuid") == 0) {
 
             if (UUID::is_valid($value)) return;
 
-            $value = str_ellipsis($value ?? '', 70);
+            $value = str_ellipsis($value ?? '', 40);
             throw new RouteException(
-                "Invalid data type found in route argument [Arg: {$value}]",
+                "Invalid data type found in route argument [arg: {$value}, expects: UUID]",
                 "Route Error", HTTP::EXPECTATION_FAILED
             );
 
-        } elseif (strcmp($regex, "num") == 0) $regex = "/^[0-9]+$/";
-        elseif (strcmp($regex, "alpha") == 0) $regex = "/^[a-zA-Z]+$/";
+        } elseif (strcmp($regex, "num") == 0) {
+            $regex = "/^[0-9]+$/";
+            $expect = "number";
+        } elseif (strcmp($regex, "alpha") == 0) {
+            $regex = "/^[a-zA-Z]+$/";
+            $expect = "alphabet";
+        }
 
         if (!preg_match($regex, $value)) {
-            $value = str_ellipsis($value ?? '', 70);
+            $value = str_ellipsis($value ?? '', 40);
+            $expect = $expect ?: "regex {$regex}";
             throw new RouteException(
-                "Invalid data type found in route argument [Arg: {$value}]",
+                "Invalid data type found in route argument [arg: {$value}, expect: $expect]",
                 "Route Error", HTTP::EXPECTATION_FAILED
             );
         }

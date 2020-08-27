@@ -68,10 +68,10 @@ class RouteCompiler
 
                 $percentage = $foundRoute['percentage'] ?? 0;
 
-                if (empty($foundRoute['error'])) {
+                $routeEntry = $foundRoute['routeEntry'] ?? null;
+                $routeArgs = $foundRoute['args'] ?? [];
 
-                    $routeEntry = $foundRoute['routeEntry'] ?? null;
-                    $routeArgs = $foundRoute['args'] ?? [];
+                if (empty($foundRoute['error'])) {
 
                     if ($routeEntry instanceof RouteEntry) {
 
@@ -92,14 +92,14 @@ class RouteCompiler
                 }
             }
 
-            if ($routeEntry === null || !$routeEntry instanceof RouteEntry) {
+            if ($routeEntry instanceof RouteEntry) {
 
-                if (empty($error)) throw new RouteException(sprintf("%s is an invalid url", current_url()), "Route Error", HTTP::NOT_FOUND);
-                else throw new RouteException($error, "Route Error", $code);
-            }
+                self::setRouteParams($routeArgs);
+                self::setCurrentRoute($routeEntry);
 
-            self::setRouteParams($routeArgs);
-            self::setCurrentRoute($routeEntry);
+            } else throw new RouteException(sprintf("%s is an invalid url", current_url()), "Route Error", HTTP::NOT_FOUND);
+
+            if (!empty($error)) throw new RouteException($error, "Route Error", $code);
 
             http()->_header()->setBulk([
                 'Access-Control-Allow-Origin' => '*',
