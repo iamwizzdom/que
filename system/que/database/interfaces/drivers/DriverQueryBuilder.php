@@ -24,6 +24,7 @@ interface DriverQueryBuilder
     const RAW_OBJECT = 9;
     const RAW_QUERY = 10;
     const SHOW = 11;
+    const CHECK = 12;
 
     /**
      * DriverQueryBuilder constructor.

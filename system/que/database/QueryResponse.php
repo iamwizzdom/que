@@ -115,14 +115,14 @@ class QueryResponse
     {
         $response = $this->getQueryResponse($key);
 
-        if (empty($response)) return (array) $response;
+        if (empty($response)) return (array)$response;
 
-        if (!is_null($key)) return (array) $response;
+        if (!is_null($key)) return (array)$response;
 
-        if (!is_array($response)) $response = (array) $response;
+        if (!is_array($response)) $response = (array)$response;
 
         array_callback($response, function ($row) {
-            return (array) $this->normalize_data($row);
+            return (array)$this->normalize_data($row);
         });
 
         return $response;
@@ -161,7 +161,7 @@ class QueryResponse
             return new $model($response, $this->getTable(), $primaryKey);
         }
 
-        if (!is_array($response)) $response = (array) $response;
+        if (!is_array($response)) $response = (array)$response;
 
         array_callback($response, function ($row, $key) use ($model, $primaryKey) {
 
@@ -185,7 +185,17 @@ class QueryResponse
         return $this->getDriverResponse()->isSuccessful() && (
             $this->getQueryType() === DriverQueryBuilder::SELECT ||
             $this->getQueryType() === DriverQueryBuilder::RAW_SELECT ?
-                $this->getResponseSize() > 0 : true);
+                $this->getResponseSize() > 0 : (
+            $this->getQueryType() === DriverQueryBuilder::UPDATE ||
+            $this->getQueryType() === DriverQueryBuilder::DELETE ?
+                $this->getAffectedRows() > 0 : (
+            $this->getQueryType() === DriverQueryBuilder::CHECK ?
+                $this->getQueryResponse() > 0 : (
+            $this->getQueryType() === DriverQueryBuilder::RAW_OBJECT ?
+                !empty($this->getQueryResponse()) : (
+            $this->getQueryType() === DriverQueryBuilder::SUM ?
+                !empty($this->getQueryResponse()) : true
+            )))));
     }
 
     /**

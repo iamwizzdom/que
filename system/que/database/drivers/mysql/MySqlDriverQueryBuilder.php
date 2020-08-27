@@ -787,7 +787,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
         if ($this->queryType != self::SHOW && $this->queryType != self::INSERT) {
 
-            if ($this->queryType == self::SELECT) $select_columns = $this->build_select_query();
+            if ($this->queryType == self::SELECT) $select_columns = $this->build_select_query() ?: '*';
 
             $where = $this->build_sql_where_query();
 
@@ -813,6 +813,22 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
                 $join_query = $this->build_sql_join_query();
             }
+        }
+
+        $actualColumn = '`id`';
+
+        if ($this->queryType == self::COUNT || $this->queryType == self::SUM ||
+            $this->queryType == self::AVG || $this->queryType == self::CHECK) {
+
+            $actualColumn = $this->getActualColumn(implode(', ', array_map(function ($column) {
+                if (is_array($column['column'])) {
+                    if (is_string($col = current($column['column']))) return $col;
+                    else return key($column['column']);
+                }
+                return $column['column'];
+            }, $this->select))) ?: '`id`';
+
+            if ($actualColumn === '*') $actualColumn = '`id`';
         }
 
         switch ($this->queryType) {
@@ -881,32 +897,18 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
                 }
 
                 break;
+            case self::CHECK:
             case self::COUNT:
 
-                $actualColumn = $this->getActualColumn(implode(', ', array_map(function ($column) {
-                    if (is_array($column['column'])) {
-                        if (is_string($col = current($column['column']))) return $col;
-                        else return key($column['column']);
-                    }
-                    return $column['column'];
-                }, $this->columns)));
-
+                $queryType = $this->getQueryType();
                 $this->setQueryType(self::SELECT);
                 $this->buildQuery();
-                $this->setQueryType(self::COUNT);
+                $this->setQueryType($queryType);
 
                 $query = "SELECT COUNT({$this->formatColumn("`countable`.{$actualColumn}")}) as `aggregate` FROM ({$this->getQuery()}) AS `countable`";
 
                 break;
             case self::AVG:
-
-                $actualColumn = $this->getActualColumn(implode(', ', array_map(function ($column) {
-                    if (is_array($column['column'])) {
-                        if (is_string($col = current($column['column']))) return $col;
-                        else return key($column['column']);
-                    }
-                    return $column['column'];
-                }, $this->columns)));
 
                 $this->setQueryType(self::SELECT);
                 $this->buildQuery();
@@ -916,14 +918,6 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
                 break;
             case self::SUM:
-
-                $actualColumn = $this->getActualColumn(implode(', ', array_map(function ($column) {
-                    if (is_array($column['column'])) {
-                        if (is_string($col = current($column['column']))) return $col;
-                        else return key($column['column']);
-                    }
-                    return $column['column'];
-                }, $this->columns)));
 
                 $this->setQueryType(self::SELECT);
                 $this->buildQuery();

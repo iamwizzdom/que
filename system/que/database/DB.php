@@ -202,15 +202,18 @@ class DB extends Connect
     }
 
     /**
+     * @param string $table
      * @param Closure $callbackQuery
      * @return QueryResponse
      */
-    public function check(Closure $callbackQuery): QueryResponse
+    public function check(string $table, Closure $callbackQuery): QueryResponse
     {
-        $builder = $this->select()->exists(function (Builder $builder) use ($callbackQuery) {
-            $callbackQuery($builder);
-            $builder->limit(1);
-        });
+        $driverBuilder = $this->getDriver()->getQueryBuilder();
+        $driverBuilder->setQueryType(DriverQueryBuilder::CHECK);
+        $driverBuilder->setTable($table);
+        $builder = new QueryBuilder($this->getDriver(), $driverBuilder, $this);
+        $callbackQuery($builder);
+        $builder->limit(1);
         return $builder->exec();
     }
 
@@ -256,7 +259,7 @@ class DB extends Connect
         $driverBuilder = $this->getDriver()->getQueryBuilder();
         $driverBuilder->setQueryType(DriverQueryBuilder::SELECT);
         $builder = new QueryBuilder($this->getDriver(), $driverBuilder, $this);
-        $builder->select(...$columns);
+        if (!empty($columns)) $builder->select(...$columns);
         return $builder;
     }
 
@@ -320,7 +323,7 @@ class DB extends Connect
 
     /**
      * @param string|null $table
-     * @param null $column
+     * @param string $column
      * @return Builder
      */
     public function count(string $table = null, $column = null): Builder
@@ -328,13 +331,13 @@ class DB extends Connect
         $driverBuilder = $this->getDriver()->getQueryBuilder();
         $driverBuilder->setQueryType(DriverQueryBuilder::COUNT);
         if ($table !== null) $driverBuilder->setTable($table);
-        if ($column !== null) $driverBuilder->setColumns($column);
+        if ($column !== null) $driverBuilder->setSelect($column);
         return new QueryBuilder($this->getDriver(), $driverBuilder, $this);
     }
 
     /**
      * @param string|null $table
-     * @param null $column
+     * @param string $column
      * @return Builder
      */
     public function avg(string $table = null, $column = null): Builder
@@ -342,13 +345,13 @@ class DB extends Connect
         $driverBuilder = $this->getDriver()->getQueryBuilder();
         $driverBuilder->setQueryType(DriverQueryBuilder::AVG);
         if ($table !== null) $driverBuilder->setTable($table);
-        if ($column !== null) $driverBuilder->setColumns($column);
+        if ($column !== null) $driverBuilder->setSelect($column);
         return new QueryBuilder($this->getDriver(), $driverBuilder, $this);
     }
 
     /**
      * @param string|null $table
-     * @param null $column
+     * @param string $column
      * @return Builder
      */
     public function sum(string $table = null, $column = null): Builder
@@ -356,7 +359,7 @@ class DB extends Connect
         $driverBuilder = $this->getDriver()->getQueryBuilder();
         $driverBuilder->setQueryType(DriverQueryBuilder::SUM);
         if ($table !== null) $driverBuilder->setTable($table);
-        if ($column !== null) $driverBuilder->setColumns($column);
+        if ($column !== null) $driverBuilder->setSelect($column);
         return new QueryBuilder($this->getDriver(), $driverBuilder, $this);
     }
 

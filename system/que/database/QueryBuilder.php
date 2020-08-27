@@ -583,6 +583,8 @@ class QueryBuilder implements Builder
                 return $this->delete();
             case DriverQueryBuilder::COUNT:
                 return $this->count();
+            case DriverQueryBuilder::CHECK:
+                return $this->check();
             case DriverQueryBuilder::AVG:
                 return $this->avg();
             case DriverQueryBuilder::SUM:
@@ -597,7 +599,7 @@ class QueryBuilder implements Builder
                 return $this->show_table();
             default:
                 throw new QueRuntimeException("Invalid query type", "Query Builder Error",
-                    E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(3));
+                    E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         }
     }
@@ -726,7 +728,7 @@ class QueryBuilder implements Builder
             if ($retrying && $attempts < $observer->getSignal()->getTrials())
                 return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
 
-            $this->query->rollbackTrans();
+            $this->query->transRollBackAll();
 
             if ($this->driver->isInDebugMode()) {
 
@@ -750,7 +752,7 @@ class QueryBuilder implements Builder
             //Check if observer wants to undo the insert operation
             if ($observer->getSignal()->isUndoOperation()) {
 
-                $this->query->rollbackTrans();
+                $this->query->transRollBackAll();
 
                 return new QueryResponse($this->getCustomDriverResponse($this->builder, [
                     "Observer for '{$this->builder->getTable()}' table asked to undo the insert operation"
@@ -936,7 +938,7 @@ class QueryBuilder implements Builder
             if ($retrying && $attempts < $observer->getSignal()->getTrials())
                 return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
 
-            $this->query->rollbackTrans();
+            $this->query->transRollBackAll();
 
             if ($this->driver->isInDebugMode()) {
 
@@ -956,7 +958,7 @@ class QueryBuilder implements Builder
             //Check if observer wants to undo the delete operation
             if ($observer->getSignal()->isUndoOperation()) {
 
-                $this->query->rollbackTrans();
+                $this->query->transRollBackAll();
 
                 return new QueryResponse($this->getCustomDriverResponse($this->builder, [
                     "Observer for '{$this->builder->getTable()}' table asked to undo the delete operation"
@@ -1014,7 +1016,7 @@ class QueryBuilder implements Builder
 
         if (!$response->isSuccessful()) {
 
-            $this->query->rollbackTrans();
+            $this->query->transRollBackAll();
 
             if ($this->driver->isInDebugMode()) {
 
@@ -1041,7 +1043,7 @@ class QueryBuilder implements Builder
 
         if (!$response->isSuccessful()) {
 
-            $this->query->rollbackTrans();
+            $this->query->transRollBackAll();
 
             if ($this->driver->isInDebugMode()) {
 
@@ -1068,7 +1070,7 @@ class QueryBuilder implements Builder
 
         if (!$response->isSuccessful()) {
 
-            $this->query->rollbackTrans();
+            $this->query->transRollBackAll();
 
             if ($this->driver->isInDebugMode()) {
 
@@ -1095,7 +1097,7 @@ class QueryBuilder implements Builder
 
         if (!$response->isSuccessful()) {
 
-            $this->query->rollbackTrans();
+            $this->query->transRollBackAll();
 
             if ($this->driver->isInDebugMode()) {
 
@@ -1283,7 +1285,7 @@ class QueryBuilder implements Builder
             if ($retrying && $attempts < $observer->getSignal()->getTrials())
                 return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
 
-            $this->query->rollbackTrans();
+            $this->query->transRollBackAll();
 
             if ($this->driver->isInDebugMode()) {
 
@@ -1314,7 +1316,7 @@ class QueryBuilder implements Builder
             //Check if observer wants to undo the update operation
             if ($observer->getSignal()->isUndoOperation()) {
 
-                $this->query->rollbackTrans();
+                $this->query->transRollBackAll();
 
                 return new QueryResponse($this->getCustomDriverResponse($this->builder, [
                     "Observer for '{$this->builder->getTable()}' table asked to undo the update operation"
@@ -1334,7 +1336,7 @@ class QueryBuilder implements Builder
     /**
      * @return QueryResponse
      */
-    private function count(): QueryResponse
+    private function check(): QueryResponse
     {
         if (empty($this->builder->getSelect())) {
 
@@ -1342,8 +1344,8 @@ class QueryBuilder implements Builder
 
                 $this->builder->setQueryType(DriverQueryBuilder::SHOW);
                 $showTable = $this->show_table();
-                $this->builder->setQueryType(DriverQueryBuilder::COUNT);
-                self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? $showTable->getQueryResponse() : 'id';
+                $this->builder->setQueryType(DriverQueryBuilder::CHECK);
+                self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? ($showTable->getQueryResponse() ?: 'id') : 'id';
             }
 
             $this->builder->setSelect(self::$primaryKeys[$this->builder->getTable()]);
@@ -1353,21 +1355,30 @@ class QueryBuilder implements Builder
 
         $response = $this->driver->exec($this->builder);
 
-        if (!$response->isSuccessful()) {
+        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
+    }
 
-            $this->query->rollbackTrans();
+    /**
+     * @return QueryResponse
+     */
+    private function count(): QueryResponse
+    {
+        if (empty($this->builder->getSelect())) {
 
-            if ($this->driver->isInDebugMode()) {
+            if (!isset(self::$primaryKeys[$this->builder->getTable()])) {
 
-                $errors = serializer_recursive($response->getErrors(), " -- ", function ($error) {
-                    return !empty($error);
-                });
-
-                throw new QueRuntimeException("Error: {$errors} \nDB: '{$response->getQueryString()}'\n",
-                    "Database Error", E_USER_ERROR, 0,
-                    PreviousException::getInstance());
+                $this->builder->setQueryType(DriverQueryBuilder::SHOW);
+                $showTable = $this->show_table();
+                $this->builder->setQueryType(DriverQueryBuilder::COUNT);
+                self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? ($showTable->getQueryResponse() ?: 'id') : 'id';
             }
+
+            $this->builder->setSelect(self::$primaryKeys[$this->builder->getTable()]);
         }
+
+        $this->builder->buildQuery();
+
+        $response = $this->driver->exec($this->builder);
 
         return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
     }
@@ -1384,7 +1395,7 @@ class QueryBuilder implements Builder
                 $this->builder->setQueryType(DriverQueryBuilder::SHOW);
                 $showTable = $this->show_table();
                 $this->builder->setQueryType(DriverQueryBuilder::AVG);
-                self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? $showTable->getQueryResponse() : 'id';
+                self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? ($showTable->getQueryResponse() ?: 'id') : 'id';
             }
 
             $this->builder->setSelect(self::$primaryKeys[$this->builder->getTable()]);
@@ -1393,22 +1404,6 @@ class QueryBuilder implements Builder
         $this->builder->buildQuery();
 
         $response = $this->driver->exec($this->builder);
-
-        if (!$response->isSuccessful()) {
-
-            $this->query->rollbackTrans();
-
-            if ($this->driver->isInDebugMode()) {
-
-                $errors = serializer_recursive($response->getErrors(), " -- ", function ($error) {
-                    return !empty($error);
-                });
-
-                throw new QueRuntimeException("Error: {$errors} \nDB: '{$response->getQueryString()}'\n",
-                    "Database Error", E_USER_ERROR, 0,
-                    PreviousException::getInstance());
-            }
-        }
 
         return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
     }
@@ -1425,7 +1420,7 @@ class QueryBuilder implements Builder
                 $this->builder->setQueryType(DriverQueryBuilder::SHOW);
                 $showTable = $this->show_table();
                 $this->builder->setQueryType(DriverQueryBuilder::SUM);
-                self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? $showTable->getQueryResponse() : 'id';
+                self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? ($showTable->getQueryResponse() ?: 'id') : 'id';
             }
 
             $this->builder->setSelect(self::$primaryKeys[$this->builder->getTable()]);
@@ -1434,22 +1429,6 @@ class QueryBuilder implements Builder
         $this->builder->buildQuery();
 
         $response = $this->driver->exec($this->builder);
-
-        if (!$response->isSuccessful()) {
-
-            $this->query->rollbackTrans();
-
-            if ($this->driver->isInDebugMode()) {
-
-                $errors = serializer_recursive($response->getErrors(), " -- ", function ($error) {
-                    return !empty($error);
-                });
-
-                throw new QueRuntimeException("Error: {$errors} \nDB: '{$response->getQueryString()}'\n",
-                    "Database Error", E_USER_ERROR, 0,
-                    PreviousException::getInstance());
-            }
-        }
 
         return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
     }

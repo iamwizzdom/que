@@ -327,13 +327,14 @@ class MySqlDriver implements Driver
                 return new MySqlDriverResponse(
                     null, $status,
                     $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()),
-                    ($stmt->rowCount() == 0 ? ['No records deleted'] : $stmt->errorInfo()),
+                    ($stmt->rowCount() == 0 ? ['No records affected'] : $stmt->errorInfo()),
                     $stmt->errorCode(), 0, $stmt->rowCount()
                 );
 
             case DriverQueryBuilder::AVG:
             case DriverQueryBuilder::SUM:
             case DriverQueryBuilder::COUNT:
+            case DriverQueryBuilder::CHECK:
 
                 return new MySqlDriverResponse(
                     $stmt->fetch(PDO::FETCH_ASSOC)['aggregate'] ?? 0, $status,
