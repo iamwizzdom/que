@@ -379,6 +379,7 @@ class MySqlDriver implements Driver
     private function interpolateQuery(string $query, array $params) {
         foreach ($params as $key => $value) {
             if ($value === null) $value = 'NULL';
+            elseif (is_bool($value)) $value = $value ? 1 : 0;
             elseif (!is_numeric($value)) $value = "'{$value}'";
             $query = str_replace_first($key, "{$value}", $query);
         }
