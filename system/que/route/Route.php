@@ -8,6 +8,7 @@
 
 namespace que\route;
 
+use JsonSerializable;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use que\common\exception\RouteException;
@@ -250,6 +251,12 @@ final class Route extends RouteCompiler
                 if (!$data = $response->getJson()) throw new RouteException(
                     "Failed to output response\n", "Output Error",
                     HTTP::NO_CONTENT, PreviousException::getInstance(1));
+                echo $data;
+            } elseif ($response instanceof JsonSerializable) {
+                if (!$data = $response->jsonSerialize()) throw new RouteException(
+                    "Failed to output response\n", "Output Error",
+                    HTTP::NO_CONTENT, PreviousException::getInstance(1));
+                $http->_header()->set('Content-Type', mime_type_from_extension('js'), true);
                 echo $data;
             } elseif ($response instanceof Jsonp) {
                 if (!$data = $response->getJsonp()) throw new RouteException(

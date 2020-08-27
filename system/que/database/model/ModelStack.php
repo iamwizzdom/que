@@ -92,6 +92,24 @@ class ModelStack implements QueArrayAccess
         }
     }
 
+    /**
+     * @return array
+     */
+    public function getArray(): array {
+        $list = [];
+        foreach ($this->models as $model) $list[] = $model->getArray();
+        return $list;
+    }
+
+    /**
+     * @return object
+     */
+    public function getObject(): object {
+        $list = new \stdClass();
+        foreach ($this->models as $key => $model) $list->{$key} = $model->getObject();
+        return $list;
+    }
+
 
     /**
      * @return Model[]
@@ -185,6 +203,20 @@ class ModelStack implements QueArrayAccess
             $response[] = $callback($model);
         }
         return $response;
+    }
+
+    /**
+     * @return bool
+     */
+    public function refresh() {
+        $count = 0;
+        foreach ($this->models as $model) {
+            if (!$model instanceof Model) continue;
+            $model->refresh();
+            $count++;
+
+        }
+        return $count > 0;
     }
 
     /**

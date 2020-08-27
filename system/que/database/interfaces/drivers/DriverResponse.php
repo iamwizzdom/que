@@ -22,6 +22,11 @@ interface DriverResponse
     public function getResponse();
 
     /**
+     * @param array|object|null $response
+     */
+    public function setResponse($response): void;
+
+    /**
      * @return int
      */
     public function getLastInsertID(): int;

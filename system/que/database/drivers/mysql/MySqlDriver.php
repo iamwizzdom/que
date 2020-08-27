@@ -312,10 +312,8 @@ class MySqlDriver implements Driver
             case DriverQueryBuilder::SELECT:
             case DriverQueryBuilder::RAW_SELECT:
 
-                $stmt->setFetchMode(PDO::FETCH_OBJ);
-
                 return new MySqlDriverResponse(
-                    $data = $stmt->fetchAll(), $status,
+                    $data = $stmt->fetch(PDO::FETCH_OBJ), $status,
                     $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()),
                     (empty($data) && $stmt->errorCode() === "00000" ? ['No records found'] : $stmt->errorInfo()),
                     $stmt->errorCode()

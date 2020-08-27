@@ -98,13 +98,12 @@ class QueryResponse
             if (is_array($response))
                 return isset($response[$key]) ? $this->normalize_data($response[$key]) : null;
 
-            if (is_object($response))
-                return object_key_exists($key, $response) ? $this->normalize_data($response->{$key}) : null;
+            if (is_object($response)) return $this->normalize_data($response);
 
             return null;
         }
 
-        return is_iterable($response) ? $this->normalize_data($response) : $response;
+        return $this->normalize_data($response);
     }
 
     /**
@@ -115,14 +114,14 @@ class QueryResponse
     {
         $response = $this->getQueryResponse($key);
 
-        if (empty($response)) return (array)$response;
+        if (empty($response)) return null;
 
-        if (!is_null($key)) return (array)$response;
+        if (!is_null($key)) return (array) $response;
 
-        if (!is_array($response)) $response = (array)$response;
+        if (!is_array($response)) $response = (array) $response;
 
         array_callback($response, function ($row) {
-            return (array)$this->normalize_data($row);
+            return (array) $row;
         });
 
         return $response;
@@ -151,26 +150,14 @@ class QueryResponse
         if (empty($response)) return null;
 
         if (!is_null($key)) {
-
-            if (!is_object($response)) throw new QueRuntimeException(
-                self::class . "::getQueryResponseWithModel method expects data from database driver" .
-                " with key '{$key}' to be an object, but got '{$this->getType($response)}' instead",
-                "Database Response Error", E_USER_ERROR, 0,
-                PreviousException::getInstance(1));
-
+            $response = (object) $response;
             return new $model($response, $this->getTable(), $primaryKey);
         }
 
-        if (!is_array($response)) $response = (array)$response;
+        if (!is_array($response)) $response = (array) $response;
 
-        array_callback($response, function ($row, $key) use ($model, $primaryKey) {
-
-            if (!is_object($row)) throw new QueRuntimeException(
-                self::class . "::getQueryResponseWithModel method expects data with key '{$key}' from " .
-                "database driver to be an object, but got '{$this->getType($row)}' instead",
-                "Database Response Error", E_USER_ERROR, 0,
-                PreviousException::getInstance(2));
-
+        array_callback($response, function ($row) use ($model, $primaryKey) {
+            $row = (object) $row;
             return new $model($row, $this->getTable(), $primaryKey);
         });
 
@@ -262,8 +249,7 @@ class QueryResponse
      */
     public function getResponseSize(): int
     {
-        return is_array($this->getDriverResponse()->getResponse()) ?
-            array_size($this->getDriverResponse()->getResponse()) : 0;
+        return is_array($res = $this->getQueryResponse()) ? array_size($res) : ($res !== null ? 1 : 0);
     }
 
     /**
@@ -303,7 +289,7 @@ class QueryResponse
     /**
      * @return int
      */
-    private function getQueryType(): int
+    public function getQueryType(): int
     {
         return $this->query_type;
     }

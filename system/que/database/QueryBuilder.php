@@ -632,6 +632,8 @@ class QueryBuilder implements Builder
             $model = new \que\database\model\Model($columns, $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
         }
 
+        $this->builder->setColumns($this->normalize_data($this->builder->getColumns()));
+
         return $this->insertOps($model);
     }
 
@@ -645,7 +647,6 @@ class QueryBuilder implements Builder
     private function insertOps(Model $model, bool $retrying = false,
                                Observer $observer = null, int $attempts = 0): QueryResponse
     {
-        $this->builder->setColumns($this->normalize_data($this->builder->getColumns()));
         $this->builder->buildQuery();
 
         if ($observer === null) {
@@ -725,8 +726,14 @@ class QueryBuilder implements Builder
                 }
             }
 
-            if ($retrying && $attempts < $observer->getSignal()->getTrials())
+            if ($retrying && $attempts < $observer->getSignal()->getTrials()) {
+
+                $model->offsetSet($model->getPrimaryKey(), $response->getLastInsertID());
+                sleep(1);
+                $model->refresh();
+                $response->setResponse([$model->getObject()]);
                 return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
+            }
 
             $this->query->transRollBackAll();
 
@@ -742,7 +749,8 @@ class QueryBuilder implements Builder
             }
 
         } elseif ($observer instanceof Observer && $model instanceof Model) {
-            $model->offsetSet(self::$primaryKeys[$this->builder->getTable()], $response->getLastInsertID());
+            $model->offsetSet($model->getPrimaryKey(), $response->getLastInsertID());
+            sleep(1);
             $model->refresh();
             $observer->onCreated($model);
         }
@@ -766,6 +774,11 @@ class QueryBuilder implements Builder
             }
         }
 
+        $model->offsetSet($model->getPrimaryKey(), $response->getLastInsertID());
+        sleep(1);
+        $model->refresh();
+        $response->setResponse([$model->getObject()]);
+
         return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
     }
 
@@ -785,49 +798,36 @@ class QueryBuilder implements Builder
 
         $modelStack = null;
 
+        $this->builder->setQueryType(DriverQueryBuilder::SELECT);
+        $record = $this->selectQuery();
+        $this->builder->setQueryType(DriverQueryBuilder::DELETE);
+
         if (($model = \model(config("database.default.model"))) !== null) {
             if (($implements = class_implements($model)) &&
                 in_array(Model::class, $implements)) {
 
-                $this->builder->setQueryType(DriverQueryBuilder::SELECT);
-                $record = $this->selectQuery();
-                $this->builder->setQueryType(DriverQueryBuilder::DELETE);
 
-                if ($record->isSuccessful()) {
-                    $records = $record->getQueryResponse();
-                    if (is_array($records)) {
-                        array_callback($records, function ($record) use ($model) {
-                            return new $model($record, $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
-                        });
-                        $modelStack = new ModelStack($records);
-                    }
-                } else {
+                if (!$record->isSuccessful()) {
+
                     $this->builder->buildQuery();
                     return new QueryResponse($this->getCustomDriverResponse($this->builder, [$record->getQueryError()],
                         $record->getQueryErrorCode()), $this->builder->getQueryType(), $this->builder->getTable());
                 }
+
+                $modelStack = $record->getAllWithModel(config('database.default.model', ''), self::$primaryKeys[$this->builder->getTable()]);
             }
         }
 
         if (!$modelStack instanceof ModelStack) {
 
-            $this->builder->setQueryType(DriverQueryBuilder::SELECT);
-            $record = $this->selectQuery();
-            $this->builder->setQueryType(DriverQueryBuilder::DELETE);
+            if (!$record->isSuccessful()) {
 
-            if ($record->isSuccessful()) {
-                $records = $record->getQueryResponse();
-                if (is_array($records)) {
-                    array_callback($records, function ($record) {
-                        return new \que\database\model\Model($record, $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
-                    });
-                    $modelStack = new ModelStack($records);
-                }
-            } else {
                 $this->builder->buildQuery();
                 return new QueryResponse($this->getCustomDriverResponse($this->builder, [$record->getQueryError()],
                     $record->getQueryErrorCode()), $this->builder->getQueryType(), $this->builder->getTable());
             }
+
+            $modelStack = $record->getAllWithModel(config('database.default.model', ''), self::$primaryKeys[$this->builder->getTable()]);
 
         }
 
@@ -1016,8 +1016,6 @@ class QueryBuilder implements Builder
 
         if (!$response->isSuccessful()) {
 
-            $this->query->transRollBackAll();
-
             if ($this->driver->isInDebugMode()) {
 
                 $errors = serializer_recursive($response->getErrors(), " -- ", function ($error) {
@@ -1043,8 +1041,6 @@ class QueryBuilder implements Builder
 
         if (!$response->isSuccessful()) {
 
-            $this->query->transRollBackAll();
-
             if ($this->driver->isInDebugMode()) {
 
                 $errors = serializer_recursive($response->getErrors(), " -- ", function ($error) {
@@ -1069,8 +1065,6 @@ class QueryBuilder implements Builder
         $response = $this->driver->exec($this->builder);
 
         if (!$response->isSuccessful()) {
-
-            $this->query->transRollBackAll();
 
             if ($this->driver->isInDebugMode()) {
 
@@ -1130,53 +1124,38 @@ class QueryBuilder implements Builder
 
         $modelStack = null;
 
+        $this->builder->setSelect('*')->setQueryType(DriverQueryBuilder::SELECT);
+        $record = $this->selectQuery();
+        $this->builder->setQueryType(DriverQueryBuilder::UPDATE);
+
         if (($model = \model(config("database.default.model"))) !== null) {
             if (($implements = class_implements($model)) &&
                 in_array(Model::class, $implements)) {
 
-                $this->builder->setSelect('*')->setQueryType(DriverQueryBuilder::SELECT);
-                $record = $this->selectQuery();
-                $this->builder->setQueryType(DriverQueryBuilder::UPDATE);
-
-                if ($record->isSuccessful()) {
-                    $records = $record->getQueryResponseArray();
-                    if (is_array($records)) {
-                        array_callback($records, function ($record) use ($model) {
-                            return new $model($record, $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
-                        });
-                        $modelStack = new ModelStack($records);
-                    }
-                } else {
+                if (!$record->isSuccessful()) {
 
                     $this->builder->buildQuery();
                     return new QueryResponse($this->getCustomDriverResponse($this->builder, [$record->getQueryError()],
                         $record->getQueryErrorCode()), $this->builder->getQueryType(), $this->builder->getTable());
                 }
+
+                $modelStack = $record->getAllWithModel(config('database.default.model', ''), self::$primaryKeys[$this->builder->getTable()]);
             }
         }
 
         if (!$modelStack instanceof ModelStack) {
 
-            $this->builder->setSelect('*')->setQueryType(DriverQueryBuilder::SELECT);
-            $record = $this->selectQuery();
-            $this->builder->setQueryType(DriverQueryBuilder::UPDATE);
-
-            if ($record->isSuccessful()) {
-                $records = $record->getQueryResponse();
-                if (is_array($records)) {
-                    array_callback($records, function ($record) {
-                        return new \que\database\model\Model($record, $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
-                    });
-                    $modelStack = new ModelStack($records);
-                }
-            } else {
+            if (!$record->isSuccessful()) {
 
                 $this->builder->buildQuery();
                 return new QueryResponse($this->getCustomDriverResponse($this->builder, [$record->getQueryError()],
                     $record->getQueryErrorCode()), $this->builder->getQueryType(), $this->builder->getTable());
             }
 
+            $modelStack = $record->getAllWithModel(config('database.default.model', ''), self::$primaryKeys[$this->builder->getTable()]);
         }
+
+        $this->builder->setColumns($this->normalize_data($this->builder->getColumns()));
 
         return $this->updateOps($modelStack);
     }
@@ -1240,6 +1219,12 @@ class QueryBuilder implements Builder
         }
 
         $response = $this->driver->exec($this->builder);
+        $updatedStack = clone $modelStack;
+        foreach ($modelStack as $m) {
+            if (!$m instanceof Model) continue;
+            $m = clone $m;
+            $updatedStack->addModel($m);
+        }
 
         if (!$response->isSuccessful()) {
 
@@ -1282,8 +1267,13 @@ class QueryBuilder implements Builder
                 }
             }
 
-            if ($retrying && $attempts < $observer->getSignal()->getTrials())
+            if ($retrying && $attempts < $observer->getSignal()->getTrials()) {
+                $updatedStack->refresh();
+                $response->setResponse([array_map(function ($data) {
+                    return (object) $data;
+                }, $updatedStack->getArray())]);
                 return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
+            }
 
             $this->query->transRollBackAll();
 
@@ -1299,15 +1289,7 @@ class QueryBuilder implements Builder
             }
 
         } elseif ($observer instanceof Observer && $modelStack instanceof ModelStack) {
-            $updatedStack = clone $modelStack;
-            foreach ($modelStack as $m) {
-                if (!$m instanceof Model) continue;
-                $m = clone $m;
-                $updatedStack->addModel($m);
-            }
-            $updatedStack->map(function (Model $model) {
-                foreach ($this->builder->getColumns() as $key => $value) $model->offsetSet($key, $value);
-            });
+            $updatedStack->refresh();
             $observer->onUpdated($updatedStack, $modelStack);
         }
 
@@ -1329,6 +1311,11 @@ class QueryBuilder implements Builder
                 $this->query->setTransEnabled(false);
             }
         }
+
+        $updatedStack->refresh();
+        $response->setResponse([array_map(function ($data) {
+            return (object) $data;
+        }, $updatedStack->getArray())]);
 
         return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
     }

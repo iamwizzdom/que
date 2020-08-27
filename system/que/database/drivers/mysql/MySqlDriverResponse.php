@@ -119,6 +119,16 @@ class MySqlDriverResponse implements DriverResponse
     }
 
     /**
+     * @param array|object|null $response
+     */
+    public function setResponse($response): void
+    {
+        // TODO: Implement setResponse() method.
+        $this->response = $response;
+    }
+
+
+    /**
      * @inheritDoc
      */
     public function getLastInsertID(): int

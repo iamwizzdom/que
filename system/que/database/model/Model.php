@@ -199,7 +199,7 @@ class Model implements ModelAlias
     {
         $data = db()->find($this->getTable(), $this->getValue($this->getPrimaryKey()), $this->getPrimaryKey());
         if (!$data->isSuccessful()) return false;
-        $this->object = (object) $data->getQueryResponse(0);
+        $this->object = (object) $data->getFirst();
         return true;
     }
 
