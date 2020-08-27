@@ -9,6 +9,7 @@
 namespace que\common\validator\interfaces;
 
 
+use Closure;
 use DateTime;
 
 interface Condition
@@ -230,23 +231,23 @@ interface Condition
     /**
      * @param $table
      * @param $column
-     * @param bool $considerIsActive
+     * @param Closure|null $extraQueryCallback
      * @param null $ignoreID
      * @param string $ignoreColumn
      * @return bool
      */
-    public function isFoundInDB($table, $column, bool $considerIsActive = false,
+    public function isFoundInDB($table, $column, ?Closure $extraQueryCallback = null,
                                 $ignoreID = null, string $ignoreColumn = 'id'): bool;
 
     /**
      * @param $table
      * @param $column
-     * @param bool $considerIsActive
+     * @param Closure $extraQueryCallback
      * @param null $ignoreID
      * @param string $ignoreColumn
      * @return bool
      */
-    public function isNotFoundInDB($table, $column, bool $considerIsActive = false,
+    public function isNotFoundInDB($table, $column, ?Closure $extraQueryCallback = null,
                                    $ignoreID = null, string $ignoreColumn = 'id'): bool;
 
     /**

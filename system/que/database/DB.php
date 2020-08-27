@@ -202,14 +202,15 @@ class DB extends Connect
     }
 
     /**
-     * @param Closure $query
+     * @param Closure $callbackQuery
      * @return QueryResponse
      */
-    public function check(Closure $query): QueryResponse
+    public function check(Closure $callbackQuery): QueryResponse
     {
-        $builder = $this->select();
-        $query($builder);
-        $builder->limit(1);
+        $builder = $this->select()->exists(function (Builder $builder) use ($callbackQuery) {
+            $callbackQuery($builder);
+            $builder->limit(1);
+        });
         return $builder->exec();
     }
 
@@ -217,16 +218,16 @@ class DB extends Connect
      * @param string $table
      * @param $id
      * @param string $column
-     * @param Closure|null $extraQueryCallback
+     * @param Closure|null $callbackQuery
      * @return QueryResponse
      */
-    public function find(string $table, $id, string $column = 'id', Closure $extraQueryCallback = null): QueryResponse
+    public function find(string $table, $id, string $column = 'id', Closure $callbackQuery = null): QueryResponse
     {
         $builder = $this->select();
         $builder->table($table);
         $builder->where($column, $id);
         $builder->limit(1);
-        if ($extraQueryCallback !== null) $extraQueryCallback($builder);
+        if ($callbackQuery !== null) $callbackQuery($builder);
         return $builder->exec();
     }
 
@@ -234,15 +235,15 @@ class DB extends Connect
      * @param string $table
      * @param null $id
      * @param string $column
-     * @param Closure|null $extraQueryCallback
+     * @param Closure|null $callbackQuery
      * @return QueryResponse
      */
-    public function findAll(string $table, $id = null, string $column = 'id', Closure $extraQueryCallback = null): QueryResponse
+    public function findAll(string $table, $id = null, string $column = 'id', Closure $callbackQuery = null): QueryResponse
     {
         $builder = $this->select();
         $builder->table($table);
-        $builder->where($column, $id);
-        if ($extraQueryCallback !== null) $extraQueryCallback($builder);
+        if ($id !== null) $builder->where($column, $id);
+        if ($callbackQuery !== null) $callbackQuery($builder);
         return $builder->exec();
     }
 

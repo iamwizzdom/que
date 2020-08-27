@@ -170,12 +170,12 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
         $this->select = [];
     }
 
-    public function setSelectSub(Closure $callback, $as): DriverQueryBuilder
+    public function setSelectSub(Closure $callbackQuery, $as): DriverQueryBuilder
     {
         // TODO: Implement setSelectSub() method.
         $this->select[] = [
             'type' => 'normal',
-            'column' => [$callback, $as]
+            'column' => [$callbackQuery, $as]
         ];
         return $this;
     }
@@ -562,12 +562,12 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
     /**
      * @inheritDoc
      */
-    public function setExists(Closure $callback): DriverQueryBuilder
+    public function setExists(Closure $callbackQuery): DriverQueryBuilder
     {
         // TODO: Implement setWhere() method.
         $this->where[] = [
             'type' => 'exists_and',
-            'column' => $callback
+            'column' => $callbackQuery
         ];
         return $this;
     }
@@ -575,12 +575,12 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
     /**
      * @inheritDoc
      */
-    public function setOrExists(Closure $callback): DriverQueryBuilder
+    public function setOrExists(Closure $callbackQuery): DriverQueryBuilder
     {
         // TODO: Implement setOrExists() method.
         $this->where[] = [
             'type' => 'exists_or',
-            'column' => $callback
+            'column' => $callbackQuery
         ];
         return $this;
     }
@@ -588,12 +588,12 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
     /**
      * @inheritDoc
      */
-    public function setNotExists(Closure $callback): DriverQueryBuilder
+    public function setNotExists(Closure $callbackQuery): DriverQueryBuilder
     {
         // TODO: Implement setNotExists() method.
         $this->where[] = [
             'type' => 'exists_not_and',
-            'column' => $callback
+            'column' => $callbackQuery
         ];
         return $this;
     }
@@ -601,12 +601,12 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
     /**
      * @inheritDoc
      */
-    public function setOrNotExists(Closure $callback): DriverQueryBuilder
+    public function setOrNotExists(Closure $callbackQuery): DriverQueryBuilder
     {
         // TODO: Implement setOrNotExists() method.
         $this->where[] = [
             'type' => 'exists_not_or',
-            'column' => $callback
+            'column' => $callbackQuery
         ];
         return $this;
     }
@@ -626,21 +626,21 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
         return $this;
     }
 
-    public function setUnion(Closure $callback): DriverQueryBuilder
+    public function setUnion(Closure $callbackQuery): DriverQueryBuilder
     {
         // TODO: Implement setUnion() method.
         $this->union = [
-            'query' => $callback,
+            'query' => $callbackQuery,
             'type' => 'distinct'
         ];
         return $this;
     }
 
-    public function setUnionAll(Closure $callback): DriverQueryBuilder
+    public function setUnionAll(Closure $callbackQuery): DriverQueryBuilder
     {
         // TODO: Implement setUnionAll() method.
         $this->union = [
-            'query' => $callback,
+            'query' => $callbackQuery,
             'type' => 'duplicate'
         ];
         return $this;

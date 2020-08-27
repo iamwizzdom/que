@@ -103,10 +103,10 @@ class QueryBuilder implements Builder
     /**
      * @inheritDoc
      */
-    public function selectSub(Closure $callback, $as): Builder
+    public function selectSub(Closure $callbackQuery, $as): Builder
     {
         // TODO: Implement selectSub() method.
-        $this->builder->setSelectSub($callback, $as);
+        $this->builder->setSelectSub($callbackQuery, $as);
         return $this;
     }
 
@@ -406,40 +406,40 @@ class QueryBuilder implements Builder
     /**
      * @inheritDoc
      */
-    public function exists(Closure $query): Builder
+    public function exists(Closure $callbackQuery): Builder
     {
         // TODO: Implement exists() method.
-        $this->builder->setExists($query);
+        $this->builder->setExists($callbackQuery);
         return $this;
     }
 
     /**
      * @inheritDoc
      */
-    public function orExists(Closure $query): Builder
+    public function orExists(Closure $callbackQuery): Builder
     {
         // TODO: Implement orExists() method.
-        $this->builder->setOrExists($query);
+        $this->builder->setOrExists($callbackQuery);
         return $this;
     }
 
     /**
      * @inheritDoc
      */
-    public function notExists(Closure $query): Builder
+    public function notExists(Closure $callbackQuery): Builder
     {
         // TODO: Implement notExists() method.
-        $this->builder->setNotExists($query);
+        $this->builder->setNotExists($callbackQuery);
         return $this;
     }
 
     /**
      * @inheritDoc
      */
-    public function orNotExists(Closure $query): Builder
+    public function orNotExists(Closure $callbackQuery): Builder
     {
         // TODO: Implement orNotExists() method.
-        $this->builder->setOrNotExists($query);
+        $this->builder->setOrNotExists($callbackQuery);
         return $this;
     }
 
@@ -457,20 +457,20 @@ class QueryBuilder implements Builder
     /**
      * @inheritDoc
      */
-    public function union(Closure $subQuery): Builder
+    public function union(Closure $callbackQuery): Builder
     {
         // TODO: Implement union() method.
-        $this->builder->setUnion($subQuery);
+        $this->builder->setUnion($callbackQuery);
         return $this;
     }
 
     /**
      * @inheritDoc
      */
-    public function unionAll(Closure $subQuery): Builder
+    public function unionAll(Closure $callbackQuery): Builder
     {
         // TODO: Implement unionAll() method.
-        $this->builder->setUnionAll($subQuery);
+        $this->builder->setUnionAll($callbackQuery);
         return $this;
     }
 

@@ -64,11 +64,11 @@ interface DriverQueryBuilder
     public function setSelect(...$columns): DriverQueryBuilder;
 
     /**
-     * @param Closure $callback
+     * @param Closure $callbackQuery
      * @param $as
      * @return DriverQueryBuilder
      */
-    public function setSelectSub(Closure $callback, $as): DriverQueryBuilder;
+    public function setSelectSub(Closure $callbackQuery, $as): DriverQueryBuilder;
 
     /**
      * @param $query
@@ -295,28 +295,28 @@ interface DriverQueryBuilder
     public function setOrWhereRaw($query, array $bindings = null): DriverQueryBuilder;
 
     /**
-     * @param Closure $callback
+     * @param Closure $callbackQuery
      * @return DriverQueryBuilder
      */
-    public function setExists(Closure $callback): DriverQueryBuilder;
+    public function setExists(Closure $callbackQuery): DriverQueryBuilder;
 
     /**
-     * @param Closure $callback
+     * @param Closure $callbackQuery
      * @return DriverQueryBuilder
      */
-    public function setOrExists(Closure $callback): DriverQueryBuilder;
+    public function setOrExists(Closure $callbackQuery): DriverQueryBuilder;
 
     /**
-     * @param Closure $callback
+     * @param Closure $callbackQuery
      * @return DriverQueryBuilder
      */
-    public function setNotExists(Closure $callback): DriverQueryBuilder;
+    public function setNotExists(Closure $callbackQuery): DriverQueryBuilder;
 
     /**
-     * @param Closure $callback
+     * @param Closure $callbackQuery
      * @return DriverQueryBuilder
      */
-    public function setOrNotExists(Closure $callback): DriverQueryBuilder;
+    public function setOrNotExists(Closure $callbackQuery): DriverQueryBuilder;
 
     /**
      * @param $column
@@ -327,16 +327,16 @@ interface DriverQueryBuilder
     public function setHaving($column, $operator, $value): DriverQueryBuilder;
 
     /**
-     * @param Closure $callback
+     * @param Closure $callbackQuery
      * @return DriverQueryBuilder
      */
-    public function setUnion(Closure $callback): DriverQueryBuilder;
+    public function setUnion(Closure $callbackQuery): DriverQueryBuilder;
 
     /**
-     * @param Closure $callback
+     * @param Closure $callbackQuery
      * @return DriverQueryBuilder
      */
-    public function setUnionAll(Closure $callback): DriverQueryBuilder;
+    public function setUnionAll(Closure $callbackQuery): DriverQueryBuilder;
 
     /**
      * @param $table

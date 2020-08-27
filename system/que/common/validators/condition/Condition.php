@@ -8,6 +8,7 @@
 
 namespace que\common\validator\condition;
 
+use Closure;
 use DateTime;
 use Exception;
 use que\common\validator\interfaces\Condition as ConditionAlias;
@@ -356,33 +357,31 @@ class Condition implements ConditionAlias
     public function isUniqueInDB($table, $column, $ignoreID = null, string $ignoreColumn = 'id'): bool
     {
         // TODO: Implement isUniqueInDB() method.
-        return $this->isNotFoundInDB($table, $column, false, $ignoreID, $ignoreColumn);
+        return $this->isNotFoundInDB($table, $column, null, $ignoreID, $ignoreColumn);
     }
 
     /**
      * @inheritDoc
      */
-    public function isFoundInDB($table, $column, bool $considerIsActive = false,
+    public function isFoundInDB($table, $column, ?Closure $extraQueryCallback = null,
                                 $ignoreID = null, string $ignoreColumn = 'id'): bool
     {
         // TODO: Implement isFoundInDB() method.
-
-        return db()->check(function (Builder $builder) use ($table, $column, $considerIsActive, $ignoreID, $ignoreColumn) {
+        return db()->check(function (Builder $builder) use ($table, $column, $extraQueryCallback, $ignoreID, $ignoreColumn) {
             $builder->table($table)->where($column, $this->getValue());
             if (!empty($ignoreID)) $builder->where($ignoreColumn, $ignoreID, '!=');
-            if ($considerIsActive === true) $builder->where(
-                config('database.table_status_key', 'is_active'), STATE_ACTIVE);
+            if ($extraQueryCallback) $extraQueryCallback($builder);
         })->isSuccessful();
     }
 
     /**
      * @inheritDoc
      */
-    public function isNotFoundInDB($table, $column, bool $considerIsActive = false,
+    public function isNotFoundInDB($table, $column, ?Closure $extraQueryCallback = null,
                                    $ignoreID = null, string $ignoreColumn = 'id'): bool
     {
         // TODO: Implement isNotFoundInDB() method.
-        return !$this->isFoundInDB($table, $column, $considerIsActive, $ignoreID, $ignoreColumn);
+        return !$this->isFoundInDB($table, $column, $extraQueryCallback, $ignoreID, $ignoreColumn);
     }
 
     /**

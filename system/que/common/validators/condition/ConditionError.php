@@ -8,6 +8,7 @@
 
 namespace que\common\validator\condition;
 
+use Closure;
 use DateTime;
 use que\common\validator\Validator;
 
@@ -241,36 +242,36 @@ class ConditionError
     /**
      * @param $table
      * @param $column
-     * @param bool $considerIsActive
+     * @param Closure|null $extraQueryCallback
      * @param null $error
      * @param null $ignoreID
      * @param string $ignoreColumn
      * @return ConditionError
      */
-    public function isFoundInDB($table, $column, bool $considerIsActive = false, $error = null,
+    public function isFoundInDB($table, $column, ?Closure $extraQueryCallback = null, $error = null,
                                 $ignoreID = null, string $ignoreColumn = 'id'): ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
-        if (!$this->condition->isFoundInDB($table, $column, $considerIsActive,
-            $ignoreID, $ignoreColumn)) $this->setError($error);
+        if (!$this->condition->isFoundInDB($table, $column,
+            $extraQueryCallback, $ignoreID, $ignoreColumn)) $this->setError($error);
         return $this;
     }
 
     /**
      * @param $table
      * @param $column
-     * @param bool $considerIsActive
+     * @param Closure|null $extraQueryCallback
      * @param null $error
      * @param null $ignoreID
      * @param string $ignoreColumn
      * @return ConditionError
      */
-    public function isNotFoundInDB($table, $column, bool $considerIsActive = false, $error = null,
+    public function isNotFoundInDB($table, $column, ?Closure $extraQueryCallback = null, $error = null,
                                    $ignoreID = null, string $ignoreColumn = 'id'): ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
-        if (!$this->condition->isNotFoundInDB($table, $column, $considerIsActive,
-            $ignoreID, $ignoreColumn)) $this->setError($error);
+        if (!$this->condition->isNotFoundInDB($table, $column,
+            $extraQueryCallback, $ignoreID, $ignoreColumn)) $this->setError($error);
         return $this;
     }
 

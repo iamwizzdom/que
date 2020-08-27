@@ -43,11 +43,11 @@ interface Builder
     public function select(...$columns): Builder;
 
     /**
-     * @param Closure $callback
+     * @param Closure $callbackQuery
      * @param $as
      * @return Builder
      */
-    public function selectSub(Closure $callback, $as): Builder;
+    public function selectSub(Closure $callbackQuery, $as): Builder;
 
     /**
      * @param $query
@@ -265,28 +265,28 @@ interface Builder
     public function orWhereRaw($query, array $bindings = null): Builder;
 
     /**
-     * @param Closure $query
+     * @param Closure $callbackQuery
      * @return Builder
      */
-    public function exists(Closure $query): Builder;
+    public function exists(Closure $callbackQuery): Builder;
 
     /**
-     * @param Closure $query
+     * @param Closure $callbackQuery
      * @return Builder
      */
-    public function orExists(Closure $query): Builder;
+    public function orExists(Closure $callbackQuery): Builder;
 
     /**
-     * @param Closure $query
+     * @param Closure $callbackQuery
      * @return Builder
      */
-    public function notExists(Closure $query): Builder;
+    public function notExists(Closure $callbackQuery): Builder;
 
     /**
-     * @param Closure $query
+     * @param Closure $callbackQuery
      * @return Builder
      */
-    public function orNotExists(Closure $query): Builder;
+    public function orNotExists(Closure $callbackQuery): Builder;
 
     /**
      * @param $column
@@ -297,16 +297,16 @@ interface Builder
     public function having($column, $operator, $value): Builder;
 
     /**
-     * @param Closure $subQuery
+     * @param Closure $callbackQuery
      * @return Builder
      */
-    public function union(Closure $subQuery): Builder;
+    public function union(Closure $callbackQuery): Builder;
 
     /**
-     * @param Closure $subQuery
+     * @param Closure $callbackQuery
      * @return Builder
      */
-    public function unionAll(Closure $subQuery): Builder;
+    public function unionAll(Closure $callbackQuery): Builder;
 
     /**
      * @param $table

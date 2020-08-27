@@ -199,14 +199,10 @@ class Request implements QueArrayAccess
     private function getSupportedMethods()
     {
         if (!empty($this->supportedMethods)) return $this->supportedMethods;
-        try {
-            $const = (new ReflectionClass(self::class))->getConstants();
-            return $this->supportedMethods = array_filter($const, function ($key) {
-                return str_starts_with($key, "METHOD");
-            }, ARRAY_FILTER_USE_KEY);
-        } catch (Exception $exception) {
-            return ["GET"];
-        }
+        $const = (new ReflectionClass(self::class))->getConstants();
+        return $this->supportedMethods = array_filter($const, function ($key) {
+            return str_starts_with($key, "METHOD");
+        }, ARRAY_FILTER_USE_KEY);
     }
 
     /**
