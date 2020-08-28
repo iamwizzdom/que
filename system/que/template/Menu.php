@@ -22,7 +22,7 @@ class Menu
     /**
      * @var bool
      */
-    private $checkPermission = false;
+    private $checkPermission;
 
     /**
      * Menu constructor.
