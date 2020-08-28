@@ -88,7 +88,7 @@ interface Model extends QueArrayAccess
      * @param $key
      * @return Condition
      */
-    public function get($key): Condition;
+    public function validate($key): Condition;
 
     /**
      * @return Model|null

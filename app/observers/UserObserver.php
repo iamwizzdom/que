@@ -130,7 +130,7 @@ class UserObserver implements Observer
     {
         // TODO: Implement onDeleting() method.
         $models->unsetWhen(function (Model $model) {
-            return $model->get('id')->isEqualToAny([106, 109]);
+            return $model->validate('id')->isEqualToAny([106, 109]);
         });
         debug_print([$models,'onDeleting']);
     }

@@ -160,7 +160,7 @@ class Model implements ModelAlias
     /**
      * @inheritDoc
      */
-    public function get($key): Condition
+    public function validate($key): Condition
     {
         // TODO: Implement get() method.
         if (!$this->offsetExists($key))

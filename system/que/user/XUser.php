@@ -125,7 +125,7 @@ class XUser implements ArrayAccess
                 "User Error", E_USER_ERROR, 0, PreviousException::getInstance());
 
         return User::isLoggedIn() && User::getInstance()->getModel()
-                ->get($primaryKey)->is($this->getValue($primaryKey));
+                ->validate($primaryKey)->is($this->getValue($primaryKey));
     }
 
     /**
