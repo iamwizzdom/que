@@ -61,6 +61,12 @@ class RouteCompiler
 
             $foundRoutes = $routeInspector->getFoundRoutes();
 
+            $exactRoute = array_filter($foundRoutes, function ($found) {
+                return $found['percentage'] == 100;
+            });
+
+            if (!empty($exactRoute)) $foundRoutes = $exactRoute;
+
             foreach ($foundRoutes as $foundRoute) {
 
                 if (!array_key_exists('error', $foundRoute)) continue;
@@ -79,11 +85,17 @@ class RouteCompiler
 
                         foreach ($args as $arg) {
                             $key = array_search('{' . $arg . '}', $routeEntry->uriTokens);
-                            if (array_key_exists($key, $uriTokens))
+
+                            if ($key !== false && array_key_exists($key, $uriTokens)) {
                                 $uriTokens[$key] = $routeEntry->uriTokens[$key];
+                            } elseif ($key !== false && str_starts_with($arg, "?")) {
+                                unset($routeEntry->uriTokens[$key]);
+                                continue;
+                            }
                         }
 
                         if (implode('--', $uriTokens) != implode('--', $routeEntry->uriTokens)) $routeEntry = null;
+                        else $routeEntry->uriTokens = !empty($routeEntry->originalUriTokens) ? $routeEntry->originalUriTokens : $routeEntry->uriTokens;
                     }
 
                 } else {
@@ -308,9 +320,9 @@ class RouteCompiler
 
         $tokens = []; $args = [];
 
-        if (preg_match_all("/\{(.*?)\}/", $uri, $matches)) {
+        if (preg_match_all("/{(.*?)}/", $uri, $matches)) {
             $args = array_map(function ($m) {
-                return '{' . trim($m, '?') . '}';
+                return '{' . trim($m) . '}';
             }, $matches[1]);
         }
 
@@ -327,13 +339,13 @@ class RouteCompiler
         if (str_contains($uri, "?"))
             $uri = substr($uri, 0, strpos($uri, "?"));
 
-        $uri_arr = array_filter(array_map('str_strip_excess_whitespace',
+        $uri_arr = array_filter(array_map('str_strip_spaces',
             explode("/", $uri)), function ($value) {
             return !empty($value);
         });
 
         foreach ($uri_arr as $token) {
-            if ($token != " " || $token == "0" || !empty($token)) {
+            if (!empty($token) || $token == "0") {
                 $tokens[] = $args[$token] ?? $token;
             }
         }

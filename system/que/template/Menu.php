@@ -51,7 +51,7 @@ class Menu
                 if (!is_array($menu)) continue;
 
                 if (!isset($menu['title']) || !isset($menu['href'])) {
-                    @$this->filter($menu);
+                    $this->filter($menu);
                     continue;
                 }
 
@@ -68,7 +68,7 @@ class Menu
                 $children = [];
 
                 if (isset($menu['__']))
-                    $children = @$this->filter($menu['__']);
+                    $children = $this->filter($menu['__']);
 
                 if ($this->checkPermission) {
                     $entry = $this->getRouteEntry($menu['href']);
@@ -115,7 +115,7 @@ class Menu
      * @return string|string[]|null
      */
     private function replaceArgs(string $href) {
-        return preg_replace("/\{(.*?)\}/", "-", $href);
+        return preg_replace("/{(.*?)}/", "-", $href);
     }
 
     /**

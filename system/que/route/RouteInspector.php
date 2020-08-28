@@ -93,12 +93,15 @@ class RouteInspector
     public function inspect()
     {
 
+        $this->routeEntry->originalUriTokens = $this->routeEntry->uriTokens;
         $percentage = self::routeMatchPercentage($this->routeEntry, $this->uriTokens,
             ($routeArgs = self::getRouteArgs($this->routeEntry->getUri())));
 
         if ($percentage < 50) return;
 
-        if (($uriTokenSize = array_size($this->uriTokens)) > ($routeUriTokenSize = array_size($this->routeEntry->uriTokens))) {
+        $routeUriTokenSize = array_size($this->routeEntry->uriTokens);
+
+        if (($uriTokenSize = array_size($this->uriTokens)) > $routeUriTokenSize) {
 
             $this->foundRoutes[] = [
                 'args' => [],
@@ -111,6 +114,7 @@ class RouteInspector
         }
 
         if ($uriTokenSize < $routeUriTokenSize) {
+
             $this->foundRoutes[] = [
                 'args' => [],
                 'routeEntry' => $this->routeEntry,
@@ -144,8 +148,9 @@ class RouteInspector
                     $routeArgList = explode(":", $routeArg, 2);
 
                 $key = array_search('{' . $routeArg . '}', $this->routeEntry->uriTokens);
+                $nullable = str_starts_with($routeArg, '?');
 
-                if (!isset($this->uriTokens[$key])) {
+                if ($key !== false && (!isset($this->uriTokens[$key]) && !$nullable)) {
                     $this->foundRoutes[] = [
                         'args' => [],
                         'routeEntry' => $this->routeEntry,
@@ -156,11 +161,11 @@ class RouteInspector
                     return;
                 }
 
-                $uriArgValue = $this->uriTokens[$key];
+                $uriArgValue = $key !== false ? ($this->uriTokens[$key] ?? null) : null;
 
                 if (isset($routeArgList[1]) && strcmp($routeArgList[1], "any") != 0) {
                     try {
-                        $this->validateArgDataType($routeArgList[1], $uriArgValue);
+                        $this->validateArgDataType($routeArgList[1], $uriArgValue, $nullable);
                     } catch (RouteException $e) {
                         $this->foundRoutes[] = [
                             'args' => [],
@@ -173,7 +178,7 @@ class RouteInspector
                     }
                 }
 
-                $foundArgs[$routeArgList[0]] = $uriArgValue;
+                $foundArgs[trim($routeArgList[0], '?')] = $uriArgValue;
             }
         }
 
@@ -201,8 +206,13 @@ class RouteInspector
 
         foreach ($routeArgs as $arg) {
             $key = array_search('{' . $arg . '}', $entry->uriTokens);
-            if (array_key_exists($key, $uriTokens))
+
+            if ($key !== false && array_key_exists($key, $uriTokens)) {
                 $uriTokens[$key] = $entry->uriTokens[$key];
+            } elseif ($key !== false && str_starts_with($arg, "?")) {
+                unset($entry->uriTokens[$key]);
+                continue;
+            }
         }
 
         $match = 0;
@@ -223,28 +233,29 @@ class RouteInspector
      */
     public static function getRouteArgs(string $uri)
     {
-        if (preg_match_all("/\{(.*?)\}/", $uri, $matches)) {
+        if (preg_match_all("/{(.*?)}/", $uri, $matches)) {
             return array_map(function ($m) {
-                return trim($m, '?');
+                return trim($m);
             }, $matches[1]);
         }
         return [];
     }
 
     /**
-     * @param $regex
+     * @param string $regex
      * @param $value
+     * @param bool $nullable
      * @throws RouteException
      */
-    public static function validateArgDataType(string $regex, $value) {
+    public static function validateArgDataType(string $regex, $value, bool $nullable = false) {
 
         $expect = null;
 
         if (strcmp($regex, "uuid") == 0) {
 
-            if (UUID::is_valid($value)) return;
+            if (($nullable && is_null($value)) || UUID::is_valid($value)) return;
 
-            $value = str_ellipsis($value ?? '', 40);
+            $value = str_ellipsis($value ?: '', 40);
             throw new RouteException(
                 "Invalid data type found in route argument [arg: {$value}, expects: UUID]",
                 "Route Error", HTTP::EXPECTATION_FAILED
@@ -258,7 +269,7 @@ class RouteInspector
             $expect = "alphabet";
         }
 
-        if (!preg_match($regex, $value)) {
+        if (!($nullable && is_null($value)) && !preg_match($regex, $value)) {
             $value = str_ellipsis($value ?? '', 40);
             $expect = $expect ?: "regex {$regex}";
             throw new RouteException(

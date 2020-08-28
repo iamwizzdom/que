@@ -16,6 +16,11 @@ class RouteEntry
     /**
      * @var array
      */
+    public array $originalUriTokens = [];
+
+    /**
+     * @var array
+     */
     private array $allowedMethods = [];
 
     /**
@@ -31,7 +36,7 @@ class RouteEntry
     /**
      * @var string
      */
-    private ?string $uri = null;
+    private ?string $uri = "";
 
     /**
      * @var string

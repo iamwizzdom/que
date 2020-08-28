@@ -433,8 +433,12 @@ final class Route extends RouteCompiler
             if (!$routeEntry instanceof RouteEntry) continue;
             if (!is_null($type) && strcmp($routeEntry->getType(), $type) != 0) continue;
             if (strcmp(implode('/', $uriTokens), implode('/', $routeEntry->uriTokens)) == 0) return $routeEntry;
-            elseif (empty(($routeEntry = self::getRouteEntryFromUriWithArgs($routeEntry, $uriTokens)))) continue;
-            return $routeEntry;
+            elseif (empty(($route = self::getRouteEntryFromUriWithArgs($routeEntry, $uriTokens)))) {
+                $routeEntry->uriTokens = !empty($routeEntry->originalUriTokens) ? $routeEntry->originalUriTokens : $routeEntry->uriTokens;
+                continue;
+            }
+            $routeEntry->uriTokens = !empty($routeEntry->originalUriTokens) ? $routeEntry->originalUriTokens : $routeEntry->uriTokens;
+            return $route ?: $routeEntry;
         }
 
         return null;
@@ -451,6 +455,8 @@ final class Route extends RouteCompiler
 
         $matches = 0;
 
+        $routeEntry->originalUriTokens = $routeEntry->uriTokens;
+
         foreach ($routeArgs as $routeArg) {
 
             if (str_contains($routeArg, ":")) {
@@ -458,31 +464,52 @@ final class Route extends RouteCompiler
                 $routeArgList = explode(":", $routeArg, 2);
 
                 $key = array_search('{' . $routeArg . '}', $routeEntry->uriTokens);
+                $nullable = str_starts_with($routeArg, '?');
 
-                if (!isset($uriTokens[$key]) || !isset($routeArgList[1])) break;
+                if (($key !== false && (!isset($uriTokens[$key]) && !$nullable)) || !isset($routeArgList[1])) break;
 
-                if (strcmp($routeArgList[1], "any") != 0) {
+                if (isset($routeArgList[1]) && strcmp($routeArgList[1], "any") != 0) {
 
-                    $uriArgValue = $uriTokens[$key];
+                    $uriArgValue = $key ? ($uriTokens[$key] ?? null) : null;
 
                     try {
-                        RouteInspector::validateArgDataType($routeArgList[1], $uriArgValue);
-                        $uriTokens[$key] = '--';
-                        $matches++;
+                        RouteInspector::validateArgDataType($routeArgList[1], $uriArgValue, $nullable);
+
+                        if ($key && array_key_exists($key, $uriTokens)) {
+                            $uriTokens[$key] = "--";
+                            $matches++;
+                        } elseif ($key && $nullable) {
+                            unset($routeEntry->uriTokens[$key]);
+                            $matches++;
+                            continue;
+                        }
+
                     } catch (RouteException $e) {
                         break;
                     }
 
                 } else {
-                    $uriTokens[$key] = '--';
-                    $matches++;
+                    if ($key !== false && array_key_exists($key, $uriTokens)) {
+                        $uriTokens[$key] = "--";
+                        $matches++;
+                    } elseif ($key && $nullable) {
+                        unset($routeEntry->uriTokens[$key]);
+                        $matches++;
+                        continue;
+                    }
                 }
 
             } else {
                 $key = array_search('{' . $routeArg . '}', $routeEntry->uriTokens);
-                if (!isset($uriTokens[$key])) {
-                    $uriTokens[$key] = '--';
-                    $matches++;
+                if ($key !== false && (isset($uriTokens[$key]) && !str_starts_with($routeArg, '?'))) {
+                    if ($key && array_key_exists($key, $uriTokens)) {
+                        $uriTokens[$key] = "--";
+                        $matches++;
+                    } elseif ($key !== false && str_starts_with($routeArg, '?')) {
+                        unset($routeEntry->uriTokens[$key]);
+                        $matches++;
+                        continue;
+                    }
                 }
             }
 
