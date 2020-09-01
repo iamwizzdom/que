@@ -16,11 +16,6 @@ class RouteEntry
     /**
      * @var array
      */
-    public array $originalUriTokens = [];
-
-    /**
-     * @var array
-     */
     private array $allowedMethods = [];
 
     /**
@@ -49,6 +44,11 @@ class RouteEntry
     private ?string $description = null;
 
     /**
+     * @var string|null
+     */
+    private ?string $contentType = null;
+
+    /**
      * @var string
      */
     private ?string $module = null;
@@ -66,7 +66,7 @@ class RouteEntry
     /**
      * @var bool
      */
-    private bool $forbidCSRF = false;
+    private bool $forbidCSRF;
 
     /**
      * @var bool
@@ -132,6 +132,41 @@ class RouteEntry
     public function setUri(string $uri)
     {
         $this->uri = $uri == "/" ? $uri : trim($uri, '/');
+        $this->uriTokens = Router::tokenizeUri($uri);
+    }
+
+    /**
+     * @param string $argName
+     * @param string $expression
+     * @param bool $nullable
+     * @return $this
+     */
+    public function where(string $argName, ?string $expression, bool $nullable = null) {
+        foreach ($this->uriTokens as $key => $arg) {
+            if (preg_match("/{(.*?)}/", $arg) == 1) {
+
+                $decipheredArg = Router::decipherArg($arg);
+
+                if ($decipheredArg['arg'] == $argName) {
+
+                    if ($decipheredArg['nullable'] && $nullable === null) $nullable = true;
+
+                    $this->uriTokens[$key] = ($nullable === true ? '?' : '') . $argName . (!empty($expression) ? ":{$expression}" : '');
+                    $this->uriTokens[$key] = "{" . $this->uriTokens[$key] . "}";
+                }
+
+            }
+        }
+        $this->uri = implode('/', $this->uriTokens);
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getUriTokens(): array
+    {
+        return $this->uriTokens;
     }
 
     /**
@@ -164,6 +199,30 @@ class RouteEntry
     public function setDescription(string $description): void
     {
         $this->description = $description;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getContentType(): ?string
+    {
+        return $this->contentType ?: mime_type_from_extension('html');
+    }
+
+    /**
+     * @param string|null $contentType
+     */
+    public function setContentType(string $contentType): void
+    {
+        $this->contentType = $contentType;
+    }
+
+    /**
+     * @param string $extension
+     */
+    public function setContentTypeByExtension(string $extension): void
+    {
+        $this->contentType = mime_type_from_extension($extension);
     }
 
     /**

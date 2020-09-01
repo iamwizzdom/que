@@ -136,6 +136,7 @@ class RouteRegistrar
                     throw new RouteException("All elements in route group list must be callable", "Route Error");
 
                 $entry = new RouteEntry();
+                $entry->setContentTypeByExtension('html');
 
                 call_user_func($callback, $entry);
 
@@ -191,6 +192,7 @@ class RouteRegistrar
                     throw new RouteException("All elements in route group list must be callable", "Route Error");
 
                 $entry = new RouteEntry();
+                $entry->setContentTypeByExtension('json');
 
                 call_user_func($callback, $entry);
 
@@ -284,6 +286,7 @@ class RouteRegistrar
     public function web(Closure $callback): RouteRegistrar {
 
         $entry = new RouteEntry();
+        $entry->setContentTypeByExtension('html');
 
         call_user_func($callback, $entry);
 
@@ -308,6 +311,7 @@ class RouteRegistrar
     public function api(Closure $callback): RouteRegistrar {
 
         $entry = new RouteEntry();
+        $entry->setContentTypeByExtension('json');
 
         call_user_func($callback, $entry);
 

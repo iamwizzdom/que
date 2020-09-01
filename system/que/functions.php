@@ -3,6 +3,7 @@
 use que\common\exception\PreviousException;
 use que\common\exception\QueException;
 use que\common\exception\QueRuntimeException;
+use que\common\exception\RouteException;
 use que\common\time\Time;
 use que\common\validator\Track;
 use que\database\DB;
@@ -130,11 +131,13 @@ function str_contains_any(string $haystack, array $needles, bool $case_insensiti
  * @param string $haystack
  * starting from the first occurrence of
  * @param string $needle
+ * @param int $extra | This defines a number of extra strings
+ * to allow from the the first occurrence of $needle
  * @return bool|string
  */
-function str_start_from(string $haystack, string $needle) {
+function str_start_from(string $haystack, string $needle, int $extra = 0) {
     if (($pos = strpos($haystack, $needle)) === false) return $haystack;
-    return substr($haystack, $pos = ($pos + strlen($needle)), (strlen($haystack) - $pos));
+    return substr($haystack, $pos = ($pos + strlen($needle)), ((strlen($haystack) - $pos) + $extra));
 }
 
 /**
@@ -142,11 +145,13 @@ function str_start_from(string $haystack, string $needle) {
  * @param string $haystack
  * ending at the first occurrence of
  * @param string $needle
+ * @param int $extra | This defines a number of extra strings
+ * to subtract from the the first occurrence of $needle
  * @return bool|string
  */
-function str_end_at(string $haystack, string $needle) {
+function str_end_at(string $haystack, string $needle, int $extra = 0) {
     if (($pos = strpos($haystack, $needle)) === false) return $haystack;
-    return substr($haystack, 0, ($pos + strlen($needle)));
+    return substr($haystack, 0, (($pos + strlen($needle)) - $extra));
 }
 
 /**
@@ -1125,13 +1130,53 @@ function array_to_object(array $array): object {
 /**
  * @param $value
  * @param int $range
- * @return array
+ * Specifies number of elements needed
+ *
+ * @return array This will an array the given value.
+ * This is done so that you can multiple a value.
  */
 function array_multi($value, int $range) {
     $list = [];
     for ($i = 0; $i < $range; $i++)
         $list[] = $value;
     return $list;
+}
+
+/**
+ * This is a modified alias of the native PHP array_rand function @see array_rand()
+ * Only modified to give back random values rather than keys
+ *
+ * @link https://php.net/manual/en/function.array-rand.php
+ *
+ * Pick one or more random entries out of an array
+ * @param array $input
+ * The input array.
+ *
+ * @param int $num_req [optional] <p>
+ * Specifies how many entries you want to pick.
+ *
+ * @return mixed|array If you do not specify number of entries to pick, array_random will
+ * shuffle and return the initial array. However, If you are picking only one entry, array_random
+ * returns the value for a random entry. Otherwise, it returns an array
+ * of values for the random entries. This is done so that you can pick
+ * random a value or values out of an array.
+ *
+ */
+function array_random($input, int $num_req = null) {
+
+    if ($num_req === null) return fisher_yates_shuffle($input);
+
+    $keys = array_keys($input); $size = count($keys);
+
+    if ($num_req == 1) return $input[$keys[mt_rand(0, ($size - 1))]];
+
+    $elements = [];
+
+    for ($i = 0; $i < $num_req; $i++) {
+        $elements[] = $input[$keys[mt_rand(0, ($size - 1))]];
+    }
+
+    return $elements;
 }
 
 /**
@@ -2458,33 +2503,37 @@ function current_url(): string
 /**
  * This function would return the base url of a route
  * based on its name and args
+ *
  * @param string $name
  * @param array $args
  * @return string
+ * @throws RouteException
  */
 function route_uri(string $name, array $args = []) {
     try {
         return \route($name, $args, false);
     } catch (Exception $e) {
-        throw new QueRuntimeException($e->getMessage(), method_exists($e, 'getTitle') ? $e->getTitle() : 'Route Error',
-            E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+        throw new RouteException($e->getMessage(), method_exists($e, 'getTitle') ? $e->getTitle() : 'Route Error',
+            HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
     }
 }
 
 /**
  * This function would return the base url of a route
  * based on its name and args
+ *
  * @param string $name
  * @param array $args
  * @param bool $addBaseUrl
  * @return string
+ * @throws RouteException
  */
 function route(string $name, array $args = [], bool $addBaseUrl = true) {
     try {
         return Route::getRouteUrl($name, $args, $addBaseUrl);
     } catch (Exception $e) {
-        throw new QueRuntimeException($e->getMessage(), method_exists($e, 'getTitle') ? $e->getTitle() : 'Route Error',
-            E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+        throw new RouteException($e->getMessage(), method_exists($e, 'getTitle') ? $e->getTitle() : 'Route Error',
+            HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
     }
 }
 

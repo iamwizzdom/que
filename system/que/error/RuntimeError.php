@@ -113,7 +113,7 @@ abstract class RuntimeError
 
             $composer = composer();
 
-            $error['message'] = trim($error['message']);
+            $error['message'] = nl2br(trim($error['message']));
             $tmpPath = LIVE ? (APP_PATH . "/template") : (QUE_PATH . "/error/tmp");
             $tmpFIle = LIVE ? config('template.error_tmp_path') : "error.tpl";
             $isFile = is_file("{$tmpPath}/{$tmpFIle}");
@@ -122,7 +122,6 @@ abstract class RuntimeError
             $composer->data($error);
             beginning:
             try {
-
                 $composer->prepare()->renderWithSmarty();
             } catch (QueRuntimeException $e) {
                 $composer->resetTmpDir((QUE_PATH . "/error/tmp"));

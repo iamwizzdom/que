@@ -1,0 +1,189 @@
+<?php
+
+
+namespace que\route;
+
+
+use que\common\exception\PreviousException;
+use que\common\exception\RouteException;
+use que\http\HTTP;
+use que\support\Arr;
+
+abstract class Router extends RouteInspector
+{
+    use RouteCompiler;
+
+    /**
+     * @return RouteEntry|null
+     */
+    public static function getCurrentRoute() {
+        return http()->_server()->get('route.entry');
+    }
+
+
+    /**
+     * @param string $routeName
+     * @param array $args
+     * @param bool $addBaseUrl
+     * @return string
+     * @throws RouteException
+     */
+    public static function getRouteUrl(string $routeName, array $args = [], bool $addBaseUrl = true): string
+    {
+        $routeEntry = self::getRouteEntryFromName($routeName);
+        if (!$routeEntry instanceof RouteEntry) throw new RouteException("Route [{$routeName}] not found", "Route Error",
+           HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+        if ($routeEntry->isRequireLogIn() === true && !is_logged_in()) return '#';
+        if ($routeEntry->isRequireLogIn() === false && is_logged_in()) return '#';
+
+        $uri = $routeEntry->getUri();
+
+        if (self::routeHasArgs($routeEntry)) {
+
+            $routeArgs = self::getRouteArgs($routeEntry);
+
+            $tokens = $routeEntry->getUriTokens();
+
+            foreach ($routeArgs as $argKey => $arg) {
+
+                $decipheredArg = self::decipherArg("{" . $arg . "}");
+
+                if (empty($decipheredArg)) continue;
+
+                if (!Arr::exists($args, $decipheredArg['arg'])) throw new RouteException(
+                    "Missing required parameter for [URI: {$uri}] [Param: {$decipheredArg['arg']}] [Route: {$routeEntry->getName()}]", "Route Error");
+
+                $key = array_search("{" . $arg . "}", $tokens);
+
+                if (!empty($decipheredArg['expression'])) {
+
+                    try {
+                        self::validateArgDataType($decipheredArg['expression'], $args[$decipheredArg['arg']], $key, $decipheredArg['nullable']);
+                    } catch (RouteException $e) {
+                        throw new RouteException(
+                            "{$e->getMessage()} \n[URI: {$uri}] [Param: {$decipheredArg['arg']}, '{$args[$decipheredArg['arg']]}'] [Route: {$routeEntry->getName()}]", $e->getTitle());
+                    }
+
+                    $tokens[$key] = $args[$decipheredArg['arg']];
+
+                } else $tokens[$key] = $args[$decipheredArg['arg']];
+            }
+
+            $uri = implode('/', $tokens);
+        }
+
+        return $addBaseUrl ? base_url($uri) : $uri;
+    }
+
+    /**
+     * @param string $name
+     * @return RouteEntry|null
+     */
+    public static function getRouteEntryFromName(string $name): ?RouteEntry
+    {
+        $routeEntries = self::getRouteEntries();
+        foreach ($routeEntries as $routeEntry) {
+            if (strcmp($routeEntry->getName(), $name) == 0) return $routeEntry;
+        }
+        return null;
+    }
+
+    /**
+     * @param string $uri
+     * @param string|null $type
+     * @return RouteEntry|null
+     * @throws RouteException
+     */
+    public static function getRouteEntryFromUri(string $uri, string $type = null): ?RouteEntry {
+        if (str_contains($uri, $base = base_url())) $uri = trim(str_start_from($uri, $base), '/');
+        $route = self::resolveRoute($uri, $type);
+        if (!empty($route)) $route['route'];
+        return null;
+    }
+
+    /**
+     * Here we resolve the route registered for the current uri if any
+     *
+     * @param string $uri
+     * @param string|null $type
+     * @return array|null
+     * @throws RouteException
+     */
+    protected static function resolveRoute(string $uri, string $type = null) {
+
+        self::compile(); // Compile registered routes
+        $routeEntries = self::getRouteEntries();
+        $uriTokens = self::tokenizeUri($uri);
+
+        foreach ($routeEntries as $routeEntry) {
+
+            if ($type !== null && strcmp($type, $routeEntry->getType()) != 0) continue;
+
+            if (self::matchTokens($uriTokens, $routeEntry->getUriTokens()))
+                return ['route' => $routeEntry, 'args' => []];
+
+            if (!self::routeHasArgs($routeEntry)) continue;
+
+            // The uri wasn't exact at this level, there might be some arguments in the uri, lets see.
+            $routeArgs = self::getRouteArgs($routeEntry);
+
+            $failures = []; $args = [];
+
+            $tokens = $routeEntry->getUriTokens();
+
+            foreach ($routeArgs as $argKey => $arg) {
+
+                $decipheredArg = self::decipherArg("{" . $arg . "}");
+
+                if (empty($decipheredArg)) continue;
+
+                $key = array_search("{" . $arg . "}", $tokens);
+
+                if (!empty($decipheredArg['expression'])) {
+                    try {
+                        self::validateArgDataType($decipheredArg['expression'], $key !== false ? ($uriTokens[$key] ?? null) : null, $key, $decipheredArg['nullable']);
+                    } catch (RouteException $e) {
+                        $failures[$key] = $e->getMessage();
+                    }
+                }
+
+                $args[$decipheredArg['arg']] = ($key !== false ? ($uriTokens[$key] ?? null) : null);
+                $tokens[$key] = $args[$decipheredArg['arg']] ?: '--';
+                $uriTokens[$key] = $tokens[$key];
+            }
+
+
+            if (self::matchTokens($tokens, Arr::extract($uriTokens, 0, (($size1 = Arr::size($tokens)) - 1)))) {
+
+                if (!empty($failures)) {
+
+                    if ($size1 == ($size2 = Arr::size($uriTokens)))
+                        throw new RouteException(implode(",\n ", $failures), "Route Error", HTTP::UNAUTHORIZED);
+
+                    throw new RouteException("You are passing more arguments than required by the current route",
+                        "Route Error", HTTP::UNAUTHORIZED);
+                }
+
+                return ['route' => $routeEntry, 'args' => $args];
+            }
+
+            foreach ($uriTokens as $key => $uri) if ($uri === '--') unset($uriTokens[$key]);
+        }
+        return null;
+    }
+
+    /**
+     * @param RouteEntry $routeEntry
+     */
+    private static function setCurrentRoute(RouteEntry $routeEntry)
+    {
+        http()->_server()->set('route.entry', $routeEntry);
+    }
+
+    /**
+     * @param array $uriArgs
+     */
+    protected static function setRouteParams(array $uriArgs) {
+        http()->_server()->set("route.params", $uriArgs);
+    }
+}

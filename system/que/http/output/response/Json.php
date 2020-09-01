@@ -11,6 +11,8 @@ namespace que\http\output\response;
 
 class Json
 {
+    const DEFAULT_OPTION = 0;
+    const DEFAULT_DEPTH = 512;
 
     /**
      * @var array
@@ -27,12 +29,12 @@ class Json
     /**
      * @var int
      */
-    private $option = 0;
+    private int $option = self::DEFAULT_OPTION;
 
     /**
      * @var int
      */
-    private $depth = 512;
+    private int $depth = self::DEFAULT_DEPTH;
 
     /**
      * Json constructor.
@@ -106,6 +108,16 @@ class Json
      * @return false|string
      */
     public function getJson() {
-        return json_encode($this->data, $this->option, $this->depth);
+        return self::encode($this->data, $this->option, $this->depth);
+    }
+
+    /**
+     * @param $data
+     * @param int $option
+     * @param int $depth
+     * @return false|string
+     */
+    public static function encode($data, int $option = self::DEFAULT_OPTION, int $depth = self::DEFAULT_DEPTH) {
+        return json_encode($data, $option, $depth);
     }
 }
