@@ -231,23 +231,23 @@ interface Condition
     /**
      * @param $table
      * @param $column
-     * @param Closure|null $extraQueryCallback
+     * @param Closure|null $extraQuery
      * @param null $ignoreID
      * @param string $ignoreColumn
      * @return bool
      */
-    public function isFoundInDB($table, $column, ?Closure $extraQueryCallback = null,
+    public function isFoundInDB($table, $column, ?Closure $extraQuery = null,
                                 $ignoreID = null, string $ignoreColumn = 'id'): bool;
 
     /**
      * @param $table
      * @param $column
-     * @param Closure $extraQueryCallback
+     * @param Closure $extraQuery
      * @param null $ignoreID
      * @param string $ignoreColumn
      * @return bool
      */
-    public function isNotFoundInDB($table, $column, ?Closure $extraQueryCallback = null,
+    public function isNotFoundInDB($table, $column, ?Closure $extraQuery = null,
                                    $ignoreID = null, string $ignoreColumn = 'id'): bool;
 
     /**

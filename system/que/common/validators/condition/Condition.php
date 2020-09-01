@@ -363,25 +363,25 @@ class Condition implements ConditionAlias
     /**
      * @inheritDoc
      */
-    public function isFoundInDB($table, $column, ?Closure $extraQueryCallback = null,
+    public function isFoundInDB($table, $column, ?Closure $extraQuery = null,
                                 $ignoreID = null, string $ignoreColumn = 'id'): bool
     {
         // TODO: Implement isFoundInDB() method.
-        return db()->check($table, function (Builder $builder) use ($table, $column, $extraQueryCallback, $ignoreID, $ignoreColumn) {
+        return db()->check($table, function (Builder $builder) use ($table, $column, $extraQuery, $ignoreID, $ignoreColumn) {
             $builder->where($column, $this->getValue());
             if (!empty($ignoreID)) $builder->where($ignoreColumn, $ignoreID, '!=');
-            if ($extraQueryCallback) $extraQueryCallback($builder);
+            if (is_callable($extraQuery)) $extraQuery($builder);
         })->isSuccessful();
     }
 
     /**
      * @inheritDoc
      */
-    public function isNotFoundInDB($table, $column, ?Closure $extraQueryCallback = null,
+    public function isNotFoundInDB($table, $column, ?Closure $extraQuery = null,
                                    $ignoreID = null, string $ignoreColumn = 'id'): bool
     {
         // TODO: Implement isNotFoundInDB() method.
-        return !$this->isFoundInDB($table, $column, $extraQueryCallback, $ignoreID, $ignoreColumn);
+        return !$this->isFoundInDB($table, $column, $extraQuery, $ignoreID, $ignoreColumn);
     }
 
     /**

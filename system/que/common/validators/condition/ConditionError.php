@@ -237,41 +237,42 @@ class ConditionError
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->isUniqueInDB($table, $column, $ignoreID, $ignoreColumn)) $this->setError($error);
         return $this;
+
     }
 
     /**
      * @param $table
      * @param $column
-     * @param Closure|null $extraQueryCallback
      * @param null $error
+     * @param Closure|null $extraQuery
      * @param null $ignoreID
      * @param string $ignoreColumn
-     * @return ConditionError
+     * @return $this
      */
-    public function isFoundInDB($table, $column, ?Closure $extraQueryCallback = null, $error = null,
+    public function isFoundInDB($table, $column, $error = null, ?Closure $extraQuery = null,
                                 $ignoreID = null, string $ignoreColumn = 'id'): ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->isFoundInDB($table, $column,
-            $extraQueryCallback, $ignoreID, $ignoreColumn)) $this->setError($error);
+            $extraQuery, $ignoreID, $ignoreColumn)) $this->setError($error);
         return $this;
     }
 
     /**
      * @param $table
      * @param $column
-     * @param Closure|null $extraQueryCallback
      * @param null $error
+     * @param Closure|null $extraQuery
      * @param null $ignoreID
      * @param string $ignoreColumn
-     * @return ConditionError
+     * @return $this
      */
-    public function isNotFoundInDB($table, $column, ?Closure $extraQueryCallback = null, $error = null,
+    public function isNotFoundInDB($table, $column, $error = null, ?Closure $extraQuery = null,
                                    $ignoreID = null, string $ignoreColumn = 'id'): ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->isNotFoundInDB($table, $column,
-            $extraQueryCallback, $ignoreID, $ignoreColumn)) $this->setError($error);
+            $extraQuery, $ignoreID, $ignoreColumn)) $this->setError($error);
         return $this;
     }
 
