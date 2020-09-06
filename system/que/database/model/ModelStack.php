@@ -212,9 +212,37 @@ class ModelStack implements QueArrayAccess
         $count = 0;
         foreach ($this->models as $model) {
             if (!$model instanceof Model) continue;
-            $model->refresh();
-            $count++;
+            if ($model->refresh()) $count++;
+        }
+        return $count > 0;
+    }
 
+    /**
+     * @param array $columns
+     * @param string|null $primaryKey
+     * @return bool
+     */
+    public function update(array $columns, string $primaryKey = null) {
+        $count = 0;
+        foreach ($this->models as $model) {
+            if (!$model instanceof Model) continue;
+            if ($model->update($columns, $primaryKey)) $count++;
+        }
+        return $count > 0;
+    }
+
+    /**
+     * @param string|null $primaryKey
+     * @return bool
+     */
+    public function delete(string $primaryKey = null) {
+        $count = 0;
+        foreach ($this->models as $key => $model) {
+            if (!$model instanceof Model) continue;
+            if ($model->delete($primaryKey)) {
+                if (!$this->static) $this->offsetUnset($key);
+                $count++;
+            }
         }
         return $count > 0;
     }
