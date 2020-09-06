@@ -26,6 +26,16 @@ class QueryResponse
     private string $table;
 
     /**
+     * @var string
+     */
+    private string $primaryKey;
+
+    /**
+     * @var string|null
+     */
+    private ?string $model = null;
+
+    /**
      * @var DriverResponse
      */
     private DriverResponse $driver_response;
@@ -40,17 +50,19 @@ class QueryResponse
      * @param DriverResponse $response
      * @param int $query_type
      * @param string $table
+     * @param string $primaryKey
      */
-    public function __construct(DriverResponse $response, int $query_type, string $table)
+    public function __construct(DriverResponse $response, int $query_type, string $table, string $primaryKey)
     {
-        if (str_contains($table, " ")) $table = str_strip_spaces(str_end_at($table, " "));
         $this->setDriverResponse($response);
         $this->setQueryType($query_type);
         $this->setTable($table);
+        $this->setPrimaryKey($primaryKey);
+        $this->setModel(config("database.default.model"));
     }
 
     /**
-     * @return array|object|null
+     * @return object|null
      */
     public function getFirst()
     {
@@ -58,57 +70,50 @@ class QueryResponse
     }
 
     /**
-     * @param string|null $model
      * @param string $primaryKey
-     * @return Model|ModelStack|null
+     * @return Model|null
      */
-    public function getFirstWithModel(string $model = null, string $primaryKey = "id")
+    public function getFirstWithModel(string $primaryKey = null)
     {
-        return $this->getQueryResponseWithModel($model, 0, $primaryKey);
+        return $this->getQueryResponseWithModel(0, $primaryKey);
     }
 
     /**
-     * @return array|object|null
+     * @return object[]|null
      */
     public function getAll()
     {
-        return $this->getQueryResponse();
+        $response = $this->getQueryResponse();
+        return !is_array($response) ? [$response] : $response;
     }
 
     /**
-     * @param string|null $model
      * @param string $primaryKey
-     * @return Model|ModelStack|null
+     * @return ModelStack|null
      */
-    public function getAllWithModel(string $model = null, string $primaryKey = "id")
+    public function getAllWithModel(string $primaryKey = null)
     {
-        return $this->getQueryResponseWithModel($model, null, $primaryKey);
+        $response = $this->getQueryResponseWithModel(null, $primaryKey);
+        if (empty($response)) return null;
+        return $response instanceof ModelStack ? $response : new ModelStack([$response]);
     }
 
     /**
      * @param null $key
-     * @return array|object|null
+     * @return object[]|object|null
      */
     public function getQueryResponse($key = null)
     {
         $response = $this->getDriverResponse()->getResponse();
 
-        if (!is_null($key)) {
-
-            if (is_array($response))
-                return isset($response[$key]) ? $this->normalize_data($response[$key]) : null;
-
-            if (is_object($response)) return $this->normalize_data($response);
-
-            return null;
-        }
+        if ($key !== null && is_array($response)) return isset($response[$key]) ? $this->normalize_data($response[$key]) : null;
 
         return $this->normalize_data($response);
     }
 
     /**
      * @param null $key
-     * @return array
+     * @return array|null
      */
     public function getQueryResponseArray($key = null)
     {
@@ -116,45 +121,49 @@ class QueryResponse
 
         if (empty($response)) return null;
 
-        if (!is_null($key)) return (array) $response;
+        if ($key !== null) return (array) $response;
 
-        if (!is_array($response)) $response = (array) $response;
+        if (is_object($response)) return (array) $response;
 
         array_callback($response, function ($row) {
             return (array) $row;
         });
 
-        return $response;
+        return (array) $response;
     }
 
     /**
-     * @param string|null $model
      * @param null $key
-     * @param string $primaryKey
+     * @param string|null $primaryKey
      * @return Model|ModelStack|null
      */
-    public function getQueryResponseWithModel(string $model = null, $key = null, string $primaryKey = "id")
+    public function getQueryResponseWithModel($key = null, ?string $primaryKey = null)
     {
-        $model = \model(($modelKey = $model ?: config("database.default.model")));
+        if ($primaryKey === null) $primaryKey = $this->getPrimaryKey();
+
+        $model = \model($this->getModel());
 
         if ($model === null) throw new QueRuntimeException(
-            "No database model was found with the key '{$modelKey}', check your database configuration to fix this issue.",
+            "No database model was found with the key '{$this->getModel()}', check your database configuration to fix this issue.",
             "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         if (!($implements = class_implements($model)) || !isset($implements[Model::class])) throw new QueRuntimeException(
-            "The specified model ({$model}) with key '{$modelKey}' does not implement the Que database model interface.",
+            "The specified model ({$model}) with key '{$this->getModel()}' does not implement the Que database model interface.",
             "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         $response = $this->getQueryResponse($key);
 
         if (empty($response)) return null;
 
-        if (!is_null($key)) {
+        if ($key !== null) {
             $response = (object) $response;
             return new $model($response, $this->getTable(), $primaryKey);
         }
 
-        if (!is_array($response)) $response = (array) $response;
+        if (is_object($response)) {
+            $response = (object) $response;
+            return new $model($response, $this->getTable(), $primaryKey);
+        }
 
         array_callback($response, function ($row) use ($model, $primaryKey) {
             $row = (object) $row;
@@ -243,6 +252,38 @@ class QueryResponse
         $this->table = $table;
     }
 
+    /**
+     * @return string
+     */
+    public function getPrimaryKey(): string
+    {
+        return $this->primaryKey;
+    }
+
+    /**
+     * @param string $primaryKey
+     */
+    public function setPrimaryKey(string $primaryKey): void
+    {
+        $this->primaryKey = $primaryKey;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getModel(): ?string
+    {
+        return $this->model;
+    }
+
+    /**
+     * @param string|null $model
+     */
+    public function setModel(?string $model): void
+    {
+        $this->model = $model;
+    }
+
 
     /**
      * @return int
@@ -308,12 +349,14 @@ class QueryResponse
      */
     private function normalize_data($data)
     {
-        if (!is_iterable($data) && !is_object($data)) return $data;
+        if (is_iterable($data) || is_object($data)) {
 
-        iterable_callback_recursive($data, function ($value) {
-            if (is_iterable($value) || is_object($value)) return $this->normalize_data($value);
-            return is_null($value) ? null : ((json_decode($value) ?: $this->get_mark_down($value)) ?: stripslashes($value));
-        });
+            iterable_callback_recursive($data, function ($value) {
+                if (is_iterable($value) || is_object($value)) return $this->normalize_data($value);
+                return !is_null($value) ? ((json_decode($value) ?: $this->get_mark_down($value)) ?: stripslashes($value)) : null;
+            });
+
+        }
 
         return $data;
     }

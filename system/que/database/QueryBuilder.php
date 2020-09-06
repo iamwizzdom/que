@@ -25,6 +25,7 @@ use que\database\model\ModelStack;
 use que\http\HTTP;
 use que\template\Pagination;
 use que\template\Paginator;
+use stdClass;
 
 class QueryBuilder implements Builder
 {
@@ -619,9 +620,9 @@ class QueryBuilder implements Builder
         }
 
         $model = \model(config("database.default.model"));
+
         if ($model !== null) {
-            if (($implements = class_implements($model)) &&
-                in_array(Model::class, $implements)) {
+            if (($implements = class_implements($model)) && in_array(Model::class, $implements)) {
                 $columns = (object) $this->builder->getColumns();
                 $model = new $model($columns, $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
             }
@@ -671,7 +672,7 @@ class QueryBuilder implements Builder
 
                 return new QueryResponse($this->getCustomDriverResponse($this->builder, [
                     "Observer for '{$this->builder->getTable()}' table stopped insert operation"
-                ], "00101"), $this->builder->getQueryType(), $this->builder->getTable());
+                ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), $model->getPrimaryKey());
             }
 
             //Begin a transaction so that we can roll back if the developer
@@ -732,7 +733,7 @@ class QueryBuilder implements Builder
                 sleep(1);
                 $model->refresh();
                 $response->setResponse([$model->getObject()]);
-                return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
+                return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), $model->getPrimaryKey());
             }
 
             $this->query->transRollBackAll();
@@ -764,11 +765,10 @@ class QueryBuilder implements Builder
 
                 return new QueryResponse($this->getCustomDriverResponse($this->builder, [
                     "Observer for '{$this->builder->getTable()}' table asked to undo the insert operation"
-                ], "00101"), $this->builder->getQueryType(), $this->builder->getTable());
+                ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), $model->getPrimaryKey());
             } else {
 
-                //Here we complete the transaction, since the developer
-                //didn't as us to undo the operation
+                //Here we complete the transaction, since the developer didn't ask us to undo the operation
                 $this->query->transComplete();
                 $this->query->setTransEnabled(false);
             }
@@ -779,7 +779,7 @@ class QueryBuilder implements Builder
         $model->refresh();
         $response->setResponse([$model->getObject()]);
 
-        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
+        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), $model->getPrimaryKey());
     }
 
     /**
@@ -796,40 +796,18 @@ class QueryBuilder implements Builder
             self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? $showTable->getQueryResponse() : 'id';
         }
 
-        $modelStack = null;
-
         $this->builder->setQueryType(DriverQueryBuilder::SELECT);
         $record = $this->selectQuery();
         $this->builder->setQueryType(DriverQueryBuilder::DELETE);
 
-        if (($model = \model(config("database.default.model"))) !== null) {
-            if (($implements = class_implements($model)) &&
-                in_array(Model::class, $implements)) {
+        if (!$record->isSuccessful()) {
 
-
-                if (!$record->isSuccessful()) {
-
-                    $this->builder->buildQuery();
-                    return new QueryResponse($this->getCustomDriverResponse($this->builder, [$record->getQueryError()],
-                        $record->getQueryErrorCode()), $this->builder->getQueryType(), $this->builder->getTable());
-                }
-
-                $modelStack = $record->getAllWithModel(config('database.default.model', ''), self::$primaryKeys[$this->builder->getTable()]);
-            }
+            $this->builder->buildQuery();
+            return new QueryResponse($this->getCustomDriverResponse($this->builder, [$record->getQueryError()],
+                $record->getQueryErrorCode()), $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
         }
 
-        if (!$modelStack instanceof ModelStack) {
-
-            if (!$record->isSuccessful()) {
-
-                $this->builder->buildQuery();
-                return new QueryResponse($this->getCustomDriverResponse($this->builder, [$record->getQueryError()],
-                    $record->getQueryErrorCode()), $this->builder->getQueryType(), $this->builder->getTable());
-            }
-
-            $modelStack = $record->getAllWithModel(config('database.default.model', ''), self::$primaryKeys[$this->builder->getTable()]);
-
-        }
+        $modelStack = $record->getAllWithModel(self::$primaryKeys[$this->builder->getTable()]);
 
         return $this->deleteOps($modelStack);
     }
@@ -863,11 +841,6 @@ class QueryBuilder implements Builder
             }
         }
 
-        $this->builder->clearWhereQuery();
-        $ids = [];
-        foreach ($modelStack as $model) $ids[] = $model->getValue($model->getPrimaryKey());
-        $this->builder->setWhereIn(self::$primaryKeys[$this->builder->getTable()], $ids);
-
         $this->builder->buildQuery();
 
         if ($observer instanceof Observer) {
@@ -876,7 +849,7 @@ class QueryBuilder implements Builder
 
                 return new QueryResponse($this->getCustomDriverResponse($this->builder, [
                     "Observer for '{$this->builder->getTable()}' table stopped delete operation"
-                ], "00101"), $this->builder->getQueryType(), $this->builder->getTable());
+                ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
             }
 
             //Begin a transaction so that we can roll back if the developer
@@ -889,7 +862,7 @@ class QueryBuilder implements Builder
 
             return new QueryResponse($this->getCustomDriverResponse($this->builder, [
                 "Observer for '{$this->builder->getTable()}' table removed all records to be deleted thereby stopping the delete operation"
-            ], "00101"), $this->builder->getQueryType(), $this->builder->getTable());
+            ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
         }
 
         $response = $this->driver->exec($this->builder);
@@ -936,7 +909,7 @@ class QueryBuilder implements Builder
             }
 
             if ($retrying && $attempts < $observer->getSignal()->getTrials())
-                return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
+                return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
 
             $this->query->transRollBackAll();
 
@@ -962,7 +935,7 @@ class QueryBuilder implements Builder
 
                 return new QueryResponse($this->getCustomDriverResponse($this->builder, [
                     "Observer for '{$this->builder->getTable()}' table asked to undo the delete operation"
-                ], "00101"), $this->builder->getQueryType(), $this->builder->getTable());
+                ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
             } else {
 
                 //Here we complete the transaction, since the developer
@@ -972,7 +945,7 @@ class QueryBuilder implements Builder
             }
         }
 
-        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
+        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
     }
 
     /**
@@ -1008,6 +981,14 @@ class QueryBuilder implements Builder
 
         }
 
+        if (!isset(self::$primaryKeys[$this->builder->getTable()])) {
+
+            $this->builder->setQueryType(DriverQueryBuilder::SHOW);
+            $showTable = $this->show_table();
+            $this->builder->setQueryType(DriverQueryBuilder::SELECT);
+            self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? $showTable->getQueryResponse() : 'id';
+        }
+
         if (empty($this->builder->getSelect())) $this->builder->setSelect('*');
 
         $this->builder->buildQuery();
@@ -1028,7 +1009,7 @@ class QueryBuilder implements Builder
             }
         }
 
-        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
+        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
     }
 
     /**
@@ -1053,7 +1034,7 @@ class QueryBuilder implements Builder
             }
         }
 
-        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
+        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), 'id');
     }
 
     /**
@@ -1078,7 +1059,7 @@ class QueryBuilder implements Builder
             }
         }
 
-        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
+        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), 'id');
     }
 
     /**
@@ -1105,7 +1086,7 @@ class QueryBuilder implements Builder
             }
         }
 
-        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
+        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), 'id');
     }
 
     /**
@@ -1122,38 +1103,18 @@ class QueryBuilder implements Builder
             self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? $showTable->getQueryResponse() : 'id';
         }
 
-        $modelStack = null;
-
         $this->builder->setSelect('*')->setQueryType(DriverQueryBuilder::SELECT);
         $record = $this->selectQuery();
         $this->builder->setQueryType(DriverQueryBuilder::UPDATE);
 
-        if (($model = \model(config("database.default.model"))) !== null) {
-            if (($implements = class_implements($model)) &&
-                in_array(Model::class, $implements)) {
+        if (!$record->isSuccessful()) {
 
-                if (!$record->isSuccessful()) {
-
-                    $this->builder->buildQuery();
-                    return new QueryResponse($this->getCustomDriverResponse($this->builder, [$record->getQueryError()],
-                        $record->getQueryErrorCode()), $this->builder->getQueryType(), $this->builder->getTable());
-                }
-
-                $modelStack = $record->getAllWithModel(config('database.default.model', ''), self::$primaryKeys[$this->builder->getTable()]);
-            }
+            $this->builder->buildQuery();
+            return new QueryResponse($this->getCustomDriverResponse($this->builder, [$record->getQueryError()],
+                $record->getQueryErrorCode()), $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
         }
 
-        if (!$modelStack instanceof ModelStack) {
-
-            if (!$record->isSuccessful()) {
-
-                $this->builder->buildQuery();
-                return new QueryResponse($this->getCustomDriverResponse($this->builder, [$record->getQueryError()],
-                    $record->getQueryErrorCode()), $this->builder->getQueryType(), $this->builder->getTable());
-            }
-
-            $modelStack = $record->getAllWithModel(config('database.default.model', ''), self::$primaryKeys[$this->builder->getTable()]);
-        }
+        $modelStack = $record->getAllWithModel(self::$primaryKeys[$this->builder->getTable()]);
 
         $this->builder->setColumns($this->normalize_data($this->builder->getColumns()));
 
@@ -1189,11 +1150,6 @@ class QueryBuilder implements Builder
             }
         }
 
-        $this->builder->clearWhereQuery();
-        $ids = [];
-        foreach ($modelStack as $model) $ids[] = $model->getValue($model->getPrimaryKey());
-        $this->builder->setWhereIn(self::$primaryKeys[$this->builder->getTable()], $ids);
-
         $this->builder->buildQuery();
 
         if ($observer instanceof Observer) {
@@ -1202,7 +1158,7 @@ class QueryBuilder implements Builder
 
                 return new QueryResponse($this->getCustomDriverResponse($this->builder, [
                     "Observer for '{$this->builder->getTable()}' table stopped update operation"
-                ], "00101"), $this->builder->getQueryType(), $this->builder->getTable());
+                ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
             }
 
             //Begin a transaction so that we can roll back if the developer
@@ -1215,10 +1171,11 @@ class QueryBuilder implements Builder
 
             return new QueryResponse($this->getCustomDriverResponse($this->builder, [
                 "Observer for '{$this->builder->getTable()}' table removed all records to be updated thereby stopping the update operation"
-            ], "00101"), $this->builder->getQueryType(), $this->builder->getTable());
+            ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
         }
 
         $response = $this->driver->exec($this->builder);
+
         $updatedStack = clone $modelStack;
         foreach ($modelStack as $m) {
             if (!$m instanceof Model) continue;
@@ -1272,7 +1229,7 @@ class QueryBuilder implements Builder
                 $response->setResponse([array_map(function ($data) {
                     return (object) $data;
                 }, $updatedStack->getArray())]);
-                return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
+                return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
             }
 
             $this->query->transRollBackAll();
@@ -1302,7 +1259,7 @@ class QueryBuilder implements Builder
 
                 return new QueryResponse($this->getCustomDriverResponse($this->builder, [
                     "Observer for '{$this->builder->getTable()}' table asked to undo the update operation"
-                ], "00101"), $this->builder->getQueryType(), $this->builder->getTable());
+                ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
             } else {
 
                 //Here we complete the transaction, since the developer
@@ -1317,7 +1274,7 @@ class QueryBuilder implements Builder
             return (object) $data;
         }, $updatedStack->getArray())]);
 
-        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
+        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
     }
 
     /**
@@ -1325,24 +1282,22 @@ class QueryBuilder implements Builder
      */
     private function check(): QueryResponse
     {
-        if (empty($this->builder->getSelect())) {
 
-            if (!isset(self::$primaryKeys[$this->builder->getTable()])) {
+        if (!isset(self::$primaryKeys[$this->builder->getTable()])) {
 
-                $this->builder->setQueryType(DriverQueryBuilder::SHOW);
-                $showTable = $this->show_table();
-                $this->builder->setQueryType(DriverQueryBuilder::CHECK);
-                self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? ($showTable->getQueryResponse() ?: 'id') : 'id';
-            }
-
-            $this->builder->setSelect(self::$primaryKeys[$this->builder->getTable()]);
+            $this->builder->setQueryType(DriverQueryBuilder::SHOW);
+            $showTable = $this->show_table();
+            $this->builder->setQueryType(DriverQueryBuilder::CHECK);
+            self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? ($showTable->getQueryResponse() ?: 'id') : 'id';
         }
+
+        if (empty($this->builder->getSelect())) $this->builder->setSelect(self::$primaryKeys[$this->builder->getTable()]);
 
         $this->builder->buildQuery();
 
         $response = $this->driver->exec($this->builder);
 
-        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
+        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
     }
 
     /**
@@ -1350,24 +1305,22 @@ class QueryBuilder implements Builder
      */
     private function count(): QueryResponse
     {
-        if (empty($this->builder->getSelect())) {
 
-            if (!isset(self::$primaryKeys[$this->builder->getTable()])) {
+        if (!isset(self::$primaryKeys[$this->builder->getTable()])) {
 
-                $this->builder->setQueryType(DriverQueryBuilder::SHOW);
-                $showTable = $this->show_table();
-                $this->builder->setQueryType(DriverQueryBuilder::COUNT);
-                self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? ($showTable->getQueryResponse() ?: 'id') : 'id';
-            }
-
-            $this->builder->setSelect(self::$primaryKeys[$this->builder->getTable()]);
+            $this->builder->setQueryType(DriverQueryBuilder::SHOW);
+            $showTable = $this->show_table();
+            $this->builder->setQueryType(DriverQueryBuilder::COUNT);
+            self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? ($showTable->getQueryResponse() ?: 'id') : 'id';
         }
+
+        if (empty($this->builder->getSelect())) $this->builder->setSelect(self::$primaryKeys[$this->builder->getTable()]);
 
         $this->builder->buildQuery();
 
         $response = $this->driver->exec($this->builder);
 
-        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
+        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
     }
 
     /**
@@ -1375,24 +1328,22 @@ class QueryBuilder implements Builder
      */
     private function avg(): QueryResponse
     {
-        if (empty($this->builder->getSelect())) {
 
-            if (!isset(self::$primaryKeys[$this->builder->getTable()])) {
+        if (!isset(self::$primaryKeys[$this->builder->getTable()])) {
 
-                $this->builder->setQueryType(DriverQueryBuilder::SHOW);
-                $showTable = $this->show_table();
-                $this->builder->setQueryType(DriverQueryBuilder::AVG);
-                self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? ($showTable->getQueryResponse() ?: 'id') : 'id';
-            }
-
-            $this->builder->setSelect(self::$primaryKeys[$this->builder->getTable()]);
+            $this->builder->setQueryType(DriverQueryBuilder::SHOW);
+            $showTable = $this->show_table();
+            $this->builder->setQueryType(DriverQueryBuilder::AVG);
+            self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? ($showTable->getQueryResponse() ?: 'id') : 'id';
         }
+
+        if (empty($this->builder->getSelect())) $this->builder->setSelect(self::$primaryKeys[$this->builder->getTable()]);
 
         $this->builder->buildQuery();
 
         $response = $this->driver->exec($this->builder);
 
-        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
+        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
     }
 
     /**
@@ -1400,24 +1351,22 @@ class QueryBuilder implements Builder
      */
     private function sum(): QueryResponse
     {
-        if (empty($this->builder->getSelect())) {
 
-            if (!isset(self::$primaryKeys[$this->builder->getTable()])) {
+        if (!isset(self::$primaryKeys[$this->builder->getTable()])) {
 
-                $this->builder->setQueryType(DriverQueryBuilder::SHOW);
-                $showTable = $this->show_table();
-                $this->builder->setQueryType(DriverQueryBuilder::SUM);
-                self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? ($showTable->getQueryResponse() ?: 'id') : 'id';
-            }
-
-            $this->builder->setSelect(self::$primaryKeys[$this->builder->getTable()]);
+            $this->builder->setQueryType(DriverQueryBuilder::SHOW);
+            $showTable = $this->show_table();
+            $this->builder->setQueryType(DriverQueryBuilder::SUM);
+            self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? ($showTable->getQueryResponse() ?: 'id') : 'id';
         }
+
+        if (empty($this->builder->getSelect())) $this->builder->setSelect(self::$primaryKeys[$this->builder->getTable()]);
 
         $this->builder->buildQuery();
 
         $response = $this->driver->exec($this->builder);
 
-        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
+        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
     }
 
     /**
@@ -1427,17 +1376,7 @@ class QueryBuilder implements Builder
     {
         $this->builder->buildQuery();
         $response = $this->driver->exec($this->builder);
-        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable());
-    }
-
-    /**
-     * @param $n
-     * @param int $x
-     * @return float|int
-     */
-    private function round_up_to_nearest($n, $x = 5)
-    {
-        return ($n % $x === 0 && !is_float(($n / $x))) ? round($n) : round((($n + $x / 2) / $x)) * $x;
+        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), 'id');
     }
 
     /**
@@ -1473,7 +1412,7 @@ class QueryBuilder implements Builder
     {
         $type = gettype($data);
         $can_wakeup = "false";
-        if (is_object($data) && (($class_name = get_class($data)) != \stdClass::class)
+        if (is_object($data) && (($class_name = get_class($data)) != stdClass::class)
             && class_exists($class_name, true)) {
             $type = "class";
             if (method_exists($data, '__wakeup') &&
@@ -1559,6 +1498,11 @@ class QueryBuilder implements Builder
             {
                 // TODO: Implement getQueryString() method.
                 return $this->query;
+            }
+
+            public function setResponse($response): void
+            {
+                // TODO: Implement setResponse() method.
             }
         };
 
