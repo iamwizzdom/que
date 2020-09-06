@@ -103,7 +103,10 @@ final class Route extends Router
             if (empty($route) || !isset($route['route']) || !$route['route'] instanceof RouteEntry)
                 throw new RouteException(sprintf("%s is an invalid url", current_url()), "Route Error", HTTP::NOT_FOUND);
 
-            self::validateRouteAccessibility($route = $route['route']);
+            self::setRouteParams($route['args']);
+            self::setCurrentRoute($route = $route['route']);
+
+            self::validateRouteAccessibility($route);
 
             self::$http->_header()->setBulk([
                 'Access-Control-Allow-Origin' => '*',

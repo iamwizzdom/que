@@ -175,15 +175,15 @@ abstract class Router extends RouteInspector
     /**
      * @param RouteEntry $routeEntry
      */
-    private static function setCurrentRoute(RouteEntry $routeEntry)
+    protected static function setCurrentRoute(RouteEntry $routeEntry)
     {
         http()->_server()->set('route.entry', $routeEntry);
     }
 
     /**
-     * @param array $uriArgs
+     * @param array $params
      */
-    protected static function setRouteParams(array $uriArgs) {
-        http()->_server()->set("route.params", $uriArgs);
+    protected static function setRouteParams(array $params) {
+        http()->_server()->set("route.params", $params);
     }
 }
