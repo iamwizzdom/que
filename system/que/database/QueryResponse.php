@@ -64,7 +64,7 @@ class QueryResponse
     /**
      * @return object|null
      */
-    public function getFirst()
+    public function getFirst(): ?object
     {
         return $this->getQueryResponse(0);
     }
@@ -73,7 +73,7 @@ class QueryResponse
      * @param string $primaryKey
      * @return Model|null
      */
-    public function getFirstWithModel(string $primaryKey = null)
+    public function getFirstWithModel(string $primaryKey = null): ?Model
     {
         return $this->getQueryResponseWithModel(0, $primaryKey);
     }
@@ -81,7 +81,7 @@ class QueryResponse
     /**
      * @return object[]|null
      */
-    public function getAll()
+    public function getAll(): ?array
     {
         $response = $this->getQueryResponse();
         return !is_array($response) ? [$response] : $response;
@@ -91,7 +91,7 @@ class QueryResponse
      * @param string $primaryKey
      * @return ModelStack|null
      */
-    public function getAllWithModel(string $primaryKey = null)
+    public function getAllWithModel(string $primaryKey = null): ?ModelStack
     {
         $response = $this->getQueryResponseWithModel(null, $primaryKey);
         if (empty($response)) return null;
@@ -115,7 +115,7 @@ class QueryResponse
      * @param null $key
      * @return array|null
      */
-    public function getQueryResponseArray($key = null)
+    public function getQueryResponseArray($key = null): ?array
     {
         $response = $this->getQueryResponse($key);
 
