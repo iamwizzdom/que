@@ -369,7 +369,7 @@ class Condition implements ConditionAlias
         // TODO: Implement isFoundInDB() method.
         return db()->check($table, function (Builder $builder) use ($table, $column, $extraQuery, $ignoreID, $ignoreColumn) {
             $builder->where($column, $this->getValue());
-            if (!empty($ignoreID)) $builder->where($ignoreColumn, $ignoreID, '!=');
+            if ($ignoreID !== null) $builder->where($ignoreColumn, $ignoreID, '!=');
             if (is_callable($extraQuery)) $extraQuery($builder);
         })->isSuccessful();
     }

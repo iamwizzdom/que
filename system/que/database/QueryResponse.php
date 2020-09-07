@@ -290,7 +290,7 @@ class QueryResponse
      */
     public function getResponseSize(): int
     {
-        return is_array($res = $this->getQueryResponse()) ? array_size($res) : ($res !== null ? 1 : 0);
+        return is_array($res = $this->getQueryResponse()) ? array_size($res) : (!empty($res) ? 1 : 0);
     }
 
     /**

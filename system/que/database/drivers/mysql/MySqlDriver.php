@@ -313,7 +313,7 @@ class MySqlDriver implements Driver
             case DriverQueryBuilder::RAW_SELECT:
 
                 return new MySqlDriverResponse(
-                    $data = $stmt->fetch(PDO::FETCH_OBJ), $status,
+                    $data = $stmt->fetchAll(PDO::FETCH_OBJ), $status,
                     $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()),
                     (empty($data) && $stmt->errorCode() === "00000" ? ['No records found'] : $stmt->errorInfo()),
                     $stmt->errorCode()
@@ -342,7 +342,7 @@ class MySqlDriver implements Driver
             case DriverQueryBuilder::RAW_OBJECT:
 
                 return new MySqlDriverResponse(
-                    $stmt->fetch(PDO::FETCH_OBJ), $status,
+                    $stmt->fetchAll(PDO::FETCH_OBJ), $status,
                     $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()), $stmt->errorInfo(),
                     $stmt->errorCode()
                 );
