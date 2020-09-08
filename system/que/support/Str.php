@@ -131,6 +131,26 @@ class Str
     }
 
     /**
+     * @param $search
+     * @param $replace
+     * @param $subject
+     * @return string|string[]
+     */
+    public static function replace_first ($search, $replace, $subject) {
+        return str_replace_first($search, $replace, $subject);
+    }
+
+    /**
+     * @param $search
+     * @param $replace
+     * @param $subject
+     * @return string|string[]
+     */
+    public static function replace_last ($search, $replace, $subject) {
+        return str_replace_last($search, $replace, $subject);
+    }
+
+    /**
      * @param string $string
      * @param string $needle
      * @return bool|string

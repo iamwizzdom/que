@@ -195,10 +195,34 @@ function str_ellipsis(string $string, int $length = 50, string $ellipsis = null)
  * @return string|string[]
  */
 function str_replace_first($search, $replace, $subject) {
-    $pos = strpos($subject, $search);
-    if ($pos !== false) {
-        return substr_replace($subject, $replace, $pos, strlen($search));
+
+    if ($search == '') return $subject;
+
+    $position = strpos($subject, $search);
+
+    if ($position !== false) {
+        return substr_replace($subject, $replace, $position, strlen($search));
     }
+
+    return $subject;
+}
+
+/**
+ * This function will replace the last occurrence of $search in $subject
+ *
+ * @param $search
+ * @param $replace
+ * @param $subject
+ * @return string|string[]
+ */
+function str_replace_last($search, $replace, $subject) {
+
+    $position = strrpos($subject, $search);
+
+    if ($position !== false) {
+        return substr_replace($subject, $replace, $position, strlen($search));
+    }
+
     return $subject;
 }
 
