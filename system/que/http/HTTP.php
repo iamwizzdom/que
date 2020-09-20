@@ -47,7 +47,7 @@ class HTTP
     const IM_USED = 226;               // RFC3229
     const MULTIPLE_CHOICES = 300;
     const MOVED_PERMANENTLY = 301;
-    const FOUND = 302;
+    const FOUND_REDIRECT = 302;
     const SEE_OTHER = 303;
     const NOT_MODIFIED = 304;
     const USE_PROXY = 305;
