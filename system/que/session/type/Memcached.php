@@ -48,7 +48,7 @@ class Memcached
     /**
      * @var array
      */
-    private array $data = [];
+    private array $pointer = [];
 
     /**
      * Memcached constructor.
@@ -62,7 +62,7 @@ class Memcached
 
             $this->host = config('cache.memcached.host', "127.0.0.1");
             $this->port = config('cache.memcached.port', 11211);
-            $this->enable = config('cache.memcached.enable', false);
+            $this->enable = (bool) config('cache.memcached.enable', false);
             $this->connect();
         }
 
@@ -119,8 +119,7 @@ class Memcached
 
     private function connect() {
 
-        if (!$this->enable)
-            throw new QueRuntimeException("Can't use memcached, memcached is disabled from config.",
+        if (!$this->enable) throw new QueRuntimeException("Can't use memcached, memcached is disabled from config.",
                 "Memcached Error", E_USER_ERROR, 0, PreviousException::getInstance(4));
 
         if (class_exists(\Memcached::class)) $this->memcached = new \Memcached();
@@ -138,7 +137,7 @@ class Memcached
      * @return bool
      */
     public function isset($key): bool {
-        return Arr::isset($this->data, $key);
+        return Arr::isset($this->pointer, $key);
     }
 
     /**
@@ -147,7 +146,13 @@ class Memcached
      * @return array|mixed
      */
     public function get($key, $default = null) {
-        return Arr::get($this->data, $key, $default);
+        $data = Arr::get($this->pointer, $key, $default);
+        if ($data == $default) return $data;
+        if (isset($data['expire']) && is_int($data['expire']) && APP_TIME > $data['expire']) {
+            $this->delete($key);
+            return $default;
+        }
+        return $data['data'] ?? $default;
     }
 
     /**
@@ -157,47 +162,87 @@ class Memcached
      * @return bool
      */
     public function set($key, $value, int $expire = null): bool {
-        Arr::set($this->data, $key, $value);
-        if ($this->memcached instanceof \Memcached) return $this->memcached->set($this->session_id, $this->data, $expire);
-        else return $this->memcached->set($this->session_id, $this->data, null, $expire);
+        Arr::set($this->pointer, $key, [
+            'data' => $value,
+            'expire' => $expire !== null ? (APP_TIME + $expire) : null
+        ]);
+        if (!($status = $this->write_data())) Arr::unset($this->pointer, $key);
+        return $status;
     }
 
     /**
-     * @param $key
-     * @return bool
+     * @param mixed ...$keys
+     * @return int
      */
-    public function delete($key): bool {
-        Arr::unset($this->data, $key);
-        if ($this->memcached instanceof \Memcached) return $this->memcached->set($this->session_id, $this->data);
-        else return $this->memcached->set($this->session_id, $this->data);
+    public function delete(...$keys): int {
+        $count = 0;
+        foreach ($keys as $key) {
+            Arr::unset($this->pointer, $key);
+            $count++;
+        }
+        if ($count > 0) $this->write_data();
+        return $count;
     }
 
     /**
-     * @param null $session_id
+     * This method is used to switch the session or retrieve the current session id.
+     * The session will be switched if a new session id is passed
+     * with the $session_id param, while the current session id
+     * will be returned if no session id is passed
+     *
+     * @param string $session_id
      * @return string|null
      */
-    public function session_id($session_id = null) {
+    public function session_id(string $session_id = null) {
         if (is_null($session_id)) return $this->session_id;
-        else {
-            $this->session_id = $session_id;
-            $this->fetch_data();
-            return $this->session_id;
-        }
-    }
-
-    /**
-     * @param null $session_id
-     * @return string
-     */
-    public function reset_session_id($session_id = null) {
-        $this->memcached->delete($this->session_id);
-        $this->memcached->set($this->session_id = $session_id, $this->data);
+        if ($this->session_id == $session_id) return $this->session_id;
+        $this->session_id = $session_id;
         $this->fetch_data();
         return $this->session_id;
     }
 
+    /**
+     * This method is used to reset the current session id.
+     *
+     * @param string $session_id
+     * @return string
+     */
+    public function reset_session_id(string $session_id) {
+        if ($this->session_id == $session_id) return $this->session_id;
+        $old_pointer = $this->pointer;
+        $this->session_destroy();
+        $this->pointer = $old_pointer;
+        $this->session_id = $session_id;
+        $this->write_data();
+        return $this->session_id;
+    }
+
+    /**
+     * This method will destroy the current session
+     */
+    public function session_destroy() {
+        if ($this->memcached->delete($this->session_id)){
+            $this->pointer = [];
+            return true;
+        }
+        return false;
+    }
+
     private function fetch_data() {
-        $this->data = $this->memcached->get($this->session_id) ?: [];
+        $this->pointer = $this->memcached->get($this->session_id) ?: [];
+    }
+
+    /**
+     * @return bool
+     */
+    private function write_data(): bool {
+        if ($this->memcached instanceof \Memcached) {
+            return $this->memcached->set($this->session_id, $this->pointer,
+                config('session.timeout', false) ? config('session.timeout_time', 0) : 0);
+        } else {
+            return $this->memcached->set($this->session_id, $this->pointer, null,
+                config('session.timeout', false) ? config('session.timeout_time', 0) : 0);
+        }
     }
 
 }

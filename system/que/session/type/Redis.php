@@ -15,9 +15,9 @@ use que\support\Arr;
 class Redis
 {
     /**
-     * @var mixed
+     * @var string
      */
-    private $session_id;
+    private string $session_id;
 
     /**
      * @var mixed
@@ -47,9 +47,9 @@ class Redis
     /**
      * @var array
      */
-    private array $data = [];
+    private array $pointer = [];
 
-    protected function __construct($session_id)
+    protected function __construct(string $session_id)
     {
         $this->session_id = $session_id;
 
@@ -57,7 +57,7 @@ class Redis
 
             $this->host = config('cache.redis.host', "127.0.0.1");
             $this->port = config('cache.redis.port', 6379);
-            $this->enable = config('cache.redis.enable', false);
+            $this->enable = (bool) config('cache.redis.enable', false);
             $this->connect();
         }
 
@@ -114,9 +114,8 @@ class Redis
 
     private function connect() {
 
-        if (!$this->enable)
-            throw new QueRuntimeException("Can't use redis, redis is disabled from config.", "Redis Error",
-                E_USER_ERROR, 0, PreviousException::getInstance(4));
+        if (!$this->enable) throw new QueRuntimeException("Can't use redis, redis is disabled from config.",
+            "Redis Error", E_USER_ERROR, 0, PreviousException::getInstance(4));
 
         if (class_exists(\Redis::class)) $this->redis = new \Redis();
         else throw new QueRuntimeException("Redis is not installed on this server.", "Redis Error",
@@ -132,7 +131,7 @@ class Redis
      * @return bool
      */
     public function isset($key): bool {
-        return Arr::isset($this->data, $key);
+        return Arr::isset($this->pointer, $key);
     }
 
     /**
@@ -141,7 +140,13 @@ class Redis
      * @return array|mixed
      */
     public function get($key, $default = null) {
-        return Arr::get($this->data, $key, $default);
+        $data = Arr::get($this->pointer, $key, $default);
+        if ($data == $default) return $data;
+        if (isset($data['expire']) && is_int($data['expire']) && APP_TIME > $data['expire']) {
+            $this->del($key);
+            return $default;
+        }
+        return $data['data'] ?? $default;
     }
 
     /**
@@ -151,8 +156,12 @@ class Redis
      * @return bool
      */
     public function set($key, $value, int $expire = null): bool {
-        Arr::set($this->data, $key, $value);
-        return $this->redis->set($this->session_id, json_encode($this->data, JSON_PRETTY_PRINT), $expire);
+        Arr::set($this->pointer, $key, [
+            'data' => $value,
+            'expire' => $expire !== null ? (APP_TIME + $expire) : null
+        ]);
+        if (!($status = $this->write_data())) Arr::unset($this->pointer, $key);
+        return $status;
     }
 
     /**
@@ -162,40 +171,68 @@ class Redis
     public function del(...$keys): int {
         $count = 0;
         foreach ($keys as $key) {
-            Arr::unset($this->data, $key);
+            Arr::unset($this->pointer, $key);
             $count++;
         }
-        $this->redis->del($this->session_id, json_encode($this->data, JSON_PRETTY_PRINT));
+        if ($count > 0) $this->write_data();
         return $count;
     }
 
     /**
-     * @param null $session_id
-     * @return string|null
-     */
-    public function session_id($session_id = null) {
-        if (is_null($session_id)) return $this->session_id;
-        else {
-            $this->session_id = $session_id;
-            $this->fetch_data();
-            return $this->session_id;
-        }
-    }
-
-    /**
-     * @param null $session_id
+     * This method is used to switch the session or retrieve the current session id.
+     * The session will be switched if a new session id is passed
+     * with the $session_id param, while the current session id
+     * will be returned if no session id is passed
+     *
+     * @param string|null $session_id
      * @return string
      */
-    public function reset_session_id($session_id = null) {
-        $this->redis->del($this->session_id);
-        $this->redis->set($this->session_id = $session_id, json_encode($this->data, JSON_PRETTY_PRINT));
+    public function session_id(string $session_id = null) {
+        if (is_null($session_id)) return $this->session_id;
+        if ($this->session_id == $session_id) return $this->session_id;
+        $this->session_id = $session_id;
         $this->fetch_data();
         return $this->session_id;
     }
 
+    /**
+     * This method is used to reset the current session id.
+     *
+     * @param string $session_id
+     * @return string
+     */
+    public function reset_session_id(string $session_id) {
+        if ($this->session_id == $session_id) return $this->session_id;
+        $old_pointer = $this->pointer;
+        $this->session_destroy();
+        $this->pointer = $old_pointer;
+        $this->session_id = $session_id;
+        $this->write_data();
+        return $this->session_id;
+    }
+
+    /**
+     * This method will destroy the current session
+     */
+    public function session_destroy() {
+        if ($this->redis->del($this->session_id)){
+            $this->pointer = [];
+            return true;
+        }
+        return false;
+    }
+
     private function fetch_data() {
         $data = $this->redis->get($this->session_id);
-        $this->data = !empty($data) && is_string($data) ? json_decode($data, true) : [];
+        $this->pointer = !empty($data) && is_string($data) ? json_decode($data, true) : [];
+    }
+
+    /**
+     * @return bool
+     */
+    private function write_data(): bool {
+        return $this->redis->set($this->session_id, json_encode($this->pointer),
+            config('session.timeout', false) ? config('session.timeout_time') : null);
     }
 
 }

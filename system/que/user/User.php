@@ -204,9 +204,7 @@ class User extends State implements ArrayAccess
         )->columns($columnsToUpdate)->where($primaryKey, $this->getValue($primaryKey, 0))->exec();
 
         if ($status = $update->isSuccessful()) {
-            foreach ($columnsToUpdate as $key => $value)
-                self::$user->{$key} = $value;
-
+            foreach ($columnsToUpdate as $key => $value) self::$user->{$key} = $value;
             self::updateState();
         }
 
@@ -259,26 +257,7 @@ class User extends State implements ArrayAccess
 
     private static function regenerate()
     {
-
-        if (empty(self::$cache_config)) self::$cache_config = (array) config('cache', []);
-
-        $memcached = $redis = $quekip = null;
-
-        if ((self::$cache_config['memcached']['enable'] ?? false) === true)
-            $memcached = Session::getInstance()->getMemcached();
-
-        if ((self::$cache_config['redis']['enable'] ?? false) === true)
-            $redis = Session::getInstance()->getRedis();
-
-        if ((self::$cache_config['memcached']['enable'] ?? false) !== true &&
-            (self::$cache_config['redis']['enable'] ?? false) !== true)
-            $quekip = Session::getInstance()->getQueKip();
-
-        if (!@session_regenerate_id(true)) { // change session ID for the current session and invalidate old session ID
-            // Give it some time to regenerate session ID
-            sleep(1);
-            session_regenerate_id(true);
-        }
+        Session::getInstance()->regenerateID();
 
         $primaryKey = (self::$database_config['tables']['user']['primary_key'] ?? 'id');
 
@@ -287,18 +266,8 @@ class User extends State implements ArrayAccess
 
         if ($user->isSuccessful()) {
             $userData = $user->getQueryResponseArray(0);
-            foreach ($userData as $key => $value)
-                self::$user->{$key} = $value;
+            foreach ($userData as $key => $value) self::$user->{$key} = $value;
         }
-
-        if (!is_null($memcached))
-            $memcached->reset_session_id(Session::getSessionID());
-
-        if (!is_null($redis))
-            $redis->reset_session_id(Session::getSessionID());
-
-        if (!is_null($quekip))
-            $quekip->reset_session_id(Session::getSessionID());
 
         self::updateState();
     }

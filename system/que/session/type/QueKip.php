@@ -16,9 +16,9 @@ use que\support\Arr;
 class QueKip
 {
     /**
-     * @var mixed
+     * @var string
      */
-    private $session_id;
+    private string $session_id;
 
     /**
      * @var QueKip
@@ -28,7 +28,7 @@ class QueKip
     /**
      * @var array
      */
-    private array $data = [];
+    private array $pointer = [];
 
     /**
      * @var string
@@ -39,7 +39,7 @@ class QueKip
      * QueKip constructor.
      * @param $session_id
      */
-    protected function __construct($session_id)
+    protected function __construct(string $session_id)
     {
         $this->session_id = $session_id;
         $this->sessionFilePath = session_save_path();
@@ -64,7 +64,6 @@ class QueKip
     {
         if (!isset(self::$instance))
             self::$instance = new self($session_id);
-
         return self::$instance;
     }
 
@@ -75,10 +74,10 @@ class QueKip
      * @return mixed|null
      */
     public function get($key, $default = null) {
-        $data = Arr::get($this->data, $key, $default);
+        $data = Arr::get($this->pointer, $key, $default);
         if ($data == $default) return $data;
         if (isset($data['expire']) && is_int($data['expire']) && APP_TIME > $data['expire']) {
-            $this->unset($key);
+            $this->delete($key);
             return $default;
         }
         return $data['data'] ?? $default;
@@ -89,7 +88,7 @@ class QueKip
      * @return bool
      */
     public function isset($key): bool {
-        return Arr::isset($this->data, $key);
+        return Arr::isset($this->pointer, $key);
     }
 
     /**
@@ -102,7 +101,7 @@ class QueKip
      * @return bool
      */
     public function set($key, $value, int $expire = null): bool {
-        Arr::set($this->data, $key, [
+        Arr::set($this->pointer, $key, [
             'data' => $value,
             'expire' => is_int($expire) ? (APP_TIME + $expire) : null
         ]);
@@ -114,59 +113,62 @@ class QueKip
      * @param mixed ...$keys
      * @return int
      */
-    public function unset(...$keys): int {
+    public function delete(...$keys): int {
         $count = 0;
         foreach ($keys as $key) {
-            Arr::unset($this->data, $key);
+            Arr::unset($this->pointer, $key);
             $count++;
         }
-        $this->write_data();
+        if ($count > 0) $this->write_data();
         return $count;
     }
 
     /**
-     * This method is used to reset/retrieve the session id
-     * The session id will be reset if a new session id is passed
-     * in the $session_id param, while the current session id
-     * will be returned if a new session_id is not passed
+     * This method is used to switch the session or retrieve the current session id.
+     * The session will be switched if a new session id is passed
+     * with the $session_id param, while the current session id
+     * will be returned if no session id is passed
      *
-     * @param null $session_id
+     * @param string $session_id
      * @return mixed
      */
-    public function session_id($session_id = null) {
+    public function session_id(string $session_id = null) {
         if (is_null($session_id)) return $this->session_id;
-        else {
-            $this->session_id = $session_id;
-            $this->fetch_data();
-            return $this->session_id;
-        }
-    }
-
-    /**
-     * This method is used to reset the session id
-     * and is also an alias of the session_id() method
-     * @param $session_id
-     * @return mixed
-     */
-    public function reset_session_id($session_id) {
-        $this->delete($this->session_id);
+        if ($this->session_id == $session_id) return $this->session_id;
         $this->session_id = $session_id;
-        $this->write_data();
         $this->fetch_data();
         return $this->session_id;
     }
 
     /**
-     * This method is used to delete the entire session cache file using the session id
-     * @param $session_id
+     * This method is used to reset the current session id.
+     *
+     * @param string $session_id
+     * @return string
+     */
+    public function reset_session_id(string $session_id) {
+        if ($this->session_id == $session_id) return $this->session_id;
+        $old_pointer = $this->pointer;
+        $this->session_destroy();
+        $this->pointer = $old_pointer;
+        $this->session_id = $session_id;
+        $this->write_data();
+        return $this->session_id;
+    }
+
+    /**
+     * This method will destroy the current session
      * @return bool
      */
-    public function delete($session_id) {
-        $fileName = sha1($session_id);
+    public function session_destroy(): bool {
+        $fileName = sha1($this->session_id);
         $filePath = "{$this->sessionFilePath}/quekip/que_session_{$fileName}.tmp";
         if (!is_file($filePath)) return false;
-        $this->data = [];
-        return unlink($filePath);
+        if (unlink($filePath)){
+            $this->pointer = [];
+            return true;
+        }
+        return false;
     }
 
     private function fetch_data() {
@@ -190,8 +192,7 @@ class QueKip
             throw new QueRuntimeException("Unable to read from quekip cache file!", "QueKip Error",
                 E_USER_ERROR, 0, PreviousException::getInstance(5));
 
-        $this->data = !empty($cache) && strlen($cache) > 0 ? unserialize($cache) : [];
-
+        $this->pointer = !empty($cache) && strlen($cache) > 0 ? unserialize($cache) : [];
     }
 
     /**
@@ -215,7 +216,7 @@ class QueKip
             $this->create_file("{$this->sessionFilePath}/quekip/que_session_{$fileName}.tmp");
 
         if (($status = file_put_contents("{$this->sessionFilePath}/quekip/que_session_{$fileName}.tmp",
-            serialize($this->data))) === false) throw new QueRuntimeException("Unable to write to quekip cache file!",
+            serialize($this->pointer))) === false) throw new QueRuntimeException("Unable to write to quekip cache file!",
             "QueKip Error", E_USER_ERROR, 0, PreviousException::getInstance(5));
 
         return $status;

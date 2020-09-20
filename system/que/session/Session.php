@@ -15,16 +15,23 @@ use que\session\type\Redis as RedisCache;
 
 class Session
 {
+    const SESSION_STARTED = true;
+    const SESSION_NOT_STARTED = false;
+
+    /**
+     * @var bool
+     */
+    private bool $sessionState = self::SESSION_NOT_STARTED;
+
+    /**
+     * @var array
+     */
+    protected static array $sessionIDs = [];
 
     /**
      * @var Session
      */
     private static Session $instance;
-
-    /**
-     * @var string
-     */
-    private static string $package_name;
 
     protected function __construct()
     {
@@ -51,40 +58,117 @@ class Session
     }
 
     /**
+     * @param array $options
+     * @return bool
+     */
+    public function startSession(array $options = [])
+    {
+        if ($this->sessionState == self::SESSION_NOT_STARTED)
+            $this->sessionState = session_start($options);
+        return $this->sessionState;
+    }
+
+    /**
      * @param string|null $session_id
      * @return string
      */
-    public static function getSessionID(string $session_id = null) {
-        self::$package_name = config('session.partition', APP_PACKAGE_NAME);
-        return self::$package_name . "-session-id:" . wordwrap($session_id ?: session_id(), 4, ":", true);
+    public static function getSessionID(string $session_id = null)
+    {
+        $session_id = $session_id ?: session_id();
+        if (isset(self::$sessionIDs[$session_id])) return self::$sessionIDs[$session_id];
+        $package_name = config('session.partition', APP_PACKAGE_NAME);
+        return self::$sessionIDs[$session_id] = "{$package_name}-session-id:" . wordwrap($session_id, 4, ":", true);
+    }
+
+    /**
+     * @return bool
+     */
+    public function regenerateID(): bool {
+
+        $cache_config = (array) config('cache', []);
+        $files = $this->getFiles();
+        $queKip = $this->getQueKip();
+        $memcached = null;
+        $redis = null;
+
+        if (($cache_config['memcached']['enable'] ?? false) === true) $memcached = $this->getMemcached();
+        if (($cache_config['redis']['enable'] ?? false) === true) $redis = $this->getRedis();
+
+        $old_session_id = session_id();
+        // change session ID for the current session and invalidate old session ID
+
+        if (!($status = session_regenerate_id(true))) {
+            // Give it some time to regenerate session ID
+            sleep(1);
+            $status = session_regenerate_id(true);
+        }
+
+        if (!$status) return false;
+        unset(self::$sessionIDs[$old_session_id]);
+        $files->reset_session_id(self::getSessionID());
+        $queKip->reset_session_id(self::getSessionID());
+        if ($memcached) $memcached->reset_session_id(self::getSessionID());
+        if ($redis) $redis->reset_session_id(self::getSessionID());
+        return true;
     }
 
     /**
      * @return Files
      */
-    public function getFiles(): Files {
-        return Files::getInstance();
+    public function getFiles(): Files
+    {
+        return Files::getInstance(self::getSessionID());
     }
 
     /**
      * @return Memcached
      */
-    public function getMemcached(): Memcached {
+    public function getMemcached(): Memcached
+    {
         return Memcached::getInstance(self::getSessionID());
     }
 
     /**
      * @return RedisCache
      */
-    public function getRedis(): RedisCache {
+    public function getRedis(): RedisCache
+    {
         return RedisCache::getInstance(self::getSessionID());
     }
 
     /**
      * @return QueKip
      */
-    public function getQueKip(): QueKip {
+    public function getQueKip(): QueKip
+    {
         return QueKip::getInstance(self::getSessionID());
+    }
+
+    /**
+     * @return bool
+     */
+    public function destroy()
+    {
+        if ($this->sessionState == self::SESSION_STARTED) {
+
+            $cache_config = (array) config('cache', []);
+            $files = $this->getFiles();
+            $queKip = $this->getQueKip();
+            $memcached = null;
+            $redis = null;
+
+            if (($cache_config['memcached']['enable'] ?? false) === true) $memcached = $this->getMemcached();
+            if (($cache_config['redis']['enable'] ?? false) === true) $redis = $this->getRedis();
+
+            $files->session_destroy();
+            $queKip->session_destroy();
+            if ($memcached) $memcached->session_destroy();
+            if ($redis) $redis->session_destroy();
+
+            return $this->sessionState = self::SESSION_NOT_STARTED;
+        }
+
+        return false;
     }
 
 }

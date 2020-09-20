@@ -36,8 +36,7 @@ abstract class State
      */
     protected static function set_state(array $state): void
     {
-        if (empty(self::$cache_config))
-            self::$cache_config = config('cache', []);
+        if (empty(self::$cache_config)) self::$cache_config = (array) config('cache', []);
 
         if (!isset($state['uid'])) throw new QueRuntimeException(
             "Trying to set state without a 'uid' key. Your state must have a unique id",
@@ -90,7 +89,7 @@ abstract class State
         if ((self::$cache_config['memcached']['enable'] ?? false) === true) Session::getInstance()->getMemcached()->delete('user');
         if ((self::$cache_config['redis']['enable'] ?? false) === true) Session::getInstance()->getRedis()->del('user');
         if ((self::$cache_config['memcached']['enable'] ?? false) !== true && (self::$cache_config['redis']['enable'] ?? false) !== true)
-            Session::getInstance()->getQueKip()->unset('user');
+            Session::getInstance()->getQueKip()->delete('user');
 
         self::$state['files'] = self::$state['memcached'] = self::$state['redis'] = self::$state['quekip'] = [];
     }

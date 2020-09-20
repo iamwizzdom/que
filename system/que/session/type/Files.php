@@ -22,14 +22,18 @@ class Files implements QueArrayAccess
     private static Files $instance;
 
     /**
+     * @var string
+     */
+    private string $session_id;
+
+    /**
      * @var array
      */
     private array $pointer;
 
-    protected function __construct()
+    protected function __construct(string $session_id)
     {
-        $session_id = Session::getSessionID();
-        $_SESSION[$session_id] ??= [];
+        $_SESSION[$this->session_id = $session_id] ??= [];
         $this->pointer = &$_SESSION[$session_id];
     }
 
@@ -44,13 +48,53 @@ class Files implements QueArrayAccess
     }
 
     /**
+     * @param string $session_id
      * @return Files
      */
-    public static function getInstance(): Files
+    public static function getInstance(string $session_id): Files
     {
         if (!isset(self::$instance))
-            self::$instance = new self;
+            self::$instance = new self($session_id);
         return self::$instance;
+    }
+
+    /**
+     * This method is used to switch the session or retrieve the current session id.
+     * The session will be switched if a new session id is passed
+     * with the $session_id param, while the current session id
+     * will be returned if no session id is passed
+     *
+     * @param string $session_id
+     * @return string
+     */
+    public function session_id(string $session_id): string {
+        if (is_null($session_id)) return $this->session_id;
+        if ($this->session_id == $session_id) return $this->session_id;
+        $_SESSION[$this->session_id = $session_id] ??= [];
+        $this->pointer = &$_SESSION[$session_id];
+        return $this->session_id;
+    }
+
+    /**
+     * This method is used to reset the current session id.
+     *
+     * @param string $session_id
+     * @return string
+     */
+    public function reset_session_id(string $session_id): string {
+        if ($this->session_id == $session_id) return $this->session_id;
+        $_SESSION[$session_id] = $this->pointer;
+        $this->pointer = &$_SESSION[$session_id];
+        unset($_SESSION[$this->session_id]);
+        return $this->session_id = $session_id;
+    }
+
+    /**
+     * This method will destroy the current session
+     */
+    public function session_destroy(): void {
+        $this->pointer = [];
+        unset($_SESSION[$this->session_id]);
     }
 
     /**
@@ -90,7 +134,7 @@ class Files implements QueArrayAccess
      * @return bool
      */
     public function _isset($offset): bool {
-        return $this->get($offset, $id = unique_id(16)) !== $id;
+        return $this->get($offset, $id = unique_id(5)) !== $id;
     }
 
     /**
