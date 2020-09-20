@@ -223,6 +223,14 @@ class ConditionError
         return $this;
     }
 
+    public function isConfirmed($error = null): ConditionError
+    {
+        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if (!$this->condition->isEqual($this->validator->getValue("{$this->getKey()}_confirmation")))
+            $this->setError($error);
+        return $this;
+    }
+
     /**
      * @param $table
      * @param $column
