@@ -16,7 +16,7 @@ use que\common\exception\QueRuntimeException;
 use que\database\interfaces\model\Model;
 use que\support\interfaces\QueArrayAccess;
 
-class ModelStack implements QueArrayAccess
+class ModelCollection implements QueArrayAccess
 {
 
     /**
@@ -75,7 +75,7 @@ class ModelStack implements QueArrayAccess
     }
 
     /**
-     * ModelStack constructor.
+     * ModelCollection constructor.
      * @param array $models
      * @param bool $static
      */

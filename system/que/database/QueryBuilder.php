@@ -21,7 +21,7 @@ use que\database\interfaces\drivers\DriverResponse;
 use que\database\interfaces\drivers\Observer;
 use que\database\interfaces\drivers\ObserverSignal;
 use que\database\interfaces\model\Model;
-use que\database\model\ModelStack;
+use que\database\model\ModelCollection;
 use que\http\HTTP;
 use que\template\Pagination;
 use que\template\Paginator;
@@ -807,19 +807,19 @@ class QueryBuilder implements Builder
                 $record->getQueryErrorCode()), $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
         }
 
-        $modelStack = $record->getAllWithModel(self::$primaryKeys[$this->builder->getTable()]);
+        $modelCollection = $record->getAllWithModel(self::$primaryKeys[$this->builder->getTable()]);
 
-        return $this->deleteOps($modelStack);
+        return $this->deleteOps($modelCollection);
     }
 
     /**
-     * @param ModelStack|Model[] $modelStack
+     * @param ModelCollection|Model[] $modelCollection
      * @param Observer|null $observer
      * @param bool $retrying
      * @param int $attempts
      * @return QueryResponse
      */
-    private function deleteOps(ModelStack $modelStack, Observer $observer = null,
+    private function deleteOps(ModelCollection $modelCollection, Observer $observer = null,
                                bool $retrying = false, int $attempts = 0): QueryResponse
     {
 
@@ -835,7 +835,7 @@ class QueryBuilder implements Builder
                     $observer = new $observer(new ObserverSignal());
                     if ($observer instanceof Observer) {
                         //Notify observer that insert operation has started
-                        $observer->onDeleting($modelStack);
+                        $observer->onDeleting($modelCollection);
                     }
                 }
             }
@@ -858,7 +858,7 @@ class QueryBuilder implements Builder
             $this->query->transBegin();
         }
 
-        if ($modelStack->isEmpty()) {
+        if ($modelCollection->isEmpty()) {
 
             return new QueryResponse($this->getCustomDriverResponse($this->builder, [
                 "Observer for '{$this->builder->getTable()}' table removed all records to be deleted thereby stopping the delete operation"
@@ -873,7 +873,7 @@ class QueryBuilder implements Builder
             if (!$retrying && $observer instanceof Observer) {
 
                 //Notify observer that operation failed
-                $observer->onDeleteFailed($modelStack, $response->getErrors(), $response->getErrorCode());
+                $observer->onDeleteFailed($modelCollection, $response->getErrors(), $response->getErrorCode());
 
                 $signal = $observer->getSignal();
 
@@ -881,24 +881,24 @@ class QueryBuilder implements Builder
                 if ($signal->isRetryOperation()) {
 
                     //Notify observer that retry operation has started
-                    $observer->onDeleteRetryStarted($modelStack);
+                    $observer->onDeleteRetryStarted($modelCollection);
 
                     try {
 
                         $totalAttempts = 0;
 
-                        $retryResponse = retry(function ($attempt) use ($modelStack, $observer, &$totalAttempts) {
+                        $retryResponse = retry(function ($attempt) use ($modelCollection, $observer, &$totalAttempts) {
 
                             $totalAttempts = $attempt;
 
-                            return $this->deleteOps($modelStack, $observer, true, $attempt);
+                            return $this->deleteOps($modelCollection, $observer, true, $attempt);
 
                         }, $signal->getTrials(), $signal->getInterval() * 1000, function (QueryResponse $retryResponse) {
                             return $retryResponse->isSuccessful();
                         });
 
                         //Notify observer that retry operation has completed
-                        $observer->onDeleteRetryComplete($modelStack, $retryResponse instanceof QueryResponse ?
+                        $observer->onDeleteRetryComplete($modelCollection, $retryResponse instanceof QueryResponse ?
                             $retryResponse->isSuccessful() : false, $totalAttempts);
 
                         if ($retryResponse instanceof QueryResponse) return $retryResponse;
@@ -924,7 +924,7 @@ class QueryBuilder implements Builder
                     PreviousException::getInstance());
             }
 
-        } elseif ($observer instanceof Observer && $modelStack instanceof ModelStack) $observer->onDeleted($modelStack);
+        } elseif ($observer instanceof Observer && $modelCollection instanceof ModelCollection) $observer->onDeleted($modelCollection);
 
         if ($observer instanceof Observer) {
 
@@ -1114,21 +1114,21 @@ class QueryBuilder implements Builder
                 $record->getQueryErrorCode()), $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
         }
 
-        $modelStack = $record->getAllWithModel(self::$primaryKeys[$this->builder->getTable()]);
+        $modelCollection = $record->getAllWithModel(self::$primaryKeys[$this->builder->getTable()]);
 
         $this->builder->setColumns($this->normalize_data($this->builder->getColumns()));
 
-        return $this->updateOps($modelStack);
+        return $this->updateOps($modelCollection);
     }
 
     /**
-     * @param ModelStack $modelStack
+     * @param ModelCollection $modelCollection
      * @param Observer|null $observer
      * @param bool $retrying
      * @param int $attempts
      * @return QueryResponse
      */
-    private function updateOps(ModelStack $modelStack, Observer $observer = null,
+    private function updateOps(ModelCollection $modelCollection, Observer $observer = null,
                                bool $retrying = false, int $attempts = 0): QueryResponse
     {
 
@@ -1144,7 +1144,7 @@ class QueryBuilder implements Builder
                     $observer = new $observer(new ObserverSignal());
                     if ($observer instanceof Observer) {
                         //Notify observer that insert operation has started
-                        $observer->onUpdating($modelStack);
+                        $observer->onUpdating($modelCollection);
                     }
                 }
             }
@@ -1167,7 +1167,7 @@ class QueryBuilder implements Builder
             $this->query->transBegin();
         }
 
-        if ($modelStack->isEmpty()) {
+        if ($modelCollection->isEmpty()) {
 
             return new QueryResponse($this->getCustomDriverResponse($this->builder, [
                 "Observer for '{$this->builder->getTable()}' table removed all records to be updated thereby stopping the update operation"
@@ -1176,8 +1176,8 @@ class QueryBuilder implements Builder
 
         $response = $this->driver->exec($this->builder);
 
-        $updatedStack = clone $modelStack;
-        foreach ($modelStack as $m) {
+        $updatedStack = clone $modelCollection;
+        foreach ($modelCollection as $m) {
             if (!$m instanceof Model) continue;
             $m = clone $m;
             $updatedStack->addModel($m);
@@ -1189,7 +1189,7 @@ class QueryBuilder implements Builder
             if (!$retrying && $observer instanceof Observer) {
 
                 //Notify observer that operation failed
-                $observer->onUpdateFailed($modelStack, $response->getErrors(), $response->getErrorCode());
+                $observer->onUpdateFailed($modelCollection, $response->getErrors(), $response->getErrorCode());
 
                 $signal = $observer->getSignal();
 
@@ -1197,24 +1197,24 @@ class QueryBuilder implements Builder
                 if ($signal->isRetryOperation()) {
 
                     //Notify observer that retry operation has started
-                    $observer->onUpdateRetryStarted($modelStack);
+                    $observer->onUpdateRetryStarted($modelCollection);
 
                     try {
 
                         $totalAttempts = 0;
 
-                        $retryResponse = retry(function ($attempt) use ($modelStack, $observer, &$totalAttempts) {
+                        $retryResponse = retry(function ($attempt) use ($modelCollection, $observer, &$totalAttempts) {
 
                             $totalAttempts = $attempt;
 
-                            return $this->updateOps($modelStack, $observer, true, $attempt);
+                            return $this->updateOps($modelCollection, $observer, true, $attempt);
 
                         }, $signal->getTrials(), $signal->getInterval() * 1000, function (QueryResponse $retryResponse) {
                             return $retryResponse->isSuccessful();
                         });
 
                         //Notify observer that retry operation has completed
-                        $observer->onUpdateRetryComplete($modelStack, $retryResponse instanceof QueryResponse ?
+                        $observer->onUpdateRetryComplete($modelCollection, $retryResponse instanceof QueryResponse ?
                             $retryResponse->isSuccessful() : false, $totalAttempts);
 
                         if ($retryResponse instanceof QueryResponse) return $retryResponse;
@@ -1245,9 +1245,9 @@ class QueryBuilder implements Builder
                     PreviousException::getInstance());
             }
 
-        } elseif ($observer instanceof Observer && $modelStack instanceof ModelStack) {
+        } elseif ($observer instanceof Observer && $modelCollection instanceof ModelCollection) {
             $updatedStack->refresh();
-            $observer->onUpdated($updatedStack, $modelStack);
+            $observer->onUpdated($updatedStack, $modelCollection);
         }
 
         if ($observer instanceof Observer) {

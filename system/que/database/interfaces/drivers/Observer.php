@@ -10,7 +10,7 @@ namespace que\database\interfaces\drivers;
 
 
 use que\database\interfaces\model\Model;
-use que\database\model\ModelStack;
+use que\database\model\ModelCollection;
 
 interface Observer
 {
@@ -57,77 +57,77 @@ interface Observer
     public function onCreateRetryComplete(Model $model, bool $status, int $attempts);
 
     /**
-     * @param ModelStack $model
+     * @param ModelCollection $model
      * @return mixed
      */
-    public function onUpdating(ModelStack $model);
+    public function onUpdating(ModelCollection $model);
 
     /**
-     * @param ModelStack $newModels
-     * @param ModelStack $previousModels
+     * @param ModelCollection $newModels
+     * @param ModelCollection $previousModels
      * @return mixed
      */
-    public function onUpdated(ModelStack $newModels, ModelStack $previousModels);
+    public function onUpdated(ModelCollection $newModels, ModelCollection $previousModels);
 
     /**
-     * @param ModelStack $models
+     * @param ModelCollection $models
      * @param array $errors
      * @param $errorCode
      * @return mixed
      */
-    public function onUpdateFailed(ModelStack $models, array $errors, $errorCode);
+    public function onUpdateFailed(ModelCollection $models, array $errors, $errorCode);
 
     /**
      * This method is called when you signal retrial of the update operation and Que starts the retry operation
-     * @param ModelStack $models
+     * @param ModelCollection $models
      * @return mixed
      */
-    public function onUpdateRetryStarted(ModelStack $models);
+    public function onUpdateRetryStarted(ModelCollection $models);
 
     /**
      * This method is called when you signal retrial of the update operation and Que completes the retry operation
-     * @param ModelStack $models
+     * @param ModelCollection $models
      * @param bool $status
      * @param int $attempts
      * @return mixed
      */
-    public function onUpdateRetryComplete(ModelStack $models, bool $status, int $attempts);
+    public function onUpdateRetryComplete(ModelCollection $models, bool $status, int $attempts);
 
     /**
-     * @param ModelStack $models
+     * @param ModelCollection $models
      * @return mixed
      */
-    public function onDeleting(ModelStack $models);
+    public function onDeleting(ModelCollection $models);
 
     /**
-     * @param ModelStack $models
+     * @param ModelCollection $models
      * @return mixed
      */
-    public function onDeleted(ModelStack $models);
+    public function onDeleted(ModelCollection $models);
 
     /**
-     * @param ModelStack $models
+     * @param ModelCollection $models
      * @param array $errors
      * @param $errorCode
      * @return mixed
      */
-    public function onDeleteFailed(ModelStack $models, array $errors, $errorCode);
+    public function onDeleteFailed(ModelCollection $models, array $errors, $errorCode);
 
     /**
      * This method is called when you signal retrial of the delete operation and Que starts the retry operation
-     * @param ModelStack $models
+     * @param ModelCollection $models
      * @return mixed
      */
-    public function onDeleteRetryStarted(ModelStack $models);
+    public function onDeleteRetryStarted(ModelCollection $models);
 
     /**
      * This method is called when you signal retrial of the delete operation and Que completes the retry operation
-     * @param ModelStack $models
+     * @param ModelCollection $models
      * @param bool $status
      * @param int $attempts
      * @return mixed
      */
-    public function onDeleteRetryComplete(ModelStack $models, bool $status, int $attempts);
+    public function onDeleteRetryComplete(ModelCollection $models, bool $status, int $attempts);
 
     /**
      * @return ObserverSignal

@@ -14,7 +14,7 @@ use que\common\exception\QueRuntimeException;
 use que\database\interfaces\drivers\DriverQueryBuilder;
 use que\database\interfaces\drivers\DriverResponse;
 use que\database\interfaces\model\Model;
-use que\database\model\ModelStack;
+use que\database\model\ModelCollection;
 use que\http\HTTP;
 
 class QueryResponse
@@ -89,13 +89,13 @@ class QueryResponse
 
     /**
      * @param string $primaryKey
-     * @return ModelStack|null
+     * @return ModelCollection|null
      */
-    public function getAllWithModel(string $primaryKey = null): ?ModelStack
+    public function getAllWithModel(string $primaryKey = null): ?ModelCollection
     {
         $response = $this->getQueryResponseWithModel(null, $primaryKey);
         if (empty($response)) return null;
-        return $response instanceof ModelStack ? $response : new ModelStack([$response]);
+        return $response instanceof ModelCollection ? $response : new ModelCollection([$response]);
     }
 
     /**
@@ -135,7 +135,7 @@ class QueryResponse
     /**
      * @param null $key
      * @param string|null $primaryKey
-     * @return Model|ModelStack|null
+     * @return Model|ModelCollection|null
      */
     public function getQueryResponseWithModel($key = null, ?string $primaryKey = null)
     {
@@ -170,7 +170,7 @@ class QueryResponse
             return new $model($row, $this->getTable(), $primaryKey);
         });
 
-        return new ModelStack($response);
+        return new ModelCollection($response);
     }
 
     /**

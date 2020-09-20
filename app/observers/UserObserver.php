@@ -12,7 +12,7 @@ namespace observers;
 use que\database\interfaces\drivers\Observer;
 use que\database\interfaces\drivers\ObserverSignal;
 use que\database\interfaces\model\Model;
-use que\database\model\ModelStack;
+use que\database\model\ModelCollection;
 
 class UserObserver implements Observer
 {
@@ -79,7 +79,7 @@ class UserObserver implements Observer
     /**
      * @inheritDoc
      */
-    public function onUpdating(ModelStack $models)
+    public function onUpdating(ModelCollection $models)
     {
         // TODO: Implement onUpdating() method.
         debug_print([$models,'onUpdating']);
@@ -88,7 +88,7 @@ class UserObserver implements Observer
     /**
      * @inheritDoc
      */
-    public function onUpdated(ModelStack $newModels, ModelStack $previousModels)
+    public function onUpdated(ModelCollection $newModels, ModelCollection $previousModels)
     {
         // TODO: Implement onUpdated() method.
         debug_print([['$newModels' => $newModels], ['$previousModels' => $previousModels], 'onUpdated']);
@@ -98,7 +98,7 @@ class UserObserver implements Observer
     /**
      * @inheritDoc
      */
-    public function onUpdateFailed(ModelStack $models, array $errors, $errorCode)
+    public function onUpdateFailed(ModelCollection $models, array $errors, $errorCode)
     {
         // TODO: Implement onUpdateFailed() method.
         $this->getSignal()->retryOperation(1);
@@ -108,7 +108,7 @@ class UserObserver implements Observer
     /**
      * @inheritDoc
      */
-    public function onUpdateRetryStarted(ModelStack $models)
+    public function onUpdateRetryStarted(ModelCollection $models)
     {
         // TODO: Implement onUpdateRetryStarted() method.
         debug_print(['onUpdateRetryStarted' => $models]);
@@ -117,7 +117,7 @@ class UserObserver implements Observer
     /**
      * @inheritDoc
      */
-    public function onUpdateRetryComplete(ModelStack $models, bool $status, int $attempts)
+    public function onUpdateRetryComplete(ModelCollection $models, bool $status, int $attempts)
     {
         // TODO: Implement onUpdateRetryComplete() method.
         debug_print(['onUpdateRetryComplete' => $models, $status ? 'true' : 'false', $attempts]);
@@ -126,7 +126,7 @@ class UserObserver implements Observer
     /**
      * @inheritDoc
      */
-    public function onDeleting(ModelStack $models)
+    public function onDeleting(ModelCollection $models)
     {
         // TODO: Implement onDeleting() method.
         $models->unsetWhen(function (Model $model) {
@@ -138,7 +138,7 @@ class UserObserver implements Observer
     /**
      * @inheritDoc
      */
-    public function onDeleted(ModelStack $models)
+    public function onDeleted(ModelCollection $models)
     {
         // TODO: Implement onDeleted() method.
         debug_print([$models,'onDeleted']);
@@ -148,7 +148,7 @@ class UserObserver implements Observer
     /**
      * @inheritDoc
      */
-    public function onDeleteFailed(ModelStack $models, array $errors, $errorCode)
+    public function onDeleteFailed(ModelCollection $models, array $errors, $errorCode)
     {
         // TODO: Implement onDeleteFailed() method.
         $this->getSignal()->retryOperation(3);
@@ -158,7 +158,7 @@ class UserObserver implements Observer
     /**
      * @inheritDoc
      */
-    public function onDeleteRetryStarted(ModelStack $models)
+    public function onDeleteRetryStarted(ModelCollection $models)
     {
         // TODO: Implement onDeleteRetryStarted() method.
         debug_print(['changed db obs', db()->changeDb('que') ? 'true' : 'false']);
@@ -168,7 +168,7 @@ class UserObserver implements Observer
     /**
      * @inheritDoc
      */
-    public function onDeleteRetryComplete(ModelStack $models, bool $status, int $attempts)
+    public function onDeleteRetryComplete(ModelCollection $models, bool $status, int $attempts)
     {
         // TODO: Implement onDeleteRetryComplete() method.
         debug_print(['onDeleteRetryComplete' => $models, $status ? 'true' : 'false', $attempts]);
