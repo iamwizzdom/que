@@ -2440,8 +2440,10 @@ function extention_from_filepath(string $path) {
  */
 function mk_dir($dir) {
 
-    if (!is_dir($dir) && !mkdir($dir, 0777, true))
-        throw new QueException("Directory could not be created");
+    if (!is_dir($dir)) {
+        if (!mkdir($dir, 0777, true))
+            throw new QueException("Directory could not be created");
+    }
 
     if (!is_dir($dir) || !is_writable($dir))
         throw new QueException("Directory not writable");
