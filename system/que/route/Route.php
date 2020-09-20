@@ -28,6 +28,7 @@ use que\http\output\response\Plain;
 use que\http\request\Request;
 use que\security\CSRF;
 use que\security\interfaces\RoutePermission;
+use que\session\Session;
 use que\template\Composer;
 
 final class Route extends Router
@@ -122,6 +123,8 @@ final class Route extends Router
             if (!class_exists($module, true)) throw new RouteException(
                 sprintf("The module [%s] bound to this route does not exist\n", $module),
                 "Route Error", HTTP::NOT_FOUND);
+
+            Session::startSession();
 
             switch ($route->getType()) {
                 case "web":
