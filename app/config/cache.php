@@ -56,12 +56,20 @@ return [
          | Set to [bool](true) to enable redis, otherwise [bool](false) to disable
          */
         'enable' => false
-    ]
+    ],
 
     /**
      * @Note: For optimum performance make sure to enable either memcached or redis;
      * better still, have them both enabled.
      * However, if both are disabled, Que will fallback to its native caching system (QueKip)
      */
+
+    'quekip' => [
+
+        /*
+         | Set the path to quekip session temp files
+         */
+        'save_path' => null
+    ]
 
 ];

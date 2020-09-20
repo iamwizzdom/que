@@ -21,7 +21,7 @@ class Session
     /**
      * @var bool
      */
-    private bool $sessionState = self::SESSION_NOT_STARTED;
+    private static bool $sessionState = self::SESSION_NOT_STARTED;
 
     /**
      * @var array
@@ -52,8 +52,7 @@ class Session
      */
     public static function getInstance(): Session
     {
-        if (!isset(self::$instance))
-            self::$instance = new self;
+        if (!isset(self::$instance)) self::$instance = new self;
         return self::$instance;
     }
 
@@ -61,11 +60,11 @@ class Session
      * @param array $options
      * @return bool
      */
-    public function startSession(array $options = [])
+    public static function startSession(array $options = [])
     {
-        if ($this->sessionState == self::SESSION_NOT_STARTED)
-            $this->sessionState = session_start($options);
-        return $this->sessionState;
+        if (self::$sessionState == self::SESSION_NOT_STARTED)
+            self::$sessionState = session_start($options);
+        return self::$sessionState;
     }
 
     /**
@@ -149,7 +148,7 @@ class Session
      */
     public function destroy()
     {
-        if ($this->sessionState == self::SESSION_STARTED) {
+        if (self::$sessionState == self::SESSION_STARTED) {
 
             $cache_config = (array) config('cache', []);
             $files = $this->getFiles();
@@ -165,7 +164,9 @@ class Session
             if ($memcached) $memcached->session_destroy();
             if ($redis) $redis->session_destroy();
 
-            return $this->sessionState = self::SESSION_NOT_STARTED;
+            $this->regenerateID();
+
+            return self::$sessionState = self::SESSION_NOT_STARTED;
         }
 
         return false;
