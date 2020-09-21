@@ -36,14 +36,15 @@ function bubble_sort(array $arr, bool $reverse = false): array
 {
     $len = count($arr);
     $bound = $len - 1;
+    $keys = array_keys($arr);
     for ($i = 0; $i < $len; $i++) {
         $swapped = false;
         $newBound = 0;
         for ($j = 0; $j < $bound; $j++) {
-            if ($arr[$j] > $arr[$j + 1]) {
-                $tmp = $arr[$j + 1];
-                $arr[$j + 1] = $arr[$j];
-                $arr[$j] = $tmp;
+            if ($arr[$keys[$j]] > $arr[$keys[$j + 1]]) {
+                $tmp = $arr[$keys[$j + 1]];
+                $arr[$keys[$j + 1]] = $arr[$keys[$j]];
+                $arr[$keys[$j]] = $tmp;
                 $swapped = true;
                 $newBound = $j;
             }
