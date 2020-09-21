@@ -41,16 +41,6 @@ class User extends State implements ArrayAccess
     private static array $model = [];
 
     /**
-     * @var array
-     */
-    private static array $database_config = [];
-
-    /**
-     * @var array
-     */
-    private static array $session_config = [];
-
-    /**
      * User constructor.
      */
     protected function __construct()
@@ -76,9 +66,7 @@ class User extends State implements ArrayAccess
         if (!self::isLoggedIn()) throw new QueRuntimeException("Trying to get a user instance when you're not logged in.",
                 "User Error", E_USER_ERROR, 0, PreviousException::getInstance(1));
 
-        self::$database_config = (array) config('database', []);
-        self::$session_config = (array) config('session', []);
-        self::$cache_config = (array) config('cache', []);
+        $session_config = (array) config('session', []);
 
         if (!isset(self::$instance)) {
 
@@ -94,12 +82,12 @@ class User extends State implements ArrayAccess
                 ]));
             }
 
-            if (self::$session_config['timeout'] === true && (APP_TIME >= (self::getLastSeen() + self::$session_config['timeout_time'])))
+            if ($session_config['timeout'] === true && (APP_TIME >= (self::getLastSeen() + $session_config['timeout_time'])))
                 self::logout(vsprintf("System session expired for security reasons. Please re-login (IP::%s)", [self::getLastIP()]));
 
             self::$user = &self::$state['data'];
 
-            if (self::$session_config['regeneration'] === true && ((APP_TIME - self::getLastSeen()) >= self::$session_config['regeneration_time']))
+            if ($session_config['regeneration'] === true && ((APP_TIME - self::getLastSeen()) >= $session_config['regeneration_time']))
                 self::regenerate();
 
             self::updateState();
@@ -126,10 +114,12 @@ class User extends State implements ArrayAccess
             "The specified model ({$model}) with key '{$modelKey}' does not implement the Que database model interface.",
             "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
+        $database_config = (array) config('database', []);
+
         if (!isset(self::$model[$modelKey]))
             self::$model[$modelKey] = new $model(self::$user,
-                self::$database_config['tables']['user']['name'] ?? 'users',
-                self::$database_config['tables']['user']['primary_key'] ?? 'id'
+                $database_config['tables']['user']['name'] ?? 'users',
+                $database_config['tables']['user']['primary_key'] ?? 'id'
             );
         return self::$model[$modelKey];
     }
@@ -197,10 +187,12 @@ class User extends State implements ArrayAccess
 
         if (empty($columnsToUpdate)) return false;
 
-        $primaryKey = self::$database_config['tables']['user']['primary_key'] ?? 'id';
+        $database_config = (array) config('database', []);
+
+        $primaryKey = $database_config['tables']['user']['primary_key'] ?? 'id';
 
         $update = db()->update()->table(
-            (self::$database_config['tables']['user']['name'] ?? 'users')
+            ($database_config['tables']['user']['name'] ?? 'users')
         )->columns($columnsToUpdate)->where($primaryKey, $this->getValue($primaryKey, 0))->exec();
 
         if ($status = $update->isSuccessful()) {
@@ -259,9 +251,11 @@ class User extends State implements ArrayAccess
     {
         Session::getInstance()->regenerateID();
 
-        $primaryKey = (self::$database_config['tables']['user']['primary_key'] ?? 'id');
+        $database_config = (array) config('database', []);
 
-        $user = db()->find((self::$database_config['tables']['user']['name'] ?? 'users'),
+        $primaryKey = ($database_config['tables']['user']['primary_key'] ?? 'id');
+
+        $user = db()->find(($database_config['tables']['user']['name'] ?? 'users'),
             self::$state['data']->{$primaryKey} ?? 0, $primaryKey);
 
         if ($user->isSuccessful()) {
