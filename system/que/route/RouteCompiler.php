@@ -88,15 +88,52 @@ trait RouteCompiler
             $uriSizeList[$k] = array_size($route->uriTokens);
         }
 
-        $sorted = bubble_sort($uriSizeList, true);
+        $sorted_sizes = bubble_sort($uriSizeList);
 
-        foreach ($sorted as $value) {
+        foreach ($sorted_sizes as $value) {
             $key = array_search($value, $uriSizeList);
             $sortedRoutes[] = $routes[$key];
             unset($uriSizeList[$key]);
         }
 
-        $routes = $sortedRoutes;
+        $routes = self::sortRoutesByArg($sortedRoutes, array_unique($sorted_sizes));
+    }
+
+    private static function sortRoutesByArg(array $routes, array $sizes) {
+
+        $group = [];
+
+        foreach ($sizes as $size) {
+
+            $group[$size] = array_filter($routes, function ($route) use ($size){
+                return array_size($route->uriTokens) == $size;
+            });
+
+            $group_without_arg = []; $group_with_arg = []; $arg_sizes = [];
+
+            foreach ($group[$size] as $key => $route) {
+                if (!$route instanceof RouteEntry) continue;
+                if (RouteInspector::routeHasArgs($route)) {
+                    $arg_size = 0;
+                    foreach ($route->uriTokens as $arg) if (preg_match("/{(.*?)}/", $arg) == 1) $arg_size++;
+                    $arg_sizes[$key] = $arg_size;
+                    $group_with_arg[$key] = $route;
+                } else $group_without_arg[] = $route;
+            }
+
+            if (!empty($group_with_arg)) {
+                $sorted_sizes = bubble_sort($arg_sizes);
+                foreach ($sorted_sizes as $sorted_size) {
+                    $key = array_search($sorted_size, $arg_sizes);
+                    $group_without_arg[] = $group_with_arg[$key];
+                    unset($arg_sizes[$key]);
+                }
+            }
+
+            $group[$size] = $group_without_arg;
+        }
+
+        return array_collapse($group);
     }
 
 }
