@@ -8,13 +8,14 @@
 
 namespace que\security;
 
-
+use JsonSerializable;
+use que\http\HTTP;
 use que\http\output\response\Html;
 use que\http\output\response\Json;
 use que\http\output\response\Jsonp;
 use que\http\output\response\Plain;
 
-class MiddlewareResponse
+abstract class MiddlewareResponse
 {
     /**
      * @var bool
@@ -24,12 +25,17 @@ class MiddlewareResponse
     /**
      * @var string
      */
-    private string $message = '';
+    private ?string $title = "Middleware Error";
 
     /**
-     * @var Json|Jsonp|Plain|Html|array
+     * @var string|array|JsonSerializable|Json|Jsonp|Html|Plain
      */
     private $response = null;
+
+    /**
+     * @var int
+     */
+    private int $responseCode = HTTP::OK;
 
     /**
      * @return bool|null
@@ -42,7 +48,7 @@ class MiddlewareResponse
     /**
      * @param bool $hasAccess
      */
-    public function setAccess(bool $hasAccess): void
+    protected function setAccess(bool $hasAccess): void
     {
         $this->access = $hasAccess;
     }
@@ -50,21 +56,21 @@ class MiddlewareResponse
     /**
      * @return string
      */
-    public function getMessage(): string
+    public function getTitle(): string
     {
-        return $this->message;
+        return $this->title;
     }
 
     /**
-     * @param string $message
+     * @param string $title
      */
-    public function setMessage(string $message): void
+    protected function setTitle(string $title): void
     {
-        $this->message = $message;
+        $this->title = $title;
     }
 
     /**
-     * @return Html|Json|Jsonp|Plain|array
+     * @return string|array|JsonSerializable|Json|Jsonp|Html|Plain
      */
     public function getResponse()
     {
@@ -72,9 +78,25 @@ class MiddlewareResponse
     }
 
     /**
-     * @param Html|Json|Jsonp|Plain|array $response
+     * @param string|array|JsonSerializable|Json|Jsonp|Html|Plain $response
      */
-    public function setResponse($response) {
+    protected function setResponse($response) {
         $this->response = $response;
+    }
+
+    /**
+     * @return int
+     */
+    public function getResponseCode(): int
+    {
+        return $this->responseCode;
+    }
+
+    /**
+     * @param int $responseCode
+     */
+    protected function setResponseCode(int $responseCode): void
+    {
+        $this->responseCode = $responseCode;
     }
 }

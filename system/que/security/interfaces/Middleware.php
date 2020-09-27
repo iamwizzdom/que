@@ -8,17 +8,20 @@
 
 namespace que\security\interfaces;
 
-
 use que\http\input\Input;
 use que\security\MiddlewareResponse;
 
 interface Middleware
 {
+    /**
+     * @param Middleware $next
+     * @return Middleware
+     */
+    public function setNext(Middleware $next): Middleware;
 
     /**
      * @param Input $input
-     * @param MiddlewareResponse $response
-     * @return mixed
+     * @return MiddlewareResponse
      */
-    public function handle(Input $input, MiddlewareResponse $response);
+    public function handle(Input $input): MiddlewareResponse;
 }

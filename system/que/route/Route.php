@@ -18,7 +18,6 @@ use que\common\structure\Info;
 use que\common\structure\Page;
 use que\common\structure\Receiver;
 use que\common\structure\Resource;
-use que\common\validator\Track;
 use que\error\RuntimeError;
 use que\http\HTTP;
 use que\http\output\response\Html;
@@ -26,7 +25,6 @@ use que\http\output\response\Json;
 use que\http\output\response\Jsonp;
 use que\http\output\response\Plain;
 use que\http\request\Request;
-use que\security\CSRF;
 use que\security\interfaces\RoutePermission;
 use que\session\Session;
 use que\template\Composer;
@@ -107,7 +105,7 @@ final class Route extends Router
             self::setRouteParams($route['args']);
             self::setCurrentRoute($route = $route['route']);
 
-            self::validateRouteAccessibility($route);
+            self::handleRequestMiddleware($route);
 
             self::$http->_header()->setBulk([
                 'Access-Control-Allow-Origin' => '*',
@@ -168,53 +166,35 @@ final class Route extends Router
 
             if ($instance instanceof Add) {
 
-                if (self::$method === "GET") {
-                    if ($route->isForbidCSRF() === true) CSRF::getInstance()->generateToken();
-                    $instance->onLoad(self::$http->input());
-                } else {
-                    if ($route->isForbidCSRF() === true) self::validateCSRF();
-                    $instance->onReceive(self::$http->input());
-                }
+                if (self::$method === "GET") $instance->onLoad(self::$http->input());
+                else $instance->onReceive(self::$http->input());
 
             } elseif ($instance instanceof Edit) {
 
-                if (self::$method === "GET") {
-                    if ($route->isForbidCSRF() === true) CSRF::getInstance()->generateToken();
-                    $instance->onLoad(self::$http->input(), $instance->info(self::$http->input()));
-                } else {
-                    if ($route->isForbidCSRF() === true) self::validateCSRF();
-                    $instance->onReceive(self::$http->input(), $instance->info(self::$http->input()));
-                }
+                if (self::$method === "GET") $instance->onLoad(self::$http->input(), $instance->info(self::$http->input()));
+                else $instance->onReceive(self::$http->input(), $instance->info(self::$http->input()));
 
             } elseif ($instance instanceof Info) {
 
-                if (self::$method === "GET") {
-                    if ($route->isForbidCSRF() === true) CSRF::getInstance()->generateToken();
-                    $instance->onLoad(self::$http->input(), $instance->info(self::$http->input()));
-                } else {
+                if (self::$method === "GET") $instance->onLoad(self::$http->input(), $instance->info(self::$http->input()));
+                else {
 
-                    if (!$instance instanceof Receiver)
-                        throw new RouteException(sprintf(
+                    if (!$instance instanceof Receiver) throw new RouteException(sprintf(
                             "The module bound to this route is not compatible with the %s request method.\n Compatible method: GET",
                             self::$method), "Route Error", HTTP::METHOD_NOT_ALLOWED);
 
-                    if ($route->isForbidCSRF() === true) self::validateCSRF();
                     $instance->onReceive(self::$http->input(), $instance->info(self::$http->input()));
                 }
 
             } elseif ($instance instanceof Page) {
 
-                if (self::$method === "GET") {
-                    if ($route->isForbidCSRF() === true) CSRF::getInstance()->generateToken();
-                    $instance->onLoad(self::$http->input());
-                } else {
+                if (self::$method === "GET") $instance->onLoad(self::$http->input());
+                else {
 
-                    if (!$instance instanceof Receiver)
-                        throw new RouteException(sprintf(
+                    if (!$instance instanceof Receiver) throw new RouteException(sprintf(
                             "The module bound to this route is not compatible with the %s request method.\n Compatible method: GET",
                             self::$method), "Route Error", HTTP::METHOD_NOT_ALLOWED);
 
-                    if ($route->isForbidCSRF() === true) self::validateCSRF();
                     $instance->onReceive(self::$http->input());
                 }
 
@@ -255,37 +235,44 @@ final class Route extends Router
                 "a valid API module interface\n"
             );
 
-            if ($route->isForbidCSRF() === true) {
-                self::validateCSRF();
-                self::$http->_header()->set('X-Xsrf-Token', CSRF::getInstance()->getToken());
-                self::$http->_header()->set('X-Track-Token', Track::generateToken());
-            }
-
             $response = $instance->process(self::$http->input());
 
             if ($response instanceof Json) {
+
                 if (!$data = $response->getJson()) throw new RouteException(
-                    "Failed to output response\n", "Output Error",
+                    "Failed to output response", "Output Error",
                     HTTP::NO_CONTENT, PreviousException::getInstance(1));
+
                 echo $data;
+
             } elseif ($response instanceof JsonSerializable) {
+
                 if (!$data = $response->jsonSerialize()) throw new RouteException(
-                    "Failed to output response\n", "Output Error",
+                    "Failed to output response", "Output Error",
                     HTTP::NO_CONTENT, PreviousException::getInstance(1));
+
                 self::$http->_header()->set('Content-Type', mime_type_from_extension('js'), true);
                 echo $data;
+
             } elseif ($response instanceof Jsonp) {
+
                 if (!$data = $response->getJsonp()) throw new RouteException(
-                    "Failed to output response\n", "Output Error",
+                    "Failed to output response", "Output Error",
                     HTTP::NO_CONTENT, PreviousException::getInstance(1));
+
                 self::$http->_header()->set('Content-Type', mime_type_from_extension('js'), true);
                 echo $data;
+
             } elseif ($response instanceof Html) {
+
                 self::$http->_header()->set('Content-Type', mime_type_from_extension('html'), true);
                 echo $response->getHtml();
+
             } elseif ($response instanceof Plain) {
+
                 self::$http->_header()->set('Content-Type', mime_type_from_extension('txt'), true);
                 echo $response->getData();
+
             } elseif (is_array($response)) {
 
                 if (isset($response['code']) && is_numeric($response['code']))
@@ -304,11 +291,12 @@ final class Route extends Router
                 }
 
                 $data = Json::encode($response, $option, $depth);
-                if (!$data) throw new RouteException("Failed to output response\n");
+                if (!$data) throw new RouteException("Failed to output response", "Output Error",
+                    HTTP::NO_CONTENT, PreviousException::getInstance(1));
                 echo $data;
 
             } else throw new RouteException(
-                "Sorry, the API module bound to this route did not return a valid response\n"
+                "Sorry, the API module bound to this route did not return a valid response"
             );
 
         } catch (RouteException $e) {
@@ -341,12 +329,6 @@ final class Route extends Router
                 "The module bound to this route is registered\n as an resource module but does not implement \n" .
                 "a valid resource module interface\n"
             );
-
-            if ($route->isForbidCSRF() === true) {
-                self::validateCSRF();
-                self::$http->_header()->set('X-Xsrf-Token', CSRF::getInstance()->getToken());
-                self::$http->_header()->set('X-Track-Token', Track::generateToken());
-            }
 
             $instance->render(self::$http->input());
 

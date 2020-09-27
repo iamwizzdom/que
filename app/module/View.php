@@ -28,7 +28,6 @@ class View extends Manager implements Page, \que\security\interfaces\RoutePermis
             'hello' => 'Hello world, Welcome to Que'
 //            'hello' => 'Welcome to Que'
         ]);
-
     }
 
     /**

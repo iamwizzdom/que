@@ -1,26 +1,17 @@
 <?php
 
-
 namespace que\route;
 
-
-use Exception;
 use que\common\exception\PreviousException;
-use que\common\exception\QueException;
 use que\common\exception\RouteException;
-use que\common\validator\Track;
 use que\http\HTTP;
 use que\http\input\Input;
 use que\http\output\response\Html;
 use que\http\output\response\Json;
 use que\http\output\response\Jsonp;
 use que\http\output\response\Plain;
-use que\http\request\Request;
-use que\security\CSRF;
 use que\security\interfaces\Middleware;
-use que\security\JWT\TokenEncoded;
 use que\security\MiddlewareResponse;
-use que\support\Arr;
 use que\support\Num;
 use que\utility\random\UUID;
 
@@ -143,174 +134,146 @@ abstract class RouteInspector
     }
 
     /**
+     * @param RouteEntry $route
      * @throws RouteException
      */
-    public static function validateCSRF() {
+    public static function handleRequestMiddleware(RouteEntry $route) {
 
-        $token = Input::getInstance()->get('X-Csrf-Token');
-        if (empty($token)) {
-            foreach (
-                [
-                    'X-CSRF-TOKEN',
-                    'x-csrf-token',
-                    'csrf',
-                    'Csrf',
-                    'CSRF'
-                ] as $key
-            ) {
-                $token = Input::getInstance()->get($key);
-                if (!empty($token)) break;
+        $middlewareStack = array_merge(self::getGlobalMiddlewareStack(), self::getRouteMiddlewareStack($route));
+        self::linkMiddleware($middlewareStack);
+        $middlewareResponse = current($middlewareStack)->handle(Input::getInstance());
+        if ($middlewareResponse instanceof MiddlewareResponse) {
+
+            if ($middlewareResponse->hasAccess() === false) {
+
+                $http = \http();
+
+                $response = $middlewareResponse->getResponse();
+
+                if ($response instanceof Json) {
+
+                    if (!$data = $response->getJson()) throw new RouteException(
+                        "Failed to output response", "Output Error",
+                        HTTP::NO_CONTENT, PreviousException::getInstance(1));
+
+                    $http->_header()->set('Content-Type', mime_type_from_extension('json'), true);
+                    echo $data;
+                    exit();
+
+                } elseif ($response instanceof Jsonp) {
+
+                    if (!$data = $response->getJsonp()) throw new RouteException(
+                        "Failed to output response", "Output Error",
+                        HTTP::NO_CONTENT, PreviousException::getInstance(1));
+
+                    $http->_header()->set('Content-Type', mime_type_from_extension('js'), true);
+                    echo $data;
+                    exit();
+
+                } elseif ($response instanceof Html) {
+
+                    $http->_header()->set('Content-Type', mime_type_from_extension('html'), true);
+                    echo $response->getHtml();
+                    exit();
+
+                } elseif ($response instanceof Plain) {
+
+                    $http->_header()->set('Content-Type', mime_type_from_extension('txt'), true);
+                    echo $response->getData();
+                    exit();
+
+                } elseif (is_array($response)) {
+
+                    if (is_numeric($response['code'] ?? null)) $http->http_response_code(intval($response['code']));
+
+                    $option = 0; $depth = 512;
+
+                    if (is_numeric($response['option'] ?? null)) {
+                        $option = intval($response['option']);
+                        unset($response['option']);
+                    }
+
+                    if (is_numeric($response['depth'] ?? null)) {
+                        $depth = intval($response['depth']);
+                        unset($response['depth']);
+                    }
+
+                    $data = json_encode($response, $option, $depth);
+                    if (!$data) throw new RouteException("Failed to output response", "Output Error",
+                        HTTP::NO_CONTENT, PreviousException::getInstance(1));
+
+                    $http->_header()->set('Content-Type', mime_type_from_extension('js'), true);
+                    echo $data;
+                    exit();
+                }
+
+                throw new RouteException($response, $middlewareResponse->getTitle(), $middlewareResponse->getResponseCode());
             }
         }
+    }
 
-        try {
-
-            CSRF::getInstance()->validateToken((!is_null($token) ? $token : ""));
-            CSRF::getInstance()->generateToken();
-
-        } catch (QueException $e) {
-
-            CSRF::getInstance()->generateToken();
-            throw new RouteException($e->getMessage(), $e->getTitle(), HTTP::EXPIRED_AUTHENTICATION);
+    private static function linkMiddleware(array $middlewareStack) {
+        $currentMiddleware = current($middlewareStack); $next = null;
+        for ($i = 1; $i < count($middlewareStack); $i++) {
+            if ($next === null) $next = $currentMiddleware->setNext($middlewareStack[$i]);
+            else $next = $next->setNext($middlewareStack[$i]);
         }
-
     }
 
     /**
-     * @param RouteEntry $routeEntry
+     * @return array
      * @throws RouteException
      */
-    public static function validateRouteAccessibility(RouteEntry $routeEntry) {
+    private static function getGlobalMiddlewareStack() {
 
-        if (!empty($routeEntry->getAllowedMethods()) && !in_array(Request::getInstance()->getMethod(), $routeEntry->getAllowedMethods())) {
+        $globalMiddleware = (array) config('middleware.global', []);
 
-            throw new RouteException(
-                "The ". Request::getInstance()->getMethod() . " method is not supported for this route. Supported methods: "
-                . implode(", ", $routeEntry->getAllowedMethods()) . ".", "Access Denied", HTTP::EXPIRED_AUTHENTICATION);
-        }
+        $stack = [];
 
-        if ($routeEntry->isUnderMaintenance() === true) throw new RouteException(
-            "This route is currently under maintenance, please try again later",
-            "Access Denied", HTTP::MAINTENANCE);
+        foreach ($globalMiddleware as $middleware) {
 
-        if ($routeEntry->isRequireLogIn() === true && !is_logged_in()) {
+            $middleware = new $middleware();
 
-            if (!empty($routeEntry->getRedirectUrl())) {
-
-                redirect($routeEntry->getRedirectUrl(), [
-                    [
-                        'message' => sprintf(
-                            "You don't have access to this route (%s), login and try again.",
-                            current_url()),
-                        'status' => INFO
-                    ]
-                ]);
-
-            } else throw new RouteException("You don't have access to the current route, login and try again.",
-                "Access Denied", HTTP::UNAUTHORIZED);
-
-        } elseif ($routeEntry->isRequireLogIn() === false && is_logged_in()) {
-
-            if (!empty($routeEntry->getRedirectUrl())) {
-
-                redirect($routeEntry->getRedirectUrl(), [
-                    [
-                        'message' => sprintf(
-                            "You don't have access to this route (%s), logout and try again.",
-                            current_url()),
-                        'status' => INFO
-                    ]
-                ]);
-
-            } else throw new RouteException("You don't have access to the current route, logout and try again.",
-                "Access Denied", HTTP::UNAUTHORIZED);
-
-        }
-
-        if ($routeEntry->getMiddleware() !== null) {
-
-            $middleware = Arr::get(config("middleware", []), $routeEntry->getMiddleware());
-
-            if (!empty($middleware) && (class_exists($middleware, true) && in_array(
-                        Middleware::class, class_implements($middleware, true)))) {
-
-                $middleware = new $middleware();
-
-                if ($middleware instanceof Middleware) {
-
-                    $middlewareResponse = new MiddlewareResponse();
-
-                    $middleware->handle(Input::getInstance(), $middlewareResponse);
-
-                    if ($middlewareResponse->hasAccess() === false) {
-
-                        $http = http();
-
-                        $response = $middlewareResponse->getResponse();
-
-                        if ($response && $routeEntry->isForbidCSRF() === true) {
-                            RouteInspector::validateCSRF();
-                            $http->_header()->set('X-Xsrf-Token', CSRF::getInstance()->getToken());
-                            $http->_header()->set('X-Track-Token', Track::generateToken());
-                        }
-
-                        if ($response instanceof Json) {
-                            if (!$data = $response->getJson()) throw new RouteException(
-                                "Failed to output response\n", "Output Error",
-                                HTTP::NO_CONTENT, PreviousException::getInstance(1));
-                            $http->_header()->set('Content-Type', mime_type_from_extension('json'), true);
-                            echo $data;
-                            exit();
-                        } elseif ($response instanceof Jsonp) {
-                            if (!$data = $response->getJsonp()) throw new RouteException(
-                                "Failed to output response\n", "Output Error",
-                                HTTP::NO_CONTENT, PreviousException::getInstance(1));
-                            $http->_header()->set('Content-Type', mime_type_from_extension('js'), true);
-                            echo $data;
-                            exit();
-                        } elseif ($response instanceof Html) {
-                            $http->_header()->set('Content-Type', mime_type_from_extension('html'), true);
-                            echo $response->getHtml();
-                            exit();
-                        } elseif ($response instanceof Plain) {
-                            $http->_header()->set('Content-Type', mime_type_from_extension('txt'), true);
-                            echo $response->getData();
-                            exit();
-                        } elseif (is_array($response)) {
-
-                            if (isset($response['code']) && is_numeric($response['code']))
-                                $http->http_response_code(intval($response['code']));
-
-                            $option = 0; $depth = 512;
-
-                            if (isset($response['option']) && is_numeric($response['option'])) {
-                                $option = intval($response['option']);
-                                unset($response['option']);
-                            }
-
-                            if (isset($response['depth']) && is_numeric($response['depth'])) {
-                                $depth = intval($response['depth']);
-                                unset($response['depth']);
-                            }
-
-                            $data = json_encode($response, $option, $depth);
-                            if (!$data) throw new RouteException("Failed to output response\n");
-                            echo $data;
-                            exit();
-                        }
-
-                        throw new RouteException(
-                            $middlewareResponse->getMessage() ?: ("MIDDLEWARE CONSTRAINT: You don't have access to the current route (" . current_url() . ")"),
-                            "Access Denied", HTTP::UNAUTHORIZED);
-                    }
-                    return;
-                }
+            if ($middleware instanceof Middleware) {
+                $stack[] = $middleware;
+                continue;
             }
 
-            throw new RouteException(
-                "This route is registered with a middleware [Key: {$routeEntry->getMiddleware()}]," .
-                " but a valid middleware was not found with that key.",
-                "Middleware Error", HTTP::METHOD_NOT_ALLOWED);
+            throw new RouteException("The registered global middleware [{$middleware}] is invalid",
+                "Middleware Error", HTTP::INTERNAL_SERVER_ERROR);
         }
+
+        return $stack;
+    }
+
+    /**
+     * @param RouteEntry $route
+     * @return array
+     * @throws RouteException
+     */
+    private static function getRouteMiddlewareStack(RouteEntry $route) {
+
+        $routeMiddleware = (array) config('middleware.route', []);
+
+        $stack = [];
+
+        foreach ($route->getMiddleware() as $target) {
+
+            if (!isset($routeMiddleware[$target]))
+                throw new RouteException("The target route middleware [{$target}] does not exist",
+                    "Middleware Error", HTTP::INTERNAL_SERVER_ERROR);
+
+            $middleware = new $routeMiddleware[$target]();
+
+            if ($middleware instanceof Middleware) {
+                $stack[] = $middleware;
+                continue;
+            }
+
+            throw new RouteException("The target route middleware [{$target}] is invalid",
+                "Middleware Error", HTTP::INTERNAL_SERVER_ERROR);
+        }
+
+        return $stack;
     }
 }

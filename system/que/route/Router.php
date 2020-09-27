@@ -33,8 +33,8 @@ abstract class Router extends RouteInspector
         $routeEntry = self::getRouteEntryFromName($routeName);
         if (!$routeEntry instanceof RouteEntry) throw new RouteException("Route [{$routeName}] not found", "Route Error",
            HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
-        if ($routeEntry->isRequireLogIn() === true && !is_logged_in()) return '#';
-        if ($routeEntry->isRequireLogIn() === false && is_logged_in()) return '#';
+        if ($routeEntry->isRequireLogin() === true && !is_logged_in()) return '#';
+        if ($routeEntry->isRequireLogin() === false && is_logged_in()) return '#';
 
         $uri = $routeEntry->getUri();
 

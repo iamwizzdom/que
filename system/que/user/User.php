@@ -297,7 +297,7 @@ class User extends State implements ArrayAccess
      */
     public static function logout($message = null, string $redirect_to = null)
     {
-        $redirect_to = $redirect_to ?? (current_route()->isRequireLogIn() ? current_route()->getRedirectUrl() : current_uri());
+        $redirect_to = $redirect_to ?? (current_route()->isRequireLogin() ? current_route()->getRedirectUrl() : current_uri());
         $message = $message ?? sprintf("Good bye, see you soon. Log-out successful (IP::%s)", self::getLastIP());
         self::flush();
         if (current_route()->getType() != 'web') throw new QueRuntimeException($message, "User Error",

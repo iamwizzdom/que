@@ -87,7 +87,7 @@ class RouteRegistrar
                     throw new RouteException("Invalid group route type for {$prefix}[::]{$entry->getUri()}", "Route Error");
 
                 if ($middleware !== null) $entry->setMiddleware($middleware);
-                if ($requireLogin !== null) $entry->requireLogIn($requireLogin, $redirectUrl);
+                if ($requireLogin !== null) $entry->requireLogin($requireLogin, $redirectUrl);
 
                 $route = trim($entry->getUri());
 
@@ -143,7 +143,7 @@ class RouteRegistrar
                 $entry->setType('web');
 
                 if ($middleware !== null) $entry->setMiddleware($middleware);
-                if ($requireLogin !== null) $entry->requireLogIn($requireLogin, $redirectUrl);
+                if ($requireLogin !== null) $entry->requireLogin($requireLogin, $redirectUrl);
 
                 $route = trim($entry->getUri());
 
@@ -199,7 +199,7 @@ class RouteRegistrar
                 $entry->setType('api');
 
                 if ($middleware !== null) $entry->setMiddleware($middleware);
-                if ($requireLogin !== null) $entry->requireLogIn($requireLogin, $redirectUrl);
+                if ($requireLogin !== null) $entry->requireLogin($requireLogin, $redirectUrl);
 
                 $route = trim($entry->getUri());
 
@@ -254,7 +254,7 @@ class RouteRegistrar
                 $entry->setType('resource');
 
                 if ($middleware !== null) $entry->setMiddleware($middleware);
-                if ($requireLogin !== null) $entry->requireLogIn($requireLogin, $redirectUrl);
+                if ($requireLogin !== null) $entry->requireLogin($requireLogin, $redirectUrl);
 
                 $route = trim($entry->getUri());
 

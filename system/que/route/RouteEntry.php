@@ -56,7 +56,7 @@ class RouteEntry
     /**
      * @var bool
      */
-    private ?bool $requireLogIn = null;
+    private ?bool $requireLogin = null;
 
     /**
      * @var string
@@ -74,9 +74,9 @@ class RouteEntry
     private bool $underMaintenance = false;
 
     /**
-     * @var string
+     * @var string[]
      */
-    private ?string $middleware = null;
+    private ?array $middleware = null;
 
     /**
      * RouteEntry constructor.
@@ -244,18 +244,18 @@ class RouteEntry
     /**
      * @return bool|null
      */
-    public function isRequireLogIn(): ?bool
+    public function isRequireLogin(): ?bool
     {
-        return $this->requireLogIn;
+        return $this->requireLogin;
     }
 
     /**
-     * @param bool $requireLogIn
+     * @param bool $requireLogin
      * @param string|null $redirectUrl
      */
-    public function requireLogIn(bool $requireLogIn, string $redirectUrl = null)
+    public function requireLogin(bool $requireLogin, string $redirectUrl = null)
     {
-        $this->requireLogIn = $requireLogIn;
+        $this->requireLogin = $requireLogin;
         $this->redirectUrl = $redirectUrl;
     }
 
@@ -297,18 +297,19 @@ class RouteEntry
     }
 
     /**
-     * @return string|null
+     * @return string[]
      */
-    public function getMiddleware(): ?string
+    public function getMiddleware()
     {
         return $this->middleware;
     }
 
     /**
-     * @param string $middleware
+     * @param string|string[] $middleware
      */
-    public function setMiddleware(string $middleware): void
+    public function setMiddleware($middleware): void
     {
+        if (!is_array($middleware)) $middleware = [(string) $middleware];
         $this->middleware = $middleware;
     }
 
