@@ -1,7 +1,5 @@
 <?php
 
-session_start();
-
 require 'config/config.php';
 
 require QUE_PATH . '/autoloader.php';

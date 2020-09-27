@@ -22,7 +22,7 @@ class Menu implements RoutePermission {
     public function hasPermission(RouteEntry $route): bool
     {
         // TODO: Implement hasPermission() method.
-        if ($route->isRequireLogIn() === true && !is_logged_in()) return false;
+        if ($route->isRequireLogin() === true && !is_logged_in()) return false;
         return true;
     }
 }

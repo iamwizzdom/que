@@ -18,6 +18,7 @@ use que\http\request\Header;
 use que\http\request\Patch;
 use que\http\request\Post;
 use que\http\request\Put;
+use que\http\request\Request;
 use que\http\request\Server;
 use que\support\Arr;
 use que\support\interfaces\QueArrayAccess;
@@ -34,7 +35,12 @@ class Input implements QueArrayAccess
     /**
      * @var array
      */
-    private array $pointer = [];
+    private array $pointer;
+
+    /**
+     * @var Request
+     */
+    private Request $request;
 
     /**
      * @var Post
@@ -175,9 +181,18 @@ class Input implements QueArrayAccess
     }
 
     /**
+     * @return Request
+     */
+    public function getRequest(): Request
+    {
+        return $this->request;
+    }
+
+    /**
      * @return array
      */
     private function get_all_input(): array {
+        $this->request = HTTP::getInstance()->_request();
         return array_merge(
             ($this->post = HTTP::getInstance()->_post())->_get(),
             ($this->put = HTTP::getInstance()->_put())->_get(),

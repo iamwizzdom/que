@@ -14,7 +14,6 @@ use que\common\validator\Track;
 use que\route\Route;
 use que\security\CSRF;
 use que\session\Session;
-use que\support\Config;
 
 
 class Composer
@@ -42,7 +41,12 @@ class Composer
     /**
      * @var Menu
      */
-    private static ?Menu $menu = null;
+    private ?Menu $menu = null;
+
+    /**
+     * @var Form|null
+     */
+    private ?Form $form;
 
     /**
      * @var array
@@ -95,6 +99,7 @@ class Composer
     protected function __construct(bool $singleton)
     {
         $this->singleton = $singleton;
+        $this->form = Form::getInstance($singleton);
     }
 
     private function __clone()
@@ -259,7 +264,7 @@ class Composer
      */
     public function form(array $formData)
     {
-        Form::getInstance($this->singleton)->setFormData($formData);
+        $this->form->setFormData($formData);
     }
 
     /**
@@ -267,7 +272,7 @@ class Composer
      */
     public function getForm(): Form
     {
-        return Form::getInstance($this->singleton);
+        return $this->form;
     }
 
     /**
@@ -357,7 +362,7 @@ class Composer
         $route = Route::getCurrentRoute();
         if (empty($route)) return "";
         return $route->getUri() == '/' ? 'home' : preg_replace("[/]", "-",
-            preg_replace('/\{(.*?)\}/', '-', $route->getUri()));
+            preg_replace('/{(.*?)}/', '-', $route->getUri()));
     }
 
     /**
@@ -429,7 +434,7 @@ class Composer
 
         $tmpHeader = config('template.app.header');
 
-        if (!isset(self::$menu)) self::$menu = new Menu();
+        if (empty($this->menu)) $this->menu = new Menu();
 
         $route = Route::getCurrentRoute();
 
@@ -491,7 +496,7 @@ class Composer
         $this->setContext("data", $this->getData());
         $this->setContext("alert", $this->getAlert());
         $this->setContext("form", $this->getForm());
-        $this->setContext("menu", self::$menu->getMenu());
+        $this->setContext("menu", $this->menu->getMenu());
         $this->setContext('header', $this->getHeader());
         $this->setContext("pagination", Pagination::getInstance());
         $this->setPrepared(true);
@@ -502,7 +507,7 @@ class Composer
     /**
      * This will render your template using the smarty templating engine
      * @param bool $returnAsString
-     * @return false|string
+     * @return false|string|void
      */
     public function renderWithSmarty(bool $returnAsString = false)
     {
@@ -531,7 +536,7 @@ class Composer
     /**
      * This will render your template using the twig templating engine
      * @param bool $returnAsString
-     * @return false|string
+     * @return false|string|void
      */
     public function renderWithTwig(bool $returnAsString = false)
     {

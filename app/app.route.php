@@ -22,7 +22,7 @@ Route::register()->web(function (RouteEntry $entry) {
 
 Route::register()->api(function (RouteEntry $entry) {
     $entry->allowPostRequest()->allowPutRequest()->allowGetRequest();
-    $entry->setUri('api/{id:num}');
+    $entry->setUri('api');
     $entry->forbidCSRF();
     $entry->setModule(App::class);
     $entry->setMiddleware('user.auth');

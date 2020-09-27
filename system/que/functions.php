@@ -2601,7 +2601,7 @@ function base_url(string $url = null, bool $forceUrl = false): string
     if (!$isNull) {
         $routeEntry = Route::getRouteEntryFromUri($url);
         if ($routeEntry instanceof RouteEntry) {
-            if ($routeEntry->isRequireLogIn() === true && !is_logged_in()) {
+            if ($routeEntry->isRequireLogin() === true && !is_logged_in()) {
                 if (!$forceUrl) return '#';
             } elseif (!has_route_permission($routeEntry) && !$forceUrl) return '#';
         }
