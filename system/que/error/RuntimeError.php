@@ -82,11 +82,9 @@ abstract class RuntimeError
             }
         }
 
-        if (!empty($route) && $route->getType() == 'api' || $requestedWith == 'XMLHttpRequest') {
+        http()->_header()->set('Content-Type', $route->getContentType());
 
-            if (!empty($route) && $route->getType() != 'api') {
-                http()->_header()->set('Content-Type', 'application/json');
-            }
+        if ($route->getType() == 'api' || $requestedWith == 'XMLHttpRequest') {
 
             $error = array_merge($error, [
                 'status' => false,
@@ -95,7 +93,7 @@ abstract class RuntimeError
 
             echo json_encode($error, JSON_PRETTY_PRINT);
 
-        } elseif (!empty($route) && $route->getType() == 'resource') {
+        } elseif ($route->getType() == 'resource') {
 
             $image = new ImageGenerator();
 
