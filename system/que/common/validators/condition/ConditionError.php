@@ -227,7 +227,7 @@ class ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->isEqual($this->validator->getValue("{$this->getKey()}_confirmation")))
-            $this->setError($error);
+            $this->validator->addConditionError("{$this->getKey()}_confirmation", $error);
         return $this;
     }
 
