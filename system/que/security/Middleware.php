@@ -6,15 +6,23 @@ use que\http\input\Input;
 
 abstract class Middleware extends MiddlewareResponse implements interfaces\Middleware
 {
-    private interfaces\Middleware $next;
+    private ?interfaces\Middleware $next = null;
 
-    public function setNext(interfaces\Middleware $next): interfaces\Middleware
+    /**
+     * @param interfaces\Middleware $next
+     * @return interfaces\Middleware
+     */
+    final public function setNext(interfaces\Middleware $next): interfaces\Middleware
     {
         // TODO: Implement setNext() method.
         $this->next = $next;
         return $next;
     }
 
+    /**
+     * @param Input $input
+     * @return $this|MiddlewareResponse
+     */
     public function handle(Input $input): MiddlewareResponse
     {
         // TODO: Implement handle() method.
