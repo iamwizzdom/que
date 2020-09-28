@@ -93,252 +93,221 @@ final class Route extends Router
         }
     }
 
+    /**
+     * @throws RouteException
+     */
     private static function render() {
 
-        try {
+        $route = self::resolveRoute(server('REQUEST_URI'));
 
-            $route = self::resolveRoute(server('REQUEST_URI'));
+        if (empty($route) || !isset($route['route']) || !$route['route'] instanceof RouteEntry)
+            throw new RouteException(sprintf("%s is an invalid url", current_url()), "Route Error", HTTP::NOT_FOUND);
 
-            if (empty($route) || !isset($route['route']) || !$route['route'] instanceof RouteEntry)
-                throw new RouteException(sprintf("%s is an invalid url", current_url()), "Route Error", HTTP::NOT_FOUND);
+        self::setRouteParams($route['args']);
+        self::setCurrentRoute($route = $route['route']);
 
-            self::setRouteParams($route['args']);
-            self::setCurrentRoute($route = $route['route']);
+        self::handleRequestMiddleware($route);
 
-            self::handleRequestMiddleware($route);
+        self::$http->_header()->setBulk([
+            'Access-Control-Allow-Origin' => '*',
+            'Access-Control-Allow-Methods' => !empty($route->getAllowedMethods()) ? implode(
+                ", ", $route->getAllowedMethods()) : 'GET, POST, PUT, PATCH, DELETE',
+            'Cache-Control' => 'no-cache, must-revalidate',
+            'Expires' => 'Mon, 26 Jul 1997 05:00:00 GMT'
+        ]);
 
-            self::$http->_header()->setBulk([
-                'Access-Control-Allow-Origin' => '*',
-                'Access-Control-Allow-Methods' => !empty($route->getAllowedMethods()) ? implode(
-                    ", ", $route->getAllowedMethods()) : 'GET, POST, PUT, PATCH, DELETE',
-                'Cache-Control' => 'no-cache, must-revalidate',
-                'Expires' => 'Mon, 26 Jul 1997 05:00:00 GMT'
-            ]);
+        if (empty($module = $route->getModule()))  throw new RouteException(
+            "This route is not bound to a module\n", "Route Error", HTTP::NOT_FOUND);
 
-            if (empty($module = $route->getModule()))  throw new RouteException(
-                "This route is not bound to a module\n", "Route Error", HTTP::NOT_FOUND);
+        if (!class_exists($module, true)) throw new RouteException(
+            sprintf("The module [%s] bound to this route does not exist\n", $module),
+            "Route Error", HTTP::NOT_FOUND);
 
-            if (!class_exists($module, true)) throw new RouteException(
-                sprintf("The module [%s] bound to this route does not exist\n", $module),
-                "Route Error", HTTP::NOT_FOUND);
+        Session::startSession();
 
-            Session::startSession();
-
-            switch ($route->getType()) {
-                case "web":
-                    self::render_web_route($route);
-                    break;
-                case "api":
-                    self::render_api_route($route);
-                    break;
-                case "resource":
-                    self::render_resource_route($route);
-                    break;
-                default:
-                    throw new RouteException(sprintf("%s has an unsupported route type", current_url()), "Route Error", HTTP::NOT_FOUND);
-            }
-
-        } catch (RouteException $e) {
-
-            RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(),
-                method_exists($e, 'getTitle') ? ($e->getTitle() ?: "Route Error") : "Route Error",
-                $e->getCode() ?: HTTP::INTERNAL_SERVER_ERROR);
-
+        switch ($route->getType()) {
+            case "web":
+                self::render_web_route($route);
+                break;
+            case "api":
+                self::render_api_route($route);
+                break;
+            case "resource":
+                self::render_resource_route($route);
+                break;
+            default:
+                throw new RouteException(sprintf("%s has an unsupported route type", current_url()), "Route Error", HTTP::NOT_FOUND);
         }
 
     }
 
+
     /**
      * @param RouteEntry $route
+     * @throws RouteException
      */
     private static function render_web_route(RouteEntry $route) {
 
         self::$http->_header()->set('Content-Type', $route->getContentType(), true);
 
-        try {
+        $module = $route->getModule();
+        $instance = new $module();
 
-            $module = $route->getModule();
-            $instance = new $module();
+        if ($instance instanceof RoutePermission && !$instance->hasPermission($route))
+            throw new RouteException("You don't have permission to this route\n",
+                "Access Denied", HTTP::UNAUTHORIZED);
 
-            if ($instance instanceof RoutePermission && !$instance->hasPermission($route))
-                throw new RouteException("You don't have permission to this route\n",
-                    "Access Denied", HTTP::UNAUTHORIZED);
+        if ($instance instanceof Add) {
 
-            if ($instance instanceof Add) {
+            if (self::$method === "GET") $instance->onLoad(self::$http->input());
+            else $instance->onReceive(self::$http->input());
 
-                if (self::$method === "GET") $instance->onLoad(self::$http->input());
-                else $instance->onReceive(self::$http->input());
+        } elseif ($instance instanceof Edit) {
 
-            } elseif ($instance instanceof Edit) {
+            if (self::$method === "GET") $instance->onLoad(self::$http->input(), $instance->info(self::$http->input()));
+            else $instance->onReceive(self::$http->input(), $instance->info(self::$http->input()));
 
-                if (self::$method === "GET") $instance->onLoad(self::$http->input(), $instance->info(self::$http->input()));
-                else $instance->onReceive(self::$http->input(), $instance->info(self::$http->input()));
+        } elseif ($instance instanceof Info) {
 
-            } elseif ($instance instanceof Info) {
+            if (self::$method === "GET") $instance->onLoad(self::$http->input(), $instance->info(self::$http->input()));
+            else {
 
-                if (self::$method === "GET") $instance->onLoad(self::$http->input(), $instance->info(self::$http->input()));
-                else {
+                if (!$instance instanceof Receiver) throw new RouteException(sprintf(
+                    "The module bound to this route is not compatible with the %s request method.\n Compatible method: GET",
+                    self::$method), "Route Error", HTTP::METHOD_NOT_ALLOWED);
 
-                    if (!$instance instanceof Receiver) throw new RouteException(sprintf(
-                            "The module bound to this route is not compatible with the %s request method.\n Compatible method: GET",
-                            self::$method), "Route Error", HTTP::METHOD_NOT_ALLOWED);
+                $instance->onReceive(self::$http->input(), $instance->info(self::$http->input()));
+            }
 
-                    $instance->onReceive(self::$http->input(), $instance->info(self::$http->input()));
-                }
+        } elseif ($instance instanceof Page) {
 
-            } elseif ($instance instanceof Page) {
+            if (self::$method === "GET") $instance->onLoad(self::$http->input());
+            else {
 
-                if (self::$method === "GET") $instance->onLoad(self::$http->input());
-                else {
+                if (!$instance instanceof Receiver) throw new RouteException(sprintf(
+                    "The module bound to this route is not compatible with the %s request method.\n Compatible method: GET",
+                    self::$method), "Route Error", HTTP::METHOD_NOT_ALLOWED);
 
-                    if (!$instance instanceof Receiver) throw new RouteException(sprintf(
-                            "The module bound to this route is not compatible with the %s request method.\n Compatible method: GET",
-                            self::$method), "Route Error", HTTP::METHOD_NOT_ALLOWED);
+                $instance->onReceive(self::$http->input());
+            }
 
-                    $instance->onReceive(self::$http->input());
-                }
+        } else throw new RouteException(
+            "The module bound to this route is registered\n as a web module but does not implement \n" .
+            "a valid web module interface\n"
+        );
 
-            } else throw new RouteException(
-                "The module bound to this route is registered\n as a web module but does not implement \n" .
-                "a valid web module interface\n"
-            );
-
-            $instance->setTemplate(Composer::getInstance());
-
-        } catch (RouteException $e) {
-
-            RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(),
-                method_exists($e, 'getTitle') ? ($e->getTitle() ?: "Route Error") : "Route Error",
-                $e->getCode() ?: HTTP::INTERNAL_SERVER_ERROR);
-
-        }
+        $instance->setTemplate(Composer::getInstance());
     }
+
 
     /**
      * @param RouteEntry $route
+     * @throws RouteException
      */
     private static function render_api_route(RouteEntry $route) {
 
         self::$http->_header()->set('Content-Type', $route->getContentType(), true);
 
-        try {
+        $module = $route->getModule();
+        $instance = new $module();
 
-            $module = $route->getModule();
-            $instance = new $module();
+        if ($instance instanceof RoutePermission && !$instance->hasPermission($route))
+            throw new RouteException("You don't have permission to this route\n",
+                "Access Denied", HTTP::UNAUTHORIZED);
 
-            if ($instance instanceof RoutePermission && !$instance->hasPermission($route))
-                throw new RouteException("You don't have permission to this route\n",
-                    "Access Denied", HTTP::UNAUTHORIZED);
+        if (!$instance instanceof Api) throw new RouteException(
+            "The module bound to this route is registered\n as an API module but does not implement \n" .
+            "a valid API module interface\n"
+        );
 
-            if (!$instance instanceof Api) throw new RouteException(
-                "The module bound to this route is registered\n as an API module but does not implement \n" .
-                "a valid API module interface\n"
-            );
+        $response = $instance->process(self::$http->input());
 
-            $response = $instance->process(self::$http->input());
+        if ($response instanceof Json) {
 
-            if ($response instanceof Json) {
+            if (!$data = $response->getJson()) throw new RouteException(
+                "Failed to output response", "Output Error",
+                HTTP::NO_CONTENT, PreviousException::getInstance(1));
 
-                if (!$data = $response->getJson()) throw new RouteException(
-                    "Failed to output response", "Output Error",
-                    HTTP::NO_CONTENT, PreviousException::getInstance(1));
+            echo $data;
 
-                echo $data;
+        } elseif ($response instanceof JsonSerializable) {
 
-            } elseif ($response instanceof JsonSerializable) {
+            if (!$data = $response->jsonSerialize()) throw new RouteException(
+                "Failed to output response", "Output Error",
+                HTTP::NO_CONTENT, PreviousException::getInstance(1));
 
-                if (!$data = $response->jsonSerialize()) throw new RouteException(
-                    "Failed to output response", "Output Error",
-                    HTTP::NO_CONTENT, PreviousException::getInstance(1));
+            self::$http->_header()->set('Content-Type', mime_type_from_extension('js'), true);
+            echo $data;
 
-                self::$http->_header()->set('Content-Type', mime_type_from_extension('js'), true);
-                echo $data;
+        } elseif ($response instanceof Jsonp) {
 
-            } elseif ($response instanceof Jsonp) {
+            if (!$data = $response->getJsonp()) throw new RouteException(
+                "Failed to output response", "Output Error",
+                HTTP::NO_CONTENT, PreviousException::getInstance(1));
 
-                if (!$data = $response->getJsonp()) throw new RouteException(
-                    "Failed to output response", "Output Error",
-                    HTTP::NO_CONTENT, PreviousException::getInstance(1));
+            self::$http->_header()->set('Content-Type', mime_type_from_extension('js'), true);
+            echo $data;
 
-                self::$http->_header()->set('Content-Type', mime_type_from_extension('js'), true);
-                echo $data;
+        } elseif ($response instanceof Html) {
 
-            } elseif ($response instanceof Html) {
+            self::$http->_header()->set('Content-Type', mime_type_from_extension('html'), true);
+            echo $response->getHtml();
 
-                self::$http->_header()->set('Content-Type', mime_type_from_extension('html'), true);
-                echo $response->getHtml();
+        } elseif ($response instanceof Plain) {
 
-            } elseif ($response instanceof Plain) {
+            self::$http->_header()->set('Content-Type', mime_type_from_extension('txt'), true);
+            echo $response->getData();
 
-                self::$http->_header()->set('Content-Type', mime_type_from_extension('txt'), true);
-                echo $response->getData();
+        } elseif (is_array($response)) {
 
-            } elseif (is_array($response)) {
+            if (isset($response['code']) && is_numeric($response['code']))
+                self::$http->http_response_code(intval($response['code']));
 
-                if (isset($response['code']) && is_numeric($response['code']))
-                    self::$http->http_response_code(intval($response['code']));
+            $option = Json::DEFAULT_OPTION; $depth = Json::DEFAULT_DEPTH;
 
-                $option = Json::DEFAULT_OPTION; $depth = Json::DEFAULT_DEPTH;
+            if (isset($response['option']) && is_numeric($response['option'])) {
+                $option = intval($response['option']);
+                unset($response['option']);
+            }
 
-                if (isset($response['option']) && is_numeric($response['option'])) {
-                    $option = intval($response['option']);
-                    unset($response['option']);
-                }
+            if (isset($response['depth']) && is_numeric($response['depth'])) {
+                $depth = intval($response['depth']);
+                unset($response['depth']);
+            }
 
-                if (isset($response['depth']) && is_numeric($response['depth'])) {
-                    $depth = intval($response['depth']);
-                    unset($response['depth']);
-                }
+            $data = Json::encode($response, $option, $depth);
+            if (!$data) throw new RouteException("Failed to output response", "Output Error",
+                HTTP::NO_CONTENT, PreviousException::getInstance(1));
+            echo $data;
 
-                $data = Json::encode($response, $option, $depth);
-                if (!$data) throw new RouteException("Failed to output response", "Output Error",
-                    HTTP::NO_CONTENT, PreviousException::getInstance(1));
-                echo $data;
-
-            } else throw new RouteException(
-                "Sorry, the API module bound to this route did not return a valid response"
-            );
-
-        } catch (RouteException $e) {
-
-            RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(),
-                method_exists($e, 'getTitle') ? ($e->getTitle() ?: "Route Error") : "Route Error",
-                $e->getCode() ?: HTTP::INTERNAL_SERVER_ERROR);
-
-        }
+        } else throw new RouteException(
+            "Sorry, the API module bound to this route did not return a valid response"
+        );
 
     }
 
+
     /**
      * @param RouteEntry $route
+     * @throws RouteException
      */
     private static function render_resource_route(RouteEntry $route) {
 
         self::$http->_header()->set('Content-Type', $route->getContentType(), true);
 
-        try {
+        $module = $route->getModule();
+        $instance = new $module();
 
-            $module = $route->getModule();
-            $instance = new $module();
+        if ($instance instanceof RoutePermission && !$instance->hasPermission($route))
+            throw new RouteException("You don't have permission to this route\n",
+                "Access Denied", HTTP::UNAUTHORIZED);
 
-            if ($instance instanceof RoutePermission && !$instance->hasPermission($route))
-                throw new RouteException("You don't have permission to this route\n",
-                    "Access Denied", HTTP::UNAUTHORIZED);
+        if (!$instance instanceof Resource) throw new RouteException(
+            "The module bound to this route is registered\n as an resource module but does not implement \n" .
+            "a valid resource module interface\n"
+        );
 
-            if (!$instance instanceof Resource) throw new RouteException(
-                "The module bound to this route is registered\n as an resource module but does not implement \n" .
-                "a valid resource module interface\n"
-            );
-
-            $instance->render(self::$http->input());
-
-        } catch (RouteException $e) {
-
-            RuntimeError::render(E_USER_NOTICE, $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(),
-                method_exists($e, 'getTitle') ? ($e->getTitle() ?: "Route Error") : "Route Error",
-                $e->getCode() ?: HTTP::INTERNAL_SERVER_ERROR);
-
-        }
+        $instance->render(self::$http->input());
 
     }
 

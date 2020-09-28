@@ -70,6 +70,7 @@ abstract class RuntimeError
         $route = Route::getCurrentRoute();
 
         $requestedWith = http()->_header()->get('X-Requested-With');
+
         if (empty($requestedWith)) {
             foreach (
                 [
@@ -82,9 +83,9 @@ abstract class RuntimeError
             }
         }
 
-        http()->_header()->set('Content-Type', $route->getContentType());
+        if ($route) http()->_header()->set('Content-Type', $route->getContentType());
 
-        if ($route->getType() == 'api' || $requestedWith == 'XMLHttpRequest') {
+        if ($route && ($route->getType() == 'api' || $requestedWith == 'XMLHttpRequest')) {
 
             $error = array_merge($error, [
                 'status' => false,
@@ -93,7 +94,7 @@ abstract class RuntimeError
 
             echo json_encode($error, JSON_PRETTY_PRINT);
 
-        } elseif ($route->getType() == 'resource') {
+        } elseif ($route && $route->getType() == 'resource') {
 
             $image = new ImageGenerator();
 
