@@ -76,7 +76,7 @@ class RouteEntry
     /**
      * @var string[]
      */
-    private ?array $middleware = null;
+    private array $middleware = [];
 
     /**
      * RouteEntry constructor.
