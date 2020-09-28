@@ -78,6 +78,13 @@ class CSRF
     }
 
     /**
+     * @return int
+     */
+    public function getExpiryTime() {
+        return (APP_TIME + TIMEOUT_TEN_MIN);
+    }
+
+    /**
      * @return $this
      */
     public function generateToken() {
@@ -85,8 +92,9 @@ class CSRF
         $data = [
             'signature' => $this->getSignature(),
             'unique' => unique_id(32),
-            'expire' => APP_TIME + (60 * 10)
+            'expire' => $this->getExpiryTime()
         ];
+
         $data['hash'] = Hash::sha(json_encode($data));
 
         $token = base64_encode(json_encode($data));

@@ -14,6 +14,7 @@ use que\http\input\Input;
 use que\http\network\Redirect;
 use que\http\curl\CurlRequest;
 use que\http\output\HttpResponse;
+use que\http\request\Cookie;
 use que\http\request\Delete;
 use que\http\request\Files;
 use que\http\request\Get;
@@ -242,6 +243,13 @@ class HTTP
      */
     public function _header(): Header {
         return Header::getInstance();
+    }
+
+    /**
+     * @return Cookie
+     */
+    public function _cookie(): Cookie {
+        return Cookie::getInstance();
     }
 
     /**

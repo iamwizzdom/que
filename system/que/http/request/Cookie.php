@@ -6,32 +6,19 @@
  * Time: 10:44 PM
  */
 
-namespace que\http\input;
+namespace que\http\request;
 
 use ArrayIterator;
-use que\common\validator\condition\Condition;
-use que\http\HTTP;
-use que\http\request\Cookie;
-use que\http\request\Delete;
-use que\http\request\Files;
-use que\http\request\Get;
-use que\http\request\Header;
-use que\http\request\Patch;
-use que\http\request\Post;
-use que\http\request\Put;
-use que\http\request\Request;
-use que\http\request\Server;
 use que\support\Arr;
 use que\support\interfaces\QueArrayAccess;
-use que\user\User;
 use Traversable;
 
-class Input implements QueArrayAccess
+class Cookie implements QueArrayAccess
 {
     /**
-     * @var Input
+     * @var Cookie
      */
-    private static Input $instance;
+    private static Cookie $instance;
 
     /**
      * @var array
@@ -39,63 +26,11 @@ class Input implements QueArrayAccess
     private array $pointer;
 
     /**
-     * @var Cookie
-     */
-    private Cookie $cookie;
-
-    /**
-     * @var Request
-     */
-    private Request $request;
-
-    /**
-     * @var Post
-     */
-    private Post $post;
-
-    /**
-     * @var Put
-     */
-    private Put $put;
-
-    /**
-     * @var Patch
-     */
-    private Patch $patch;
-
-    /**
-     * @var Delete
-     */
-    private Delete $delete;
-
-    /**
-     * @var Get
-     */
-    private Get $get;
-
-    /**
-     * @var Server
-     */
-    private Server $server;
-
-    /**
-     * @var Files
-     */
-    private Files $files;
-
-    /**
-     * @var Header
-     */
-    private Header $header;
-
-    /**
-     * Input constructor.
+     * Get constructor.
      */
     protected function __construct()
     {
-        $this->cookie = HTTP::getInstance()->_cookie();
-        $this->request = HTTP::getInstance()->_request();
-        $this->pointer = $this->get_all_input();
+        $this->pointer = &$_COOKIE;
     }
 
     private function __clone()
@@ -109,9 +44,9 @@ class Input implements QueArrayAccess
     }
 
     /**
-     * @return Input
+     * @return Cookie
      */
-    public static function getInstance(): Input
+    public static function getInstance(): Cookie
     {
         if (!isset(self::$instance))
             self::$instance = new self;
@@ -119,123 +54,14 @@ class Input implements QueArrayAccess
     }
 
     /**
-     * @param string $offset
-     * @return Condition
-     */
-    public function validate(string $offset): Condition
-    {
-        return new Condition($offset, $this->get($offset));
-    }
-
-    /**
-     * @return Post
-     */
-    public function getPost(): Post
-    {
-        return $this->post;
-    }
-
-    /**
-     * @return Put
-     */
-    public function getPut(): Put
-    {
-        return $this->put;
-    }
-
-    /**
-     * @return Patch
-     */
-    public function getPatch(): Patch
-    {
-        return $this->patch;
-    }
-
-    /**
-     * @return Delete
-     */
-    public function getDelete(): Delete
-    {
-        return $this->delete;
-    }
-
-    /**
-     * @return Get
-     */
-    public function getGet(): Get
-    {
-        return $this->get;
-    }
-
-    /**
-     * @return Files
-     */
-    public function getFiles(): Files
-    {
-        return $this->files;
-    }
-
-    /**
-     * @return Server
-     */
-    public function getServer(): Server
-    {
-        return $this->server;
-    }
-
-    /**
-     * @return Header
-     */
-    public function getHeader(): Header
-    {
-        return $this->header;
-    }
-
-    /**
-     * @return Request
-     */
-    public function getRequest(): Request
-    {
-        return $this->request;
-    }
-
-    /**
-     * @return Cookie
-     */
-    public function getCookie(): Cookie
-    {
-        return $this->cookie;
-    }
-
-    /**
-     * @return array
-     */
-    private function get_all_input(): array {
-        return array_merge(
-            ($this->post = HTTP::getInstance()->_post())->_get(),
-            ($this->put = HTTP::getInstance()->_put())->_get(),
-            ($this->patch = HTTP::getInstance()->_patch())->_get(),
-            ($this->delete = HTTP::getInstance()->_delete())->_get(),
-            ($this->get = HTTP::getInstance()->_get())->_get(),
-            ($this->server = HTTP::getInstance()->_server())->_get(),
-            ($this->header = HTTP::getInstance()->_header())->_get(),
-            ($this->files = HTTP::getInstance()->_files())->_get()
-        );
-    }
-
-    /**
-     * @return User|null
-     */
-    public function user(): ?User {
-        return User::isLoggedIn() ? User::getInstance() : null;
-    }
-
-    /**
      * @param $offset
      * @param $value
+     * @param int $expire
+     * @return bool
      */
-    public function set($offset, $value) {
+    public function set($offset, $value, int $expire = 0) {
         Arr::set($this->pointer, $offset, $value);
+        return $this->setCookie($offset, $value, $expire);
     }
 
     /**
@@ -255,17 +81,17 @@ class Input implements QueArrayAccess
     }
 
     /**
-     * @param $offset
+     * @param string $offset
      */
     public function _unset($offset) {
         Arr::unset($this->pointer, $offset);
     }
 
     /**
-     * @param $offset
+     * @param string $offset
      * @return bool
      */
-    public function _isset($offset): bool {
+    public function _isset(string $offset): bool {
         return $this->get($offset, $id = unique_id(16)) !== $id;
     }
 
@@ -415,5 +241,15 @@ class Input implements QueArrayAccess
     {
         // TODO: Implement shuffle() method.
         shuffle($this->pointer);
+    }
+
+    /**
+     * @param $name
+     * @param $value
+     * @param $expire
+     * @return bool
+     */
+    private function setCookie($name, $value, $expire) {
+        return setcookie($name, $value, $expire);
     }
 }

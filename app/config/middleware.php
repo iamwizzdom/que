@@ -21,7 +21,9 @@ return [
         \que\middleware\CheckAuthentication::class,
         \que\middleware\CheckForAllowedRequestMethod::class,
         \que\middleware\CheckForMaintenanceMode::class,
-        \que\middleware\VerifyCsrfToken::class
+        \que\middleware\VerifyCsrfToken::class,
+        \que\middleware\AddTokensToHeaderResponse::class,
+        \que\middleware\AddTokensToCookie::class
     ],
 
     /*

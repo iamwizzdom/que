@@ -18,7 +18,7 @@ class UserMiddleware extends Middleware
     public function handle(Input $input): MiddlewareResponse
     {
         if (!$input->user()) {
-            $this->setAccess(false);
+            $this->setAccess(true);
             $this->setTitle("Auth Error");
             $this->setResponse("Sorry, you must be logged in to access this route.");
             return $this;
