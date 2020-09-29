@@ -6,12 +6,12 @@
  * Time: 12:21 AM
  */
 
-namespace que\security\JWT;
+namespace que\security\jwt;
 
 use \Exception;
-use que\security\JWT\Exceptions\SigningFailedException;
-use que\security\JWT\Exceptions\IntegrityViolationException;
-use que\security\JWT\Exceptions\UnsupportedAlgorithmException;
+use que\security\jwt\Exceptions\SigningFailedException;
+use que\security\jwt\Exceptions\IntegrityViolationException;
+use que\security\jwt\Exceptions\UnsupportedAlgorithmException;
 use que\security\JWTGenerator;
 use que\user\User;
 

@@ -6,11 +6,11 @@
  * Time: 12:20 AM
  */
 
-namespace que\security\JWT\Exceptions;
+namespace que\security\jwt\Exceptions;
 
 use \Exception;
 
-class UnsupportedAlgorithmException extends Exception
+class UndefinedAlgorithmException extends Exception
 {
     
 }

@@ -5,17 +5,17 @@ namespace que\security;
 
 
 use Exception;
-use que\security\JWT\Exceptions\EmptyTokenException;
-use que\security\JWT\Exceptions\InsecureTokenException;
-use que\security\JWT\Exceptions\InvalidClaimTypeException;
-use que\security\JWT\Exceptions\InvalidStructureException;
-use que\security\JWT\Exceptions\MissingClaimException;
-use que\security\JWT\Exceptions\SigningFailedException;
-use que\security\JWT\Exceptions\UndefinedAlgorithmException;
-use que\security\JWT\Exceptions\UnsupportedAlgorithmException;
-use que\security\JWT\Exceptions\UnsupportedTokenTypeException;
-use que\security\JWT\JWT;
-use que\security\JWT\TokenDecoded;
+use que\security\jwt\Exceptions\EmptyTokenException;
+use que\security\jwt\Exceptions\InsecureTokenException;
+use que\security\jwt\Exceptions\InvalidClaimTypeException;
+use que\security\jwt\Exceptions\InvalidStructureException;
+use que\security\jwt\Exceptions\MissingClaimException;
+use que\security\jwt\Exceptions\SigningFailedException;
+use que\security\jwt\Exceptions\UndefinedAlgorithmException;
+use que\security\jwt\Exceptions\UnsupportedAlgorithmException;
+use que\security\jwt\Exceptions\UnsupportedTokenTypeException;
+use que\security\jwt\JWT;
+use que\security\jwt\TokenDecoded;
 
 class JWTGenerator
 {

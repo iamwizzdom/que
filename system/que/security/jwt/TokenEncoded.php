@@ -6,9 +6,9 @@
  * Time: 12:21 AM
  */
 
-namespace que\security\JWT;
+namespace que\security\jwt;
 
-use que\security\JWT\Exceptions\EmptyTokenException;
+use que\security\jwt\Exceptions\EmptyTokenException;
 
 /**
  * This class is representation of encoded JSON Web Token (JWT).

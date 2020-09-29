@@ -6,18 +6,18 @@
  * Time: 12:21 AM
  */
 
-namespace que\security\JWT;
+namespace que\security\jwt;
 
 use \DateTime;
-use que\security\JWT\Exceptions\InsecureTokenException;
-use que\security\JWT\Exceptions\MissingClaimException;
-use que\security\JWT\Exceptions\UnsupportedAlgorithmException;
-use que\security\JWT\Exceptions\TokenExpiredException;
-use que\security\JWT\Exceptions\TokenInactiveException;
-use que\security\JWT\Exceptions\InvalidClaimTypeException;
-use que\security\JWT\Exceptions\UndefinedAlgorithmException;
-use que\security\JWT\Exceptions\InvalidStructureException;
-use que\security\JWT\Exceptions\UnsupportedTokenTypeException;
+use que\security\jwt\Exceptions\InsecureTokenException;
+use que\security\jwt\Exceptions\MissingClaimException;
+use que\security\jwt\Exceptions\UnsupportedAlgorithmException;
+use que\security\jwt\Exceptions\TokenExpiredException;
+use que\security\jwt\Exceptions\TokenInactiveException;
+use que\security\jwt\Exceptions\InvalidClaimTypeException;
+use que\security\jwt\Exceptions\UndefinedAlgorithmException;
+use que\security\jwt\Exceptions\InvalidStructureException;
+use que\security\jwt\Exceptions\UnsupportedTokenTypeException;
 
 /**
  * This class contains methods used for validating JWT tokens.

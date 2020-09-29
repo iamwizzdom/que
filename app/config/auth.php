@@ -6,7 +6,7 @@
  * Time: 12:22 PM
  */
 
-use que\security\JWT\JWT;
+use que\security\jwt\JWT;
 
 return [
 

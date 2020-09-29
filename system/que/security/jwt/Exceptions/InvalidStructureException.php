@@ -6,11 +6,11 @@
  * Time: 12:20 AM
  */
 
-namespace que\security\JWT\Exceptions;
+namespace que\security\jwt\Exceptions;
 
 use \Exception;
 
-class MissingClaimException extends Exception
+class InvalidStructureException extends Exception
 {
     
 }

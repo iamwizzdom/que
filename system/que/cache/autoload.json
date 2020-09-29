@@ -438,7 +438,10 @@
         "fbe27b0a33941a73a3a947cd27619d6081d2fbb0": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/middleware\/CheckForAllowedRequestMethod.php",
         "ba9a8a139427b2d6d90f6fe195fde75540fc74d1": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/middleware\/CheckForMaintenanceMode.php",
         "00a9e11da4a39935f5d48982bc32cffee93b88dc": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/middleware\/VerifyCsrfToken.php",
-        "9972bfe76350dd8f0fd641f27418160460ebb7f5": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/support\/Num.php"
+        "9972bfe76350dd8f0fd641f27418160460ebb7f5": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/support\/Num.php",
+        "76598098b9f8d0df4afa2b460cdd9c17a8d2a9a0": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/middleware\/AddTokensToHeaderResponse.php",
+        "06a35e3768c28931dff544440d52a4081ba55cfd": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/middleware\/AddTokensToCookie.php",
+        "1197cdd1d07aea7e597247c06040db2fc7f5c3e0": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/http\/request\/Cookie.php"
     },
     "admins": {
         "267ed29dffecd182bfcc9fd5a968d79c571839b2": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/error\/RuntimeError.php",
@@ -770,6 +773,15 @@
         "39e9cc73fce280d03f8d73c663858ab50cab4a17": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/support\/Num.php",
         "199cdcc59cb440b6af55deae526ccbedfd5f507c": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/database\/model\/ModelStack.php",
         "40541f78e68ce5be50667b15528a5f04ac56ad7a": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/database\/model\/ModelCollection.php",
-        "a0c2066e71269851ff347c1dc7acb951ddef2671": "C:\/xampp\/htdocs\/personal\/moneydrop\/module\/access\/ForgotPassword.php"
+        "a0c2066e71269851ff347c1dc7acb951ddef2671": "C:\/xampp\/htdocs\/personal\/moneydrop\/module\/access\/ForgotPassword.php",
+        "cfb6c2a20b9336af37deb2facd9f4094260faa23": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/middleware\/CheckAuthentication.php",
+        "ff28ed2448f2248b07d8b2d0f49c76f89901b18e": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/security\/Middleware.php",
+        "09ede78961065a0bd095df5b0919b433348aeeed": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/middleware\/CheckForAllowedRequestMethod.php",
+        "9874151577ce56f0a7f874f866d10dacff050144": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/middleware\/CheckForMaintenanceMode.php",
+        "035ea212e4a59064e9571856dfc58d09afca9854": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/middleware\/VerifyCsrfToken.php",
+        "8e0c499df38949399c2fbf61a09090f1acfd7811": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/middleware\/AddTokensToHeaderResponse.php",
+        "0fc2eeb1666e7cd3c9b992a0e0d704fd5edaba68": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/middleware\/AddTokensToCookie.php",
+        "ed9f903ec5784496cc2b9d8c77e988d5512f99f1": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/http\/request\/Cookie.php",
+        "7318213cb3aa9534120e5619fd344a6a6f89b765": "C:\/xampp\/htdocs\/personal\/moneydrop\/module\/access\/PasswordReset.php"
     }
 }

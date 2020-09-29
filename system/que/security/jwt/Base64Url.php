@@ -6,7 +6,7 @@
  * Time: 12:21 AM
  */
 
-namespace que\security\JWT;
+namespace que\security\jwt;
 
 /**
  * Base64 url encode and decode implementation

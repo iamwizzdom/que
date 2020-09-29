@@ -6,7 +6,7 @@
  * Time: 12:21 AM
  */
 
-namespace que\security\JWT;
+namespace que\security\jwt;
 
 /**
  * This class is representation of decoded JSON Web Token (JWT).

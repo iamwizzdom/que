@@ -6,11 +6,11 @@
  * Time: 12:20 AM
  */
 
-namespace que\security\JWT\Exceptions;
+namespace que\security\jwt\Exceptions;
 
 use \Exception;
 
-class TokenInactiveException extends Exception
+class UnsupportedAlgorithmException extends Exception
 {
     
 }
