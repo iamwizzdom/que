@@ -76,7 +76,7 @@ class QueKip
     public function get($key, $default = null) {
         $data = Arr::get($this->pointer, $key, $default);
         if ($data == $default) return $data;
-        if (isset($data['expire']) && is_int($data['expire']) && APP_TIME > $data['expire']) {
+        if (isset($data['expire']) && is_numeric($data['expire']) && APP_TIME > (int) $data['expire']) {
             $this->delete($key);
             return $default;
         }
@@ -103,7 +103,7 @@ class QueKip
     public function set($key, $value, int $expire = null): bool {
         Arr::set($this->pointer, $key, [
             'data' => $value,
-            'expire' => is_int($expire) ? (APP_TIME + $expire) : null
+            'expire' => $expire !== null ? (APP_TIME + $expire) : null
         ]);
         return $this->write_data() !== false;
     }

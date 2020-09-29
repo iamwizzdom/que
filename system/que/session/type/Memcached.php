@@ -148,7 +148,7 @@ class Memcached
     public function get($key, $default = null) {
         $data = Arr::get($this->pointer, $key, $default);
         if ($data == $default) return $data;
-        if (isset($data['expire']) && is_int($data['expire']) && APP_TIME > $data['expire']) {
+        if (isset($data['expire']) && is_numeric($data['expire']) && APP_TIME > (int) $data['expire']) {
             $this->delete($key);
             return $default;
         }
