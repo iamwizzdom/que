@@ -144,7 +144,7 @@ class Model implements ModelAlias
      */
     public function getInt($key, int $default = 0): int
     {
-        return (int)$this->getValue($key, $default);
+        return (int) $this->getValue($key, $default);
     }
 
     /**
@@ -154,7 +154,7 @@ class Model implements ModelAlias
      */
     public function getFloat($key, float $default = 0.0): float
     {
-        return (float)$this->getValue($key, $default);
+        return (float) $this->getValue($key, $default);
     }
 
     /**
@@ -177,7 +177,7 @@ class Model implements ModelAlias
     {
         $record = db()->select()->table($this->getTable())->limit(1)
             ->where($this->getPrimaryKey(), $this->getValue($this->getPrimaryKey()), '>')->exec();
-        if ($record->isSuccessful()) return $record->getFirstWithModel($this->getModelKey(), $this->primaryKey);
+        if ($record->isSuccessful()) return $record->getFirstWithModel($this->primaryKey);
         return null;
     }
 
@@ -188,7 +188,7 @@ class Model implements ModelAlias
     {
         $record = db()->select()->table($this->getTable())->limit(1)
             ->where($this->getPrimaryKey(), $this->getValue($this->getPrimaryKey()), '<')->exec();
-        if ($record->isSuccessful()) return $record->getFirstWithModel($this->getModelKey(), $this->primaryKey);
+        if ($record->isSuccessful()) return $record->getFirstWithModel($this->primaryKey);
         return null;
     }
 
