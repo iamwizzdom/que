@@ -184,13 +184,8 @@ class Logger
      */
     public function log() {
 
-        $message = $this->getMessage();
-
-        if ($message instanceof \JsonSerializable) $message = $message->jsonSerialize();
-        elseif (is_object($message)) $message = object_to_array($message);
-
         $error = [
-            'message' => $message,
+            'message' => $this->getMessage(),
             'file' => $this->getFile(),
             'line' => $this->getLine(),
             'status' => $this->getStatus(),

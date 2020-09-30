@@ -168,7 +168,7 @@ class Server implements QueArrayAccess
     public function jsonSerialize()
     {
         // TODO: Implement jsonSerialize() method.
-        return $this->pointer;
+        return json_encode($this->pointer);
     }
 
     /**
