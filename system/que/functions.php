@@ -2651,17 +2651,17 @@ function track_token() {
 }
 
 /**
- * @param string $message
+ * @param mixed $message
  * @param string $file
  * @param int $line
  * @param $level
- * @param int $status
  * @param array $trace
+ * @param mixed $status
  * @param string|null $destination - directory to store logs
  * @return bool|false|int
  */
-function log_error(string $message, string $file, int $line, $level,
-                   int $status, array $trace, string $destination = null) {
+function log_error($message, string $file, int $line, $level,
+                   array $trace, $status = 'error', string $destination = null) {
     return Logger::getInstance()
         ->setMessage($message)->setFile($file)
         ->setLine($line)->setStatus($status)

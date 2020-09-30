@@ -157,7 +157,7 @@ class HTTP
         return $code;
     }
 
-    private function getHttpStatusTxt(int $code)
+    public function getHttpStatusTxt(int $code)
     {
         try {
             $text = array_search($code, (new ReflectionClass(self::class))->getConstants()) ?: "Unknown Status Code";

@@ -17,9 +17,9 @@ class Logger
 {
 
     /**
-     * @var string
+     * @var mixed
      */
-    private string $message;
+    private $message;
 
     /**
      * @var string
@@ -37,9 +37,9 @@ class Logger
     private $level;
 
     /**
-     * @var int
+     * @var mixed
      */
-    private int $status;
+    private $status;
 
     /**
      * @var array
@@ -52,20 +52,19 @@ class Logger
     private ?string $destination = null;
 
 
-
     /**
-     * @return string
+     * @return mixed
      */
-    public function getMessage(): string
+    public function getMessage()
     {
         return $this->message;
     }
 
     /**
-     * @param string $message
-     * @return Logger
+     * @param $message
+     * @return $this
      */
-    public function setMessage(string $message): Logger
+    public function setMessage($message): Logger
     {
         $this->message = $message;
         return $this;
@@ -126,18 +125,18 @@ class Logger
     }
 
     /**
-     * @return int
+     * @return mixed
      */
-    public function getStatus(): int
+    public function getStatus()
     {
         return $this->status;
     }
 
     /**
-     * @param int $status
+     * @param mixed $status
      * @return Logger
      */
-    public function setStatus(int $status): Logger
+    public function setStatus($status): Logger
     {
         $this->status = $status;
         return $this;
@@ -185,8 +184,13 @@ class Logger
      */
     public function log() {
 
+        $message = $this->getMessage();
+
+        if ($message instanceof \JsonSerializable) $message = $message->jsonSerialize();
+        elseif (is_object($message)) $message = object_to_array($message);
+
         $error = [
-            'message' => $this->getMessage(),
+            'message' => $message,
             'file' => $this->getFile(),
             'line' => $this->getLine(),
             'status' => $this->getStatus(),

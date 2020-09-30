@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: Wisdom Emenike
- * Date: 6/4/2020
- * Time: 7:14 AM
+ * Date: 9/30/2020
+ * Time: 10:44 AM
  */
 
 namespace que\database;
@@ -1426,7 +1426,7 @@ class QueryBuilder implements Builder
      * @param DriverQueryBuilder $builder
      * @param array $errors
      * @param string $errorCode
-     * @return DriverResponse|__anonymous@34526
+     * @return DriverResponse
      */
     private function getCustomDriverResponse(DriverQueryBuilder $builder, array $errors, string $errorCode)
     {

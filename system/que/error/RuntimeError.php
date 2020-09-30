@@ -61,7 +61,8 @@ abstract class RuntimeError
 
         }
 
-        log_error($error_message, $error_file, (int) $error_line, $error_level, $http_code, $error_trace);
+        log_error($error_message, $error_file, (int) $error_line, $error_level,
+            $error_trace, HTTP::getInstance()->getHttpStatusTxt($http_code));
 
         if (PHP_SAPI == 'cli') die(debug_print($error, true));
 

@@ -150,13 +150,11 @@ class Request implements QueArrayAccess
 
         $this->method = $this->getRealMethod();
 
-        if ('POST' !== $this->method) return $this->method;
+        if (self::METHOD_POST !== $this->method) return $this->method;
 
         $method = headers('X-HTTP-METHOD-OVERRIDE');
 
-        if (!$method && self::$httpMethodOverride) {
-            $method = $this->get('_method', \input('_method', 'POST'));
-        }
+        if (empty($method) && self::$httpMethodOverride) $method = $this->get('_method');
 
         if (!is_string($method)) return $this->method;
 
