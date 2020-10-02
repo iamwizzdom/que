@@ -12,9 +12,9 @@ namespace que\utility\pattern;
 class CommandChain
 {
     /**
-     * @var array
+     * @var Command[]
      */
-    private $commands = [];
+    private array $commands = [];
 
     /**
      * @param $cmd
