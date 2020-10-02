@@ -9,5 +9,5 @@
 namespace que\utility\pattern;
 
 interface Observable {
-    public function addObserver($observer);
+    public function addObserver(Observer $observer);
 }
