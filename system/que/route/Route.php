@@ -106,15 +106,14 @@ final class Route extends Router
         self::setRouteParams($route['args']);
         self::setCurrentRoute($route = $route['route']);
 
-        self::handleRequestMiddleware($route);
-
         self::$http->_header()->setBulk([
             'Access-Control-Allow-Origin' => '*',
-            'Access-Control-Allow-Methods' => !empty($route->getAllowedMethods()) ? implode(
-                ", ", $route->getAllowedMethods()) : 'GET, POST, PUT, PATCH, DELETE',
+            'Access-Control-Allow-Methods' => implode(", ", $route->getAllowedMethods()),
             'Cache-Control' => 'no-cache, must-revalidate',
             'Expires' => 'Mon, 26 Jul 1997 05:00:00 GMT'
         ]);
+
+        self::handleRequestMiddleware($route);
 
         if (empty($module = $route->getModule()))  throw new RouteException(
             "This route is not bound to a module\n", "Route Error", HTTP::NOT_FOUND);

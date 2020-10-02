@@ -16,13 +16,12 @@ class CheckForAllowedRequestMethod extends Middleware
     {
         $route = Route::getCurrentRoute();
 
-        if (!empty($route->getAllowedMethods()) &&
-            !in_array($method = $input->getRequest()->getMethod(), $route->getAllowedMethods())) {
+        if (!in_array($method = $input->getRequest()->getMethod(), $route->getAllowedMethods())) {
 
             $this->setAccess(false);
             $this->setTitle("Unsupported Request Method");
             $this->setResponse("The {$method} method is not supported for this route. Supported methods: "
-                . implode(", ", $route->getAllowedMethods()) . "."
+                . (implode(", ", $route->getAllowedMethods()) ?: "None") . "."
             );
             $this->setResponseCode(HTTP::METHOD_NOT_ALLOWED);
             return $this;

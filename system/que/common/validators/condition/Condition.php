@@ -389,8 +389,12 @@ class Condition implements ConditionAlias
      * @return bool
      */
     public function isDate(?string $format = null): bool {
-        if ($format) $date = DateTime::createFromFormat($format, $this->getValue());
-        else {
+        if ($format) {
+            $date = DateTime::createFromFormat($format, $this->getValue());
+            $errors = DateTime::getLastErrors();
+            if (!empty($errors['warnings'] ?? [])) $date = null;
+            elseif (!empty($errors['errors'] ?? [])) $date = null;
+        } else {
             try {
                 $date = new DateTime($this->getValue());
             } catch (Exception $e) {
@@ -406,8 +410,12 @@ class Condition implements ConditionAlias
      * @return bool
      */
     public function isDateGreaterThan(DateTime $compare, ?string $format = null): bool {
-        if ($format) $date = DateTime::createFromFormat($format, $this->getValue());
-        else {
+        if ($format) {
+            $date = DateTime::createFromFormat($format, $this->getValue());
+            $errors = DateTime::getLastErrors();
+            if (!empty($errors['warnings'] ?? [])) $date = null;
+            elseif (!empty($errors['errors'] ?? [])) $date = null;
+        } else {
             try {
                 $date = new DateTime($this->getValue());
             } catch (Exception $e) {
@@ -423,8 +431,12 @@ class Condition implements ConditionAlias
      * @return bool
      */
     public function isDateGreaterThanOrEqual(DateTime $compare, ?string $format = null): bool {
-        if ($format) $date = DateTime::createFromFormat($format, $this->getValue());
-        else {
+        if ($format) {
+            $date = DateTime::createFromFormat($format, $this->getValue());
+            $errors = DateTime::getLastErrors();
+            if (!empty($errors['warnings'] ?? [])) $date = null;
+            elseif (!empty($errors['errors'] ?? [])) $date = null;
+        } else {
             try {
                 $date = new DateTime($this->getValue());
             } catch (Exception $e) {
@@ -440,8 +452,12 @@ class Condition implements ConditionAlias
      * @return bool
      */
     public function isDateLessThan(DateTime $compare, ?string $format = null): bool {
-        if ($format) $date = DateTime::createFromFormat($format, $this->getValue());
-        else {
+        if ($format) {
+            $date = DateTime::createFromFormat($format, $this->getValue());
+            $errors = DateTime::getLastErrors();
+            if (!empty($errors['warnings'] ?? [])) $date = null;
+            elseif (!empty($errors['errors'] ?? [])) $date = null;
+        } else {
             try {
                 $date = new DateTime($this->getValue());
             } catch (Exception $e) {
@@ -457,8 +473,12 @@ class Condition implements ConditionAlias
      * @return bool
      */
     public function isDateLessThanOrEqual(DateTime $compare, ?string $format = null): bool {
-        if ($format) $date = DateTime::createFromFormat($format, $this->getValue());
-        else {
+        if ($format) {
+            $date = DateTime::createFromFormat($format, $this->getValue());
+            $errors = DateTime::getLastErrors();
+            if (!empty($errors['warnings'] ?? [])) $date = null;
+            elseif (!empty($errors['errors'] ?? [])) $date = null;
+        } else {
             try {
                 $date = new DateTime($this->getValue());
             } catch (Exception $e) {

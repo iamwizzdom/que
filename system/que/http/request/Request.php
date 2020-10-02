@@ -132,11 +132,11 @@ class Request implements QueArrayAccess
     /**
      * Gets the request "intended" method.
      *
-     * If the X-HTTP-Method-Override header is set, and if the method is a POST,
+     * If the X-HTTP-METHOD-OVERRIDE header is set, and if the method is a POST,
      * then it is used to determine the "real" intended HTTP method.
      *
      * The _method request parameter can also be used to determine the HTTP method,
-     * but only if enableHttpMethodParameterOverride() has been called.
+     * but only if @see enableHttpMethodOverride() has been called.
      *
      * The method is always an uppercased string.
      *
