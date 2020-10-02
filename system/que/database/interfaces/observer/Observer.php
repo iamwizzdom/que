@@ -6,11 +6,12 @@
  * Time: 12:53 AM
  */
 
-namespace que\database\interfaces\drivers;
+namespace que\database\interfaces\observer;
 
 
 use que\database\interfaces\model\Model;
 use que\database\model\ModelCollection;
+use que\database\observer\ObserverSignal;
 
 interface Observer
 {
