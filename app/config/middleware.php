@@ -18,6 +18,7 @@ return [
     |
     */
     'global' => [
+        \que\middleware\StartSession::class,
         \que\middleware\CheckAuthentication::class,
         \que\middleware\CheckForAllowedRequestMethod::class,
         \que\middleware\CheckForMaintenanceMode::class,

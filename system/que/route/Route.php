@@ -122,8 +122,6 @@ final class Route extends Router
             sprintf("The module [%s] bound to this route does not exist\n", $module),
             "Route Error", HTTP::NOT_FOUND);
 
-        Session::startSession();
-
         switch ($route->getType()) {
             case "web":
                 self::render_web_route($route);
