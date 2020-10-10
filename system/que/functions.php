@@ -1258,13 +1258,12 @@ function array_has_key($array, $key): bool {
 function array_collapse($array)
 {
     $results = [];
-    foreach ($array as $values) {
-        if (!is_array($values)) {
-            continue;
-        }
-        $results[] = $values;
+    foreach ($array as $key => $values) {
+        if (!is_array($values)) continue;
+        $results[] = array_exclude($values);
+        unset($array[$key]);
     }
-    return array_merge([], ...$results);
+    return array_merge($array, ...$results);
 }
 
 /**
@@ -2648,6 +2647,17 @@ function csrf_token() {
  */
 function track_token() {
     return Track::generateToken();
+}
+
+/**
+ * An alias of @see log_error()
+ * @param $message
+ * @return bool|false|int
+ */
+function log_err($message) {
+    $backtrace = debug_backtrace();
+    return log_error($message, $backtrace[0]['file'], $backtrace[0]['line'],
+        E_USER_NOTICE, array_exclude($backtrace, 0));
 }
 
 /**
