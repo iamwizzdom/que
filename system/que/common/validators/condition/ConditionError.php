@@ -349,6 +349,30 @@ class ConditionError
     }
 
     /**
+     * @param DateTime $date1
+     * @param DateTime $date2
+     * @param null $error
+     * @param string|null $format
+     * @return $this
+     */
+    public function isDateBetween(DateTime $date1, DateTime $date2, $error = null, ?string $format = null): ConditionError
+    {
+        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if (!$this->condition->isDateBetween($date1, $date2)){
+            if ($error && str_contains($error, "%s")) {
+                if (str_char_count('%s', $error) >= 2) {
+                    $error = str_replace_first("%s", $date1->format($format ?: DATE_FORMAT_MYSQL), $error);
+                    $error = str_replace_last("%s", $date2->format($format ?: DATE_FORMAT_MYSQL), $error);
+                } else {
+                    $error = sprintf($error, "{$date1->format($format ?: DATE_FORMAT_MYSQL)} - {$date2->format($format ?: DATE_FORMAT_MYSQL)}");
+                }
+            }
+            $this->setError($error);
+        }
+        return $this;
+    }
+
+    /**
      * @param $variable
      * @param null $error
      * @return ConditionError
@@ -519,6 +543,29 @@ class ConditionError
     }
 
     /**
+     * @param int $number1
+     * @param int $number2
+     * @param null $error
+     * @return $this
+     */
+    public function isNumberBetween(int $number1, int $number2, $error = null): ConditionError
+    {
+        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if (!$this->condition->isNumberBetween($number1, $number2)){
+            if ($error && str_contains($error, "%s")) {
+                if (str_char_count('%s', $error) >= 2) {
+                    $error = str_replace_first("%s", $number1, $error);
+                    $error = str_replace_last("%s", $number2, $error);
+                } else {
+                    $error = sprintf($error, "{$number1} - {$number2}");
+                }
+            }
+            $this->setError($error);
+        }
+        return $this;
+    }
+
+    /**
      * @param null $error
      * @return ConditionError
      */
@@ -530,11 +577,11 @@ class ConditionError
     }
 
     /**
-     * @param int $number
+     * @param float $number
      * @param null $error
-     * @return ConditionError
+     * @return $this
      */
-    public function isFloatingNumberGreaterThan(int $number, $error = null): ConditionError
+    public function isFloatingNumberGreaterThan(float $number, $error = null): ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->isFloatingNumberGreaterThan($number))
@@ -543,11 +590,11 @@ class ConditionError
     }
 
     /**
-     * @param int $number
+     * @param float $number
      * @param null $error
-     * @return ConditionError
+     * @return $this
      */
-    public function isFloatingNumberGreaterThanOrEqual(int $number, $error = null): ConditionError
+    public function isFloatingNumberGreaterThanOrEqual(float $number, $error = null): ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->isFloatingNumberGreaterThanOrEqual($number))
@@ -556,11 +603,11 @@ class ConditionError
     }
 
     /**
-     * @param int $number
+     * @param float $number
      * @param null $error
-     * @return ConditionError
+     * @return $this
      */
-    public function isFloatingNumberLessThan(int $number, $error = null): ConditionError
+    public function isFloatingNumberLessThan(float $number, $error = null): ConditionError
     {
         if (!$this->condition->isFloatingNumberLessThan($number))
             $this->setError(($error && str_contains($error, "%s") ? sprintf($error, $number) : $error));
@@ -568,15 +615,39 @@ class ConditionError
     }
 
     /**
-     * @param int $number
+     * @param float $number
      * @param null $error
-     * @return ConditionError
+     * @return $this
      */
-    public function isFloatingNumberLessThanOrEqual(int $number, $error = null): ConditionError
+    public function isFloatingNumberLessThanOrEqual(float $number, $error = null): ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->isFloatingNumberLessThanOrEqual($number))
             $this->setError(($error && str_contains($error, "%s") ? sprintf($error, $number) : $error));
+        return $this;
+    }
+
+
+    /**
+     * @param float $number1
+     * @param float $number2
+     * @param null $error
+     * @return $this
+     */
+    public function isFloatingNumberBetween(float $number1, float $number2, $error = null): ConditionError
+    {
+        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if (!$this->condition->isFloatingNumberBetween($number1, $number2)){
+            if ($error && str_contains($error, "%s")) {
+                if (str_char_count('%s', $error) >= 2) {
+                    $error = str_replace_first("%s", $number1, $error);
+                    $error = str_replace_last("%s", $number2, $error);
+                } else {
+                    $error = sprintf($error, "{$number1} - {$number2}");
+                }
+            }
+            $this->setError($error);
+        }
         return $this;
     }
 

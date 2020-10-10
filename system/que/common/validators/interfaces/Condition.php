@@ -96,28 +96,35 @@ interface Condition
     public function isNotEqualToAny(array $variable): bool;
 
     /**
-     * @param $number
+     * @param int $number
      * @return bool
      */
     public function isNumberGreaterThan(int $number): bool;
 
     /**
-     * @param $number
+     * @param int $number
      * @return bool
      */
     public function isNumberGreaterThanOrEqual(int $number): bool;
 
     /**
-     * @param $number
+     * @param int $number
      * @return bool
      */
     public function isNumberLessThan(int $number): bool;
 
     /**
-     * @param $number
+     * @param int $number
      * @return bool
      */
     public function isNumberLessThanOrEqual(int $number): bool;
+
+    /**
+     * @param int $number1
+     * @param int $number2
+     * @return bool
+     */
+    public function isNumberBetween(int $number1, int $number2): bool;
 
     /**
      * @return bool
@@ -125,28 +132,35 @@ interface Condition
     public function isFloatingNumber(): bool;
 
     /**
-     * @param $number
+     * @param float $number
      * @return bool
      */
-    public function isFloatingNumberGreaterThan(int $number): bool;
+    public function isFloatingNumberGreaterThan(float $number): bool;
 
     /**
-     * @param $number
+     * @param float $number
      * @return bool
      */
-    public function isFloatingNumberGreaterThanOrEqual(int $number): bool;
+    public function isFloatingNumberGreaterThanOrEqual(float $number): bool;
 
     /**
-     * @param $number
+     * @param float $number
      * @return bool
      */
-    public function isFloatingNumberLessThan(int $number): bool;
+    public function isFloatingNumberLessThan(float $number): bool;
 
     /**
-     * @param $number
+     * @param float $number
      * @return bool
      */
-    public function isFloatingNumberLessThanOrEqual(int $number): bool;
+    public function isFloatingNumberLessThanOrEqual(float $number): bool;
+
+    /**
+     * @param float $number1
+     * @param float $number2
+     * @return bool
+     */
+    public function isFloatingNumberBetween(float $number1, float $number2): bool;
 
     /**
      * @return bool
@@ -283,6 +297,14 @@ interface Condition
      * @return bool
      */
     public function isDateLessThanOrEqual(DateTime $compare, ?string $format = null): bool;
+
+    /**
+     * @param DateTime $date1
+     * @param DateTime $date2
+     * @param string|null $format
+     * @return bool
+     */
+    public function isDateBetween(DateTime $date1, DateTime $date2, ?string $format = null): bool;
 
     /**
      * @param string $regex

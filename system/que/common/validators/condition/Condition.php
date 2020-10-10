@@ -200,6 +200,18 @@ class Condition implements ConditionAlias
     }
 
     /**
+     * @param int $number1
+     * @param int $number2
+     * @return bool
+     */
+    public function isNumberBetween(int $number1, int $number2): bool
+    {
+        // TODO: Implement isNumberBetween() method.
+        return $this->getValue() >= $number1 && $this->getValue() <= $number2;
+    }
+
+
+    /**
      * @inheritDoc
      */
     public function isFloatingNumber(): bool
@@ -211,7 +223,7 @@ class Condition implements ConditionAlias
     /**
      * @inheritDoc
      */
-    public function isFloatingNumberGreaterThan(int $number): bool
+    public function isFloatingNumberGreaterThan(float $number): bool
     {
         // TODO: Implement isFloatingNumberGreaterThan() method.
         return $this->isFloatingNumber() && ($this->getValue() > $number);
@@ -220,7 +232,7 @@ class Condition implements ConditionAlias
     /**
      * @inheritDoc
      */
-    public function isFloatingNumberGreaterThanOrEqual(int $number): bool
+    public function isFloatingNumberGreaterThanOrEqual(float $number): bool
     {
         // TODO: Implement isFloatingNumberGreaterThanOrEqual() method.
         return $this->isFloatingNumber() && ($this->getValue() >= $number);
@@ -229,7 +241,7 @@ class Condition implements ConditionAlias
     /**
      * @inheritDoc
      */
-    public function isFloatingNumberLessThan(int $number): bool
+    public function isFloatingNumberLessThan(float $number): bool
     {
         // TODO: Implement isFloatingNumberLessThan() method.
         return $this->isFloatingNumber() && ($this->getValue() < $number);
@@ -238,11 +250,23 @@ class Condition implements ConditionAlias
     /**
      * @inheritDoc
      */
-    public function isFloatingNumberLessThanOrEqual(int $number): bool
+    public function isFloatingNumberLessThanOrEqual(float $number): bool
     {
         // TODO: Implement isFloatingNumberLessThanOrEqual() method.
         return $this->isFloatingNumber() && ($this->getValue() <= $number);
     }
+
+    /**
+     * @param float $number1
+     * @param float $number2
+     * @return bool
+     */
+    public function isFloatingNumberBetween(float $number1, float $number2): bool
+    {
+        // TODO: Implement isFloatingNumberBetween() method.
+        return $this->getValue() >= $number1 && $this->getValue() <= $number2;
+    }
+
 
     /**
      * @return bool
@@ -487,6 +511,32 @@ class Condition implements ConditionAlias
         }
         return $date instanceof DateTime && $date->getTimestamp() <= $compare->getTimestamp();
     }
+
+    /**
+     * @param DateTime $date1
+     * @param DateTime $date2
+     * @param string|null $format
+     * @return bool
+     */
+    public function isDateBetween(DateTime $date1, DateTime $date2, ?string $format = null): bool
+    {
+        // TODO: Implement isDateBetween() method.
+        if ($format) {
+            $date = DateTime::createFromFormat($format, $this->getValue());
+            $errors = DateTime::getLastErrors();
+            if (!empty($errors['warnings'] ?? [])) $date = null;
+            elseif (!empty($errors['errors'] ?? [])) $date = null;
+        } else {
+            try {
+                $date = new DateTime($this->getValue());
+            } catch (Exception $e) {
+                $date = null;
+            }
+        }
+        return $date instanceof DateTime && $date->getTimestamp() >= $date1->getTimestamp() &&
+            $date->getTimestamp() <= $date2->getTimestamp();
+    }
+
 
     /**
      * @param string $regex
