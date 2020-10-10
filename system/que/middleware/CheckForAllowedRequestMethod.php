@@ -6,6 +6,7 @@ namespace que\middleware;
 
 use que\http\HTTP;
 use que\http\input\Input;
+use que\http\request\Request;
 use que\route\Route;
 use que\security\Middleware;
 use que\security\MiddlewareResponse;
@@ -16,7 +17,7 @@ class CheckForAllowedRequestMethod extends Middleware
     {
         $route = Route::getCurrentRoute();
 
-        if (!in_array($method = $input->getRequest()->getMethod(), $route->getAllowedMethods())) {
+        if (!in_array($method = Request::getMethod(), $route->getAllowedMethods())) {
 
             $this->setAccess(false);
             $this->setTitle("Unsupported Request Method");

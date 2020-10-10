@@ -105,6 +105,24 @@ class Get implements QueArrayAccess
     }
 
     /**
+     * @param $offset
+     * @param $function
+     * @param mixed ...$parameter
+     * @note Due to the fact that the subject parameter position might vary across functions,
+     * provision has been made for you to define the subject parameter with the key ":subject".
+     * e.g to run a function like explode, you are to invoke it as follows: _call('offset', 'explode', 'delimiter', ':subject');
+     * @return mixed|null
+     */
+    public function _call($offset, $function, ...$parameter) {
+        if (!function_exists($function)) return $this->get($offset);
+        if (!empty($parameter)) {
+            $key = array_search(":subject", $parameter);
+            if ($key !== false) $parameter[$key] = $this->get($offset);
+        } else $parameter = [$this->get($offset)];
+        return call_user_func($function, ...$parameter);
+    }
+
+    /**
      * @param mixed $offset
      * @return bool
      */

@@ -51,9 +51,9 @@ final class Route extends Router
 
             ob_start();
 
-            self::$method = (string) Request::getInstance()->getMethod();
+            self::$method = (string) Request::getMethod();
 
-            if (!Request::getInstance()->isSupportedMethod()) {
+            if (!Request::isSupportedMethod()) {
                 throw new RouteException("Sorry, '" . self::$method . "' is an unsupported request method.",
                     "Route Error", HTTP::METHOD_NOT_ALLOWED);
             }

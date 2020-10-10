@@ -197,7 +197,7 @@ class Logger
             ],
             'request' => [
                 'url' => current_url(),
-                'method' => Request::getInstance()->getMethod(),
+                'method' => Request::getMethod(),
                 'ip' => IP::real()
             ]
         ];

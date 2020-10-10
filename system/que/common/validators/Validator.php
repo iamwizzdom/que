@@ -598,11 +598,17 @@ class Validator
      * @param $key
      * @param $function
      * @param array $parameter
+     * @note Due to the fact that the subject parameter position might vary across functions,
+     * provision has been made for you to define the subject parameter with the key ":subject".
+     * e.g to run a function like explode, you are to invoke it as follows: _call('key', 'explode', 'delimiter', ':subject');
      * @return Validator
      */
     public function _call($key, $function, ...$parameter): Validator {
         if (!function_exists($function)) return $this;
-        array_unshift($parameter, $this->getValue($key));
+        if (!empty($parameter)) {
+            $key = array_search(":subject", $parameter);
+            if ($key !== false) $parameter[$key] = $this->getValue($key);
+        } else $parameter = [$this->getValue($key)];
         $this->setValue($key, call_user_func($function, ...$parameter));
         return $this;
     }

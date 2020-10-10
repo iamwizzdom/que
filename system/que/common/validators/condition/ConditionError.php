@@ -839,6 +839,9 @@ class ConditionError
     /**
      * @param $function
      * @param array $parameter
+     * @note Due to the fact that the subject parameter position might vary across functions,
+     * provision has been made for you to define the subject parameter with the key ":subject".
+     * e.g to run a function like explode, you are to invoke it as follows: _call('explode', 'delimiter', ':subject');
      * @return ConditionError
      */
     public function _call($function, ...$parameter): ConditionError

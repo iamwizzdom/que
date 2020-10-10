@@ -10,16 +10,15 @@ namespace que\http\request;
 
 
 use ArrayIterator;
-use Exception;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use que\http\HTTP;
-use que\http\input\Input;
 use que\support\Arr;
 use que\support\interfaces\QueArrayAccess;
 use que\utility\client\IP;
 use ReflectionClass;
 use Traversable;
+use function in_array;
 
 class Request implements QueArrayAccess
 {
@@ -40,12 +39,12 @@ class Request implements QueArrayAccess
     /**
      * @var string
      */
-    protected ?string $method = null;
+    protected static ?string $method = null;
 
     /**
      * @var array
      */
-    protected array $supportedMethods = [];
+    protected static array $supportedMethods = [];
 
     /**
      * @var Request
@@ -120,12 +119,12 @@ class Request implements QueArrayAccess
      * Sets the request method.
      * @param string $method
      */
-    public function setMethod(string $method)
+    public static function setMethod(string $method)
     {
-        if (!$this->isSupportedMethod($method))
+        if (!self::isSupportedMethod($method))
             throw new QueRuntimeException(sprintf('Unsupported HTTP request method override "%s".', $method),
                 "HTTP Request Error", E_USER_ERROR, HTTP::BAD_REQUEST, PreviousException::getInstance(1));
-        $this->method = null;
+        self::$method = null;
         http()->_server()->set('REQUEST_METHOD', $method);
     }
 
@@ -144,28 +143,28 @@ class Request implements QueArrayAccess
      *
      * @see getRealMethod()
      */
-    public function getMethod()
+    public static function getMethod()
     {
-        if (null !== $this->method) return $this->method;
+        if (null !== self::$method) return self::$method;
 
-        $this->method = $this->getRealMethod();
+        self::$method = self::getRealMethod();
 
-        if (self::METHOD_POST !== $this->method) return $this->method;
+        if (self::METHOD_POST !== self::$method) return self::$method;
 
         $method = headers('X-HTTP-METHOD-OVERRIDE');
 
-        if (empty($method) && self::$httpMethodOverride) $method = $this->get('_method');
+        if (empty($method) && self::$httpMethodOverride) $method = self::getInstance()->get('_method');
 
-        if (!is_string($method)) return $this->method;
+        if (!is_string($method)) return self::$method;
 
         $method = strtoupper($method);
 
-        if (!\in_array($method, [self::METHOD_GET, self::METHOD_POST, self::METHOD_PUT, self::METHOD_PATCH, self::METHOD_DELETE], true)) {
+        if (!in_array($method, [self::METHOD_GET, self::METHOD_POST, self::METHOD_PUT, self::METHOD_PATCH, self::METHOD_DELETE], true)) {
             throw new QueRuntimeException(sprintf('Unsupported HTTP request method override "%s".', $method),
                 "HTTP Request Error", E_USER_ERROR, HTTP::BAD_REQUEST, PreviousException::getInstance(1));
         }
 
-        return $this->method = $method;
+        return self::$method = $method;
     }
 
     /**
@@ -175,7 +174,7 @@ class Request implements QueArrayAccess
      *
      * @see getMethod()
      */
-    public function getRealMethod()
+    public static function getRealMethod()
     {
         return strtoupper(server('REQUEST_METHOD', 'GET'));
     }
@@ -186,19 +185,19 @@ class Request implements QueArrayAccess
      * @param string|null $method
      * @return bool
      */
-    public function isSupportedMethod(string $method = null)
+    public static function isSupportedMethod(string $method = null)
     {
-        return \in_array(($method !== null ? strtoupper($method) : $this->getMethod()), $this->getSupportedMethods(), true);
+        return in_array(($method !== null ? strtoupper($method) : self::getMethod()), self::getSupportedMethods(), true);
     }
 
     /**
      * @return array
      */
-    private function getSupportedMethods()
+    private static function getSupportedMethods()
     {
-        if (!empty($this->supportedMethods)) return $this->supportedMethods;
+        if (!empty(self::$supportedMethods)) return self::$supportedMethods;
         $const = (new ReflectionClass(self::class))->getConstants();
-        return $this->supportedMethods = array_filter($const, function ($key) {
+        return self::$supportedMethods = array_filter($const, function ($key) {
             return str_starts_with($key, "METHOD");
         }, ARRAY_FILTER_USE_KEY);
     }
@@ -208,7 +207,7 @@ class Request implements QueArrayAccess
      *
      * @return mixed|null
      */
-    public function getClientIp()
+    public static function getClientIp()
     {
         return IP::real();
     }
@@ -218,7 +217,7 @@ class Request implements QueArrayAccess
      *
      * @return string|null
      */
-    public function getAuthUser()
+    public static function getAuthUser()
     {
         return headers('PHP_AUTH_USER');
     }
@@ -228,7 +227,7 @@ class Request implements QueArrayAccess
      *
      * @return string|null
      */
-    public function getAuthPassword()
+    public static function getAuthPassword()
     {
         return headers('PHP_AUTH_PW');
     }
@@ -238,7 +237,7 @@ class Request implements QueArrayAccess
      *
      * @return string
      */
-    public function getProtocolVersion()
+    public static function getProtocolVersion()
     {
         return server('SERVER_PROTOCOL');
     }
@@ -252,7 +251,7 @@ class Request implements QueArrayAccess
      *
      * @return bool
      */
-    public function isSecure()
+    public static function isSecure()
     {
         $proto = server("X-Forwarded-Proto");
         if (!empty($proto)) return in_array(strtolower($proto), ['https', 'ssl', '1', 'on'], true);
@@ -269,7 +268,7 @@ class Request implements QueArrayAccess
      *
      * @return string
      */
-    public function getHost()
+    public static function getHost()
     {
         $host = server('X-Forwarded-Host');
 
@@ -305,7 +304,7 @@ class Request implements QueArrayAccess
      *
      * @return int|string can be a string if fetched from the server bag
      */
-    public function getPort()
+    public static function getPort()
     {
 
         if ($host = headers('X-Forwarded-Port')) {
@@ -328,7 +327,7 @@ class Request implements QueArrayAccess
             return (int) $port;
         }
 
-        return 'https' === $this->getScheme() ? 443 : 80;
+        return 'https' === self::getScheme() ? 443 : 80;
     }
 
     /**
@@ -336,9 +335,9 @@ class Request implements QueArrayAccess
      *
      * @return string
      */
-    public function getScheme()
+    public static function getScheme()
     {
-        return $this->isSecure() ? 'https' : 'http';
+        return self::isSecure() ? 'https' : 'http';
     }
 
     /**
@@ -348,16 +347,16 @@ class Request implements QueArrayAccess
      *
      * @return string
      */
-    public function getHttpHost()
+    public static function getHttpHost()
     {
-        $scheme = $this->getScheme();
-        $port = $this->getPort();
+        $scheme = self::getScheme();
+        $port = self::getPort();
 
         if (('http' == $scheme && 80 == $port) || ('https' == $scheme && 443 == $port)) {
-            return $this->getHost();
+            return self::getHost();
         }
 
-        return "{$this->getHost()}:{$port}";
+        return self::getHost() . ":{$port}";
     }
 
     /**
@@ -371,7 +370,7 @@ class Request implements QueArrayAccess
      *
      * @return array|mixed|null
      */
-    public function getUri()
+    public static function getUri()
     {
         return server('REQUEST_URI');
     }
@@ -381,7 +380,7 @@ class Request implements QueArrayAccess
      *
      * @return array|mixed|null
      */
-    public function getUriOriginal()
+    public static function getUriOriginal()
     {
         return server('REQUEST_URI_ORIGINAL');
     }
@@ -434,6 +433,24 @@ class Request implements QueArrayAccess
 
     public function output(){
         echo $this->_toString();
+    }
+
+    /**
+     * @param $offset
+     * @param $function
+     * @param mixed ...$parameter
+     * @note Due to the fact that the subject parameter position might vary across functions,
+     * provision has been made for you to define the subject parameter with the key ":subject".
+     * e.g to run a function like explode, you are to invoke it as follows: _call('offset', 'explode', 'delimiter', ':subject');
+     * @return mixed|null
+     */
+    public function _call($offset, $function, ...$parameter) {
+        if (!function_exists($function)) return $this->get($offset);
+        if (!empty($parameter)) {
+            $key = array_search(":subject", $parameter);
+            if ($key !== false) $parameter[$key] = $this->get($offset);
+        } else $parameter = [$this->get($offset)];
+        return call_user_func($function, ...$parameter);
     }
 
     /**

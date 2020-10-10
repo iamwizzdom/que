@@ -652,11 +652,17 @@ class Condition implements ConditionAlias
     /**
      * @param $function
      * @param mixed ...$parameter
+     * @note Due to the fact that the subject parameter position might vary across functions,
+     * provision has been made for you to define the subject parameter with the key ":subject".
+     * e.g to run a function like explode, you are to invoke it as follows: _call('explode', 'delimiter', ':subject');
      * @return Condition
      */
     public function _call($function, ...$parameter): ConditionAlias {
         if (!function_exists($function)) return $this;
-        array_unshift($parameter, $this->getValue());
+        if (!empty($parameter)) {
+            $key = array_search(":subject", $parameter);
+            if ($key !== false) $parameter[$key] = $this->getValue();
+        } else $parameter = [$this->getValue()];
         $this->setValue(call_user_func($function, ...$parameter));
         return $this;
     }
