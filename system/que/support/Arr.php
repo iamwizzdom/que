@@ -108,6 +108,15 @@ class Arr
     }
 
     /**
+     * Collapse a multi-dimensional array to a single list array
+     * @param array $array
+     * @return array
+     */
+    public static function collapse(array $array) {
+        return array_collapse($array);
+    }
+
+    /**
      * Get a value from the array, and remove it.
      *
      * @param  array   $array
