@@ -190,27 +190,29 @@ abstract class CurlNetwork {
 
         $post = $this->getPost();
         $files = $this->getPostFiles();
-
-        foreach ($files as $name => $file) {
-            if (function_exists('curl_file_create')) $file = curl_file_create($file); // For PHP 5.5+
-            else $file = '@' . realpath($file);
-            $post[$name] = $file;
-        }
-
         $headers = $this->getHeaders();
 
-        if (!empty($files)) $headers["Content-Type"] = "multipart/form-data";
+        if (!empty($files)) {
+            foreach ($files as $name => $file) {
+                if (function_exists('curl_file_create')) $file = curl_file_create($file); // For PHP 5.5+
+                else $file = '@' . realpath($file);
+                $post[$name] = $file;
+            }
+            if (!isset($headers["Content-Type"])) $headers["Content-Type"] = "multipart/form-data";
+        }
 
         if(!empty($post)){
             curl_setopt($ch,CURLOPT_POST,true);
             curl_setopt($ch,CURLOPT_POSTFIELDS, $post);
         }
 
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
         if(!empty($headers)){
-            curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
-            curl_setopt($ch,CURLOPT_HTTPHEADER, Arr::callback($headers, function ($value, $key) {
+            Arr::callback($headers, function ($value, $key) {
                 return "{$key}: {$value}";
-            }));
+            });
+            curl_setopt($ch,CURLOPT_HTTPHEADER, array_values($headers));
         }
 
         curl_setopt($ch,CURLOPT_TIMEOUT, $this->getTimeout());
