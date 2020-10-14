@@ -8,6 +8,8 @@
 
 namespace que\http\curl;
 
+use que\support\Arr;
+
 abstract class CurlNetwork {
 
     /**
@@ -206,7 +208,9 @@ abstract class CurlNetwork {
 
         if(!empty($headers)){
             curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
-            curl_setopt($ch,CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch,CURLOPT_HTTPHEADER, Arr::callback($headers, function ($value, $key) {
+                return "{$key}: {$value}";
+            }));
         }
 
         curl_setopt($ch,CURLOPT_TIMEOUT, $this->getTimeout());

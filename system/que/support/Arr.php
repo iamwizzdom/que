@@ -181,9 +181,10 @@ class Arr
      * @param array $element
      * @param $callback
      * @param array $affected
+     * @return array
      */
     public static function callback (array &$element, $callback, array $affected = []) {
-        array_callback($element, $callback, $affected);
+        return array_callback($element, $callback, $affected);
     }
 
     /**

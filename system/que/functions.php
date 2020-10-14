@@ -902,17 +902,24 @@ function array_permutation(array $arr): array
  * @param array $element
  * @param $callback
  * @param array $affected
+ * @return array
  */
 function array_callback(array &$element, $callback, array $affected = [])
 {
     if (!empty($affected)) {
-        foreach ($affected as $key)
-            if (array_key_exists($key, $element))
+        foreach ($affected as $key) {
+            if (array_key_exists($key, $element)) {
                 $element[$key] = call_user_func($callback, $element[$key], $key, $element);
-        return;
+            }
+        }
+        return $element;
     }
-    foreach ($element as $key => $value)
+
+    foreach ($element as $key => $value) {
         $element[$key] = call_user_func($callback, $value, $key, $element);
+    }
+
+    return $element;
 }
 
 /**
@@ -923,14 +930,15 @@ function array_callback(array &$element, $callback, array $affected = [])
 function array_callback_recursive(array &$element, $callback, array $affected = [])
 {
     if (!empty($affected)) {
-        foreach ($affected as $key)
+        foreach ($affected as $key) {
             if (array_key_exists($key, $element)) {
                 if (is_array($element[$key])) {
                     $value = &$element[$key];
                     array_callback_recursive($value, $callback, $affected);
                 } else $element[$key] = call_user_func($callback, $element[$key], $key, $element);
             }
-        return;
+        }
+        return $element;
     }
 
     foreach ($element as $key => &$value) {
@@ -938,12 +946,15 @@ function array_callback_recursive(array &$element, $callback, array $affected = 
             array_callback_recursive($value, $callback, $affected);
         } else $value = call_user_func($callback, $value, $key, $element);
     }
+
+    return $element;
 }
 
 /**
- * @param array|object $element
+ * @param $element
  * @param $callback
  * @param array $affected
+ * @return mixed
  */
 function iterable_callback(&$element, $callback, array $affected = [])
 {
@@ -955,34 +966,45 @@ function iterable_callback(&$element, $callback, array $affected = [])
 
         if (!empty($affected)) {
 
-            foreach ($affected as $key)
-                if (array_key_exists($key, $element))
+            foreach ($affected as $key) {
+                if (array_key_exists($key, $element)) {
                     $element[$key] = call_user_func($callback, $element[$key], $key, $element);
-            return;
+                }
+            }
+            return $element;
         }
 
-        foreach ($element as $key => $value)
+        foreach ($element as $key => $value) {
             $element[$key] = call_user_func($callback, $value, $key, $element);
+        }
+
+        return $element;
 
     } else {
 
         if (!empty($affected)) {
 
-            foreach ($affected as $key)
-                if (array_key_exists($key, $element))
+            foreach ($affected as $key) {
+                if (array_key_exists($key, $element)) {
                     $element->{$key} = call_user_func($callback, $element->{$key}, $key, $element);
-            return;
+                }
+            }
+            return $element;
         }
 
-        foreach ($element as $key => $value)
+        foreach ($element as $key => $value) {
             $element->{$key} = call_user_func($callback, $value, $key, $element);
+        }
     }
+
+    return $element;
 }
 
 /**
- * @param array|object $element
+ * @param $element
  * @param $callback
  * @param array $affected
+ * @return mixed
  */
 function iterable_callback_recursive(&$element, $callback, array $affected = [])
 {
@@ -998,16 +1020,22 @@ function iterable_callback_recursive(&$element, $callback, array $affected = [])
                     if (is_array($element[$key]) || is_object($element[$key])) {
                         $value = &$element[$key];
                         iterable_callback_recursive($value, $callback, $affected);
-                    } else $element[$key] = call_user_func($callback, $element[$key], $key, $element);
+                    } else {
+                        $element[$key] = call_user_func($callback, $element[$key], $key, $element);
+                    }
                 }
-            return;
+            return $element;
         }
 
         foreach ($element as $key => &$value) {
             if (is_array($value)) {
                 iterable_callback_recursive($value, $callback, $affected);
-            } else $value = call_user_func($callback, $value, $key, $element);
+            } else {
+                $value = call_user_func($callback, $value, $key, $element);
+            }
         }
+
+        return $element;
 
     } else {
 
@@ -1017,17 +1045,23 @@ function iterable_callback_recursive(&$element, $callback, array $affected = [])
                     if (is_array($element->{$key}) || is_object($element->{$key})) {
                         $value = &$element->{$key};
                         iterable_callback_recursive($value, $callback, $affected);
-                    } else $element->{$key} = call_user_func($callback, $element->{$key}, $key, $element);
+                    } else {
+                        $element->{$key} = call_user_func($callback, $element->{$key}, $key, $element);
+                    }
                 }
-            return;
+            return $element;
         }
 
         foreach ($element as $key => &$value) {
             if (is_array($value) || is_object($value)) {
                 iterable_callback_recursive($value, $callback, $affected);
-            } else $value = call_user_func($callback, $value, $key, $element);
+            } else {
+                $value = call_user_func($callback, $value, $key, $element);
+            }
         }
     }
+
+    return $element;
 }
 
 /**

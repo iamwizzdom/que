@@ -664,7 +664,7 @@ class Condition implements ConditionAlias
      * @param string $algo
      * @return Condition
      */
-    public function hash(string $algo = "SHA256"): ConditionAlias {
+    public function hash(string $algo = "SHA256"): Condition {
         $this->setValue(Hash::sha($this->getValue(), $algo));
         return $this;
     }
@@ -672,7 +672,7 @@ class Condition implements ConditionAlias
     /**
      * @return $this
      */
-    public function toUpper(): ConditionAlias {
+    public function toUpper(): Condition {
         $this->setValue(strtoupper($this->getValue()));
         return $this;
     }
@@ -680,7 +680,7 @@ class Condition implements ConditionAlias
     /**
      * @return $this
      */
-    public function toLower(): ConditionAlias {
+    public function toLower(): Condition {
         $this->setValue(strtolower($this->getValue()));
         return $this;
     }
@@ -688,7 +688,7 @@ class Condition implements ConditionAlias
     /**
      * @return $this
      */
-    public function toUcFirst(): ConditionAlias {
+    public function toUcFirst(): Condition {
         $this->setValue(ucfirst($this->getValue()));
         return $this;
     }
@@ -696,7 +696,7 @@ class Condition implements ConditionAlias
     /**
      * @return $this
      */
-    public function toUcWords(): ConditionAlias {
+    public function toUcWords(): Condition {
         $this->setValue(ucwords($this->getValue()));
         return $this;
     }
@@ -705,7 +705,7 @@ class Condition implements ConditionAlias
      * @param string $charlist
      * @return $this
      */
-    public function trim(string $charlist = " \t\n\r\0\x0B"): ConditionAlias {
+    public function trim(string $charlist = " \t\n\r\0\x0B"): Condition {
         $this->setValue(trim($this->getValue(), $charlist));
         return $this;
     }
@@ -713,7 +713,7 @@ class Condition implements ConditionAlias
     /**
      * @inheritDoc
      */
-    public function toDate(string $format): ConditionAlias
+    public function toDate(string $format): Condition
     {
         // TODO: Implement toDateFormat() method.
         $this->setValue(get_date($format, $this->getValue(), $this->getValue()));
@@ -728,7 +728,7 @@ class Condition implements ConditionAlias
      * e.g to run a function like explode, you are to invoke it as follows: _call('explode', 'delimiter', ':subject');
      * @return Condition
      */
-    public function _call($function, ...$parameter): ConditionAlias {
+    public function _call($function, ...$parameter): Condition {
         if (!function_exists($function)) return $this;
         if (!empty($parameter)) {
             $key = array_search(":subject", $parameter);
