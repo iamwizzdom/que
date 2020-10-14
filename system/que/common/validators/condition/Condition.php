@@ -306,7 +306,7 @@ class Condition implements ConditionAlias
     public function isPhoneNumber(): bool
     {
         // TODO: Implement isPhoneNumber() method.
-        return preg_match("/^(\+)?[0-9]+$/", $this->getValue()) == 1;
+        return preg_match("/^(\+)?[0-9]{4,15}+$/", $this->getValue()) == 1;
     }
 
     /**
@@ -608,11 +608,22 @@ class Condition implements ConditionAlias
     }
 
     /**
+     * @param int $size
+     * @return bool
+     */
+    public function hasWord(int $size): bool
+    {
+        // TODO: Implement hasWord() method.
+        return str_word_count($this->getValue(), 0) == $size;
+    }
+
+
+    /**
      * @param int $max
      * @return bool
      */
     public function hasMaxWord(int $max): bool {
-        return str_word_count($this->getValue()) <= $max;
+        return str_word_count($this->getValue(), 0) <= $max;
     }
 
     /**
@@ -620,7 +631,17 @@ class Condition implements ConditionAlias
      * @return bool
      */
     public function hasMinWord(int $min = 1): bool {
-        return str_word_count($this->getValue()) >= $min;
+        return str_word_count($this->getValue(), 0) >= $min;
+    }
+
+    /**
+     * @param int $size
+     * @return bool
+     */
+    public function hasLength(int $size): bool
+    {
+        // TODO: Implement hasLength() method.
+        return strlen($this->getValue()) == $size;
     }
 
     /**

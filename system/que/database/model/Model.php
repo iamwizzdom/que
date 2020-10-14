@@ -134,7 +134,7 @@ class Model implements ModelAlias
      */
     public function getValue($key, $default = null)
     {
-        return $this->object->{$key} ?? $default;
+        return !$this->isEmpty($key) ? $this->object->{$key} : $default;
     }
 
     /**

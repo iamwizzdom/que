@@ -37,7 +37,7 @@ class CurlResponse
     /**
      * @return bool
      */
-    public function status(): bool
+    public function isSuccessful(): bool
     {
         return $this->response['status'] ?? false;
     }

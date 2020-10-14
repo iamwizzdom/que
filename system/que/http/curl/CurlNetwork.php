@@ -95,6 +95,15 @@ abstract class CurlNetwork {
     }
 
     /**
+     * @param string $name
+     * @param $value
+     */
+    public function setPosts(array $post): void
+    {
+        $this->post = $post;
+    }
+
+    /**
      * @return array
      */
     public function getPostFiles(): array
@@ -117,6 +126,15 @@ abstract class CurlNetwork {
     public function getHeaders(): array
     {
         return $this->headers;
+    }
+
+    /**
+     * @param string $name
+     * @param $value
+     */
+    public function setHeader(string $name, $value): void
+    {
+        $this->headers[$name] = $value;
     }
 
     /**

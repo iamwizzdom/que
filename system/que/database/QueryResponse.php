@@ -70,6 +70,14 @@ class QueryResponse
     }
 
     /**
+     * @return object|null
+     */
+    public function getFirstArray(): ?array
+    {
+        return $this->getQueryResponseArray(0);
+    }
+
+    /**
      * @param string $primaryKey
      * @return Model|null
      */
@@ -85,6 +93,14 @@ class QueryResponse
     {
         $response = $this->getQueryResponse();
         return !is_array($response) ? [$response] : $response;
+    }
+
+    /**
+     * @return array[]|null
+     */
+    public function getAllArray(): ?array
+    {
+        return $this->getQueryResponseArray();
     }
 
     /**

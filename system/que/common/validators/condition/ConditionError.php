@@ -776,6 +776,19 @@ class ConditionError
     }
 
     /**
+     * @param $size
+     * @param null $error
+     * @return ConditionError
+     */
+    public function hasWord($size, $error = null): ConditionError
+    {
+        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if (!$this->condition->hasWord($size))
+            $this->setError(($error && str_contains($error, "%s") ? sprintf($error, $size) : $error));
+        return $this;
+    }
+
+    /**
      * @param $max
      * @param null $error
      * @return ConditionError
@@ -798,6 +811,19 @@ class ConditionError
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->hasMinWord($min))
             $this->setError(($error && str_contains($error, "%s") ? sprintf($error, $min) : $error));
+        return $this;
+    }
+
+    /**
+     * @param $size
+     * @param null $error
+     * @return ConditionError
+     */
+    public function hasLength($size, $error = null): ConditionError
+    {
+        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if (!$this->condition->hasLength($size))
+            $this->setError(($error && str_contains($error, "%s") ? sprintf($error, $size) : $error));
         return $this;
     }
 

@@ -355,6 +355,12 @@ interface Condition
     public function isIpv6NoPriv(): bool;
 
     /**
+     * @param int $size
+     * @return bool
+     */
+    public function hasWord(int $size): bool;
+
+    /**
      * @param int $max
      * @return bool
      */
@@ -365,6 +371,12 @@ interface Condition
      * @return bool
      */
     public function hasMinWord(int $min = 1): bool;
+
+    /**
+     * @param int $size
+     * @return bool
+     */
+    public function hasLength(int $size): bool;
 
     /**
      * @param int $max
