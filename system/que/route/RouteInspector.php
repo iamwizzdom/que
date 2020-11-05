@@ -140,74 +140,89 @@ abstract class RouteInspector
     public static function handleRequestMiddleware(RouteEntry $route) {
 
         $middlewareStack = array_merge(self::getGlobalMiddlewareStack(), self::getRouteMiddlewareStack($route));
-        self::linkMiddleware($middlewareStack);
-        $middlewareResponse = current($middlewareStack)->handle(Input::getInstance());
-        if ($middlewareResponse instanceof MiddlewareResponse) {
 
-            if ($middlewareResponse->hasAccess() === false) {
+        if (!empty($middlewareStack)) {
 
-                $http = \http();
+            self::linkMiddleware($middlewareStack);
 
-                $response = $middlewareResponse->getResponse();
+            $middleware = current($middlewareStack);
 
-                if ($response instanceof Json) {
+            if ($middleware instanceof Middleware) {
 
-                    if (!$data = $response->getJson()) throw new RouteException(
-                        "Failed to output response", "Output Error",
-                        HTTP::NO_CONTENT, PreviousException::getInstance(1));
+                $middlewareResponse = $middleware->handle(Input::getInstance());
 
-                    $http->_header()->set('Content-Type', mime_type_from_extension('json'), true);
-                    echo $data;
-                    exit();
+                if ($middlewareResponse instanceof MiddlewareResponse) {
 
-                } elseif ($response instanceof Jsonp) {
+                    if ($middlewareResponse->hasAccess() === false) {
 
-                    if (!$data = $response->getJsonp()) throw new RouteException(
-                        "Failed to output response", "Output Error",
-                        HTTP::NO_CONTENT, PreviousException::getInstance(1));
+                        $http = \http();
 
-                    $http->_header()->set('Content-Type', mime_type_from_extension('js'), true);
-                    echo $data;
-                    exit();
+                        $response = $middlewareResponse->getResponse();
 
-                } elseif ($response instanceof Html) {
+                        if ($response instanceof Json) {
 
-                    $http->_header()->set('Content-Type', mime_type_from_extension('html'), true);
-                    echo $response->getHtml();
-                    exit();
+                            if (!$data = $response->getJson()) throw new RouteException(
+                                "Failed to output response", "Output Error",
+                                HTTP::NO_CONTENT, PreviousException::getInstance(1));
 
-                } elseif ($response instanceof Plain) {
+                            $http->http_response_code($middlewareResponse->getResponseCode());
+                            $http->_header()->set('Content-Type', mime_type_from_extension('json'), true);
+                            echo $data;
+                            exit();
 
-                    $http->_header()->set('Content-Type', mime_type_from_extension('txt'), true);
-                    echo $response->getData();
-                    exit();
+                        } elseif ($response instanceof Jsonp) {
 
-                } elseif (is_array($response)) {
+                            if (!$data = $response->getJsonp()) throw new RouteException(
+                                "Failed to output response", "Output Error",
+                                HTTP::NO_CONTENT, PreviousException::getInstance(1));
 
-                    if (is_numeric($response['code'] ?? null)) $http->http_response_code(intval($response['code']));
+                            $http->http_response_code($middlewareResponse->getResponseCode());
+                            $http->_header()->set('Content-Type', mime_type_from_extension('js'), true);
+                            echo $data;
+                            exit();
 
-                    $option = 0; $depth = 512;
+                        } elseif ($response instanceof Html) {
 
-                    if (is_numeric($response['option'] ?? null)) {
-                        $option = intval($response['option']);
-                        unset($response['option']);
+                            $http->http_response_code($middlewareResponse->getResponseCode());
+                            $http->_header()->set('Content-Type', mime_type_from_extension('html'), true);
+                            echo $response->getHtml();
+                            exit();
+
+                        } elseif ($response instanceof Plain) {
+
+                            $http->_header()->set('Content-Type', mime_type_from_extension('txt'), true);
+                            echo $response->getData();
+                            exit();
+
+                        } elseif (is_array($response)) {
+
+                            if (is_numeric($response['code'] ?? null)) $http->http_response_code(intval($response['code']));
+                            else $http->http_response_code($middlewareResponse->getResponseCode());
+
+                            $option = 0; $depth = 512;
+
+                            if (is_numeric($response['option'] ?? null)) {
+                                $option = intval($response['option']);
+                                unset($response['option']);
+                            }
+
+                            if (is_numeric($response['depth'] ?? null)) {
+                                $depth = intval($response['depth']);
+                                unset($response['depth']);
+                            }
+
+                            $data = json_encode($response, $option, $depth);
+                            if (!$data) throw new RouteException("Failed to output response", "Output Error",
+                                HTTP::NO_CONTENT, PreviousException::getInstance(1));
+
+                            $http->_header()->set('Content-Type', mime_type_from_extension('js'), true);
+                            echo $data;
+                            exit();
+                        }
+
+                        throw new RouteException($response, $middlewareResponse->getTitle(), $middlewareResponse->getResponseCode());
                     }
-
-                    if (is_numeric($response['depth'] ?? null)) {
-                        $depth = intval($response['depth']);
-                        unset($response['depth']);
-                    }
-
-                    $data = json_encode($response, $option, $depth);
-                    if (!$data) throw new RouteException("Failed to output response", "Output Error",
-                        HTTP::NO_CONTENT, PreviousException::getInstance(1));
-
-                    $http->_header()->set('Content-Type', mime_type_from_extension('js'), true);
-                    echo $data;
-                    exit();
                 }
-
-                throw new RouteException($response, $middlewareResponse->getTitle(), $middlewareResponse->getResponseCode());
             }
         }
     }
