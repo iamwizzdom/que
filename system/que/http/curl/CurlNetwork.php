@@ -38,6 +38,11 @@ abstract class CurlNetwork {
     private array $headers = [];
 
     /**
+     * @var bool
+     */
+    private bool $isBodyPost = false;
+
+    /**
      * @var int
      */
     private int $timeout = 60;
@@ -148,6 +153,22 @@ abstract class CurlNetwork {
     }
 
     /**
+     * @return bool
+     */
+    public function isBodyPost(): bool
+    {
+        return $this->isBodyPost;
+    }
+
+    /**
+     * @param bool $isBodyPost
+     */
+    public function setIsBodyPost(bool $isBodyPost): void
+    {
+        $this->isBodyPost = $isBodyPost;
+    }
+
+    /**
      * @return int
      */
     public function getTimeout(): int
@@ -191,6 +212,7 @@ abstract class CurlNetwork {
         $post = $this->getPost();
         $files = $this->getPostFiles();
         $headers = $this->getHeaders();
+        $headers = array_change_key_case($headers, CASE_LOWER);
 
         if (!empty($files)) {
             foreach ($files as $name => $file) {
@@ -198,12 +220,15 @@ abstract class CurlNetwork {
                 else $file = '@' . realpath($file);
                 $post[$name] = $file;
             }
-            if (!isset($headers["Content-Type"])) $headers["Content-Type"] = "multipart/form-data";
+            if (!isset($headers["content-type"])) $headers["content-type"] = "multipart/form-data";
         }
+
+        if (strtolower($headers["content-type"] ?? '') === mime_type_from_extension('json'))
+            $this->setIsBodyPost(true);
 
         if(!empty($post)){
             curl_setopt($ch,CURLOPT_POST,true);
-            curl_setopt($ch,CURLOPT_POSTFIELDS, $post);
+            curl_setopt($ch,CURLOPT_POSTFIELDS, $this->isBodyPost() ? json_encode($post) : $post);
         }
 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
