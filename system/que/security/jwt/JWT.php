@@ -164,14 +164,16 @@ class JWT
      * @param string|null $algorithm Force algorithm to signature verification (recommended)
      * @param int|null $leeway Some optional period to avoid clock synchronization issues
      * @param array|null $requiredClaims Claims to be required for validation
+     * @param bool $isImmortalToken
+     * @throws Exceptions\InsecureTokenException
+     * @throws Exceptions\MissingClaimException
      * @throws Exceptions\TokenExpiredException
      * @throws Exceptions\TokenInactiveException
      * @throws IntegrityViolationException
      * @throws UnsupportedAlgorithmException
-     * @throws Exceptions\InsecureTokenException
-     * @throws Exceptions\MissingClaimException
      */
-    public static function validate(TokenEncoded $tokenEncoded, string $secret, ?string $algorithm, ?int $leeway = null, ?array $requiredClaims = null): void
+    public static function validate(TokenEncoded $tokenEncoded, string $secret, ?string $algorithm,
+                                    ?int $leeway = null, ?array $requiredClaims = null, bool $isImmortalToken = false): void
     {
         $tokenDecoded = self::decode($tokenEncoded);
 
@@ -196,7 +198,10 @@ class JWT
                 throw new UnsupportedAlgorithmException('Unsupported algorithm type');
                 break;
         }
+
         if ($requiredClaims === null) $requiredClaims = config('auth.jwt.required_claims', []);
+
+        if ($isImmortalToken) unset($requiredClaims['exp']);
 
         Validation::checkRequiredClaims($requiredClaims, $payload);
 
@@ -261,6 +266,7 @@ class JWT
 
     /**
      * @param string $token
+     * @param bool $isImmortalToken
      * @return User|null
      * @throws Exceptions\EmptyTokenException
      * @throws Exceptions\InsecureTokenException
@@ -274,14 +280,15 @@ class JWT
      * @throws IntegrityViolationException
      * @throws UnsupportedAlgorithmException
      */
-    public static function toUser(string $token)
+    public static function toUser(string $token, bool $isImmortalToken = false)
     {
-        $tokenEncoded = new TokenEncoded($token);
-        $tokenEncoded->validate((string) config('auth.jwt.secret', ''), JWT::ALGORITHM_HS512);
+        $tokenEncoded = new TokenEncoded($token, (string) config('auth.jwt.secret', ''),
+            JWT::ALGORITHM_HS512, null, null, $isImmortalToken);
         $tokenDecoded = $tokenEncoded->decode();
         $payload = $tokenDecoded->getPayload();
         $config = config('database.tables.user', []);
-        $user = db()->find($config['name'] ?? 'users', $payload['jti'] ?? 0, $config['primary_key'] ?? 'id')->getFirst();
+        $user = db()->find($config['name'] ?? 'users', $payload['jti'] ?? 0,
+            $config['primary_key'] ?? 'id')->getFirst();
         if (!$user) return null;
         User::login($user);
         return User::getInstance();

@@ -76,13 +76,11 @@ class Validation
     }
 
     /**
-     * Checks token structure.
-     *
-     * @param string $token Token
-     *
+     * @param string $token
+     * @return array Token segments
      * @throws InvalidStructureException
      */
-    public static function checkTokenStructure(string $token): void
+    public static function checkTokenStructure(string $token): array
     {
         $elements = explode('.', $token);
 
@@ -101,6 +99,8 @@ class Validation
         if (false === Base64Url::decode($signature)) {
             throw new InvalidStructureException('Invalid signature');
         }
+
+        return $elements;
     }
 
     /**

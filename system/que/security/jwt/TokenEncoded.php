@@ -39,39 +39,38 @@ class TokenEncoded
     /**
      * TokenEncoded constructor.
      * @param string|null $token
+     * @param string $secret
+     * @param string|null $algorithm
+     * @param int|null $leeway
      * @param array|null $requiredClaims
+     * @param bool $isImmortalToken
      * @throws EmptyTokenException
      * @throws Exceptions\InsecureTokenException
+     * @throws Exceptions\IntegrityViolationException
      * @throws Exceptions\InvalidClaimTypeException
      * @throws Exceptions\InvalidStructureException
+     * @throws Exceptions\MissingClaimException
+     * @throws Exceptions\TokenExpiredException
+     * @throws Exceptions\TokenInactiveException
      * @throws Exceptions\UndefinedAlgorithmException
      * @throws Exceptions\UnsupportedAlgorithmException
      * @throws Exceptions\UnsupportedTokenTypeException
-     * @throws Exceptions\MissingClaimException
      */
-    public function __construct(?string $token = null, ?array $requiredClaims = null)
+    public function __construct(?string $token, string $secret, ?string $algorithm = null,
+                                ?int $leeway = null, ?array $requiredClaims = null, bool $isImmortalToken = false)
     {
-        if ($token === null || $token === '') {
-            throw new EmptyTokenException('Token not provided');
-        }
+        if (empty($token)) throw new EmptyTokenException('Token not provided');
 
-        Validation::checkTokenStructure($token);
-        
-        $elements = explode('.', $token);
-        list($header, $payload, $signature) = $elements;
-        
+        list($header, $payload, $signature) = $elements = Validation::checkTokenStructure($token);
+
         $headerArray = json_decode(Base64Url::decode($header), true);
         $payloadArray = json_decode(Base64Url::decode($payload), true);
-        
+
         Validation::checkTokenType($headerArray);
         Validation::checkAlgorithmDefined($headerArray);
         Validation::checkAlgorithmSupported($headerArray['alg']);
         Validation::checkSignatureMissing($signature);
 
-        if ($requiredClaims === null) $requiredClaims = config('auth.jwt.required_claims', []);
-
-        Validation::checkRequiredClaims($requiredClaims, $payloadArray);
-        
         Validation::checkClaimType('nbf', 'integer', $payloadArray);
         Validation::checkClaimType('exp', 'integer', $payloadArray);
         Validation::checkClaimType('iat', 'integer', $payloadArray);
@@ -84,6 +83,8 @@ class TokenEncoded
         $this->payload = $payload;
         $this->header = $header;
         $this->signature = $signature;
+
+        $this->validate($secret, $algorithm, $leeway, $requiredClaims, $isImmortalToken);
     }
 
     /**
@@ -143,6 +144,8 @@ class TokenEncoded
      * @param string $secret Key
      * @param string|null $algorithm Force algorithm to signature verification (recommended)
      * @param int|null $leeway Optional leeway
+     * @param array|null $requiredClaims
+     * @param bool $isImmortalToken
      * @throws Exceptions\InsecureTokenException
      * @throws Exceptions\IntegrityViolationException
      * @throws Exceptions\MissingClaimException
@@ -150,9 +153,11 @@ class TokenEncoded
      * @throws Exceptions\TokenInactiveException
      * @throws Exceptions\UnsupportedAlgorithmException
      */
-    public function validate(string $secret, ?string $algorithm = null, ?int $leeway = null): void
+    public function validate(string $secret, ?string $algorithm = null,
+                             ?int $leeway = null, ?array $requiredClaims = null,
+                             bool $isImmortalToken = false): void
     {
-        JWT::validate($this, $secret, $algorithm, $leeway);
+        JWT::validate($this, $secret, $algorithm, $leeway, $requiredClaims, $isImmortalToken);
     }
 
     /**
