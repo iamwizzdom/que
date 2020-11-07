@@ -142,6 +142,18 @@ class ModelCollection implements QueArrayAccess
         array_push($this->models, $model);
     }
 
+    /**
+     * Finds a model using the callback
+     * @param Closure $callback
+     * @return Model|null
+     */
+    public function find(Closure $callback): ?Model {
+        foreach ($this->models as $model) {
+            if ($callback($model)) return $model;
+        }
+        return null;
+    }
+
     public function clear()
     {
         $this->models = [];
@@ -206,6 +218,15 @@ class ModelCollection implements QueArrayAccess
     }
 
     /**
+     * Calculates and returns the sum of the values returned by the callback on each model in the collection
+     * @param Closure $callback
+     * @return float|int
+     */
+    public function sum(Closure $callback) {
+        return array_sum($this->map($callback));
+    }
+
+    /**
      * @return bool
      */
     public function refresh() {
@@ -256,7 +277,7 @@ class ModelCollection implements QueArrayAccess
     }
 
     /**
-     * @inheritDoc
+     * @return Model[]
      */
     public function getIterator()
     {
