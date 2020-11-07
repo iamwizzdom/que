@@ -309,18 +309,6 @@ class Converter
     }
 
     /**
-     * @param int $yearID
-     * @param string|null $default
-     * @return string|null
-     */
-    public function convertYear(int $yearID, string $default = null): ?string
-    {
-        $flatList = $this->getFlatList();
-        return $yearID != 0 && array_key_exists($yearID, $flatList->getYears()) ?
-            $flatList->getYears()[$yearID] : $default;
-    }
-
-    /**
      * @param int $gender
      * @param string|null $default
      * @return string|null
