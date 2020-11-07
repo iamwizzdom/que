@@ -79,6 +79,22 @@ interface Builder
     public function distinct(): Builder;
 
     /**
+     * @param $value
+     * @param Closure $callback
+     * @param Closure|null $default
+     * @return Builder
+     */
+    public function when($value, Closure $callback, Closure $default = null): Builder;
+
+    /**
+     * @param $value
+     * @param Closure $callback
+     * @param Closure|null $default
+     * @return Builder
+     */
+    public function whenNot($value, Closure $callback, Closure $default = null): Builder;
+
+    /**
      * @param $column
      * @param $value
      * @param null $operator

@@ -150,6 +150,37 @@ class QueryBuilder implements Builder
     }
 
     /**
+     * @param $value
+     * @param Closure $callback
+     * @param Closure|null $default
+     * @return Builder
+     */
+    public function when($value, Closure $callback, Closure $default = null): Builder
+    {
+        // TODO: Implement when() method.
+        if ($value) {
+            return $callback($this, $value) ?: $this;
+        } elseif ($default) {
+            return $default($this, $value) ?: $this;
+        }
+
+        return $this;
+    }
+
+    public function whenNot($value, Closure $callback, Closure $default = null): Builder
+    {
+        // TODO: Implement whenNot() method.
+        if ($value) {
+            return $callback($this, $value) ?: $this;
+        } elseif ($default) {
+            return $default($this, $value) ?: $this;
+        }
+
+        return $this;
+    }
+
+
+    /**
      * @inheritDoc
      */
     public function where($column, $value, $operator = null): Builder
