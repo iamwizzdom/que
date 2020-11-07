@@ -169,7 +169,11 @@ abstract class RouteInspector
                                 "Failed to output response", "Output Error",
                                 HTTP::NO_CONTENT, PreviousException::getInstance(1));
 
-                            $http->http_response_code($middlewareResponse->getResponseCode());
+                            $code = $middlewareResponse->getResponseCode();
+                            if (!$code) $code = $response->getData()['code'] ?? 0;
+                            if (!$code) $code = http_response_code();
+                            $http->http_response_code($code ?: HTTP::OK);
+
                             $http->_header()->set('Content-Type', mime_type_from_extension('json'), true);
                             echo $data;
                             exit();
@@ -191,7 +195,11 @@ abstract class RouteInspector
 
                         } elseif ($response instanceof Html) {
 
-                            $http->http_response_code($middlewareResponse->getResponseCode());
+                            $code = $middlewareResponse->getResponseCode();
+                            if (!$code) $code = $response->getData()['code'] ?? 0;
+                            if (!$code) $code = http_response_code();
+                            $http->http_response_code($code ?: HTTP::OK);
+
                             $http->_header()->set('Content-Type', mime_type_from_extension('html'), true);
                             echo $response->getHtml();
                             exit();
@@ -209,7 +217,11 @@ abstract class RouteInspector
                             }
 
                             if (is_numeric($response['code'] ?? null)) $http->http_response_code(intval($response['code']));
-                            else $http->http_response_code($middlewareResponse->getResponseCode());
+                            else {
+                                $code = $middlewareResponse->getResponseCode();
+                                if (!$code) $code = http_response_code();
+                                $http->http_response_code($code ?: HTTP::OK);
+                            }
 
                             $option = 0; $depth = 512;
 

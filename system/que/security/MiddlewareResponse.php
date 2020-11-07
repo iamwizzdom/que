@@ -35,7 +35,7 @@ abstract class MiddlewareResponse
     /**
      * @var int
      */
-    private int $responseCode = HTTP::OK;
+    private int $responseCode = 0;
 
     /**
      * @return bool|null
