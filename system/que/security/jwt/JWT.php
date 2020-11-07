@@ -67,18 +67,22 @@ class JWT
      * @param TokenDecoded $tokenDecoded Decoded token
      * @param string $secret Secret Key used to sign the token
      * @param string|null $algorithm Force algorithm even if defined in token's header
+     * @param int|null $leeway
      * @return TokenEncoded Encoded token
      * @throws Exceptions\EmptyTokenException
      * @throws Exceptions\InsecureTokenException
      * @throws Exceptions\InvalidClaimTypeException
      * @throws Exceptions\InvalidStructureException
      * @throws Exceptions\MissingClaimException
+     * @throws Exceptions\TokenExpiredException
+     * @throws Exceptions\TokenInactiveException
      * @throws Exceptions\UndefinedAlgorithmException
      * @throws Exceptions\UnsupportedTokenTypeException
+     * @throws IntegrityViolationException
      * @throws SigningFailedException
      * @throws UnsupportedAlgorithmException
      */
-    public static function encode(TokenDecoded $tokenDecoded, string $secret, ?string $algorithm = null): TokenEncoded
+    public static function encode(TokenDecoded $tokenDecoded, string $secret, ?string $algorithm = null, ?int $leeway = null): TokenEncoded
     {
         $header = array_merge($tokenDecoded->getHeader(), [
             'typ' => array_key_exists('typ', $tokenDecoded->getHeader()) ? $tokenDecoded->getHeader()['typ'] : 'JWT',
@@ -93,7 +97,7 @@ class JWT
         $signature = self::sign(implode('.', $elements), $secret, $header['alg']);
         $elements[] = Base64Url::encode($signature);
 
-        return new TokenEncoded(implode('.', $elements), config('auth.jwt.required_claims', []));
+        return new TokenEncoded(implode('.', $elements), $secret, $algorithm, $leeway, config('auth.jwt.required_claims', []));
     }
 
 
