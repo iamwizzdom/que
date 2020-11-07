@@ -161,6 +161,10 @@ abstract class RouteInspector
 
                         if ($response instanceof Json) {
 
+                            $data = $response->getData();
+                            $data['title'] = ($data['title'] ? $data['title'] : $middlewareResponse->getTitle());
+                            $response->setData($data);
+
                             if (!$data = $response->getJson()) throw new RouteException(
                                 "Failed to output response", "Output Error",
                                 HTTP::NO_CONTENT, PreviousException::getInstance(1));
@@ -171,6 +175,10 @@ abstract class RouteInspector
                             exit();
 
                         } elseif ($response instanceof Jsonp) {
+
+                            $data = $response->getData();
+                            $data['title'] = ($data['title'] ? $data['title'] : $middlewareResponse->getTitle());
+                            $response->setData($data);
 
                             if (!$data = $response->getJsonp()) throw new RouteException(
                                 "Failed to output response", "Output Error",
@@ -195,6 +203,10 @@ abstract class RouteInspector
                             exit();
 
                         } elseif (is_array($response)) {
+
+                            if (isset($response['title'])) {
+                                $response['title'] = ($response['title'] ? $response['title'] : $middlewareResponse->getTitle());
+                            }
 
                             if (is_numeric($response['code'] ?? null)) $http->http_response_code(intval($response['code']));
                             else $http->http_response_code($middlewareResponse->getResponseCode());
