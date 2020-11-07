@@ -233,14 +233,16 @@ class JWT
 
     /**
      * @param User $user
+     * @param int|null $expire
      * @return string|null
      */
-    public static function fromUser(User $user)
+    public static function fromUser(User $user, int $expire = null)
     {
         $generator = new JWTGenerator();
         $generator->setAlgorithm(JWT::ALGORITHM_HS512);
         $generator->setID($user->getValue(config('database.tables.user.primary_key', 'id')));
-        $generator->setSubject(config('template.app.header.name') . " user JWT");
+        $generator->setSubject(config('template.app.header.name') . " User JWT");
+        if ($expire) $generator->setExpiration($expire);
         try {
             return $generator->generate();
         } catch (Exceptions\EmptyTokenException $e) {

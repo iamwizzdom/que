@@ -31,6 +31,12 @@ class TokenDecoded
      */
     public function __construct(?array $header = [], ?array $payload = [])
     {
+        if (($isNullTtl = is_null($ttl = config('auth.jwt.ttl'))) && $payload) unset($payload['exp']);
+
+        if ($payload && !$isNullTtl && !array_key_exists('exp', $payload)) {
+            $payload['exp'] = (($payload['iat'] ?? APP_TIME) + $ttl);
+        }
+
         $this->payload = $payload;
         $this->header = $header;
     }

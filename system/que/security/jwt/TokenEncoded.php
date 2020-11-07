@@ -75,7 +75,6 @@ class TokenEncoded
         Validation::checkClaimType('nbf', 'integer', $payloadArray);
         Validation::checkClaimType('exp', 'integer', $payloadArray);
         Validation::checkClaimType('iat', 'integer', $payloadArray);
-        
         Validation::checkClaimType('iss', 'string', $payloadArray);
         Validation::checkClaimType('sub', 'string', $payloadArray);
         Validation::checkClaimType('aud', 'string', $payloadArray);

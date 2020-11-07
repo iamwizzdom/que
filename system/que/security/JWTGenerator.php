@@ -66,8 +66,6 @@ class JWTGenerator
         $this->claims['jti'] = unique_id();
         $this->claims['iss'] = 'Que/v' . QUE_VERSION;
         $this->claims['nbf'] = $this->claims['iat'];
-        $ttl = config('auth.jwt.ttl', TIMEOUT_ONE_HOUR);
-        if ($ttl) $this->exp = ($this->claims['iat'] + $ttl);
         $this->secret = (string) config('auth.jwt.secret', '');
     }
 
