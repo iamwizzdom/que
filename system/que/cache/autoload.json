@@ -782,6 +782,19 @@
         "8e0c499df38949399c2fbf61a09090f1acfd7811": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/middleware\/AddTokensToHeaderResponse.php",
         "0fc2eeb1666e7cd3c9b992a0e0d704fd5edaba68": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/middleware\/AddTokensToCookie.php",
         "ed9f903ec5784496cc2b9d8c77e988d5512f99f1": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/http\/request\/Cookie.php",
-        "7318213cb3aa9534120e5619fd344a6a6f89b765": "C:\/xampp\/htdocs\/personal\/moneydrop\/module\/access\/PasswordReset.php"
+        "7318213cb3aa9534120e5619fd344a6a6f89b765": "C:\/xampp\/htdocs\/personal\/moneydrop\/module\/access\/PasswordReset.php",
+        "ae1f0e9a882bea1544038c9a7507b59bbc3c883a": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/security\/jwt\/TokenDecoded.php",
+        "237e46809e6eb4b7f51f15717ec7f22c3eead98b": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/security\/jwt\/Base64Url.php",
+        "3923f7c9b22a08c450995facec839cf5e6b95de6": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/security\/jwt\/Validation.php",
+        "2e13d887bc58ad1fe38a776516cf3e685e52f4d0": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/security\/jwt\/TokenEncoded.php",
+        "b8c2c939676fdadc0282d3b6e98b40e4dfc6bd31": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/security\/jwt\/JWT.php",
+        "57d2cb38fc74ebca3468aa02003921238427576c": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/security\/jwt\/Exceptions\/EmptyTokenException.php",
+        "07518c6e0a5e2d22be3cce5e6c31794051f2df41": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/security\/jwt\/Exceptions\/TokenExpiredException.php",
+        "5bb69758438b1c8b1fc10d47c61798cc2a8ab46c": "C:\/xampp\/htdocs\/personal\/moneydrop\/utility\/wallet\/Wallet.php",
+        "0c27b05509655a321f5fb48ef35c52b5ce8d326f": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/security\/jwt\/Exceptions\/IntegrityViolationException.php",
+        "755e0ca754e0ed9900b10d6ccddb29563d3e168a": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/security\/jwt\/Exceptions\/InvalidStructureException.php",
+        "044bbd735ba0d17f90c509a2e2457328c3b044a5": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/middleware\/StartSession.php",
+        "2f4423ef677d0d5e75cd68f41049ff5d0de897ff": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/security\/jwt\/Exceptions\/InvalidClaimTypeException.php",
+        "b691fc3e44f554443d8090157240c5e194473b1c": "C:\/xampp\/htdocs\/personal\/que\/system\/que\/utility\/Converter.php"
     }
 }

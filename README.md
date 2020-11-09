@@ -20,7 +20,16 @@ Que makes development seem easy by beautifully implementing such common tasks su
 - Centralized modeling
 - Detailed error logging
 
-Que is organized, however Que adapts with disorganized developers. 
+We mentioned Que implementing multiple database connections, what do we mean by that? 
+Well, Que has an infrastructure that allows you to connect to different database engines
+using a single query syntax. This means that you can build a system using multiple database engines
+and switch between them within your project. You can even, for instance, build a full project using MySQL and in production
+your boss ask that you move to using MongoDB, without having to rewrite your queries, all have to do 
+is switch Que's default database driver to MongoDB. However, for database engines that are currently not
+supported natively by Que, Que provides you with an interface you can use to write your own database drive,
+giving Que the ability to connect to all database engines supported by PHP using a single query syntax.
+
+Que is organized, but still, Que adapts with disorganized developers. 
 In other words, with Que's super-fast autoload engine, Que can locate your PHP files 
 and include them in runtime no matter where you place these files within your project.
 
