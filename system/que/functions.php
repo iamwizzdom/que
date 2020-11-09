@@ -118,11 +118,12 @@ function str_contains(string $haystack, string $needle, bool $case_insensitive =
 function str_contains_any(string $haystack, array $needles, bool $case_insensitive = false): bool
 {
     $count = 0;
-    foreach ($needles as $needle)
+    foreach ($needles as $needle) {
         if (str_contains($haystack, $needle, $case_insensitive)) {
             $count++;
             break;
         }
+    }
     return $count > 0;
 }
 
@@ -386,12 +387,46 @@ function str_starts_with(string $haystack, string $needle): bool
 
 /**
  * @param string $haystack
+ * @param array $needles
+ * @return bool
+ */
+function str_starts_with_any(string $haystack, array $needles): bool
+{
+    $count = 0;
+    foreach ($needles as $needle) {
+        if (str_starts_with($haystack, $needle)) {
+            $count++;
+            break;
+        }
+    }
+    return $count > 0;
+}
+
+/**
+ * @param string $haystack
  * @param string $needle
  * @return bool
  */
 function str_ends_with(string $haystack, string $needle): bool
 {
     return strcmp(substr($haystack, (strlen($haystack) - ($len = strlen($needle))), $len), $needle) == 0;
+}
+
+/**
+ * @param string $haystack
+ * @param array $needles
+ * @return bool
+ */
+function str_ends_with_any(string $haystack, array $needles): bool
+{
+    $count = 0;
+    foreach ($needles as $needle) {
+        if (str_ends_with($haystack, $needle)) {
+            $count++;
+            break;
+        }
+    }
+    return $count > 0;
 }
 
 /**
