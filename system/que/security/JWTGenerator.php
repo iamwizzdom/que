@@ -5,17 +5,20 @@ namespace que\security;
 
 
 use Exception;
-use que\security\jwt\Exceptions\EmptyTokenException;
 use que\security\jwt\Exceptions\InsecureTokenException;
+use que\security\jwt\Exceptions\IntegrityViolationException;
 use que\security\jwt\Exceptions\InvalidClaimTypeException;
 use que\security\jwt\Exceptions\InvalidStructureException;
 use que\security\jwt\Exceptions\MissingClaimException;
 use que\security\jwt\Exceptions\SigningFailedException;
+use que\security\jwt\Exceptions\TokenExpiredException;
+use que\security\jwt\Exceptions\TokenInactiveException;
 use que\security\jwt\Exceptions\UndefinedAlgorithmException;
 use que\security\jwt\Exceptions\UnsupportedAlgorithmException;
 use que\security\jwt\Exceptions\UnsupportedTokenTypeException;
 use que\security\jwt\JWT;
 use que\security\jwt\TokenDecoded;
+use que\security\jwt\Exceptions\EmptyTokenException;
 
 class JWTGenerator
 {
@@ -64,7 +67,7 @@ class JWTGenerator
         $this->algo = JWT::DEFAULT_ALGORITHM;
         $this->claims['iat'] = APP_TIME;
         $this->claims['jti'] = unique_id();
-        $this->claims['iss'] = 'Que/v' . QUE_VERSION;
+        $this->claims['iss'] = config('template.app.header.name', 'Que') . '/v' . config('auth.app.version', QUE_VERSION);
         $this->claims['nbf'] = $this->claims['iat'];
         $this->secret = (string) config('auth.jwt.secret', '');
     }
@@ -166,10 +169,13 @@ class JWTGenerator
      * @return string
      * @throws EmptyTokenException
      * @throws InsecureTokenException
+     * @throws IntegrityViolationException
      * @throws InvalidClaimTypeException
      * @throws InvalidStructureException
      * @throws MissingClaimException
      * @throws SigningFailedException
+     * @throws TokenExpiredException
+     * @throws TokenInactiveException
      * @throws UndefinedAlgorithmException
      * @throws UnsupportedAlgorithmException
      * @throws UnsupportedTokenTypeException

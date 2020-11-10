@@ -37,6 +37,7 @@ class TokenDecoded
             $payload['exp'] = (($payload['iat'] ?? APP_TIME) + $ttl);
         }
 
+        $header['imt'] = !array_key_exists('exp', $payload);
         $this->payload = $payload;
         $this->header = $header;
     }
@@ -86,19 +87,23 @@ class TokenDecoded
      *
      * @param string $secret Secret Key used for signing token.
      * @param string|null $algorithm Optional algorithm to be used when algorithm is not yet defined in token's header.
+     * @param int|null $leeway
      * @return TokenEncoded
      * @throws Exceptions\EmptyTokenException
      * @throws Exceptions\InsecureTokenException
+     * @throws Exceptions\IntegrityViolationException
      * @throws Exceptions\InvalidClaimTypeException
      * @throws Exceptions\InvalidStructureException
      * @throws Exceptions\MissingClaimException
      * @throws Exceptions\SigningFailedException
+     * @throws Exceptions\TokenExpiredException
+     * @throws Exceptions\TokenInactiveException
      * @throws Exceptions\UndefinedAlgorithmException
      * @throws Exceptions\UnsupportedAlgorithmException
      * @throws Exceptions\UnsupportedTokenTypeException
      */
-    public function encode(string $secret, ?string $algorithm = null) : TokenEncoded
+    public function encode(string $secret, ?string $algorithm = null, ?int $leeway = null) : TokenEncoded
     {
-        return JWT::encode($this, $secret, $algorithm);
+        return JWT::encode($this, $secret, $algorithm, $leeway);
     }
 }

@@ -84,10 +84,11 @@ class JWT
      */
     public static function encode(TokenDecoded $tokenDecoded, string $secret, ?string $algorithm = null, ?int $leeway = null): TokenEncoded
     {
-        $header = array_merge($tokenDecoded->getHeader(), [
-            'typ' => array_key_exists('typ', $tokenDecoded->getHeader()) ? $tokenDecoded->getHeader()['typ'] : 'JWT',
-            'alg' => $algorithm ? $algorithm : (array_key_exists('alg', $tokenDecoded->getHeader()) ?
-                $tokenDecoded->getHeader()['alg'] : self::DEFAULT_ALGORITHM),
+        $header = $tokenDecoded->getHeader();
+        $header = array_merge($header, [
+            'typ' => array_key_exists('typ', $header) ? $header['typ'] : 'JWT',
+            'alg' => $algorithm ?: (array_key_exists('alg', $header) ? $header['alg'] : self::DEFAULT_ALGORITHM),
+            'imt' => array_key_exists('imt', $header) ? $header['imt'] : false
         ]);
 
         $elements = [];
@@ -168,7 +169,6 @@ class JWT
      * @param string|null $algorithm Force algorithm to signature verification (recommended)
      * @param int|null $leeway Some optional period to avoid clock synchronization issues
      * @param array|null $requiredClaims Claims to be required for validation
-     * @param bool $isImmortalToken
      * @throws Exceptions\InsecureTokenException
      * @throws Exceptions\MissingClaimException
      * @throws Exceptions\TokenExpiredException
@@ -177,7 +177,7 @@ class JWT
      * @throws UnsupportedAlgorithmException
      */
     public static function validate(TokenEncoded $tokenEncoded, string $secret, ?string $algorithm,
-                                    ?int $leeway = null, ?array $requiredClaims = null, bool $isImmortalToken = false): void
+                                    ?int $leeway = null, ?array $requiredClaims = null): void
     {
         $tokenDecoded = self::decode($tokenEncoded);
 
@@ -205,7 +205,8 @@ class JWT
 
         if ($requiredClaims === null) $requiredClaims = config('auth.jwt.required_claims', []);
 
-        if ($isImmortalToken) unset($requiredClaims['exp']);
+        //check if is immortal token, if yes, escape 'exp' claim
+        if ($requiredClaims && $header['imt']) unset($requiredClaims[array_search('exp', $requiredClaims)]);
 
         Validation::checkRequiredClaims($requiredClaims, $payload);
 
@@ -244,6 +245,9 @@ class JWT
      * @param User $user
      * @param int|null $expire
      * @return string|null
+     * @throws Exceptions\TokenExpiredException
+     * @throws Exceptions\TokenInactiveException
+     * @throws IntegrityViolationException
      */
     public static function fromUser(User $user, int $expire = null)
     {
@@ -270,7 +274,6 @@ class JWT
 
     /**
      * @param string $token
-     * @param bool $isImmortalToken
      * @return User|null
      * @throws Exceptions\EmptyTokenException
      * @throws Exceptions\InsecureTokenException
@@ -284,10 +287,10 @@ class JWT
      * @throws IntegrityViolationException
      * @throws UnsupportedAlgorithmException
      */
-    public static function toUser(string $token, bool $isImmortalToken = false)
+    public static function toUser(string $token)
     {
         $tokenEncoded = new TokenEncoded($token, (string) config('auth.jwt.secret', ''),
-            JWT::ALGORITHM_HS512, null, null, $isImmortalToken);
+            JWT::ALGORITHM_HS512, null, null);
         $tokenDecoded = $tokenEncoded->decode();
         $payload = $tokenDecoded->getPayload();
         $config = config('database.tables.user', []);

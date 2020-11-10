@@ -43,7 +43,6 @@ class TokenEncoded
      * @param string|null $algorithm
      * @param int|null $leeway
      * @param array|null $requiredClaims
-     * @param bool $isImmortalToken
      * @throws EmptyTokenException
      * @throws Exceptions\InsecureTokenException
      * @throws Exceptions\IntegrityViolationException
@@ -57,7 +56,7 @@ class TokenEncoded
      * @throws Exceptions\UnsupportedTokenTypeException
      */
     public function __construct(?string $token, string $secret, ?string $algorithm = null,
-                                ?int $leeway = null, ?array $requiredClaims = null, bool $isImmortalToken = false)
+                                ?int $leeway = null, ?array $requiredClaims = null)
     {
         if (empty($token)) throw new EmptyTokenException('Token not provided');
 
@@ -84,7 +83,7 @@ class TokenEncoded
         $this->header = $header;
         $this->signature = $signature;
 
-        $this->validate($secret, $algorithm, $leeway, $requiredClaims, $isImmortalToken);
+        $this->validate($secret, $algorithm, $leeway, $requiredClaims);
     }
 
     /**
@@ -138,14 +137,12 @@ class TokenEncoded
     }
 
     /**
-     *
      * Performs auto validation using given key.
      *
      * @param string $secret Key
      * @param string|null $algorithm Force algorithm to signature verification (recommended)
      * @param int|null $leeway Optional leeway
      * @param array|null $requiredClaims
-     * @param bool $isImmortalToken
      * @throws Exceptions\InsecureTokenException
      * @throws Exceptions\IntegrityViolationException
      * @throws Exceptions\MissingClaimException
@@ -153,11 +150,9 @@ class TokenEncoded
      * @throws Exceptions\TokenInactiveException
      * @throws Exceptions\UnsupportedAlgorithmException
      */
-    public function validate(string $secret, ?string $algorithm = null,
-                             ?int $leeway = null, ?array $requiredClaims = null,
-                             bool $isImmortalToken = false): void
+    public function validate(string $secret, ?string $algorithm = null, ?int $leeway = null, ?array $requiredClaims = null): void
     {
-        JWT::validate($this, $secret, $algorithm, $leeway, $requiredClaims, $isImmortalToken);
+        JWT::validate($this, $secret, $algorithm, $leeway, $requiredClaims);
     }
 
     /**
