@@ -219,7 +219,9 @@ class Logger
         $filename = (config("log.error.filename") ??  "que-log") . "-" . date("Y-m-d") . ".json";
         $previous_errors = is_file("{$destination}/{$filename}") ? json_decode(file_get_contents(
             "{$destination}/{$filename}") ?: "{}", true) : [];
+
         array_unshift($previous_errors, $error);
+
         return file_put_contents("{$destination}/{$filename}", json_encode($previous_errors, JSON_PRETTY_PRINT));
     }
 

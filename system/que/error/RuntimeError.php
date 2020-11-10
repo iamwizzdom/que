@@ -61,6 +61,10 @@ abstract class RuntimeError
 
         }
 
+        $error = array_map_full($error, function ($value) {
+            return is_string($value) ? utf8_encode($value) : $value;
+        });
+
         log_error($error_message, $error_file, (int) $error_line, $error_level,
             $error_trace, HTTP::getInstance()->getHttpStatusTxt($http_code));
 
