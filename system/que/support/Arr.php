@@ -188,6 +188,15 @@ class Arr
     }
 
     /**
+     * @param array $array
+     * @param callable $callback
+     * @return array
+     */
+    public static function map_full(array $array, callable $callback) {
+        return array_map_full($array, $callback);
+    }
+
+    /**
      * @param array $arr
      * @return array
      */

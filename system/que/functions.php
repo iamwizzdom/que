@@ -1100,6 +1100,19 @@ function iterable_callback_recursive(&$element, $callback, array $affected = [])
 }
 
 /**
+ * @param array $array
+ * @param callable $callback
+ * @return array
+ */
+function array_map_full(array $array, callable $callback) {
+    foreach ($array as $key => $value) {
+        if (is_array($value)) $array[$key] = array_map_full($value, $callback);
+        else $array[$key] = $callback($value);
+    }
+    return $array;
+}
+
+/**
  * @param $array
  * @return array
  */

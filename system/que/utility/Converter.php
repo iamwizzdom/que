@@ -79,20 +79,20 @@ class Converter
 
     /**
      * @param int $countryID
-     * @param string $key
+     * @param string $column
      * @param string|null $default
      * @return string|null
      */
-    public function convertCountry(int $countryID, string $key, string $default = null): ?string
+    public function convertCountry(int $countryID, string $column, string $default = null): ?string
     {
         $country = db()->select()->table(
-            (self::$database_config['tables']['country']['name'] ?? 'countries')
-        )->where((self::$database_config['tables']['country']['primary_key'] ?? 'id'), $countryID)
+            ((self::$database_config['tables']['country']['name'] ?? null) ?: 'countries')
+        )->where(((self::$database_config['tables']['country']['primary_key'] ?? null) ?: 'id'), $countryID)
         ->where((self::$database_config['table_status_key'] ?? 'is_active'), STATE_ACTIVE)->exec();
 
         if ($country->isSuccessful()) {
             $country = $country->getQueryResponseArray(0);
-            return $country[$key] ?? $default;
+            return $country[$column] ?? $default;
         }
 
         return $default;
@@ -100,20 +100,62 @@ class Converter
 
     /**
      * @param int $stateID
-     * @param string $key
+     * @param string $column
      * @param string|null $default
      * @return string|null
      */
-    public function convertState(int $stateID, string $key, string $default = null): ?string
+    public function convertState(int $stateID, string $column, string $default = null): ?string
     {
         $state = db()->select()->table(
-            (self::$database_config['tables']['state']['name'] ?? 'states')
-        )->where((self::$database_config['tables']['state']['primary_key'] ?? 'id'), $stateID)
+            ((self::$database_config['tables']['state']['name'] ?? null) ?: 'states')
+        )->where(((self::$database_config['tables']['state']['primary_key'] ?? null) ?: 'id'), $stateID)
             ->where((self::$database_config['table_status_key'] ?? 'is_active'), STATE_ACTIVE)->exec();
 
         if ($state->isSuccessful()) {
             $state = $state->getQueryResponseArray(0);
-            return $state[$key] ?? $default;
+            return $state[$column] ?? $default;
+        }
+
+        return $default;
+    }
+
+    /**
+     * @param int $languageID
+     * @param string $column
+     * @param string|null $default
+     * @return string|null
+     */
+    public function convertLanguage(int $languageID, string $column, string $default = null): ?string
+    {
+        $language = db()->select()->table(
+            ((self::$database_config['tables']['language']['name'] ?? null) ?: 'languages')
+        )->where(((self::$database_config['tables']['language']['primary_key'] ?? null) ?: 'id'), $languageID)
+            ->where((self::$database_config['table_status_key'] ?? 'is_active'), STATE_ACTIVE)->exec();
+
+        if ($language->isSuccessful()) {
+            $language = $language->getQueryResponseArray(0);
+            return $language[$column] ?? $default;
+        }
+
+        return $default;
+    }
+
+    /**
+     * @param int $areaID
+     * @param string $column
+     * @param string|null $default
+     * @return string|null
+     */
+    public function convertArea(int $areaID, string $column, string $default = null): ?string
+    {
+        $area = db()->select()->table(
+            ((self::$database_config['tables']['area']['name'] ?? null) ?: 'areas')
+        )->where(((self::$database_config['tables']['area']['primary_key'] ?? null) ?: 'id'), $areaID)
+            ->where((self::$database_config['table_status_key'] ?? 'is_active'), STATE_ACTIVE)->exec();
+
+        if ($area->isSuccessful()) {
+            $area = $area->getQueryResponseArray(0);
+            return $area[$column] ?? $default;
         }
 
         return $default;
@@ -131,48 +173,6 @@ class Converter
         }, ARRAY_FILTER_USE_KEY) : $consts;
         $value = array_search($value, $states);
         return strtolower($starts_with && is_string($starts_with) ? str_start_from($value, $starts_with) : $value);
-    }
-
-    /**
-     * @param int $languageID
-     * @param string $key
-     * @param string|null $default
-     * @return string|null
-     */
-    public function convertLanguage(int $languageID, string $key, string $default = null): ?string
-    {
-        $language = db()->select()->table(
-            (self::$database_config['tables']['language']['name'] ?? 'languages')
-        )->where((self::$database_config['tables']['language']['primary_key'] ?? 'id'), $languageID)
-            ->where((self::$database_config['table_status_key'] ?? 'is_active'), STATE_ACTIVE)->exec();
-
-        if ($language->isSuccessful()) {
-            $language = $language->getQueryResponseArray(0);
-            return $language[$key] ?? $default;
-        }
-
-        return $default;
-    }
-
-    /**
-     * @param int $areaID
-     * @param string $key
-     * @param string|null $default
-     * @return string|null
-     */
-    public function convertArea(int $areaID, string $key, string $default = null): ?string
-    {
-        $area = db()->select()->table(
-            (self::$database_config['tables']['area']['name'] ?? 'areas')
-        )->where((self::$database_config['tables']['area']['primary_key'] ?? 'id'), $areaID)
-            ->where((self::$database_config['table_status_key'] ?? 'is_active'), STATE_ACTIVE)->exec();
-
-        if ($area->isSuccessful()) {
-            $area = $area->getQueryResponseArray(0);
-            return $area[$key] ?? $default;
-        }
-
-        return $default;
     }
 
     /**
