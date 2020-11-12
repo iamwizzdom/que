@@ -111,7 +111,7 @@ abstract class Router extends RouteInspector
      *
      * @param string $uri
      * @param string|null $type
-     * @return array|RouteEntry|null
+     * @return RouteEntry|null
      * @throws RouteException
      */
     protected static function resolveRoute(string $uri, string $type = null) {
@@ -124,8 +124,11 @@ abstract class Router extends RouteInspector
 
             if ($type !== null && strcmp($type, $routeEntry->getType()) != 0) continue;
 
-            if (self::matchTokens($uriTokens, $routeEntry->getUriTokens()))
-                return ['route' => $routeEntry, 'args' => []];
+            if (self::matchTokens($uriTokens, $routeEntry->getUriTokens())) {
+                self::setRouteParams([]);
+                self::setCurrentRoute($routeEntry);
+                return $routeEntry;
+            }
 
             if (!self::routeHasArgs($routeEntry)) continue;
 
