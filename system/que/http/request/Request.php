@@ -386,6 +386,25 @@ class Request implements QueArrayAccess
     }
 
     /**
+     * Returns all definded URI params if any
+     * @return array|null
+     */
+    public static function getUriParams()
+    {
+        return server('route.params');
+    }
+
+    /**
+     * Returns a definded URI param
+     * @param string $key
+     * @return mixed|null
+     */
+    public static function getUriParam(string $key)
+    {
+        return server("route.params.{$key}");
+    }
+
+    /**
      * @param $offset
      * @param $value
      */

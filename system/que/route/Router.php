@@ -20,6 +20,13 @@ abstract class Router extends RouteInspector
         return http()->_server()->get('route.entry');
     }
 
+    /**
+     * @return array|null
+     */
+    public static function getRouteParams() {
+        return server('route.params');
+    }
+
 
     /**
      * @param string $routeName
@@ -96,17 +103,15 @@ abstract class Router extends RouteInspector
      */
     public static function getRouteEntryFromUri(string $uri, string $type = null): ?RouteEntry {
         if (str_contains($uri, $base = base_url())) $uri = trim(str_start_from($uri, $base), '/');
-        $route = self::resolveRoute($uri, $type);
-        if (!empty($route)) $route['route'];
-        return null;
+        return self::resolveRoute($uri, $type);
     }
 
     /**
-     * Here we resolve the route registered for the current uri if any
+     * Here we resolve the registered route for the current uri if any
      *
      * @param string $uri
      * @param string|null $type
-     * @return array|null
+     * @return array|RouteEntry|null
      * @throws RouteException
      */
     protected static function resolveRoute(string $uri, string $type = null) {
@@ -155,6 +160,9 @@ abstract class Router extends RouteInspector
 
             if (self::matchTokens($tokens, Arr::extract($uriTokens, 0, (($size1 = Arr::size($tokens)) - 1)))) {
 
+                self::setRouteParams($args);
+                self::setCurrentRoute($routeEntry);
+
                 if (!empty($failures)) {
 
                     if ($size1 == ($size2 = Arr::size($uriTokens)))
@@ -164,7 +172,7 @@ abstract class Router extends RouteInspector
                         "Route Error", HTTP::UNAUTHORIZED);
                 }
 
-                return ['route' => $routeEntry, 'args' => $args];
+                return $routeEntry;
             }
 
             foreach ($uriTokens as $key => $uri) if ($uri === '--') unset($uriTokens[$key]);
