@@ -315,6 +315,19 @@ class ConditionError
      * @param string|null $format
      * @return $this
      */
+    public function isDateNotEqual(DateTime $compare, $error = null, ?string $format = null): ConditionError
+    {
+        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if (!$this->condition->isDateNotEqual($compare, $format)) $this->setError($error);
+        return $this;
+    }
+
+    /**
+     * @param DateTime $compare
+     * @param null $error
+     * @param string|null $format
+     * @return $this
+     */
     public function isDateGreaterThan(DateTime $compare, $error = null, ?string $format = null): ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;

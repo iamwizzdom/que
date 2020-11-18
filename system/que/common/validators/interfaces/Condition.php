@@ -282,6 +282,13 @@ interface Condition
      * @param string|null $format
      * @return bool
      */
+    public function isDateNotEqual(DateTime $compare, ?string $format = null): bool;
+
+    /**
+     * @param DateTime $compare
+     * @param string|null $format
+     * @return bool
+     */
     public function isDateGreaterThan(DateTime $compare, ?string $format = null): bool;
 
     /**

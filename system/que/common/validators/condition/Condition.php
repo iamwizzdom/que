@@ -451,6 +451,17 @@ class Condition implements ConditionAlias
         return $date instanceof DateTime && $date->getTimestamp() == $compare->getTimestamp();
     }
 
+    /**
+     * @param DateTime $compare
+     * @param string|null $format
+     * @return bool
+     */
+    public function isDateNotEqual(DateTime $compare, ?string $format = null): bool
+    {
+        // TODO: Implement isDateNotEqual() method.
+        return !$this->isDateEqual($compare, $format);
+    }
+
 
     /**
      * @param DateTime $compare
