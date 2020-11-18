@@ -109,9 +109,9 @@ abstract class FileBase
     public function setUploadDir(string $dir) {
 
         $this->uploadDir = $dir;
-        $this->uploadDir = ($this->uploadDir !== null ? rtrim($this->uploadDir, '/') : '');
-        if (!empty($this->uploadDir) && !str_ends_with($this->uploadDir, '/') &&
-            !str_ends_with($this->uploadDir, "\\")) $this->uploadDir = "{$this->uploadDir}/";
+        $this->uploadDir = ($this->uploadDir !== null ? trim($this->uploadDir, '/') : '');
+        $this->uploadDir = ($this->uploadDir !== null ? trim($this->uploadDir, '\\') : '');
+        if (!empty($this->uploadDir)) $this->uploadDir = "{$this->uploadDir}/";
     }
 
     /**

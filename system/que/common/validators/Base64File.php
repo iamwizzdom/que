@@ -53,12 +53,12 @@ class Base64File extends FileBase
             $data = $matches[2];
         }
 
-        $tmpPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . ($name = sha1($name)) . ".tmp";
+        $tmpName = tempnam(sys_get_temp_dir(), sha1($name));
 
-        file_put_contents($tmpPath, base64_decode($data));
+        file_put_contents($tmpName, base64_decode($data));
 
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $finfo_file = finfo_file($finfo, $tmpPath);
+        $finfo_file = finfo_file($finfo, $tmpName);
         finfo_close($finfo);
 
         $finfo_file = explode("/", $finfo_file);
@@ -67,9 +67,9 @@ class Base64File extends FileBase
 
         return [
             "type" => $finfo_file[0],
-            "size" => filesize($tmpPath) ?: 0,
+            "size" => filesize($tmpName) ?: 0,
             "name" => "{$name}.{$finfo_file[1]}",
-            "tmp_name" => $tmpPath,
+            "tmp_name" => $tmpName,
             "ext" => $finfo_file[1]
         ];
     }
@@ -90,7 +90,7 @@ class Base64File extends FileBase
 
             if (!$this->checkDir($uploadDir)) throw new QueException("Directory [" . str_start_from($uploadDir, 'storage/') . "] is not writable");
 
-            if (!($files = $this->parse($name, $data))) throw new QueException("Can't parse file. Invalid / Wrongly formatted base64 file");
+            if (!($files = $this->parse($this->getFileName() ?: $name, $data))) throw new QueException("Can't parse file. Invalid / Wrongly formatted base64 file");
 
             if ($files['size'] <= 0)
                 throw new QueException("{$files['name']} is empty");
@@ -128,14 +128,15 @@ class Base64File extends FileBase
      * @param $data
      * @return bool
      */
-    public function upload(string $name, $data)
+    public function upload(string $name, $data = null)
     {
+        if (is_null($data)) $data = input($name);
 
         if ($this->hasError($name)) return false;
 
         $files = $this->validate($name, $data);
 
-        if ($this->hasError($name)) return false;
+        if ($this->hasError($name) || !$files) return false;
 
         if ($this->getFileName() !== null)
             $files['name'] = "{$this->getFileName()}.{$files['ext']}";
@@ -162,11 +163,13 @@ class Base64File extends FileBase
         }
 
         $files['name'] = $newName;
-        
-        if (!move_uploaded_file($files['tmp_name'], $this->storageDir . $this->uploadDir . $files['name'])) {
+
+        if (!copy($files['tmp_name'], $this->storageDir . $this->uploadDir . $files['name'])) {
             $this->addError($name, "{$files['name']} could not be uploaded");
             return false;
         }
+
+        unlink($files['tmp_name']);
 
         $this->fileInfo['name'] = $files['name'];
         $this->fileInfo['dir'] = $this->uploadDir;

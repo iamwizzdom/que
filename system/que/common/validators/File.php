@@ -197,6 +197,11 @@ class File extends FileBase
         }
 
         $files['name'] = $newName;
+
+        if (!is_uploaded_file($files['tmp_name'])) {
+            $this->addError($name, "{$files['name']} is not an uploaded file");
+            return false;
+        }
         
         if (!move_uploaded_file($files['tmp_name'], $this->storageDir . $this->uploadDir . $newName)) {
             $this->addError($name, "{$files['name']} could not be uploaded");
@@ -266,7 +271,12 @@ class File extends FileBase
             }
 
             $files['name'][$current] = $newName;
-            
+
+            if (!is_uploaded_file($files['tmp_name'][$current])) {
+                $this->addError($name, "{$files['tmp_name'][$current]} is not an uploaded file");
+                return false;
+            }
+
             if (!move_uploaded_file($files['tmp_name'][$current], $this->storageDir . $this->uploadDir . $newName)) {
                 $this->addError($name, "{$files['name'][$current]} could not be uploaded");
                 $this->unlinkMulti($uploaded);
