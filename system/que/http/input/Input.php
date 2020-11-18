@@ -208,6 +208,14 @@ class Input implements QueArrayAccess
     }
 
     /**
+     * @return string|null
+     */
+    public function getBody(): ?string
+    {
+        return (file_get_contents("php://input") ?: null);
+    }
+
+    /**
      * @return array
      */
     private function get_all_input(): array {
