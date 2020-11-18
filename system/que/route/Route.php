@@ -26,7 +26,6 @@ use que\http\output\response\Jsonp;
 use que\http\output\response\Plain;
 use que\http\request\Request;
 use que\security\interfaces\RoutePermission;
-use que\session\Session;
 use que\template\Composer;
 
 final class Route extends Router
