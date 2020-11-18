@@ -62,17 +62,17 @@ class QueryResponse
     }
 
     /**
-     * @return object|null
+     * @return object
      */
-    public function getFirst(): ?object
+    public function getFirst(): object
     {
         return $this->getQueryResponse(0);
     }
 
     /**
-     * @return object|null
+     * @return array
      */
-    public function getFirstArray(): ?array
+    public function getFirstArray(): array
     {
         return $this->getQueryResponseArray(0);
     }
@@ -87,18 +87,17 @@ class QueryResponse
     }
 
     /**
-     * @return object[]|null
+     * @return object|object[]
      */
-    public function getAll(): ?array
+    public function getAll()
     {
-        $response = $this->getQueryResponse();
-        return !is_array($response) ? [$response] : $response;
+        return $this->getQueryResponse();
     }
 
     /**
-     * @return array[]|null
+     * @return array
      */
-    public function getAllArray(): ?array
+    public function getAllArray(): array
     {
         return $this->getQueryResponseArray();
     }
@@ -116,36 +115,36 @@ class QueryResponse
 
     /**
      * @param null $key
-     * @return object[]|object|null
+     * @return object[]|object
      */
     public function getQueryResponse($key = null)
     {
         $response = $this->getDriverResponse()->getResponse();
 
-        if ($key !== null && is_array($response)) return isset($response[$key]) ? $this->normalize_data($response[$key]) : null;
+        if ($key !== null && is_array($response)) return isset($response[$key]) ? $this->normalize_data($response[$key]) : (object)[];
 
         return $this->normalize_data($response);
     }
 
     /**
      * @param null $key
-     * @return array|null
+     * @return array
      */
-    public function getQueryResponseArray($key = null): ?array
+    public function getQueryResponseArray($key = null): array
     {
         $response = $this->getQueryResponse($key);
 
-        if (empty($response)) return null;
+        if (empty($response)) return [];
 
-        if ($key !== null) return (array) $response;
+        if ($key !== null) return (array)$response;
 
-        if (is_object($response)) return (array) $response;
+        if (is_object($response)) return (array)$response;
 
         array_callback($response, function ($row) {
-            return (array) $row;
+            return (array)$row;
         });
 
-        return (array) $response;
+        return (array)$response;
     }
 
     /**
@@ -172,17 +171,17 @@ class QueryResponse
         if (empty($response)) return null;
 
         if ($key !== null) {
-            $response = (object) $response;
+            $response = (object)$response;
             return new $model($response, $this->getTable(), $primaryKey);
         }
 
         if (is_object($response)) {
-            $response = (object) $response;
+            $response = (object)$response;
             return new $model($response, $this->getTable(), $primaryKey);
         }
 
         array_callback($response, function ($row) use ($model, $primaryKey) {
-            $row = (object) $row;
+            $row = (object)$row;
             return new $model($row, $this->getTable(), $primaryKey);
         });
 
