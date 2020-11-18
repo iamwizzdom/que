@@ -153,10 +153,11 @@ abstract class CurlNetwork
         if (!Arr::isAssoc($headers)) {
             foreach ($headers as $k => $v) {
                 list($key, $value) = explode(':', $v, 2);
-                $headers[strtolower($key)] = str_strip_spaces($value);
+                $headers[strtolower($key)] = trim($value);
                 unset($headers[$k]);
             }
         }
+
         $this->headers = $headers;
     }
 
