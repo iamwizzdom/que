@@ -10,7 +10,8 @@ namespace que\http\curl;
 
 use que\support\Arr;
 
-abstract class CurlNetwork {
+abstract class CurlNetwork
+{
 
     /**
      * @var string
@@ -149,6 +150,13 @@ abstract class CurlNetwork {
      */
     public function setHeaders(array $headers)
     {
+        if (!Arr::isAssoc($headers)) {
+            foreach ($headers as $k => $v) {
+                list($key, $value) = explode(':', $v, 2);
+                $headers[strtolower($key)] = str_strip_spaces($value);
+                unset($headers[$k]);
+            }
+        }
         $this->headers = $headers;
     }
 
@@ -203,7 +211,8 @@ abstract class CurlNetwork {
     /**
      * @return array
      */
-    protected function exec(): array {
+    protected function exec(): array
+    {
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->getUrl());
@@ -220,28 +229,29 @@ abstract class CurlNetwork {
                 else $file = '@' . realpath($file);
                 $post[$name] = $file;
             }
-            if (!isset($headers["content-type"])) $headers["content-type"] = "multipart/form-data";
+            $headers["content-type"] ??= "multipart/form-data";
         }
 
-        if (strtolower($headers["content-type"] ?? '') === mime_type_from_extension('json'))
+        if ($headers["content-type"] ?? '' === mime_type_from_extension('json')) {
             $this->setIsBodyPost(true);
+        }
 
-        if(!empty($post)){
-            curl_setopt($ch,CURLOPT_POST,true);
-            curl_setopt($ch,CURLOPT_POSTFIELDS, $this->isBodyPost() ? json_encode($post) : $post);
+        if (!empty($post)) {
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $this->isBodyPost() ? json_encode($post) : $post);
         }
 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-        if(!empty($headers)){
+        if (!empty($headers)) {
             Arr::callback($headers, function ($value, $key) {
                 return "{$key}: {$value}";
             });
-            curl_setopt($ch,CURLOPT_HTTPHEADER, array_values($headers));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array_values($headers));
         }
 
-        curl_setopt($ch,CURLOPT_TIMEOUT, $this->getTimeout());
-        if (!empty($this->getMethod())) curl_setopt($ch,CURLOPT_CUSTOMREQUEST, $this->getMethod());
+        curl_setopt($ch, CURLOPT_TIMEOUT, $this->getTimeout());
+        if (!empty($this->getMethod())) curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $this->getMethod());
 
         $content = curl_exec($ch);
 
@@ -258,7 +268,7 @@ abstract class CurlNetwork {
         $retry = 0;
 
         // Try again if it fails/times out
-        while(curl_errno($ch) == CURLE_OPERATION_TIMEDOUT && $retry < MAX_RETRY) {
+        while (curl_errno($ch) == CURLE_OPERATION_TIMEDOUT && $retry < MAX_RETRY) {
             $content = curl_exec($ch);
             $retry++;
             sleep(2);
