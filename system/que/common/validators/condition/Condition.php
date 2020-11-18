@@ -433,6 +433,30 @@ class Condition implements ConditionAlias
      * @param string|null $format
      * @return bool
      */
+    public function isDateEqual(DateTime $compare, ?string $format = null): bool
+    {
+        // TODO: Implement isDateEqual() method.
+        if ($format) {
+            $date = DateTime::createFromFormat($format, $this->getValue());
+            $errors = DateTime::getLastErrors();
+            if (!empty($errors['warnings'] ?? [])) $date = null;
+            elseif (!empty($errors['errors'] ?? [])) $date = null;
+        } else {
+            try {
+                $date = new DateTime($this->getValue());
+            } catch (Exception $e) {
+                $date = null;
+            }
+        }
+        return $date instanceof DateTime && $date->getTimestamp() == $compare->getTimestamp();
+    }
+
+
+    /**
+     * @param DateTime $compare
+     * @param string|null $format
+     * @return bool
+     */
     public function isDateGreaterThan(DateTime $compare, ?string $format = null): bool {
         if ($format) {
             $date = DateTime::createFromFormat($format, $this->getValue());
