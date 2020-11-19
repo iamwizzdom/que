@@ -71,7 +71,7 @@ const STATE_PROCESSING = 2;
 const STATE_CANCELED = 3;
 const STATE_REJECTED = 4;
 const STATE_REVERSED = 5;
-const STATE_FREEZE = 6;
+const STATE_FROZEN = 6;
 const STATE_RETRY = 7;
 const STATE_OPEN = 8;
 const STATE_AWAITING = 9;
@@ -85,7 +85,7 @@ const STATE_SUCCESSFUL = 16;
 const STATE_PENDING = 17;
 const STATE_UNSEEN = 18;
 const STATE_SEEN = 19;
-const STATE_SEEN_CLEARED = 20;
+const STATE_COMPLETED = 20;
 
 /**
  * Age constants

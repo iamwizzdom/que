@@ -166,12 +166,12 @@ class Converter
      * @param string|array|null $starts_with
      * @return string
      */
-    public function convertEnvConstant($value, $starts_with = null) {
+    public function convertEnvConst($value, $starts_with = null) {
         $consts = get_defined_constants();
-        $states = $starts_with ? array_filter($consts, function ($key) use ($starts_with) {
+        $consts = $starts_with ? array_filter($consts, function ($key) use ($starts_with) {
             return is_array($starts_with) ? str_starts_with_any($key, $starts_with) : str_starts_with($key, $starts_with);
         }, ARRAY_FILTER_USE_KEY) : $consts;
-        $value = array_search($value, $states);
+        $value = array_search($value, $consts);
         return strtolower($starts_with && is_string($starts_with) ? str_start_from($value, $starts_with) : $value);
     }
 
