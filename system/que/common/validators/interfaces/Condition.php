@@ -180,6 +180,11 @@ interface Condition
     /**
      * @return bool
      */
+    public function isJson(): bool;
+
+    /**
+     * @return bool
+     */
     public function isNumeric(): bool;
 
     /**

@@ -172,6 +172,17 @@ class ConditionError
      * @param null $error
      * @return ConditionError
      */
+    public function isJson($error = null): ConditionError
+    {
+        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if (!$this->condition->isJson()) $this->setError($error);
+        return $this;
+    }
+
+    /**
+     * @param null $error
+     * @return ConditionError
+     */
     public function isUsername($error = null): ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
@@ -491,6 +502,28 @@ class ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->isNotEqual($variable)) $this->setError($error);
+        return $this;
+    }
+
+    /**
+     * @param null $error
+     * @return ConditionError
+     */
+    public function isArray($error = null): ConditionError
+    {
+        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if (!$this->condition->isArray()) $this->setError($error);
+        return $this;
+    }
+
+    /**
+     * @param null $error
+     * @return ConditionError
+     */
+    public function isNumeric($error = null): ConditionError
+    {
+        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if (!$this->condition->isNumeric()) $this->setError($error);
         return $this;
     }
 

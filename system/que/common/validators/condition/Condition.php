@@ -301,6 +301,17 @@ class Condition implements ConditionAlias
     }
 
     /**
+     * @return bool
+     */
+    public function isJson(): bool
+    {
+        // TODO: Implement isJson() method.
+        return ($this->isNotEmpty() && $this->isString() &&
+            json_decode($this->getValue()) != null && json_last_error() == JSON_ERROR_NONE);
+    }
+
+
+    /**
      * @inheritDoc
      */
     public function isPhoneNumber(): bool
