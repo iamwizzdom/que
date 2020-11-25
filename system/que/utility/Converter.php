@@ -8,6 +8,9 @@
 
 namespace que\utility;
 
+use Exception;
+use ReflectionClass;
+
 class Converter
 {
     /**
@@ -163,16 +166,35 @@ class Converter
 
     /**
      * @param mixed $value
-     * @param string|array|null $starts_with
+     * @param string|array|null $startsWith
      * @return string
      */
-    public function convertEnvConst($value, $starts_with = null) {
+    public function convertEnvConst($value, $startsWith = null) {
         $consts = get_defined_constants();
-        $consts = $starts_with ? array_filter($consts, function ($key) use ($starts_with) {
-            return is_array($starts_with) ? str_starts_with_any($key, $starts_with) : str_starts_with($key, $starts_with);
+        $consts = $startsWith ? array_filter($consts, function ($key) use ($startsWith) {
+            return is_array($startsWith) ? str_starts_with_any($key, $startsWith) : str_starts_with($key, $startsWith);
         }, ARRAY_FILTER_USE_KEY) : $consts;
         $value = array_search($value, $consts);
-        return strtolower($starts_with && is_string($starts_with) ? str_start_from($value, $starts_with) : $value);
+        return strtolower($startsWith && is_string($startsWith) ? str_start_from($value, $startsWith) : $value);
+    }
+
+    /**
+     * @param mixed $value
+     * @param string|object $class
+     * @param string|array|null $startsWith
+     * @return string|null
+     */
+    public function convertClassConst($value, $class, $startsWith = null) {
+        try {
+            $consts = (new ReflectionClass($class))->getConstants();
+            $consts = $startsWith ? array_filter($consts, function ($key) use ($startsWith) {
+                return is_array($startsWith) ? str_starts_with_any($key, $startsWith) : str_starts_with($key, $startsWith);
+            }, ARRAY_FILTER_USE_KEY) : $consts;
+            $value = array_search($value, $consts);
+            return strtolower($startsWith && is_string($startsWith) ? str_start_from($value, $startsWith) : $value);
+        } catch (Exception $exception) {
+            return null;
+        }
     }
 
     /**
