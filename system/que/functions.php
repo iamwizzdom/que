@@ -536,7 +536,8 @@ function get_date(string $format, string $date, string $default = ''): string {
         $dateTime = new DateTime($date);
     } catch (Exception $e) {
         log_error($e->getMessage(), $e->getFile(), $e->getLine(),
-            $e->getCode(), HTTP::INTERNAL_SERVER_ERROR, $e->getTrace());
+            E_USER_NOTICE, $e->getTrace(),
+            \http()->getHttpStatusTxt(HTTP::INTERNAL_SERVER_ERROR));
         $dateTime = false;
     }
     return $dateTime ? $dateTime->format($format) : $default;
@@ -2250,11 +2251,15 @@ function redirect(string $url, array $header = [], array $data = []) {
  * returns a list of defined constants in class if any
  *
  * @param string|object $class
+ * @param null $start_with
  * @return array
  */
-function get_class_consts($class) {
+function get_class_consts($class, $start_with = null) {
     try {
-        return (new ReflectionClass($class))->getConstants();
+        $consts = (new ReflectionClass($class))->getConstants();
+        return $start_with ? array_filter($consts, function ($key) use ($start_with) {
+            return is_array($start_with) ? str_starts_with_any($key, $start_with) : str_starts_with($key, $start_with);
+        }, ARRAY_FILTER_USE_KEY) : $consts;
     } catch (Exception $exception) {
         return [];
     }
@@ -2746,14 +2751,16 @@ function track_token() {
 }
 
 /**
- * An alias of @see log_error()
- * @param $message
+ * An alias of @param $message
+ * @param null $status
  * @return bool|false|int
+ * @see log_error()
  */
-function log_err($message) {
+function log_err($message, $status = null) {
     $backtrace = debug_backtrace();
     return log_error($message, $backtrace[0]['file'], $backtrace[0]['line'],
-        E_USER_NOTICE, array_exclude($backtrace, 0));
+        E_USER_NOTICE, array_exclude($backtrace, 0),
+        \http()->getHttpStatusTxt($status ?: HTTP::INTERNAL_SERVER_ERROR));
 }
 
 /**
