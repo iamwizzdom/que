@@ -307,7 +307,8 @@ class Condition implements ConditionAlias
     {
         // TODO: Implement isJson() method.
         return ($this->isNotEmpty() && $this->isString() &&
-            json_decode($this->getValue()) != null && json_last_error() == JSON_ERROR_NONE);
+            ($value = json_decode($this->getValue())) != null &&
+            json_last_error() == JSON_ERROR_NONE && is_object($value));
     }
 
 
