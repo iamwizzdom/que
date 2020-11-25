@@ -2247,6 +2247,20 @@ function redirect(string $url, array $header = [], array $data = []) {
 }
 
 /**
+ * returns a list of defined constants in class if any
+ *
+ * @param string|object $class
+ * @return array
+ */
+function get_class_consts($class) {
+    try {
+        return (new ReflectionClass($class))->getConstants();
+    } catch (Exception $exception) {
+        return [];
+    }
+}
+
+/**
  * Determines the mimetype of a file by looking at its extension or the file itself.
  *
  * @param string $filepath
@@ -2510,7 +2524,7 @@ function extension_from_mime_type(string $mime_type)
  * @param string $path
  * @return string|string[]
  */
-function extention_from_filepath(string $path) {
+function extension_from_filepath(string $path) {
     return pathinfo($path, PATHINFO_EXTENSION);
 }
 
