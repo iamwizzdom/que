@@ -819,7 +819,7 @@ function convert_mega_bytes(int $mega_bytes, int $decimals = 0): float
 /**
  * @param array $pieces
  * @param string $glue
- * @param callable $filter
+ * @param callable|null $filter
  * @return string
  */
 function serializer(array $pieces, string $glue = '&', callable $filter = null): string
@@ -836,7 +836,7 @@ function serializer(array $pieces, string $glue = '&', callable $filter = null):
 /**
  * @param array $pieces
  * @param string $glue
- * @param callable $filter
+ * @param callable|null $filter
  * @return string
  */
 function serializer_recursive(array $pieces, string $glue = '&', callable $filter = null): string
@@ -962,6 +962,7 @@ function array_callback(array &$element, $callback, array $affected = [])
  * @param array $element
  * @param $callback
  * @param array $affected
+ * @return array
  */
 function array_callback_recursive(array &$element, $callback, array $affected = [])
 {
@@ -1142,7 +1143,7 @@ function array_exclude(array $array, ...$exclude): array
  *
  * @param array $array | Array to extract from
  * @param int $start | Extraction starting point
- * @param int $end | Extraction ending point
+ * @param int|null $end | Extraction ending point
  * @return array
  */
 function array_extract(array $array, int $start, int $end = null): array
@@ -1221,7 +1222,7 @@ function is_numeric_array(array $array): bool {
  * @param array $arr
  * @return int
  */
-function array_size($arr): int
+function array_size(array $arr): int
 {
     return array_is_accessible($arr) ? count($arr) : 0;
 }
@@ -1259,7 +1260,7 @@ function array_multi($value, int $range) {
  * @param array $input
  * The input array.
  *
- * @param int $num_req [optional] <p>
+ * @param int|null $num_req [optional] <p>
  * Specifies how many entries you want to pick.
  *
  * @return mixed|array If you do not specify number of entries to pick, array_random will
@@ -1269,7 +1270,7 @@ function array_multi($value, int $range) {
  * random a value or values out of an array.
  *
  */
-function array_random($input, int $num_req = null) {
+function array_random(array $input, int $num_req = null) {
 
     if ($num_req === null) return fisher_yates_shuffle($input);
 
@@ -1292,7 +1293,7 @@ function array_random($input, int $num_req = null) {
  * @param null $default
  * @return mixed|null
  */
-function find_in_array($haystack, $needle, $default = null) {
+function find_in_array(array $haystack, $needle, $default = null) {
     return Arr::get($haystack, $needle, $default);
 }
 
@@ -1323,7 +1324,7 @@ function array_is_accessible($value): bool {
  * @param $key
  * @return bool
  */
-function array_has_key($array, $key): bool {
+function array_has_key(array $array, $key): bool {
 
     if ($array instanceof ArrayAccess) {
         return $array->offsetExists($key);
@@ -1338,7 +1339,7 @@ function array_has_key($array, $key): bool {
  * @param  array  $array
  * @return array
  */
-function array_collapse($array)
+function array_collapse(array $array)
 {
     $results = [];
     foreach ($array as $key => $values) {
@@ -1571,7 +1572,7 @@ function object_permutation(object $object): object
  * @param $callback
  * @param array $affected
  */
-function object_callback(object &$element, $callback, array $affected = [])
+function object_callback(object $element, $callback, array $affected = [])
 {
     if (!empty($affected)) {
         foreach ($affected as $key)
@@ -1708,7 +1709,7 @@ function object_get(object $haystack, $needle, $default = null) {
 /**
  * debug_print is used to output all data types
  * @param mixed ...$params
- * @return string
+ * @return string|void
  */
 function debug_print(...$params)
 {
@@ -2672,6 +2673,7 @@ function route(string $name, array $args = [], bool $addBaseUrl = true) {
  * valid url regardless of login or permission restriction
  *
  * @return string
+ * @throws RouteException
  */
 function base_url(string $url = null, bool $forceUrl = false): string
 {
@@ -2684,7 +2686,7 @@ function base_url(string $url = null, bool $forceUrl = false): string
 
     $host = server_host();
 
-    if (!$isNull && preg_match_all('/\{(.*?)\}/', $url, $matches)) {
+    if (!$isNull && preg_match_all('/{(.*?)}/', $url, $matches)) {
 
         $args = array_map(function ($m) {
             return trim($m, '?');
