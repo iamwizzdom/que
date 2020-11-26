@@ -33,7 +33,7 @@ class QueryResponse
     /**
      * @var string|null
      */
-    private ?string $model = null;
+    private ?string $modelKey = null;
 
     /**
      * @var DriverResponse
@@ -58,7 +58,7 @@ class QueryResponse
         $this->setQueryType($query_type);
         $this->setTable($table);
         $this->setPrimaryKey($primaryKey);
-        $this->setModel(config("database.default.model"));
+        $this->setModelKey(config("database.default.model"));
     }
 
     /**
@@ -156,14 +156,14 @@ class QueryResponse
     {
         if ($primaryKey === null) $primaryKey = $this->getPrimaryKey();
 
-        $model = \model($this->getModel());
+        $model = \model($this->getModelKey());
 
         if ($model === null) throw new QueRuntimeException(
-            "No database model was found with the key '{$this->getModel()}', check your database configuration to fix this issue.",
+            "No database model was found with the key '{$this->getModelKey()}', check your database configuration to fix this issue.",
             "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         if (!($implements = class_implements($model)) || !isset($implements[Model::class])) throw new QueRuntimeException(
-            "The specified model ({$model}) with key '{$this->getModel()}' does not implement the Que database model interface.",
+            "The specified model ({$model}) with key '{$this->getModelKey()}' does not implement the Que database model interface.",
             "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         $response = $this->getQueryResponse($key);
@@ -286,17 +286,17 @@ class QueryResponse
     /**
      * @return string|null
      */
-    public function getModel(): ?string
+    public function getModelKey(): ?string
     {
-        return $this->model;
+        return $this->modelKey;
     }
 
     /**
      * @param string|null $model
      */
-    public function setModel(?string $model): void
+    public function setModelKey(?string $model): void
     {
-        $this->model = $model;
+        $this->modelKey = $model;
     }
 
 
