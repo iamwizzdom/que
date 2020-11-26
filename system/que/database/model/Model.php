@@ -158,6 +158,18 @@ class Model implements ModelAlias
     }
 
     /**
+     * @param $key
+     * @param bool $default
+     * @return bool
+     */
+    public function getBool($key, bool $default = false): bool
+    {
+        // TODO: Implement getBool() method.
+        return (bool) $this->getValue($key, $default);
+    }
+
+
+    /**
      * @inheritDoc
      */
     public function validate($key): Condition

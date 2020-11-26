@@ -86,6 +86,13 @@ interface Model extends QueArrayAccess
 
     /**
      * @param $key
+     * @param bool $default
+     * @return bool
+     */
+    public function getBool($key, bool $default = false): bool;
+
+    /**
+     * @param $key
      * @return Condition
      */
     public function validate($key): Condition;
