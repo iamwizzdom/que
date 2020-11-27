@@ -28,7 +28,17 @@ abstract class Connect
     /**
      * @var bool
      */
+    private bool $transStrict = true;
+
+    /**
+     * @var bool
+     */
     private bool $transSuccessful = true;
+
+    /**
+     * @var bool
+     */
+    private bool $transFailed = false;
 
     /**
      * @var int
@@ -144,6 +154,22 @@ abstract class Connect
     /**
      * @return bool
      */
+    public function isTransStrict(): bool
+    {
+        return $this->transStrict;
+    }
+
+    /**
+     * @param bool $transStrict
+     */
+    protected function setTransStrict(bool $transStrict): void
+    {
+        $this->transStrict = $transStrict;
+    }
+
+    /**
+     * @return bool
+     */
     public function isTransSuccessful(): bool
     {
         return $this->transSuccessful;
@@ -158,7 +184,23 @@ abstract class Connect
     }
 
     /**
-     * @param string $driver
+     * @return bool
+     */
+    public function isTransFailed(): bool
+    {
+        return $this->transFailed;
+    }
+
+    /**
+     * @param bool $transFailed
+     */
+    protected function setTransFailed(bool $transFailed): void
+    {
+        $this->transFailed = $transFailed;
+    }
+
+    /**
+     * @param string|null $driver
      * @return bool
      */
     public function close(string $driver = null): bool

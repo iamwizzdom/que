@@ -761,13 +761,12 @@ class QueryBuilder implements Builder
             if ($retrying && $attempts < $observer->getSignal()->getTrials()) {
 
                 $model->offsetSet($model->getPrimaryKey(), $response->getLastInsertID());
-                sleep(1);
-                $model->refresh();
+                if ($attempts <= 1) $model->refresh();
                 $response->setResponse([$model->getObject()]);
                 return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), $model->getPrimaryKey());
             }
 
-            $this->query->transRollBackAll();
+            $this->query->transComplete();
 
             if ($this->driver->isInDebugMode()) {
 
@@ -782,32 +781,25 @@ class QueryBuilder implements Builder
 
         } elseif ($observer instanceof Observer && $model instanceof Model) {
             $model->offsetSet($model->getPrimaryKey(), $response->getLastInsertID());
-            sleep(1);
             $model->refresh();
             $observer->onCreated($model);
         }
 
-        if ($observer instanceof Observer) {
+        //Check if observer wants to undo the insert operation
+        if ($observer instanceof Observer && $observer->getSignal()->isUndoOperation()) {
 
-            //Check if observer wants to undo the insert operation
-            if ($observer->getSignal()->isUndoOperation()) {
+            $this->query->transRollBack();
 
-                $this->query->transRollBackAll();
+            return new QueryResponse($this->getCustomDriverResponse($this->builder, [
+                "Observer for '{$this->builder->getTable()}' table asked to undo the insert operation"
+            ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), $model->getPrimaryKey());
 
-                return new QueryResponse($this->getCustomDriverResponse($this->builder, [
-                    "Observer for '{$this->builder->getTable()}' table asked to undo the insert operation"
-                ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), $model->getPrimaryKey());
-            } else {
+        } else {
 
-                //Here we complete the transaction, since the developer didn't ask us to undo the operation
-                $this->query->transComplete();
-                $this->query->setTransEnabled(false);
-            }
+            //Here we complete the transaction, since the developer didn't ask us to undo the operation
+            $this->query->transComplete();
         }
 
-        $model->offsetSet($model->getPrimaryKey(), $response->getLastInsertID());
-        sleep(1);
-        $model->refresh();
         $response->setResponse([$model->getObject()]);
 
         return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), $model->getPrimaryKey());
@@ -942,7 +934,7 @@ class QueryBuilder implements Builder
             if ($retrying && $attempts < $observer->getSignal()->getTrials())
                 return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
 
-            $this->query->transRollBackAll();
+            $this->query->transRollBack();
 
             if ($this->driver->isInDebugMode()) {
 
@@ -962,7 +954,7 @@ class QueryBuilder implements Builder
             //Check if observer wants to undo the delete operation
             if ($observer->getSignal()->isUndoOperation()) {
 
-                $this->query->transRollBackAll();
+                $this->query->transRollBack();
 
                 return new QueryResponse($this->getCustomDriverResponse($this->builder, [
                     "Observer for '{$this->builder->getTable()}' table asked to undo the delete operation"
@@ -972,7 +964,6 @@ class QueryBuilder implements Builder
                 //Here we complete the transaction, since the developer
                 //didn't as us to undo the operation
                 $this->query->transComplete();
-                $this->query->setTransEnabled(false);
             }
         }
 
@@ -1102,8 +1093,6 @@ class QueryBuilder implements Builder
         $response = $this->driver->exec($this->builder);
 
         if (!$response->isSuccessful()) {
-
-            $this->query->transRollBackAll();
 
             if ($this->driver->isInDebugMode()) {
 
@@ -1256,14 +1245,14 @@ class QueryBuilder implements Builder
             }
 
             if ($retrying && $attempts < $observer->getSignal()->getTrials()) {
-                $updatedStack->refresh();
+                if ($attempts <= 1) $updatedStack->refresh();
                 $response->setResponse([array_map(function ($data) {
                     return (object) $data;
                 }, $updatedStack->getArray())]);
                 return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
             }
 
-            $this->query->transRollBackAll();
+            $this->query->transRollBack();
 
             if ($this->driver->isInDebugMode()) {
 
@@ -1286,7 +1275,7 @@ class QueryBuilder implements Builder
             //Check if observer wants to undo the update operation
             if ($observer->getSignal()->isUndoOperation()) {
 
-                $this->query->transRollBackAll();
+                $this->query->transRollBack();
 
                 return new QueryResponse($this->getCustomDriverResponse($this->builder, [
                     "Observer for '{$this->builder->getTable()}' table asked to undo the update operation"
@@ -1296,11 +1285,9 @@ class QueryBuilder implements Builder
                 //Here we complete the transaction, since the developer
                 //didn't as us to undo the operation
                 $this->query->transComplete();
-                $this->query->setTransEnabled(false);
             }
         }
 
-        $updatedStack->refresh();
         $response->setResponse([array_map(function ($data) {
             return (object) $data;
         }, $updatedStack->getArray())]);

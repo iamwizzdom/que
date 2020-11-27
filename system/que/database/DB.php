@@ -63,6 +63,15 @@ class DB extends Connect
     }
 
     /**
+     * @param bool $mode
+     * @return void
+     */
+    public function transStrict(bool $mode = true): void
+    {
+        $this->setTransStrict($mode);
+    }
+
+    /**
      * @param bool $testMode
      * @return bool
      */
@@ -82,10 +91,10 @@ class DB extends Connect
         if (!$this->isTransEnabled()) return false;
         elseif ($this->getTransDepth() > 0) {
             $this->transDepth++;
-            return false;
+            return true;
         }
 
-        $this->setTransSuccessful(($testMode === true));
+        $this->setTransFailed(($testMode === true));
 
         if ($this->trans_begin()) {
             $this->setTransSuccessful(true);
@@ -103,8 +112,9 @@ class DB extends Connect
     {
         if (!$this->isTransEnabled()) return false;
 
-        if (!$this->isTransSuccessful()) {
+        if (!$this->isTransSuccessful() || $this->isTransFailed()) {
             $this->transRollBack();
+            if (!$this->isTransStrict()) $this->setTransSuccessful(true);
             return false;
         }
         return $this->transCommit();
@@ -142,7 +152,6 @@ class DB extends Connect
     public function transRollBackAll()
     {
         if ($this->getTransDepth() > 0) $this->setTransSuccessful(false);
-
         $depth = null;
         while ($this->getTransDepth() !== 0) {
             $depth = $this->getTransDepth();

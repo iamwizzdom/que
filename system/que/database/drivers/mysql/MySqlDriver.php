@@ -14,6 +14,7 @@ use PDO;
 use PDOException;
 use PDOStatement;
 use que\common\exception\PreviousException;
+use que\common\exception\QueException;
 use que\common\exception\QueRuntimeException;
 use que\database\interfaces\drivers\Driver;
 use que\database\interfaces\drivers\DriverQueryBuilder;
