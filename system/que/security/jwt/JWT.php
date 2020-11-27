@@ -245,11 +245,8 @@ class JWT
      * @param User $user
      * @param int|null $expire
      * @return string|null
-     * @throws Exceptions\TokenExpiredException
-     * @throws Exceptions\TokenInactiveException
-     * @throws IntegrityViolationException
      */
-    public static function fromUser(User $user, int $expire = null)
+    public static function fromUser(User $user, int $expire = null, bool $throwException = false)
     {
         $generator = new JWTGenerator();
         $generator->setAlgorithm(JWT::ALGORITHM_HS512);
@@ -258,15 +255,8 @@ class JWT
         if ($expire) $generator->setExpiration($expire);
         try {
             return $generator->generate();
-        } catch (Exceptions\EmptyTokenException $e) {
-        } catch (Exceptions\InsecureTokenException $e) {
-        } catch (Exceptions\InvalidClaimTypeException $e) {
-        } catch (Exceptions\InvalidStructureException $e) {
-        } catch (Exceptions\MissingClaimException $e) {
-        } catch (SigningFailedException $e) {
-        } catch (Exceptions\UndefinedAlgorithmException $e) {
-        } catch (UnsupportedAlgorithmException $e) {
-        } catch (Exceptions\UnsupportedTokenTypeException $e) {
+        } catch (Exception $e) {
+            if ($throwException) throw $e;
         }
         return null;
     }
@@ -274,31 +264,28 @@ class JWT
 
     /**
      * @param string $token
+     * @param bool $throwException
      * @return User|null
-     * @throws Exceptions\EmptyTokenException
-     * @throws Exceptions\InsecureTokenException
-     * @throws Exceptions\InvalidClaimTypeException
-     * @throws Exceptions\InvalidStructureException
-     * @throws Exceptions\MissingClaimException
-     * @throws Exceptions\TokenExpiredException
-     * @throws Exceptions\TokenInactiveException
-     * @throws Exceptions\UndefinedAlgorithmException
-     * @throws Exceptions\UnsupportedTokenTypeException
-     * @throws IntegrityViolationException
-     * @throws UnsupportedAlgorithmException
      */
-    public static function toUser(string $token)
+    public static function toUser(string $token, bool $throwException = false)
     {
-        $tokenEncoded = new TokenEncoded($token, (string) config('auth.jwt.secret', ''),
-            JWT::ALGORITHM_HS512, null, null);
-        $tokenDecoded = $tokenEncoded->decode();
-        $payload = $tokenDecoded->getPayload();
-        $config = config('database.tables.user', []);
-        $user = db()->find($config['name'] ?? 'users', $payload['jti'] ?? 0,
-            $config['primary_key'] ?? 'id')->getFirst();
-        if (!$user) return null;
-        User::login($user);
-        return User::getInstance();
+        try {
+
+            $tokenEncoded = new TokenEncoded($token, (string) config('auth.jwt.secret', ''),
+                JWT::ALGORITHM_HS512, null, null);
+            $tokenDecoded = $tokenEncoded->decode();
+            $payload = $tokenDecoded->getPayload();
+            $config = config('database.tables.user', []);
+            $user = db()->find($config['name'] ?? 'users', $payload['jti'] ?? 0,
+                $config['primary_key'] ?? 'id')->getFirst();
+            if (!$user) return null;
+            User::login($user);
+            return User::getInstance();
+
+        } catch (Exception $e) {
+            if ($throwException) throw $e;
+        }
+        return null;
     }
 
 }
