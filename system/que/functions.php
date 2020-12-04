@@ -1106,9 +1106,9 @@ function iterable_callback_recursive(&$element, $callback, array $affected = [])
  * @param callable $callback
  * @return array
  */
-function array_map_full(array $array, callable $callback) {
+function array_map_recursive(array $array, callable $callback) {
     foreach ($array as $key => $value) {
-        if (is_array($value)) $array[$key] = array_map_full($value, $callback);
+        if (is_array($value)) $array[$key] = array_map_recursive($value, $callback);
         else $array[$key] = $callback($value);
     }
     return $array;

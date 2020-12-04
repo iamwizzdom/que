@@ -61,7 +61,7 @@ abstract class RuntimeError
 
         }
 
-        $error = array_map_full($error, function ($value) {
+        $error = array_map_recursive($error, function ($value) {
             return is_string($value) ? utf8_encode($value) : $value;
         });
 

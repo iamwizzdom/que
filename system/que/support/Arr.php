@@ -192,8 +192,8 @@ class Arr
      * @param callable $callback
      * @return array
      */
-    public static function map_full(array $array, callable $callback) {
-        return array_map_full($array, $callback);
+    public static function map_recursive(array $array, callable $callback) {
+        return array_map_recursive($array, $callback);
     }
 
     /**

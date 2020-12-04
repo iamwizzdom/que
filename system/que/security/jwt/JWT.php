@@ -277,9 +277,14 @@ class JWT
             $payload = $tokenDecoded->getPayload();
             $config = config('database.tables.user', []);
             $user = db()->find($config['name'] ?? 'users', $payload['jti'] ?? 0,
-                $config['primary_key'] ?? 'id')->getFirst();
-            if (!$user) return null;
-            User::login($user);
+                $config['primary_key'] ?? 'id');
+
+            if (!$user->isSuccessful()) {
+                if (!$throwException) return null;
+                throw new Exception("Login failed, no record found with the given token.");
+            }
+
+            User::login($user->getFirst());
             return User::getInstance();
 
         } catch (Exception $e) {
