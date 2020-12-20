@@ -32,5 +32,6 @@ giving Que the ability to connect to all database engines supported by PHP using
 Que is organized, but still, Que adapts with disorganized developers. 
 In other words, with Que's super-fast autoload engine, Que can locate your PHP files 
 and include them in runtime no matter where you place these files within your project.
+This also implies that Que can stand alone, which means that a single Que engine can power multiple projects at the same time.
 
 > **Que** is reliable, **Que** is fast, **Que** is PHP.
