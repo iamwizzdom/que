@@ -198,7 +198,7 @@ class Request implements QueArrayAccess
         if (!empty(self::$supportedMethods)) return self::$supportedMethods;
         $const = (new ReflectionClass(self::class))->getConstants();
         return self::$supportedMethods = array_filter($const, function ($key) {
-            return str_starts_with($key, "METHOD");
+            return str__starts_with($key, "METHOD");
         }, ARRAY_FILTER_USE_KEY);
     }
 

@@ -274,7 +274,7 @@ class MySqlDriver implements Driver
         try {
 
             foreach ($builder->getQueryBindings() as $key => $value) {
-                if (!str_contains($builder->getQuery(), $key)) continue;
+                if (!str__contains($builder->getQuery(), $key)) continue;
                 switch ($value) {
                     case is_bool($value):
                         $stmt->bindValue($key, $value, PDO::PARAM_BOOL);

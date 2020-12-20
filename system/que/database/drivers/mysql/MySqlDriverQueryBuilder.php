@@ -458,7 +458,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
             'type' => 'json_value_and',
             'column' => $column,
             'value' => $value,
-            'path' => !str_starts_with($path, '$.') ? "$.{$path}" : $path
+            'path' => !str__starts_with($path, '$.') ? "$.{$path}" : $path
         ];
         return $this;
     }
@@ -470,7 +470,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
             'type' => 'json_value_or',
             'column' => $column,
             'value' => $value,
-            'path' => !str_starts_with($path, '$.') ? "$.{$path}" : $path
+            'path' => !str__starts_with($path, '$.') ? "$.{$path}" : $path
         ];
         return $this;
     }
@@ -486,7 +486,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
             'type' => 'json_contains_and',
             'column' => $column,
             'value' => $value,
-            'path' => $path ? !str_starts_with($path, '$.') ? "$.{$path}" : $path : '$'
+            'path' => $path ? !str__starts_with($path, '$.') ? "$.{$path}" : $path : '$'
         ];
         return $this;
     }
@@ -501,7 +501,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
             'type' => 'json_contains_or',
             'column' => $column,
             'value' => $value,
-            'path' => $path ? !str_starts_with($path, '$.') ? "$.{$path}" : $path : '$'
+            'path' => $path ? !str__starts_with($path, '$.') ? "$.{$path}" : $path : '$'
         ];
         return $this;
     }
@@ -516,7 +516,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
             'type' => 'json_contains_not_and',
             'column' => $column,
             'value' => $value,
-            'path' => $path ? !str_starts_with($path, '$.') ? "$.{$path}" : $path : '$'
+            'path' => $path ? !str__starts_with($path, '$.') ? "$.{$path}" : $path : '$'
         ];
         return $this;
     }
@@ -531,7 +531,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
             'type' => 'json_contains_not_or',
             'column' => $column,
             'value' => $value,
-            'path' => $path ? !str_starts_with($path, '$.') ? "$.{$path}" : $path : '$'
+            'path' => $path ? !str__starts_with($path, '$.') ? "$.{$path}" : $path : '$'
         ];
         return $this;
     }
@@ -1326,15 +1326,15 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
     private function getActualTable(string $column, bool $alias = false)
     {
         $column = preg_replace("/ as /i", " as ", $column);
-        if (!str_contains($column, ' as ', true)) return $this->formatColumn($column);
+        if (!str__contains($column, ' as ', true)) return $this->formatColumn($column);
         $column = explode(' as ', $column);
         return $this->formatColumn($column[$alias ? 1 : 0]);
     }
 
     private function getActualColumn(string $column)
     {
-        if (str_contains($column, ',')) return $this->getActualColumn(explode(',', $column)[0]);
-        if ($column === '*' || !str_contains($column, '.')) return $this->formatColumn($column);
+        if (str__contains($column, ',')) return $this->getActualColumn(explode(',', $column)[0]);
+        if ($column === '*' || !str__contains($column, '.')) return $this->formatColumn($column);
         $column = explode('.', $column);
         return $this->formatColumn($column[1]);
     }
@@ -1349,13 +1349,13 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
         $column = preg_replace("/ as /i", " as ", $column);
 
-        if (!str_contains($column, '.') && !str_contains($column, ',') &&
-            !str_contains(strtolower($column), ' as ')) {
+        if (!str__contains($column, '.') && !str__contains($column, ',') &&
+            !str__contains(strtolower($column), ' as ')) {
             $column = str_strip_spaces($column);
-            return !str_contains($column, '`') ? "`{$column}`" : $column;
+            return !str__contains($column, '`') ? "`{$column}`" : $column;
         }
 
-        if (str_contains($column, ',')) {
+        if (str__contains($column, ',')) {
 
             $column = explode(',', $column);
 
@@ -1365,7 +1365,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
             return implode(', ', $column);
 
-        } elseif (str_contains($column, ' as ')) {
+        } elseif (str__contains($column, ' as ')) {
             $column = explode(' as ', $column);
 
             array_callback($column, function ($value) {
@@ -1379,7 +1379,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
             $column = explode('.', $column);
             array_callback($column, function ($value) {
                 $value = str_strip_spaces($value);
-                return $value !== '*' ? (!str_contains($value, '`') ? "`{$value}`" : $value) : $value;
+                return $value !== '*' ? (!str__contains($value, '`') ? "`{$value}`" : $value) : $value;
             });
             return implode('.', $column);
         }

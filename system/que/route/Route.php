@@ -71,9 +71,9 @@ final class Route extends Router
 
             $path = APP_PATH . DIRECTORY_SEPARATOR . $uri;
 
-            if (str_contains($path, "#")) $path = substr($path, 0, strpos($path, "#"));
+            if (str__contains($path, "#")) $path = substr($path, 0, strpos($path, "#"));
 
-            if (str_contains($path, "?")) $path = substr($path, 0, strpos($path, "?"));
+            if (str__contains($path, "?")) $path = substr($path, 0, strpos($path, "?"));
 
             if (is_file($path)) {
                 render_file($path, pathinfo($path, PATHINFO_FILENAME));

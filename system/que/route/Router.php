@@ -102,7 +102,7 @@ abstract class Router extends RouteInspector
      * @throws RouteException
      */
     public static function getRouteEntryFromUri(string $uri, string $type = null): ?RouteEntry {
-        if (str_contains($uri, $base = base_url())) $uri = trim(str_start_from($uri, $base), '/');
+        if (str__contains($uri, $base = base_url())) $uri = trim(str_start_from($uri, $base), '/');
         return self::resolveRoute($uri, $type);
     }
 

@@ -1,5 +1,6 @@
 <?php
 
+use JetBrains\PhpStorm\Pure;
 use que\common\exception\PreviousException;
 use que\common\exception\QueException;
 use que\common\exception\QueRuntimeException;
@@ -40,7 +41,7 @@ use que\utility\Converter;
  * @param bool $hex
  * @return false|string
  */
-function unique_id(int $length = 32, bool $hex = true)
+function unique_id(int $length = 32, bool $hex = true): bool|string
 {
     if (function_exists("openssl_random_pseudo_bytes")) {
         $r = openssl_random_pseudo_bytes($length);
@@ -58,7 +59,7 @@ function unique_id(int $length = 32, bool $hex = true)
  * @param int $length
  * @return string
  */
-function str_rand(int $length = 6): string
+#[Pure] function str_rand(int $length = 6): string
 {
     $string = str_shuffle('234ABCDEFGHIJK789LM*NOPQRabcdeSTUV$WXYZfghijkl&@mnop56qrs%tuv01wxyz');
     $size = strlen($string);
@@ -104,7 +105,7 @@ function str_to_word_array(string $string): array
  * @param bool $case_insensitive
  * @return bool
  */
-function str_contains(string $haystack, string $needle, bool $case_insensitive = false): bool
+#[Pure] function str__contains(string $haystack, string $needle, bool $case_insensitive = false): bool
 {
     return $case_insensitive ? stripos($haystack, $needle) !== false : strpos($haystack, $needle) !== false;
 }
@@ -115,11 +116,11 @@ function str_contains(string $haystack, string $needle, bool $case_insensitive =
  * @param bool $case_insensitive
  * @return bool
  */
-function str_contains_any(string $haystack, array $needles, bool $case_insensitive = false): bool
+#[Pure] function str_contains_any(string $haystack, array $needles, bool $case_insensitive = false): bool
 {
     $count = 0;
     foreach ($needles as $needle) {
-        if (str_contains($haystack, $needle, $case_insensitive)) {
+        if (str__contains($haystack, $needle, $case_insensitive)) {
             $count++;
             break;
         }
@@ -136,7 +137,8 @@ function str_contains_any(string $haystack, array $needles, bool $case_insensiti
  * to allow from the the first occurrence of $needle
  * @return bool|string
  */
-function str_start_from(string $haystack, string $needle, int $extra = 0) {
+#[Pure] function str_start_from(string $haystack, string $needle, int $extra = 0): bool|string
+{
     if (($pos = strpos($haystack, $needle)) === false) return $haystack;
     return substr($haystack, $pos = ($pos + strlen($needle)), ((strlen($haystack) - $pos) + $extra));
 }
@@ -150,7 +152,8 @@ function str_start_from(string $haystack, string $needle, int $extra = 0) {
  * to subtract from the the first occurrence of $needle
  * @return bool|string
  */
-function str_end_at(string $haystack, string $needle, int $extra = 0) {
+#[Pure] function str_end_at(string $haystack, string $needle, int $extra = 0): bool|string
+{
     if (($pos = strpos($haystack, $needle)) === false) return $haystack;
     return substr($haystack, 0, (($pos + strlen($needle)) - $extra));
 }
@@ -162,7 +165,7 @@ function str_end_at(string $haystack, string $needle, int $extra = 0) {
  * @param string $needle
  * @return int
  */
-function str_char_count(string $haystack, string $needle): int
+#[Pure] function str_char_count(string $haystack, string $needle): int
 {
     $count = 0; $len = strlen($needle);
     while (($pos = strpos($haystack, $needle)) !== false) {
@@ -178,7 +181,7 @@ function str_char_count(string $haystack, string $needle): int
  * @param string|null $ellipsis
  * @return string
  */
-function str_ellipsis(string $string, int $length = 50, string $ellipsis = null): string
+#[Pure] function str_ellipsis(string $string, int $length = 50, string $ellipsis = null): string
 {
     $size = strlen($string);
     $string = substr($string, 0, ($size > $length ? $length : $size));
@@ -195,7 +198,8 @@ function str_ellipsis(string $string, int $length = 50, string $ellipsis = null)
  * @param $subject
  * @return string|string[]
  */
-function str_replace_first($search, $replace, $subject) {
+#[Pure] function str_replace_first($search, $replace, $subject): array|string
+{
 
     if ($search == '') return $subject;
 
@@ -216,7 +220,8 @@ function str_replace_first($search, $replace, $subject) {
  * @param $subject
  * @return string|string[]
  */
-function str_replace_last($search, $replace, $subject) {
+#[Pure] function str_replace_last($search, $replace, $subject): array|string
+{
 
     $position = strrpos($subject, $search);
 
@@ -233,8 +238,9 @@ function str_replace_last($search, $replace, $subject) {
  * @param string $needle
  * @return string|string[]|null
  */
-function str_strip(string $string, string $needle) {
-    if (!str_contains($string, $needle)) return $string;
+function str_strip(string $string, string $needle): array|string|null
+{
+    if (!str__contains($string, $needle)) return $string;
     return preg_replace('/' . $needle .'+/', "", $string);
 }
 
@@ -355,7 +361,8 @@ function str_strip_repeated_char(string $char, string $subject): string
 function strpos_in_array(
     array $array, string $needle,
     int $option = STRPOS_IN_ARRAY_OPT_DEFAULT
-) {
+): array|bool|int|string
+{
     foreach ($array as $index => $value) {
         $position = strpos($value, $needle);
         if ($position !== false) {
@@ -380,7 +387,7 @@ function strpos_in_array(
  * @param string $needle
  * @return bool
  */
-function str_starts_with(string $haystack, string $needle): bool
+#[Pure] function str__starts_with(string $haystack, string $needle): bool
 {
     return strcmp(substr($haystack, 0, strlen($needle)), $needle) == 0;
 }
@@ -390,11 +397,11 @@ function str_starts_with(string $haystack, string $needle): bool
  * @param array $needles
  * @return bool
  */
-function str_starts_with_any(string $haystack, array $needles): bool
+#[Pure] function str_starts_with_any(string $haystack, array $needles): bool
 {
     $count = 0;
     foreach ($needles as $needle) {
-        if (str_starts_with($haystack, $needle)) {
+        if (str__starts_with($haystack, $needle)) {
             $count++;
             break;
         }
@@ -407,7 +414,7 @@ function str_starts_with_any(string $haystack, array $needles): bool
  * @param string $needle
  * @return bool
  */
-function str_ends_with(string $haystack, string $needle): bool
+#[Pure] function str__ends_with(string $haystack, string $needle): bool
 {
     return strcmp(substr($haystack, (strlen($haystack) - ($len = strlen($needle))), $len), $needle) == 0;
 }
@@ -417,11 +424,11 @@ function str_ends_with(string $haystack, string $needle): bool
  * @param array $needles
  * @return bool
  */
-function str_ends_with_any(string $haystack, array $needles): bool
+#[Pure] function str_ends_with_any(string $haystack, array $needles): bool
 {
     $count = 0;
     foreach ($needles as $needle) {
-        if (str_ends_with($haystack, $needle)) {
+        if (str__ends_with($haystack, $needle)) {
             $count++;
             break;
         }
@@ -434,7 +441,7 @@ function str_ends_with_any(string $haystack, array $needles): bool
  * Removes line breaks from a string
  *
  * @param string $string
- * @return mixed|string
+ * @return string
  */
 function str_flatten(string $string): string
 {
@@ -450,9 +457,9 @@ function str_flatten(string $string): string
  *
  * @param string $string
  * @param bool $returnAsArray
- * @return mixed
+ * @return bool|array|string
  */
-function str_unique_chars(string $string, bool $returnAsArray = true)
+#[Pure] function str_unique_chars(string $string, bool $returnAsArray = true): bool|array|string
 {
     $unique = array_unique(preg_split('/(?<!^)(?!$)/u', $string));
     if (!$returnAsArray) $unique = implode("", $unique);
@@ -494,9 +501,9 @@ function filter_url(string $url): string
 /**
  * @param string $email
  * @param int|null $option
- * @return array|bool|mixed|string
+ * @return mixed
  */
-function filter_email(string $email, int $option = null)
+function filter_email(string $email, int $option = null): mixed
 {
 
     if (!is_email($email)) return false;
@@ -546,9 +553,10 @@ function get_date(string $format, string $date, string $default = ''): string {
 /**
  * This function would retrieve the http bearer token if any
  *
- * @return mixed|null
+ * @return mixed
  */
-function get_bearer_token() {
+function get_bearer_token(): mixed
+{
     if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
         if (preg_match('/Bearer\s(\S+)/', $_SERVER['HTTP_AUTHORIZATION'], $matches)) {
             return $matches[1];
@@ -573,7 +581,7 @@ function get_bearer_token() {
  * @param int $end
  * @return string
  */
-function hide_number(string $number, int $start = 0, int $end = 1): string
+#[Pure] function hide_number(string $number, int $start = 0, int $end = 1): string
 {
     if (empty($number)) return '';
     $hidden = '';
@@ -600,10 +608,10 @@ function filter_number(string $number): string
 function format_phone(string $phone, string $prefix): string
 {
     $phone = filter_number($phone);
-    if (str_starts_with($phone, '+')) return $phone;
-    elseif (str_starts_with($phone, $prefix))
-        return str_starts_with($prefix, '+') ? $phone : "+{$phone}";
-    return (str_starts_with($prefix, '+') ? '' : '+') . ($prefix . substr($phone, 1, strlen($phone)));
+    if (str__starts_with($phone, '+')) return $phone;
+    elseif (str__starts_with($phone, $prefix))
+        return str__starts_with($prefix, '+') ? $phone : "+{$phone}";
+    return (str__starts_with($prefix, '+') ? '' : '+') . ($prefix . substr($phone, 1, strlen($phone)));
 }
 
 
@@ -611,7 +619,7 @@ function format_phone(string $phone, string $prefix): string
  * @param int $num
  * @return string
  */
-function number_short(int $num): string
+#[Pure] function number_short(int $num): string
 {
     $k = pow(10, 3);
     $mil = pow(10, 6);
@@ -641,7 +649,7 @@ function number_short(int $num): string
  * @param int $decimal
  * @return string
  */
-function number_percent(int $num, int $total, int $decimal = 2): string
+#[Pure] function number_percent(int $num, int $total, int $decimal = 2): string
 {
     if ($num == 0 || $total == 0) return '0';
     return number_format(($num / $total) * 100, $decimal);
@@ -649,9 +657,9 @@ function number_percent(int $num, int $total, int $decimal = 2): string
 
 /**
  * @param int $num
- * @return bool|mixed|null|string
+ * @return bool|string
  */
-function number_to_word(int $num)
+function number_to_word(int $num): bool|string
 {
     $string = '';
 
@@ -715,7 +723,7 @@ function number_to_word(int $num)
 
         $fraction = null;
 
-        if (strpos($num, '.') !== false) list($num, $fraction) = explode('.', $num);
+        if (str__contains($num, '.')) list($num, $fraction) = explode('.', $num);
 
         switch (true) {
             case $num < 21:
@@ -773,7 +781,7 @@ function number_to_word(int $num)
  * @param int $nearest
  * @return float|int
  */
-function number_round(int $num, int $nearest = 100)
+#[Pure] function number_round(int $num, int $nearest = 100): float|int
 {
     return ceil($num / $nearest) * $nearest;
 }
@@ -783,7 +791,7 @@ function number_round(int $num, int $nearest = 100)
  * @param int $decimals
  * @return string
  */
-function convert_bytes(int $bytes, int $decimals = 0): string
+#[Pure] function convert_bytes(int $bytes, int $decimals = 0): string
 {
     $bytes = intval($bytes);
     if ($bytes === 0) return '0 Bytes';
@@ -799,7 +807,7 @@ function convert_bytes(int $bytes, int $decimals = 0): string
  * @param int $decimals
  * @return float
  */
-function convert_mega_bytes(int $mega_bytes, int $decimals = 0): float
+#[Pure] function convert_mega_bytes(int $mega_bytes, int $decimals = 0): float
 {
     $k = (1024 * 1024);
     $decimals = $decimals || 2;
@@ -940,7 +948,7 @@ function array_permutation(array $arr): array
  * @param array $affected
  * @return array
  */
-function array_callback(array &$element, $callback, array $affected = [])
+function array_callback(array &$element, $callback, array $affected = []): array
 {
     if (!empty($affected)) {
         foreach ($affected as $key) {
@@ -964,7 +972,7 @@ function array_callback(array &$element, $callback, array $affected = [])
  * @param array $affected
  * @return array
  */
-function array_callback_recursive(array &$element, $callback, array $affected = [])
+function array_callback_recursive(array &$element, $callback, array $affected = []): array
 {
     if (!empty($affected)) {
         foreach ($affected as $key) {
@@ -993,7 +1001,7 @@ function array_callback_recursive(array &$element, $callback, array $affected = 
  * @param array $affected
  * @return mixed
  */
-function iterable_callback(&$element, $callback, array $affected = [])
+function iterable_callback(&$element, $callback, array $affected = []): mixed
 {
     if (!is_iterable($element)) throw new QueRuntimeException(
         "element passed to iterable_callback is not iterable", "Que Function Error",
@@ -1043,7 +1051,7 @@ function iterable_callback(&$element, $callback, array $affected = [])
  * @param array $affected
  * @return mixed
  */
-function iterable_callback_recursive(&$element, $callback, array $affected = [])
+function iterable_callback_recursive(&$element, $callback, array $affected = []): mixed
 {
     if (!is_iterable($element) && !is_object($element)) throw new QueRuntimeException(
         "element passed to iterable_callback_recursive is not iterable", "Que Function Error",
@@ -1106,7 +1114,8 @@ function iterable_callback_recursive(&$element, $callback, array $affected = [])
  * @param callable $callback
  * @return array
  */
-function array_map_recursive(array $array, callable $callback) {
+function array_map_recursive(array $array, callable $callback): array
+{
     foreach ($array as $key => $value) {
         if (is_array($value)) $array[$key] = array_map_recursive($value, $callback);
         else $array[$key] = $callback($value);
@@ -1212,7 +1221,7 @@ function array_identical(array $array1, array $array2): bool
  * @param array $array
  * @return bool
  */
-function is_numeric_array(array $array): bool {
+#[Pure] function is_numeric_array(array $array): bool {
     foreach ($array as $value)
         if (!is_numeric($value)) return false;
     return true;
@@ -1243,7 +1252,8 @@ function array_to_object(array $array): object {
  * @return array This will an array the given value.
  * This is done so that you can multiple a value.
  */
-function array_multi($value, int $range) {
+function array_multi($value, int $range): array
+{
     $list = [];
     for ($i = 0; $i < $range; $i++)
         $list[] = $value;
@@ -1263,14 +1273,15 @@ function array_multi($value, int $range) {
  * @param int|null $num_req [optional] <p>
  * Specifies how many entries you want to pick.
  *
- * @return mixed|array If you do not specify number of entries to pick, array_random will
+ * @return mixed If you do not specify number of entries to pick, array_random will
  * shuffle and return the initial array. However, If you are picking only one entry, array_random
  * returns the value for a random entry. Otherwise, it returns an array
  * of values for the random entries. This is done so that you can pick
  * random a value or values out of an array.
  *
  */
-function array_random(array $input, int $num_req = null) {
+function array_random(array $input, int $num_req = null): mixed
+{
 
     if ($num_req === null) return fisher_yates_shuffle($input);
 
@@ -1291,18 +1302,20 @@ function array_random(array $input, int $num_req = null) {
  * @param array $haystack
  * @param $needle
  * @param null $default
- * @return mixed|null
+ * @return mixed
  */
-function find_in_array(array $haystack, $needle, $default = null) {
+function find_in_array(array $haystack, $needle, $default = null): mixed
+{
     return Arr::get($haystack, $needle, $default);
 }
 
 /**
  * @param array $input
  * @param callable $callback
- * @return mixed|null
+ * @return mixed
  */
-function array_find(array $input, callable $callback) {
+function array_find(array $input, callable $callback): mixed
+{
     foreach ($input as $v) if ($callback($v)) return $v;
     return null;
 }
@@ -1313,7 +1326,7 @@ function array_find(array $input, callable $callback) {
  * @param $value
  * @return bool
  */
-function array_is_accessible($value): bool {
+#[Pure] function array_is_accessible($value): bool {
     return is_array($value) || $value instanceof ArrayAccess;
 }
 
@@ -1339,7 +1352,7 @@ function array_has_key(array $array, $key): bool {
  * @param  array  $array
  * @return array
  */
-function array_collapse(array $array)
+function array_collapse(array $array): array
 {
     $results = [];
     foreach ($array as $key => $values) {
@@ -1356,9 +1369,10 @@ function array_collapse(array $array)
  * @param array $haystack
  * @param $needle
  * @param null $default
- * @return mixed|null
+ * @return mixed
  */
-function array_get(array $haystack, $needle, $default = null) {
+function array_get(array $haystack, $needle, $default = null): mixed
+{
 
     if (!array_is_accessible($haystack)) {
         return value($default);
@@ -1372,7 +1386,7 @@ function array_get(array $haystack, $needle, $default = null) {
         return $haystack[$needle];
     }
 
-    if (strpos($needle, '.') === false) {
+    if (!str__contains($needle, '.')) {
         return $haystack[$needle] ?? value($default);
     }
 
@@ -1393,9 +1407,10 @@ function array_get(array $haystack, $needle, $default = null) {
  * @param array $array
  * @param $key
  * @param $value
- * @return array|mixed
+ * @return mixed
  */
-function array_set(array &$array, $key, $value) {
+function array_set(array &$array, $key, $value): mixed
+{
 
     if (is_null($key)) {
         return $array = $value;
@@ -1448,7 +1463,8 @@ function object_size(object $object): int
  * @param object $object
  * @return array
  */
-function object_to_array(object $object) {
+function object_to_array(object $object): array
+{
     return (array) $object;
 }
 
@@ -1502,7 +1518,7 @@ function in_object($needle, object $object, bool $strict = false): bool {
  * @param object $object
  * @return bool
  */
-function is_numeric_object(object $object): bool {
+#[Pure] function is_numeric_object(object $object): bool {
     foreach ($object as $value)
         if (!is_numeric($value)) return false;
     return true;
@@ -1632,7 +1648,7 @@ function object_extract(object $object, int $start, int $end): object
  * @param array $keys | Key to extracted
  * @return object
  */
-function object_extract_by_keys(object $object, array $keys): object
+#[Pure] function object_extract_by_keys(object $object, array $keys): object
 {
     $extracted = new stdClass();
     foreach ($keys as $key)
@@ -1674,9 +1690,10 @@ function object_identical(object $object1, object $object2): bool
  * @param object $haystack
  * @param $needle
  * @param null $default
- * @return mixed|null
+ * @return mixed
  */
-function object_get(object $haystack, $needle, $default = null) {
+function object_get(object $haystack, $needle, $default = null): mixed
+{
 
     if (is_blank($needle)) return $default;
 
@@ -1709,7 +1726,7 @@ function object_get(object $haystack, $needle, $default = null) {
 /**
  * debug_print is used to output all data types
  * @param mixed ...$params
- * @return string|void
+ * @return string|null|void
  */
 function debug_print(...$params)
 {
@@ -1745,7 +1762,7 @@ function json_size(string $json): int
  * @param string $email
  * @return bool
  */
-function is_email(string $email): bool
+#[Pure] function is_email(string $email): bool
 {
     return filter_var($email, FILTER_VALIDATE_EMAIL);
 }
@@ -1753,7 +1770,7 @@ function is_email(string $email): bool
 /**
  * @return Converter
  */
-function converter()
+function converter(): Converter
 {
     return Converter::getInstance();
 }
@@ -1761,7 +1778,7 @@ function converter()
 /**
  * @return Time
  */
-function _time()
+function _time(): Time
 {
     return Time::getInstance();
 }
@@ -1789,9 +1806,9 @@ function convert_date_to_age(string $date): int
 /**
  * @param null $param
  * @param null $default
- * @return array|mixed|null
+ * @return mixed
  */
-function post($param = null, $default = null)
+function post($param = null, $default = null): mixed
 {
 
     if (is_null($param)) return \http()->_post()->_get();
@@ -1802,9 +1819,9 @@ function post($param = null, $default = null)
 /**
  * @param null $param
  * @param null $default
- * @return array|mixed|null
+ * @return mixed
  */
-function get($param = null, $default = null)
+function get($param = null, $default = null): mixed
 {
 
     if (is_null($param)) return \http()->_get()->_get();
@@ -1815,9 +1832,9 @@ function get($param = null, $default = null)
 /**
  * @param null $param
  * @param null $default
- * @return array|mixed|null
+ * @return mixed
  */
-function server($param = null, $default = null)
+function server($param = null, $default = null): mixed
 {
 
     if (is_null($param)) return \http()->_server()->_get();
@@ -1828,9 +1845,9 @@ function server($param = null, $default = null)
 /**
  * @param null $param
  * @param null $default
- * @return array|mixed|null
+ * @return mixed
  */
-function request($param = null, $default = null)
+function request($param = null, $default = null): mixed
 {
 
     if (is_null($param)) return \http()->_request()->_get();
@@ -1841,9 +1858,9 @@ function request($param = null, $default = null)
 /**
  * @param null $param
  * @param null $default
- * @return array|mixed|null
+ * @return mixed
  */
-function files($param = null, $default = null)
+function files($param = null, $default = null): mixed
 {
     if (is_null($param)) return \http()->_files()->_get();
 
@@ -1853,9 +1870,9 @@ function files($param = null, $default = null)
 /**
  * @param null $param
  * @param null $default
- * @return array|false|mixed|null
+ * @return mixed
  */
-function headers($param = null, $default = null)
+function headers($param = null, $default = null): mixed
 {
 
     if (is_null($param)) return \http()->_header()->_get();
@@ -1866,9 +1883,9 @@ function headers($param = null, $default = null)
 /**
  * @param null $param
  * @param null $default
- * @return array|false|mixed|null
+ * @return mixed
  */
-function input($param = null, $default = null)
+function input($param = null, $default = null): mixed
 {
 
     if (is_null($param)) return \http()->input()->_get();
@@ -1889,7 +1906,7 @@ function session(): Session {
  * @param  mixed  $value
  * @return mixed
  */
-function value($value)
+function value(mixed $value): mixed
 {
     return $value instanceof Closure ? $value() : $value;
 }
@@ -1898,7 +1915,7 @@ function value($value)
  * @param array $data
  * @return bool
  */
-function is_array_of_arrays(array $data): bool {
+#[Pure] function is_array_of_arrays(array $data): bool {
     foreach ($data as $value) if (!is_array($value)) return false;
     return true;
 }
@@ -1907,7 +1924,7 @@ function is_array_of_arrays(array $data): bool {
  * @param array $data
  * @return bool
  */
-function is_array_of_objects(array $data): bool {
+#[Pure] function is_array_of_objects(array $data): bool {
     foreach ($data as $value) if (!is_object($value)) return false;
     return true;
 }
@@ -1918,7 +1935,7 @@ function is_array_of_objects(array $data): bool {
  * @param  mixed  $value
  * @return bool
  */
-function is_blank($value): bool
+#[Pure] function is_blank(mixed $value): bool
 {
     if (is_null($value)) return true;
 
@@ -1937,7 +1954,7 @@ function is_blank($value): bool
  * @param  mixed  $value
  * @return bool
  */
-function is_filled($value): bool
+#[Pure] function is_filled(mixed $value): bool
 {
     return !is_blank($value);
 }
@@ -1952,7 +1969,7 @@ function is_filled($value): bool
  * @return mixed
  * @throws Exception
  */
-function retry(callable $callback, int $times, float $interval = 0, callable $when = null)
+function retry(callable $callback, int $times, float $interval = 0, callable $when = null): mixed
 {
     $attempts = 0;
     beginning:
@@ -1978,31 +1995,31 @@ function retry(callable $callback, int $times, float $interval = 0, callable $wh
 /**
  * Throw the given exception if the given condition is true.
  *
- * @param $condition
+ * @param mixed $condition
  * @param Throwable|string $exception
  * @param mixed ...$parameters
  * @return mixed
  * @throws Throwable
  */
-function throw_if($condition, $exception, ...$parameters)
+function throw_if(mixed $condition, Throwable|string $exception, ...$parameters): mixed
 {
     if ($condition) {
         throw (is_string($exception) ? new $exception(...$parameters) : $exception);
     }
 
-    return $condition;
+    return null;
 }
 
 /**
  * Throw the given exception unless the given condition is true.
  *
- * @param  mixed  $condition
- * @param  Throwable|string  $exception
- * @param  array  ...$parameters
+ * @param mixed $condition
+ * @param Throwable|string $exception
+ * @param array ...$parameters
  * @return mixed
  * @throws Throwable
  */
-function throw_unless($condition, $exception, ...$parameters)
+function throw_unless(mixed $condition, Throwable|string $exception, ...$parameters): mixed
 {
     if (!$condition) {
         throw (is_string($exception) ? new $exception(...$parameters) : $exception);
@@ -2014,12 +2031,12 @@ function throw_unless($condition, $exception, ...$parameters)
 /**
  * Get an item from an array or object using "dot" notation.
  *
- * @param  mixed   $target
- * @param  string|array|int  $key
- * @param  mixed   $default
+ * @param mixed $target
+ * @param string|array|int $key
+ * @param mixed $default
  * @return mixed
  */
-function data_get($target, $key, $default = null)
+function data_get(mixed $target, int|array|string $key, $default = null): mixed
 {
     if (is_null($key)) {
         return $target;
@@ -2059,13 +2076,13 @@ function data_get($target, $key, $default = null)
 /**
  * Set an item on an array or object using dot notation.
  *
- * @param  mixed  $target
- * @param  string|array  $key
- * @param  mixed  $value
- * @param  bool  $overwrite
+ * @param mixed $target
+ * @param string|array $key
+ * @param mixed $value
+ * @param bool $overwrite
  * @return mixed
  */
-function data_set(&$target, $key, $value, $overwrite = true)
+function data_set(mixed &$target, array|string $key, mixed $value, $overwrite = true): mixed
 {
     $segments = is_array($key) ? $key : explode('.', $key);
 
@@ -2116,11 +2133,12 @@ function data_set(&$target, $key, $value, $overwrite = true)
 }
 
 /**
- * @param $offset
+ * @param string $offset
  * @param null $default
- * @return mixed|null
+ * @return mixed
  */
-function config(string $offset, $default = null) {
+function config(string $offset, $default = null): mixed
+{
     return Config::get($offset, $default);
 }
 
@@ -2134,9 +2152,10 @@ function db(): DB
 
 /**
  * @param string $model | model key in database config
- * @return mixed|null
+ * @return mixed
  */
-function model(string $model) {
+function model(string $model): mixed
+{
     $model = Arr::get(config("database.models", []), $model);
     if ($model === null) return null;
     if (!class_exists($model, true)) return null;
@@ -2204,7 +2223,7 @@ function is_logged_in(): bool
  */
 function has_route_permission(RouteEntry $entry): bool {
     $module = $entry->getModule();
-    if (!class_exists($module, true)) return false;
+    if (!class_exists($module)) return false;
     $module = new $module();
     if (!$module instanceof RoutePermission) return true;
     return $module->hasPermission($entry);
@@ -2212,12 +2231,12 @@ function has_route_permission(RouteEntry $entry): bool {
 
 /**
  * @param string|null $key
- * @return User|mixed|null
+ * @return User|mixed
  */
-function user(string $key = null)
+function user(string $key = null): mixed
 {
     $user = User::getInstance();
-    return is_null($key) ? $user : $user->getValue($key, null);
+    return is_null($key) ? $user : $user->getValue($key);
 }
 
 /**
@@ -2255,11 +2274,12 @@ function redirect(string $url, array $header = [], array $data = []) {
  * @param null $start_with
  * @return array
  */
-function get_class_consts($class, $start_with = null) {
+function get_class_consts(object|string $class, $start_with = null): array
+{
     try {
         $consts = (new ReflectionClass($class))->getConstants();
         return $start_with ? array_filter($consts, function ($key) use ($start_with) {
-            return is_array($start_with) ? str_starts_with_any($key, $start_with) : str_starts_with($key, $start_with);
+            return is_array($start_with) ? str_starts_with_any($key, $start_with) : str__starts_with($key, $start_with);
         }, ARRAY_FILTER_USE_KEY) : $consts;
     } catch (Exception $exception) {
         return [];
@@ -2272,7 +2292,7 @@ function get_class_consts($class, $start_with = null) {
  * @param string $filepath
  * @return null|string
  */
-function mime_type_from_filepath(string $filepath)
+function mime_type_from_filepath(string $filepath): ?string
 {
     if ($mime_type = mime_type_from_extension(pathinfo($filepath, PATHINFO_EXTENSION)))
         return $mime_type;
@@ -2290,7 +2310,7 @@ function mime_type_from_filepath(string $filepath)
  *
  * @return null|string
  */
-function mime_type_from_filename(string $filename)
+function mime_type_from_filename(string $filename): ?string
 {
     return mime_type_from_extension(pathinfo($filename, PATHINFO_EXTENSION));
 }
@@ -2303,7 +2323,7 @@ function mime_type_from_filename(string $filename)
  * @return string|null
  * @link http://svn.apache.org/repos/asf/httpd/httpd/branches/1.3.x/conf/mime.types
  */
-function mime_type_from_extension(string $extension)
+function mime_type_from_extension(string $extension): ?string
 {
     static $mime_types = [
         '7z' => 'application/x-7z-compressed',
@@ -2417,7 +2437,7 @@ function mime_type_from_extension(string $extension)
  *
  * @return string|null
  */
-function extension_from_mime_type(string $mime_type)
+function extension_from_mime_type(string $mime_type): ?string
 {
     static $mime_types = [
         '7z' => 'application/x-7z-compressed',
@@ -2530,7 +2550,8 @@ function extension_from_mime_type(string $mime_type)
  * @param string $path
  * @return string|string[]
  */
-function extension_from_filepath(string $path) {
+#[Pure] function extension_from_filepath(string $path): array|string
+{
     return pathinfo($path, PATHINFO_EXTENSION);
 }
 
@@ -2539,7 +2560,8 @@ function extension_from_filepath(string $path) {
  * @return bool
  * @throws QueException
  */
-function mk_dir($dir) {
+function mk_dir($dir): bool
+{
 
     if (!is_dir($dir)) {
         if (!mkdir($dir, 0777, true))
@@ -2568,7 +2590,8 @@ function mk_dir($dir) {
  *
  * @return bool
  */
-function render_file($filepath, $filename = 'download', bool $auto_download = false) {
+function render_file($filepath, $filename = 'download', bool $auto_download = false): bool
+{
     http()->_header()->setBulk([
         'Content-Description' => 'Que File Transfer',
         'Content-Disposition' => (($auto_download ? "attachment; " : '') .
@@ -2589,14 +2612,16 @@ function render_file($filepath, $filename = 'download', bool $auto_download = fa
 /**
  * @return string
  */
-function server_protocol() {
+function server_protocol(): string
+{
     return (http()->_server()["HTTPS"] == "on") ? "https://" : "http://";
 }
 
 /**
  * @return string
  */
-function server_host() {
+function server_host(): string
+{
 
     return http()->_server()["HTTP_HOST"] ?? 'localhost';
 }
@@ -2604,7 +2629,7 @@ function server_host() {
 /**
  * @return RouteEntry
  */
-function current_route()
+function current_route(): RouteEntry
 {
     return Route::getCurrentRoute();
 }
@@ -2636,7 +2661,8 @@ function current_url(): string
  * @return string
  * @throws RouteException
  */
-function route_uri(string $name, array $args = []) {
+function route_uri(string $name, array $args = []): string
+{
     try {
         return \route($name, $args, false);
     } catch (Exception $e) {
@@ -2655,7 +2681,8 @@ function route_uri(string $name, array $args = []) {
  * @return string
  * @throws RouteException
  */
-function route(string $name, array $args = [], bool $addBaseUrl = true) {
+function route(string $name, array $args = [], bool $addBaseUrl = true): string
+{
     try {
         return Route::getRouteUrl($name, $args, $addBaseUrl);
     } catch (Exception $e) {
@@ -2678,9 +2705,9 @@ function route(string $name, array $args = [], bool $addBaseUrl = true) {
 function base_url(string $url = null, bool $forceUrl = false): string
 {
 
-    if (!($isNull = is_null($url)) && (str_starts_with($url, 'http://') ||
-            str_starts_with($url, 'https://'))) {
-        if (!str_starts_with($url, $base = base_url())) return $url;
+    if (!($isNull = is_null($url)) && (str__starts_with($url, 'http://') ||
+            str__starts_with($url, 'https://'))) {
+        if (!str__starts_with($url, $base = base_url())) return $url;
         else $url = str_start_from($url, $base);
     }
 
@@ -2698,7 +2725,7 @@ function base_url(string $url = null, bool $forceUrl = false): string
         }
     }
 
-    if (!$isNull && str_contains($url, $host)) $url = str_start_from($url, $host);
+    if (!$isNull && str__contains($url, $host)) $url = str_start_from($url, $host);
 
     if (!$isNull) {
         $routeEntry = Route::getRouteEntryFromUri($url);
@@ -2711,7 +2738,7 @@ function base_url(string $url = null, bool $forceUrl = false): string
 
     $uri = (((\http()->_server()['REQUEST_URI_ORIGINAL'] ?: \http()->_server()['REQUEST_URI'])) ?: '');
 
-    if (!empty(APP_ROOT_FOLDER) && str_contains($uri, APP_ROOT_FOLDER) &&
+    if (!empty(APP_ROOT_FOLDER) && str__contains($uri, APP_ROOT_FOLDER) &&
         in_array(APP_ROOT_FOLDER, $uriTokens = str_tokenize($uri, "/"))) {
 
         $uri_extract = array_extract($uriTokens, 0, strpos_in_array($uriTokens,
@@ -2730,35 +2757,38 @@ function base_url(string $url = null, bool $forceUrl = false): string
  * This function returns the current uri arguments
  * @param null $arg
  * @param null $default
- * @return mixed|null
+ * @return mixed
  */
-function get_uri_args($arg = null, $default = null)
+function get_uri_args($arg = null, $default = null): mixed
 {
     $args = http()->_server()->get("route.params");
     return !is_null($arg) ? (isset($args[$arg]) ? $args[$arg] : $default) : $args;
 }
 
 /**
- * @return mixed|null
+ * @return mixed
  */
-function csrf_token() {
+function csrf_token(): mixed
+{
     return CSRF::getInstance()->getToken();
 }
 
 /**
- * @return mixed|null
+ * @return string
  */
-function track_token() {
+function track_token(): string
+{
     return Track::generateToken();
 }
 
 /**
- * An alias of @param $message
+ * An alias of
+ * @param $message
  * @param null $status
- * @return bool|false|int
- * @see log_error()
+ * @return bool|int @see log_error()
  */
-function log_err($message, $status = null) {
+function log_err($message, $status = null): bool|int
+{
     $backtrace = debug_backtrace();
     return log_error($message, $backtrace[0]['file'], $backtrace[0]['line'],
         E_USER_NOTICE, array_exclude($backtrace, 0),
@@ -2773,10 +2803,11 @@ function log_err($message, $status = null) {
  * @param array $trace
  * @param mixed $status
  * @param string|null $destination - directory to store logs
- * @return bool|false|int
+ * @return bool|int
  */
-function log_error($message, string $file, int $line, $level,
-                   array $trace, $status = 'error', string $destination = null) {
+function log_error(mixed $message, string $file, int $line, $level,
+                   array $trace, $status = 'error', string $destination = null): bool|int
+{
     return Logger::getInstance()
         ->setMessage($message)->setFile($file)
         ->setLine($line)->setStatus($status)

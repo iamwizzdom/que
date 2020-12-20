@@ -396,7 +396,7 @@ class ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->isDateBetween($date1, $date2)){
-            if ($error && str_contains($error, "%s")) {
+            if ($error && str__contains($error, "%s")) {
                 if (str_char_count('%s', $error) >= 2) {
                     $error = str_replace_first("%s", $date1->format($format ?: DATE_FORMAT_MYSQL), $error);
                     $error = str_replace_last("%s", $date2->format($format ?: DATE_FORMAT_MYSQL), $error);
@@ -558,7 +558,7 @@ class ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->isNumberGreaterThan($number))
-            $this->setError(($error && str_contains($error, "%s") ? sprintf($error, $number) : $error));
+            $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $number) : $error));
         return $this;
     }
 
@@ -571,7 +571,7 @@ class ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->isNumberGreaterThanOrEqual($number))
-            $this->setError(($error && str_contains($error, "%s") ? sprintf($error, $number) : $error));
+            $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $number) : $error));
         return $this;
     }
 
@@ -584,7 +584,7 @@ class ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->isNumberLessThan($number))
-            $this->setError(($error && str_contains($error, "%s") ? sprintf($error, $number) : $error));
+            $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $number) : $error));
         return $this;
     }
 
@@ -597,7 +597,7 @@ class ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->isNumberLessThanOrEqual($number))
-            $this->setError(($error && str_contains($error, "%s") ? sprintf($error, $number) : $error));
+            $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $number) : $error));
         return $this;
     }
 
@@ -611,7 +611,7 @@ class ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->isNumberBetween($number1, $number2)){
-            if ($error && str_contains($error, "%s")) {
+            if ($error && str__contains($error, "%s")) {
                 if (str_char_count('%s', $error) >= 2) {
                     $error = str_replace_first("%s", $number1, $error);
                     $error = str_replace_last("%s", $number2, $error);
@@ -644,7 +644,7 @@ class ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->isFloatingNumberGreaterThan($number))
-            $this->setError(($error && str_contains($error, "%s") ? sprintf($error, $number) : $error));
+            $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $number) : $error));
         return $this;
     }
 
@@ -657,7 +657,7 @@ class ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->isFloatingNumberGreaterThanOrEqual($number))
-            $this->setError(($error && str_contains($error, "%s") ? sprintf($error, $number) : $error));
+            $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $number) : $error));
         return $this;
     }
 
@@ -669,7 +669,7 @@ class ConditionError
     public function isFloatingNumberLessThan(float $number, $error = null): ConditionError
     {
         if (!$this->condition->isFloatingNumberLessThan($number))
-            $this->setError(($error && str_contains($error, "%s") ? sprintf($error, $number) : $error));
+            $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $number) : $error));
         return $this;
     }
 
@@ -682,7 +682,7 @@ class ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->isFloatingNumberLessThanOrEqual($number))
-            $this->setError(($error && str_contains($error, "%s") ? sprintf($error, $number) : $error));
+            $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $number) : $error));
         return $this;
     }
 
@@ -697,7 +697,7 @@ class ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->isFloatingNumberBetween($number1, $number2)){
-            if ($error && str_contains($error, "%s")) {
+            if ($error && str__contains($error, "%s")) {
                 if (str_char_count('%s', $error) >= 2) {
                     $error = str_replace_first("%s", $number1, $error);
                     $error = str_replace_last("%s", $number2, $error);
@@ -843,7 +843,7 @@ class ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->hasWord($size))
-            $this->setError(($error && str_contains($error, "%s") ? sprintf($error, $size) : $error));
+            $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $size) : $error));
         return $this;
     }
 
@@ -856,7 +856,7 @@ class ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->hasMaxWord($max))
-            $this->setError(($error && str_contains($error, "%s") ? sprintf($error, $max) : $error));
+            $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $max) : $error));
         return $this;
     }
 
@@ -869,7 +869,7 @@ class ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->hasMinWord($min))
-            $this->setError(($error && str_contains($error, "%s") ? sprintf($error, $min) : $error));
+            $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $min) : $error));
         return $this;
     }
 
@@ -882,7 +882,7 @@ class ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->hasLength($size))
-            $this->setError(($error && str_contains($error, "%s") ? sprintf($error, $size) : $error));
+            $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $size) : $error));
         return $this;
     }
 
@@ -895,7 +895,7 @@ class ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->hasMaxLength($max))
-            $this->setError(($error && str_contains($error, "%s") ? sprintf($error, $max) : $error));
+            $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $max) : $error));
         return $this;
     }
 
@@ -908,7 +908,7 @@ class ConditionError
     {
         if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
         if (!$this->condition->hasMinLength($min))
-            $this->setError(($error && str_contains($error, "%s") ? sprintf($error, $min) : $error));
+            $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $min) : $error));
         return $this;
     }
 

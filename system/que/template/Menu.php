@@ -60,7 +60,7 @@ class Menu
                     continue;
                 }
 
-                if (str_contains($menu['href'], $host = server_host()))
+                if (str__contains($menu['href'], $host = server_host()))
                     $menu['href'] = str_start_from($menu['href'], $host);
 
                 if ($menu['href']) $menu['href'] = trim($menu['href'], '/');

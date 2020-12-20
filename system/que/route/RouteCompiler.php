@@ -55,10 +55,10 @@ trait RouteCompiler
             unset($args[$key]);
         }
 
-        if (str_contains($uri, "#"))
+        if (str__contains($uri, "#"))
             $uri = substr($uri, 0, strpos($uri, "#"));
 
-        if (str_contains($uri, "?"))
+        if (str__contains($uri, "?"))
             $uri = substr($uri, 0, strpos($uri, "?"));
 
         $uri_arr = array_filter(array_map('str_strip_spaces',

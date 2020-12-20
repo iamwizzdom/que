@@ -162,7 +162,7 @@ class Redirect
 
     public function initiate() {
         if ($this->isPreventRedirect()) return;
-        if (!str_contains(($current_url = current_url()), 'logout'))
+        if (!str__contains(($current_url = current_url()), 'logout'))
             Session::getInstance()->getFiles()->set("http.referer", $current_url);
         http()->_header()->set('Location', $this->getUrl());
         die();

@@ -90,7 +90,7 @@ class Str
      * @return bool
      */
     public static function contains (string $haystack, string $needle) {
-        return str_contains($haystack, $needle);
+        return str__contains($haystack, $needle);
     }
 
     /**
@@ -250,7 +250,7 @@ class Str
      * @return bool
      */
     public static function starts_with (string $haystack, string $needle) {
-        return str_starts_with($haystack, $needle);
+        return str__starts_with($haystack, $needle);
     }
 
     /**
@@ -259,7 +259,7 @@ class Str
      * @return bool
      */
     public static function ends_with (string $haystack, string $needle) {
-        return str_ends_with($haystack, $needle);
+        return str__ends_with($haystack, $needle);
     }
 
     /**
