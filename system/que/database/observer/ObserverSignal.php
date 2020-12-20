@@ -22,6 +22,11 @@ class ObserverSignal
     private bool $undo = false;
 
     /**
+     * @var string|null
+     */
+    private ?string $reason = null;
+
+    /**
      * @var bool
      */
     private bool $retry = false;
@@ -43,8 +48,12 @@ class ObserverSignal
         return $this->continue;
     }
 
-    public function discontinueOperation(): void {
+    /**
+     * @param string|null $reason
+     */
+    public function discontinueOperation(string $reason = null): void {
         $this->continue = false;
+        $this->reason = $reason;
     }
 
     /**
@@ -54,8 +63,20 @@ class ObserverSignal
         return $this->undo;
     }
 
-    public function undoOperation(): void {
+    /**
+     * @param string|null $reason
+     */
+    public function undoOperation(string $reason = null): void {
         $this->undo = true;
+        $this->reason = $reason;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getReason(): ?string
+    {
+        return $this->reason;
     }
 
     /**
@@ -84,7 +105,7 @@ class ObserverSignal
     /**
      * @param int $trials | number of times you want to retry the operation
      * @param float $interval | retrial interval in milliseconds
-     * @return mixed
+     * @return void
      */
     public function retryOperation(int $trials = 1, float $interval = 0.1) {
         $this->retry = true;

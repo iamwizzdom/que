@@ -702,7 +702,9 @@ class QueryBuilder implements Builder
             if (!$observer->getSignal()->isContinueOperation()) {
 
                 return new QueryResponse($this->getCustomDriverResponse($this->builder, [
-                    "Observer for '{$this->builder->getTable()}' table stopped insert operation"
+                    "Observer for '{$this->builder->getTable()}' table stopped insert operation" . (
+                        $observer->getSignal()->getReason() ? " due to: {$observer->getSignal()->getReason()}" : ""
+                    )
                 ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), $model->getPrimaryKey());
             }
 
@@ -791,7 +793,9 @@ class QueryBuilder implements Builder
             $this->query->transRollBack();
 
             return new QueryResponse($this->getCustomDriverResponse($this->builder, [
-                "Observer for '{$this->builder->getTable()}' table asked to undo the insert operation"
+                "Observer for '{$this->builder->getTable()}' table asked to undo the insert operation" . (
+                    $observer->getSignal()->getReason() ? " due to: {$observer->getSignal()->getReason()}" : ""
+                )
             ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), $model->getPrimaryKey());
 
         } else {
@@ -871,7 +875,9 @@ class QueryBuilder implements Builder
             if (!$observer->getSignal()->isContinueOperation()) {
 
                 return new QueryResponse($this->getCustomDriverResponse($this->builder, [
-                    "Observer for '{$this->builder->getTable()}' table stopped delete operation"
+                    "Observer for '{$this->builder->getTable()}' table stopped delete operation" . (
+                        $observer->getSignal()->getReason() ? " due to: {$observer->getSignal()->getReason()}" : ""
+                    )
                 ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
             }
 
@@ -957,7 +963,9 @@ class QueryBuilder implements Builder
                 $this->query->transRollBack();
 
                 return new QueryResponse($this->getCustomDriverResponse($this->builder, [
-                    "Observer for '{$this->builder->getTable()}' table asked to undo the delete operation"
+                    "Observer for '{$this->builder->getTable()}' table asked to undo the delete operation" . (
+                        $observer->getSignal()->getReason() ? " due to: {$observer->getSignal()->getReason()}" : ""
+                    )
                 ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
             } else {
 
@@ -1142,15 +1150,27 @@ class QueryBuilder implements Builder
     }
 
     /**
-     * @param ModelCollection $modelCollection
+     * @param ModelCollection $oldModelCollection
      * @param Observer|null $observer
      * @param bool $retrying
      * @param int $attempts
      * @return QueryResponse
      */
-    private function updateOps(ModelCollection $modelCollection, Observer $observer = null,
+    private function updateOps(ModelCollection $oldModelCollection, Observer $observer = null,
                                bool $retrying = false, int $attempts = 0): QueryResponse
     {
+
+        $newModelCollection = clone $oldModelCollection;
+        foreach ($oldModelCollection as $m) {
+            if (!$m instanceof Model) continue;
+            $newModelCollection->detach($m);
+            $newModelCollection->addModel(clone $m);
+            $newModelCollection->map(function (Model $model) {
+                foreach ($this->builder->getColumns() as $column => $value)
+                    $model->offsetSet($column, $value);
+            });
+        }
+
 
         if ($observer === null) {
 
@@ -1164,7 +1184,7 @@ class QueryBuilder implements Builder
                     $observer = new $observer(new ObserverSignal());
                     if ($observer instanceof Observer) {
                         //Notify observer that insert operation has started
-                        $observer->onUpdating($modelCollection);
+                        $observer->onUpdating($newModelCollection, $oldModelCollection);
                     }
                 }
             }
@@ -1177,7 +1197,9 @@ class QueryBuilder implements Builder
             if (!$observer->getSignal()->isContinueOperation()) {
 
                 return new QueryResponse($this->getCustomDriverResponse($this->builder, [
-                    "Observer for '{$this->builder->getTable()}' table stopped update operation"
+                    "Observer for '{$this->builder->getTable()}' table stopped update operation" . (
+                        $observer->getSignal()->getReason() ? " due to: {$observer->getSignal()->getReason()}" : ""
+                    )
                 ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
             }
 
@@ -1187,7 +1209,7 @@ class QueryBuilder implements Builder
             $this->query->transBegin();
         }
 
-        if ($modelCollection->isEmpty()) {
+        if ($oldModelCollection->isEmpty()) {
 
             return new QueryResponse($this->getCustomDriverResponse($this->builder, [
                 "Observer for '{$this->builder->getTable()}' table removed all records to be updated thereby stopping the update operation"
@@ -1196,20 +1218,13 @@ class QueryBuilder implements Builder
 
         $response = $this->driver->exec($this->builder);
 
-        $updatedStack = clone $modelCollection;
-        foreach ($modelCollection as $m) {
-            if (!$m instanceof Model) continue;
-            $m = clone $m;
-            $updatedStack->addModel($m);
-        }
-
         if (!$response->isSuccessful()) {
 
             //Check that operation in not already on retry mode
             if (!$retrying && $observer instanceof Observer) {
 
                 //Notify observer that operation failed
-                $observer->onUpdateFailed($modelCollection, $response->getErrors(), $response->getErrorCode());
+                $observer->onUpdateFailed($oldModelCollection, $response->getErrors(), $response->getErrorCode());
 
                 $signal = $observer->getSignal();
 
@@ -1217,24 +1232,24 @@ class QueryBuilder implements Builder
                 if ($signal->isRetryOperation()) {
 
                     //Notify observer that retry operation has started
-                    $observer->onUpdateRetryStarted($modelCollection);
+                    $observer->onUpdateRetryStarted($oldModelCollection);
 
                     try {
 
                         $totalAttempts = 0;
 
-                        $retryResponse = retry(function ($attempt) use ($modelCollection, $observer, &$totalAttempts) {
+                        $retryResponse = retry(function ($attempt) use ($oldModelCollection, $observer, &$totalAttempts) {
 
                             $totalAttempts = $attempt;
 
-                            return $this->updateOps($modelCollection, $observer, true, $attempt);
+                            return $this->updateOps($oldModelCollection, $observer, true, $attempt);
 
                         }, $signal->getTrials(), $signal->getInterval() * 1000, function (QueryResponse $retryResponse) {
                             return $retryResponse->isSuccessful();
                         });
 
                         //Notify observer that retry operation has completed
-                        $observer->onUpdateRetryComplete($modelCollection, $retryResponse instanceof QueryResponse ?
+                        $observer->onUpdateRetryComplete($oldModelCollection, $retryResponse instanceof QueryResponse ?
                             $retryResponse->isSuccessful() : false, $totalAttempts);
 
                         if ($retryResponse instanceof QueryResponse) return $retryResponse;
@@ -1245,10 +1260,10 @@ class QueryBuilder implements Builder
             }
 
             if ($retrying && $attempts < $observer->getSignal()->getTrials()) {
-                if ($attempts <= 1) $updatedStack->refresh();
+                if ($attempts <= 1) $newModelCollection->refresh();
                 $response->setResponse([array_map(function ($data) {
                     return (object) $data;
-                }, $updatedStack->getArray())]);
+                }, $newModelCollection->getArray())]);
                 return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
             }
 
@@ -1265,9 +1280,9 @@ class QueryBuilder implements Builder
                     PreviousException::getInstance());
             }
 
-        } elseif ($observer instanceof Observer && $modelCollection instanceof ModelCollection) {
-            $updatedStack->refresh();
-            $observer->onUpdated($updatedStack, $modelCollection);
+        } elseif ($observer instanceof Observer && $oldModelCollection instanceof ModelCollection) {
+            $newModelCollection->refresh();
+            $observer->onUpdated($newModelCollection, $oldModelCollection);
         }
 
         if ($observer instanceof Observer) {
@@ -1278,7 +1293,9 @@ class QueryBuilder implements Builder
                 $this->query->transRollBack();
 
                 return new QueryResponse($this->getCustomDriverResponse($this->builder, [
-                    "Observer for '{$this->builder->getTable()}' table asked to undo the update operation"
+                    "Observer for '{$this->builder->getTable()}' table asked to undo the update operation" . (
+                        $observer->getSignal()->getReason() ? " due to: {$observer->getSignal()->getReason()}" : ""
+                    )
                 ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
             } else {
 
@@ -1290,7 +1307,7 @@ class QueryBuilder implements Builder
 
         $response->setResponse([array_map(function ($data) {
             return (object) $data;
-        }, $updatedStack->getArray())]);
+        }, $newModelCollection->getArray())]);
 
         return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
     }
@@ -1524,10 +1541,25 @@ class QueryBuilder implements Builder
             }
         };
 
-        $response->query = $builder->getQuery();
+        $response->query = $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings());
         $response->errors = $errors;
         $response->errorCode = $errorCode;
 
         return $response;
+    }
+
+    /**
+     * @param string $query
+     * @param array $params
+     * @return string|string[]
+     */
+    private function interpolateQuery(string $query, array $params) {
+        foreach ($params as $key => $value) {
+            if ($value === null) $value = 'NULL';
+            elseif (is_bool($value)) $value = $value ? 1 : 0;
+            elseif (!is_numeric($value)) $value = "'{$value}'";
+            $query = str_replace_first($key, "{$value}", $query);
+        }
+        return $query;
     }
 }
