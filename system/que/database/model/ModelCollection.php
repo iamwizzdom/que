@@ -75,6 +75,17 @@ class ModelCollection implements QueArrayAccess
     }
 
     /**
+     * @param Model $model
+     * @return int
+     */
+    public function detach(Model $model): int
+    {
+        return $this->unsetWhen(function (Model $m) use ($model) {
+            return $m->validate($m->getPrimaryKey())->isEqual($model->getValue($model->getPrimaryKey()));
+        });
+    }
+
+    /**
      * ModelCollection constructor.
      * @param array $models
      * @param bool $static
