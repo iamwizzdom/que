@@ -244,9 +244,10 @@ class JWT
     /**
      * @param User $user
      * @param int|null $expire
+     * @param bool $throwException
      * @return string|null
      */
-    public static function fromUser(User $user, int $expire = null, bool $throwException = false)
+    public static function fromUser(User $user, int $expire = null, bool $throwException = false): ?string
     {
         $generator = new JWTGenerator();
         $generator->setAlgorithm(JWT::ALGORITHM_HS512);
@@ -267,7 +268,7 @@ class JWT
      * @param bool $throwException
      * @return User|null
      */
-    public static function toUser(string $token, bool $throwException = false)
+    public static function toUser(string $token, bool $throwException = false): ?User
     {
         try {
 

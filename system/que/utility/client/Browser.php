@@ -17,7 +17,7 @@ abstract class Browser
     public static function browserInfo(): array
     {
 
-        $userAgent = $_SERVER['HTTP_USER_AGENT'];
+        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
         $browser = "Unknown Browser";
 
         $browserList = array(

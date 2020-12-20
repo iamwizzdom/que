@@ -9,6 +9,7 @@
 namespace que\database;
 
 use Closure;
+use JetBrains\PhpStorm\Pure;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use que\database\interfaces\drivers\DriverQueryBuilder;
@@ -78,7 +79,7 @@ class QueryResponse
     }
 
     /**
-     * @param string $primaryKey
+     * @param string|null $primaryKey
      * @return Model|null
      */
     public function getFirstWithModel(string $primaryKey = null): ?Model
@@ -89,7 +90,7 @@ class QueryResponse
     /**
      * @return object|object[]
      */
-    public function getAll()
+    public function getAll(): object|array
     {
         return $this->getQueryResponse();
     }
@@ -103,7 +104,7 @@ class QueryResponse
     }
 
     /**
-     * @param string $primaryKey
+     * @param string|null $primaryKey
      * @return ModelCollection|null
      */
     public function getAllWithModel(string $primaryKey = null): ?ModelCollection
@@ -115,9 +116,9 @@ class QueryResponse
 
     /**
      * @param null $key
-     * @return object[]|object
+     * @return object[]|object|string
      */
-    public function getQueryResponse($key = null)
+    public function getQueryResponse($key = null): object|array|string
     {
         $response = $this->getDriverResponse()->getResponse();
 
@@ -152,7 +153,7 @@ class QueryResponse
      * @param string|null $primaryKey
      * @return Model|ModelCollection|null
      */
-    public function getQueryResponseWithModel($key = null, ?string $primaryKey = null)
+    public function getQueryResponseWithModel($key = null, ?string $primaryKey = null): Model|ModelCollection|null
     {
         if ($primaryKey === null) $primaryKey = $this->getPrimaryKey();
 
@@ -236,7 +237,7 @@ class QueryResponse
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getQueryErrorCode(): ?string
     {
@@ -359,10 +360,10 @@ class QueryResponse
     }
 
     /**
-     * @param object|array $data
-     * @return object|array
+     * @param object|array|string $data
+     * @return object|array|string
      */
-    private function normalize_data($data)
+    private function normalize_data(object|array|string $data): object|array|string
     {
         if (is_iterable($data) || is_object($data)) {
 
@@ -378,11 +379,11 @@ class QueryResponse
 
     /**
      * @param $data
-     * @return mixed|null
+     * @return mixed
      */
-    private function get_mark_down($data)
+    private function get_mark_down($data): mixed
     {
-        if (preg_match('/\[(.*?)\]\((.*?)\)\((.*?)\)/', $data, $matches)) {
+        if (preg_match('/\[(.*?)]\((.*?)\)\((.*?)\)/', $data, $matches)) {
             if ($matches[2] == "array" || $matches[2] == "object" || $matches[2] == "class") {
 
                 if ($matches[2] == "class") {
@@ -400,7 +401,7 @@ class QueryResponse
      * @param $data
      * @return string
      */
-    private function getType($data)
+    #[Pure] private function getType($data): string
     {
         return gettype($data);
     }
