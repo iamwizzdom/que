@@ -103,31 +103,47 @@ abstract class RouteInspector
      */
     public static function validateArgDataType(string $regex, $value, int $position, bool $nullable = false) {
 
-        $expect = null; $position = Num::to_word(($position + 1));
+        $expected = []; $position = Num::to_word(($position + 1));
 
-        if (strcmp($regex, "uuid") == 0) {
+        if (str__contains($regex, "|")) $regex = explode("|", $regex);
+        else $regex = [$regex];
 
-            if (($nullable && is_null($value)) || UUID::is_valid($value)) return;
+        $error_count = 0;
 
-            $value = str_ellipsis($value ?: 'null', 20);
-            throw new RouteException(
-                "Invalid data type found in route argument {$position} [arg: {$value}, expected: UUID]",
-                "Route Error", HTTP::EXPECTATION_FAILED
-            );
+        foreach ($regex as $expression) {
 
-        } elseif (strcmp($regex, "num") == 0) {
-            $regex = "/^[0-9]+$/";
-            $expect = "number";
-        } elseif (strcmp($regex, "alpha") == 0) {
-            $regex = "/^[a-zA-Z]+$/";
-            $expect = "alphabet";
+            try {
+
+                $expect = null;
+
+                if (strcmp($expression, "uuid") == 0) {
+
+                    if (($nullable && is_null($value)) || UUID::is_valid($value)) return;
+                    $expected[] = "UUID";
+                    throw new RouteException("Failed");
+
+                } elseif (strcmp($expression, "num") == 0) {
+                    $expression = "/^[0-9]+$/";
+                    $expect = "number";
+                } elseif (strcmp($expression, "alpha") == 0) {
+                    $expression = "/^[a-zA-Z]+$/";
+                    $expect = "alphabet";
+                }
+
+                if (!($nullable && is_null($value)) && !preg_match($expression, $value)) {
+                    $expected[] = $expect ?: "regex {$expression}";
+                    throw new RouteException("Failed");
+                }
+            } catch (RouteException $e) {
+                $error_count++;
+            }
         }
 
-        if (!($nullable && is_null($value)) && !preg_match($regex, $value)) {
-            $value = str_ellipsis($value ?? 'null', 20);
-            $expect = $expect ?: "regex {$regex}";
+        if ($error_count == count($regex)) {
+            $value = str_ellipsis($value ?: 'null', 20);
+            $expected = implode(" or ", $expected);
             throw new RouteException(
-                "Invalid data type found in route argument {$position} [arg: {$value}, expected: $expect]",
+                "Invalid data type found in route argument {$position} [arg: {$value}, expected: {$expected}]",
                 "Route Error", HTTP::EXPECTATION_FAILED
             );
         }
