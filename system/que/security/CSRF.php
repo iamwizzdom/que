@@ -38,7 +38,7 @@ class CSRF
         // TODO: Implement __clone() method.
     }
 
-    private function __wakeup()
+    public function __wakeup()
     {
         // TODO: Implement __wakeup() method.
     }
@@ -46,7 +46,7 @@ class CSRF
     /**
      * @return CSRF
      */
-    public static function getInstance()
+    public static function getInstance(): CSRF
     {
         if (!isset(self::$instance))
             self::$instance = new self;
@@ -58,7 +58,8 @@ class CSRF
      * @return bool
      * @throws QueException
      */
-    public function validateToken(string $token) {
+    public function validateToken(string $token): bool
+    {
 
         if (empty($token) || strcmp($token, $this->getToken()) != 0) {
             $decodedToken = $this->decodeToken($token);
@@ -71,23 +72,26 @@ class CSRF
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
-    public function getToken() {
+    public function getToken(): mixed
+    {
         return $this->session->get("csrf.token", '');
     }
 
     /**
      * @return int
      */
-    public function getExpiryTime() {
+    public function getExpiryTime(): int
+    {
         return (APP_TIME + TIMEOUT_TEN_MIN);
     }
 
     /**
      * @return $this
      */
-    public function generateToken() {
+    public function generateToken(): static
+    {
 
         $data = [
             'signature' => $this->getSignature(),
@@ -102,7 +106,7 @@ class CSRF
         return $this;
     }
 
-    private function getSignature()
+    private function getSignature(): string
     {
         return sprintf("%s-%s-%s", config("auth.app.salt", APP_PACKAGE_NAME), Session::getSessionID(),
             (is_logged_in() ? user(config('database.tables.user.primary_key', 'id')) : ''));
@@ -114,7 +118,7 @@ class CSRF
         return $token ? json_decode($token, true) : false;
     }
 
-    private function isValidToken($decodedToken)
+    private function isValidToken($decodedToken): bool
     {
         return $decodedToken &&
             (
@@ -125,12 +129,12 @@ class CSRF
             ) && strcmp($decodedToken['hash'], Hash::sha(json_encode(Arr::exclude($decodedToken, 'hash')))) == 0;
     }
 
-    private function isValidSignature($decodedToken)
+    private function isValidSignature($decodedToken): bool
     {
         return $decodedToken && (strcmp(($decodedToken['signature'] ?? ''), $this->getSignature()) == 0);
     }
 
-    private function isExpiredToken($decodedToken)
+    private function isExpiredToken($decodedToken): bool
     {
         return $decodedToken && (($decodedToken['expire'] ?? 0) < APP_TIME);
     }

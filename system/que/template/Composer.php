@@ -107,11 +107,6 @@ class Composer
         // TODO: Implement __clone() method.
     }
 
-    private function __wakeup()
-    {
-        // TODO: Implement __wakeup() method.
-    }
-
     /**
      * @param bool $singleton
      * @return Composer
@@ -450,12 +445,12 @@ class Composer
 
         array_callback($js, function ($uri) {
 
-            if (str_starts_with($uri, 'http://') ||
-                str_starts_with($uri, 'https://')) return $uri;
+            if (str__starts_with($uri, 'http://') ||
+                str__starts_with($uri, 'https://')) return $uri;
 
-            if (str_starts_with($uri, '/') ||
-                str_starts_with($uri, './') ||
-                str_starts_with($uri, '../')) {
+            if (str__starts_with($uri, '/') ||
+                str__starts_with($uri, './') ||
+                str__starts_with($uri, '../')) {
 
                 $uri = str_start_from($uri, '/');
                 $uri = "template/{$uri}";
@@ -467,12 +462,12 @@ class Composer
 
         array_callback($css, function ($uri) {
 
-            if (str_starts_with($uri, 'http://') ||
-                str_starts_with($uri, 'https://')) return $uri;
+            if (str__starts_with($uri, 'http://') ||
+                str__starts_with($uri, 'https://')) return $uri;
 
-            if (str_starts_with($uri, '/') ||
-                str_starts_with($uri, './') ||
-                str_starts_with($uri, '../')) {
+            if (str__starts_with($uri, '/') ||
+                str__starts_with($uri, './') ||
+                str__starts_with($uri, '../')) {
 
                 $uri = str_start_from($uri, '/');
                 $uri = "template/{$uri}";

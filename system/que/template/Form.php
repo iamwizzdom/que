@@ -44,11 +44,6 @@ class Form implements ArrayAccess
         // TODO: Implement __clone() method.
     }
 
-    private function __wakeup()
-    {
-        // TODO: Implement __wakeup() method.
-    }
-
     /**
      * @param bool $singleton
      * @return Form
@@ -89,7 +84,7 @@ class Form implements ArrayAccess
     function formOpen(string $action = '#', array $attributes = [], bool $multipart = false)
     {
 
-        if ($action != "#" && !str_contains($action, "://")) $action = base_url($action);
+        if ($action != "#" && !str__contains($action, "://")) $action = base_url($action);
 
         if (!in_array('method', $keys = array_keys($attributes)))
             $attributes['method'] = 'post';

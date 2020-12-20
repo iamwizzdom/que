@@ -27,7 +27,7 @@ class Base64File extends FileBase
         // TODO: Implement __clone() method.
     }
 
-    private function __wakeup()
+    public function __wakeup()
     {
         // TODO: Implement __wakeup() method.
     }

@@ -30,7 +30,7 @@ class ObjectPool
         // TODO: Implement __clone() method.
     }
 
-    private function __wakeup()
+    public function __wakeup()
     {
         // TODO: Implement __wakeup() method.
     }
@@ -47,11 +47,11 @@ class ObjectPool
 
     /**
      * @param string $key
-     * @return mixed
+     * @return mixed|null
      */
     public function load(string $key)
     {
-        return @$this->instances[$key];
+        return $this->instances[$key] ?? null;
     }
 
     /**

@@ -52,11 +52,6 @@ class SmartyEngine
         // TODO: Implement __clone() method.
     }
 
-    private function __wakeup()
-    {
-        // TODO: Implement __wakeup() method.
-    }
-
     /**
      * @return SmartyEngine
      */

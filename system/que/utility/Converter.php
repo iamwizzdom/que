@@ -36,7 +36,7 @@ class Converter
         // TODO: Implement __clone() method.
     }
 
-    private function __wakeup()
+    public function __wakeup()
     {
         // TODO: Implement __wakeup() method.
     }
@@ -172,7 +172,7 @@ class Converter
     public function convertEnvConst($value, $startsWith = null) {
         $consts = get_defined_constants();
         $consts = $startsWith ? array_filter($consts, function ($key) use ($startsWith) {
-            return is_array($startsWith) ? str_starts_with_any($key, $startsWith) : str_starts_with($key, $startsWith);
+            return is_array($startsWith) ? str_starts_with_any($key, $startsWith) : str__starts_with($key, $startsWith);
         }, ARRAY_FILTER_USE_KEY) : $consts;
         $value = array_search($value, $consts);
         return strtolower($startsWith && is_string($startsWith) ? str_start_from($value, $startsWith) : $value);
@@ -188,7 +188,7 @@ class Converter
         try {
             $consts = (new ReflectionClass($class))->getConstants();
             $consts = $startsWith ? array_filter($consts, function ($key) use ($startsWith) {
-                return is_array($startsWith) ? str_starts_with_any($key, $startsWith) : str_starts_with($key, $startsWith);
+                return is_array($startsWith) ? str_starts_with_any($key, $startsWith) : str__starts_with($key, $startsWith);
             }, ARRAY_FILTER_USE_KEY) : $consts;
             $value = array_search($value, $consts);
             return strtolower($startsWith && is_string($startsWith) ? str_start_from($value, $startsWith) : $value);

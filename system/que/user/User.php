@@ -52,7 +52,7 @@ class User extends State implements ArrayAccess
         // TODO: Implement __clone() method.
     }
 
-    private function __wakeup()
+    public function __wakeup()
     {
         // TODO: Implement __wakeup() method.
     }
