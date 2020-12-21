@@ -1296,6 +1296,8 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
             return ":{$column}";
         }
 
+        if ($this->bindings[":{$column}"] == $value) return ":{$column}";
+
         $size = (array_size($this->bindings) + 1);
         for ($i = 0; $i < $size; $i++) {
             if (!isset($this->bindings[":{$i}_{$column}"])) {

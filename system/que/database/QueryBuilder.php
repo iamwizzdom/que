@@ -990,10 +990,8 @@ class QueryBuilder implements Builder
             $count = $this->count();
             $this->builder->setQueryType(DriverQueryBuilder::SELECT);
 
-            $totalRecord = (($count->isSuccessful() ? $count->getQueryResponse() : 0) / $this->pagination['perPage']);
-
             $paginator = new Paginator();
-            $paginator->records($totalRecord);
+            $paginator->records(($count->isSuccessful() ? $count->getQueryResponse() : 0));
             $paginator->recordsPerPage($this->pagination['perPage']);
             $paginator->variable_name($this->pagination['pageName']);
             $paginator->set_page($this->pagination['page']);
@@ -1002,13 +1000,12 @@ class QueryBuilder implements Builder
                 $this->pagination['page'] = $totalPages;
             }
 
-            $limit = [(($this->pagination['page'] - 1) * $this->pagination['perPage']), $this->pagination['perPage']];
+            $limit = [(int) (($this->pagination['page'] - 1) * $this->pagination['perPage']), (int) $this->pagination['perPage']];
             $this->builder->setLimit($limit);
 
             Pagination::getInstance()->add($paginator, $this->pagination['tag']);
 
             $this->pagination['status'] = false;
-
         }
 
         if (!isset(self::$primaryKeys[$this->builder->getTable()])) {
@@ -1547,6 +1544,17 @@ class QueryBuilder implements Builder
 
         return $response;
     }
+
+    /**
+     * @param $n
+     * @param int $x
+     * @return float|int
+     */
+    private function round_up_to_nearest($n, $x = 5)
+    {
+        return ($n % $x === 0 && !is_float(($n / $x))) ? round($n) : round((($n + $x / 2) / $x)) * $x;
+    }
+
 
     /**
      * @param string $query

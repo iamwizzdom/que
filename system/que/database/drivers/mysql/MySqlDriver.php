@@ -274,20 +274,17 @@ class MySqlDriver implements Driver
         try {
 
             foreach ($builder->getQueryBindings() as $key => $value) {
+
                 if (!str__contains($builder->getQuery(), $key)) continue;
-                switch ($value) {
-                    case is_bool($value):
-                        $stmt->bindValue($key, $value, PDO::PARAM_BOOL);
-                        break;
-                    case is_integer($value):
-                        $stmt->bindValue($key, $value, PDO::PARAM_INT);
-                        break;
-                    case is_null($value):
-                        $stmt->bindValue($key, $value, PDO::PARAM_NULL);
-                        break;
-                    default:
-                        $stmt->bindValue($key, $value);
-                        break;
+
+                if (is_bool($value)) {
+                    $stmt->bindValue($key, $value, PDO::PARAM_BOOL);
+                } elseif (is_integer($value)) {
+                    $stmt->bindValue($key, $value, PDO::PARAM_INT);
+                } elseif (is_null($value)) {
+                    $stmt->bindValue($key, $value, PDO::PARAM_NULL);
+                } else {
+                    $stmt->bindValue($key, $value);
                 }
             }
 
