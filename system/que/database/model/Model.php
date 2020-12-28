@@ -227,18 +227,14 @@ class Model implements ModelAlias
 
         if (!$this->offsetExists($primaryKey)) return false;
 
-        $columnsToUpdate = [];
+        if (empty($columns)) return false;
 
-        foreach ($columns as $key => $value)
-            if ($this->offsetExists($key)) $columnsToUpdate[$key] = $value;
-
-        if (empty($columnsToUpdate)) return false;
-
-        $update = db()->update()->table($this->getTable())->columns($columnsToUpdate)
+        $update = db()->update()->table($this->getTable())->columns($columns)
             ->where($primaryKey, $this->getValue($primaryKey))->exec();
 
         if ($status = $update->isSuccessful())
-            foreach ($columnsToUpdate as $key => $value) $this->offsetSet($key, $value);
+            foreach ($columns as $key => $value)
+                if ($this->offsetExists($key)) $this->offsetSet($key, $value);
 
         return $status;
     }
