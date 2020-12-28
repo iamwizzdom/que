@@ -302,12 +302,12 @@ class Validator
 
             if ($condition instanceof ConditionError) {
 
-                if (!$condition->hasError())
+                if (!$condition->isNullified() && !$condition->hasError())
                     $validated[$condition->getKey()] = $condition->getValue();
 
             } elseif ($condition instanceof ConditionErrorStack) {
 
-                if (!$condition->hasError())
+                if (!$condition->isNullified() && !$condition->hasError())
                     $validated[$condition->getKey()] = $condition->getValue();
             }
 

@@ -83,6 +83,22 @@ class ConditionErrorStack
     }
 
     /**
+     * @return bool
+     */
+    public function isNullable(): bool
+    {
+        return $this->nullable;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isNullified(): bool
+    {
+        return ($this->nullable && empty($this->getValue()));
+    }
+
+    /**
      * @return string
      */
     public function getValueString(): string {

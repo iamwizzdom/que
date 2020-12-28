@@ -164,7 +164,7 @@ class Condition implements ConditionAlias
     public function isNotEqualToAny(array $variable): bool
     {
         // TODO: Implement isNotEqualToAny() method.
-        return !in_array($this->getValue(), $variable);
+        return !$this->isEqualToAny($variable);
     }
 
     /**

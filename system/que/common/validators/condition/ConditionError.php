@@ -124,12 +124,28 @@ class ConditionError
     }
 
     /**
+     * @return bool
+     */
+    public function isNullable(): bool
+    {
+        return $this->nullable;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isNullified(): bool
+    {
+        return ($this->nullable && $this->condition->isEmpty());
+    }
+
+    /**
      * @param null $error
      * @return ConditionError
      */
     public function isNotEmpty($error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isNotEmpty()) $this->setError($error);
         return $this;
     }
@@ -140,7 +156,7 @@ class ConditionError
      */
     public function isEmpty($error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isEmpty()) $this->setError($error);
         return $this;
     }
@@ -152,7 +168,7 @@ class ConditionError
      */
     public function isUrl($error = null, string $pattern = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isUrl($pattern)) $this->setError($error);
         return $this;
     }
@@ -163,7 +179,7 @@ class ConditionError
      */
     public function isString($error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isString()) $this->setError($error);
         return $this;
     }
@@ -174,7 +190,7 @@ class ConditionError
      */
     public function isJson($error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isJson()) $this->setError($error);
         return $this;
     }
@@ -185,7 +201,7 @@ class ConditionError
      */
     public function isUsername($error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isUsername()) $this->setError($error);
         return $this;
     }
@@ -196,7 +212,7 @@ class ConditionError
      */
     public function isChar($error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isChar()) $this->setError($error);
         return $this;
     }
@@ -207,7 +223,7 @@ class ConditionError
      */
     public function isAlphaNumeric($error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isAlphaNumeric()) $this->setError($error);
         return $this;
     }
@@ -218,7 +234,7 @@ class ConditionError
      */
     public function isEmail($error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isEmail()) $this->setError($error);
         return $this;
     }
@@ -229,14 +245,14 @@ class ConditionError
      */
     public function isUUID($error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isUUID()) $this->setError($error);
         return $this;
     }
 
     public function isConfirmed($error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isEqual($this->validator->getValue("{$this->getKey()}_confirmation")))
             $this->validator->addConditionError("{$this->getKey()}_confirmation", $error);
         return $this;
@@ -253,7 +269,7 @@ class ConditionError
     public function isUniqueInDB($table, $column, $error = null, $ignoreID = null,
                                  string $ignoreColumn = 'id'): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isUniqueInDB($table, $column, $ignoreID, $ignoreColumn)) $this->setError($error);
         return $this;
 
@@ -271,7 +287,7 @@ class ConditionError
     public function isFoundInDB($table, $column, $error = null, ?Closure $extraQuery = null,
                                 $ignoreID = null, string $ignoreColumn = 'id'): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isFoundInDB($table, $column,
             $extraQuery, $ignoreID, $ignoreColumn)) $this->setError($error);
         return $this;
@@ -289,7 +305,7 @@ class ConditionError
     public function isNotFoundInDB($table, $column, $error = null, ?Closure $extraQuery = null,
                                    $ignoreID = null, string $ignoreColumn = 'id'): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isNotFoundInDB($table, $column,
             $extraQuery, $ignoreID, $ignoreColumn)) $this->setError($error);
         return $this;
@@ -302,7 +318,7 @@ class ConditionError
      */
     public function isDate($error = null, $format = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isDate($format)) $this->setError($error);
         return $this;
     }
@@ -315,7 +331,7 @@ class ConditionError
      */
     public function isDateEqual(DateTime $compare, $error = null, ?string $format = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isDateEqual($compare, $format)) $this->setError($error);
         return $this;
     }
@@ -328,7 +344,7 @@ class ConditionError
      */
     public function isDateNotEqual(DateTime $compare, $error = null, ?string $format = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isDateNotEqual($compare, $format)) $this->setError($error);
         return $this;
     }
@@ -341,7 +357,7 @@ class ConditionError
      */
     public function isDateGreaterThan(DateTime $compare, $error = null, ?string $format = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isDateGreaterThan($compare, $format)) $this->setError($error);
         return $this;
     }
@@ -354,7 +370,7 @@ class ConditionError
      */
     public function isDateGreaterThanOrEqual(DateTime $compare, $error = null, ?string $format = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isDateGreaterThanOrEqual($compare, $format)) $this->setError($error);
         return $this;
     }
@@ -367,7 +383,7 @@ class ConditionError
      */
     public function isDateLessThan(DateTime $compare, $error = null, ?string $format = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isDateLessThan($compare, $format)) $this->setError($error);
         return $this;
     }
@@ -380,7 +396,7 @@ class ConditionError
      */
     public function isDateLessThanOrEqual(DateTime $compare, $error = null, ?string $format = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isDateLessThanOrEqual($compare, $format)) $this->setError($error);
         return $this;
     }
@@ -394,7 +410,7 @@ class ConditionError
      */
     public function isDateBetween(DateTime $date1, DateTime $date2, $error = null, ?string $format = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isDateBetween($date1, $date2)){
             if ($error && str__contains($error, "%s")) {
                 if (str_char_count('%s', $error) >= 2) {
@@ -416,7 +432,7 @@ class ConditionError
      */
     public function isIdentical($variable, $error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isIdentical($variable)) $this->setError($error);
         return $this;
     }
@@ -428,7 +444,7 @@ class ConditionError
      */
     public function isNotIdentical($variable, $error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isNotIdentical($variable)) $this->setError($error);
         return $this;
     }
@@ -440,7 +456,7 @@ class ConditionError
      */
     public function isIdenticalToAny(array $variable, $error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isIdenticalToAny($variable)) $this->setError($error);
         return $this;
     }
@@ -452,7 +468,7 @@ class ConditionError
      */
     public function isNotIdenticalToAny(array $variable, $error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isNotIdenticalToAny($variable)) $this->setError($error);
         return $this;
     }
@@ -464,7 +480,7 @@ class ConditionError
      */
     public function isEqualToAny(array $variable, $error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isEqualToAny($variable)) $this->setError($error);
         return $this;
     }
@@ -476,7 +492,7 @@ class ConditionError
      */
     public function isNotEqualToAny(array $variable, $error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isNotEqualToAny($variable)) $this->setError($error);
         return $this;
     }
@@ -488,7 +504,7 @@ class ConditionError
      */
     public function isEqual($variable, $error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isEqual($variable)) $this->setError($error);
         return $this;
     }
@@ -500,7 +516,7 @@ class ConditionError
      */
     public function isNotEqual($variable, $error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isNotEqual($variable)) $this->setError($error);
         return $this;
     }
@@ -511,7 +527,7 @@ class ConditionError
      */
     public function isArray($error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isArray()) $this->setError($error);
         return $this;
     }
@@ -522,7 +538,7 @@ class ConditionError
      */
     public function isNumeric($error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isNumeric()) $this->setError($error);
         return $this;
     }
@@ -533,7 +549,7 @@ class ConditionError
      */
     public function isNumberFormat($error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isNumberFormat()) $this->setError($error);
         return $this;
     }
@@ -544,7 +560,7 @@ class ConditionError
      */
     public function isNumber($error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isNumber()) $this->setError($error);
         return $this;
     }
@@ -556,7 +572,7 @@ class ConditionError
      */
     public function isNumberGreaterThan(int $number, $error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isNumberGreaterThan($number))
             $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $number) : $error));
         return $this;
@@ -569,7 +585,7 @@ class ConditionError
      */
     public function isNumberGreaterThanOrEqual(int $number, $error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isNumberGreaterThanOrEqual($number))
             $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $number) : $error));
         return $this;
@@ -582,7 +598,7 @@ class ConditionError
      */
     public function isNumberLessThan(int $number, $error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isNumberLessThan($number))
             $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $number) : $error));
         return $this;
@@ -595,7 +611,7 @@ class ConditionError
      */
     public function isNumberLessThanOrEqual(int $number, $error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isNumberLessThanOrEqual($number))
             $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $number) : $error));
         return $this;
@@ -609,7 +625,7 @@ class ConditionError
      */
     public function isNumberBetween(int $number1, int $number2, $error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isNumberBetween($number1, $number2)){
             if ($error && str__contains($error, "%s")) {
                 if (str_char_count('%s', $error) >= 2) {
@@ -630,7 +646,7 @@ class ConditionError
      */
     public function isFloatingNumber($error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isFloatingNumber()) $this->setError($error);
         return $this;
     }
@@ -642,7 +658,7 @@ class ConditionError
      */
     public function isFloatingNumberGreaterThan(float $number, $error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isFloatingNumberGreaterThan($number))
             $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $number) : $error));
         return $this;
@@ -655,7 +671,7 @@ class ConditionError
      */
     public function isFloatingNumberGreaterThanOrEqual(float $number, $error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isFloatingNumberGreaterThanOrEqual($number))
             $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $number) : $error));
         return $this;
@@ -680,7 +696,7 @@ class ConditionError
      */
     public function isFloatingNumberLessThanOrEqual(float $number, $error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isFloatingNumberLessThanOrEqual($number))
             $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $number) : $error));
         return $this;
@@ -695,7 +711,7 @@ class ConditionError
      */
     public function isFloatingNumberBetween(float $number1, float $number2, $error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isFloatingNumberBetween($number1, $number2)){
             if ($error && str__contains($error, "%s")) {
                 if (str_char_count('%s', $error) >= 2) {
@@ -716,7 +732,7 @@ class ConditionError
      */
     public function isPhoneNumber($error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isPhoneNumber()) $this->setError($error);
         return $this;
     }
@@ -727,7 +743,7 @@ class ConditionError
      */
     public function isInteger($error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isInteger()) $this->setError($error);
         return $this;
     }
@@ -738,7 +754,7 @@ class ConditionError
      */
     public function isBool($error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isBool()) $this->setError($error);
         return $this;
     }
@@ -750,7 +766,7 @@ class ConditionError
      */
     public function isTrue(callable $test, $error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isTrue($test)) $this->setError($error);
         return $this;
     }
@@ -762,7 +778,7 @@ class ConditionError
      */
     public function isFalse(callable $test, $error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isFalse($test)) $this->setError($error);
         return $this;
     }
@@ -774,7 +790,7 @@ class ConditionError
      */
     public function matches(string $regex, $error): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->matches($regex)) $this->setError($error);
         return $this;
     }
@@ -785,7 +801,7 @@ class ConditionError
      */
     public function isIp($error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isIp()) $this->setError($error);
         return $this;
     }
@@ -796,7 +812,7 @@ class ConditionError
      */
     public function isIpv4($error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isIpv4()) $this->setError($error);
         return $this;
     }
@@ -807,7 +823,7 @@ class ConditionError
      */
     public function isIpv4NoPriv($error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isIpv4NoPriv()) $this->setError($error);
         return $this;
     }
@@ -818,7 +834,7 @@ class ConditionError
      */
     public function isIpv6($error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isIpv6()) $this->setError($error);
         return $this;
     }
@@ -829,7 +845,7 @@ class ConditionError
      */
     public function isIpv6NoPriv($error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->isIpv6NoPriv()) $this->setError($error);
         return $this;
     }
@@ -841,7 +857,7 @@ class ConditionError
      */
     public function hasWord($size, $error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->hasWord($size))
             $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $size) : $error));
         return $this;
@@ -854,7 +870,7 @@ class ConditionError
      */
     public function hasMaxWord($max, $error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->hasMaxWord($max))
             $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $max) : $error));
         return $this;
@@ -867,7 +883,7 @@ class ConditionError
      */
     public function hasMinWord($min = 3, $error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->hasMinWord($min))
             $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $min) : $error));
         return $this;
@@ -880,7 +896,7 @@ class ConditionError
      */
     public function hasLength($size, $error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->hasLength($size))
             $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $size) : $error));
         return $this;
@@ -893,7 +909,7 @@ class ConditionError
      */
     public function hasMaxLength($max, $error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->hasMaxLength($max))
             $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $max) : $error));
         return $this;
@@ -906,7 +922,7 @@ class ConditionError
      */
     public function hasMinLength($min = 3, $error = null): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         if (!$this->condition->hasMinLength($min))
             $this->setError(($error && str__contains($error, "%s") ? sprintf($error, $min) : $error));
         return $this;
@@ -918,7 +934,7 @@ class ConditionError
      */
     public function hash(string $algo = "SHA256"): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         $this->condition->hash($algo);
         $this->setValue($this->getValue());
         return $this;
@@ -929,7 +945,7 @@ class ConditionError
      */
     public function toUpper(): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         $this->condition->toUpper();
         $this->setValue($this->getValue());
         return $this;
@@ -940,7 +956,7 @@ class ConditionError
      */
     public function toLower(): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         $this->condition->toLower();
         $this->setValue($this->getValue());
         return $this;
@@ -951,7 +967,7 @@ class ConditionError
      */
     public function toUcFirst(): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         $this->condition->toUcFirst();
         $this->setValue($this->getValue());
         return $this;
@@ -962,7 +978,7 @@ class ConditionError
      */
     public function toUcWords(): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         $this->condition->toUcWords();
         $this->setValue($this->getValue());
         return $this;
@@ -974,7 +990,7 @@ class ConditionError
      */
     public function trim(string $charlist = " \t\n\r\0\x0B"): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         $this->condition->trim($charlist);
         $this->setValue($this->getValue());
         return $this;
@@ -986,7 +1002,7 @@ class ConditionError
     public function toDate($format): ConditionError
     {
         // TODO: Implement toDateFormat() method.
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         $this->condition->toDate($format);
         $this->setValue($this->getValue());
         return $this;
@@ -1002,7 +1018,7 @@ class ConditionError
      */
     public function _call($function, ...$parameter): ConditionError
     {
-        if ($this->hasError() || ($this->nullable && empty($this->getValue()))) return $this;
+        if ($this->hasError() || ($this->nullable && $this->condition->isEmpty())) return $this;
         $this->condition->_call($function, $parameter);
         $this->setValue($this->getValue());
         return $this;
