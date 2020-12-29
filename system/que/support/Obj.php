@@ -65,11 +65,11 @@ class Obj
 
     /**
      * @param object $main
-     * @param array $exclude
+     * @param mixed ...$exclude
      * @return object
      */
-    public static function exclude (object $main, array $exclude = []) {
-        return object_exclude($main, $exclude);
+    public static function exclude (object $main, ...$exclude) {
+        return object_exclude($main, ...$exclude);
     }
 
     /**

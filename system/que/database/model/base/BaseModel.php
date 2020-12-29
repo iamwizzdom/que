@@ -13,6 +13,7 @@ use que\database\interfaces\model\Model;
 use que\database\model\ModelCollection;
 use que\http\HTTP;
 use que\support\Arr;
+use que\support\Obj;
 use relation\DbMapper;
 use Traversable;
 
@@ -34,6 +35,11 @@ abstract class BaseModel implements Model
      * @var array
      */
     protected array $casts = [];
+
+    /**
+     * @var array
+     */
+    protected array $hidden = [];
 
     /**
      * @var object
@@ -58,6 +64,7 @@ abstract class BaseModel implements Model
         $this->setObject($tableRow);
         $this->setTable($tableName);
         $this->setPrimaryKey($primaryKey);
+        $this->__hide();
         $this->__append();
         $this->__cast();
     }
@@ -149,6 +156,22 @@ abstract class BaseModel implements Model
     {
         // TODO: Implement setAppends() method.
         $this->appends = $appends;
+    }
+
+    /**
+     * @return array
+     */
+    public function getHidden(): array
+    {
+        return $this->hidden;
+    }
+
+    /**
+     * @param array $hidden
+     */
+    public function setHidden(array $hidden): void
+    {
+        $this->hidden = $hidden;
     }
 
     /**
@@ -467,6 +490,12 @@ abstract class BaseModel implements Model
     {
         // TODO: Implement __clone() method.
         $this->object = clone $this->object;
+    }
+
+    private function __hide() {
+        if (!empty($this->hidden)) {
+            $this->object = Obj::exclude($this->object, ...$this->hidden);
+        }
     }
 
     private function __cast() {
