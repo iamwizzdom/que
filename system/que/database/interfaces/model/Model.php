@@ -10,6 +10,7 @@ namespace que\database\interfaces\model;
 
 use que\common\validator\interfaces\Condition;
 use que\database\interfaces\Builder;
+use que\database\model\ModelCollection;
 use que\support\interfaces\QueArrayAccess;
 
 interface Model extends QueArrayAccess
@@ -20,11 +21,7 @@ interface Model extends QueArrayAccess
      * @param string $tableName
      * @param string $primaryKey
      */
-    public function __construct(
-        object &$tableRow,
-        string $tableName,
-        string $primaryKey = 'id'
-    );
+    public function __construct(object &$tableRow, string $tableName, string $primaryKey = 'id');
 
     /**
      * @return string
@@ -56,6 +53,12 @@ interface Model extends QueArrayAccess
      * @return bool
      */
     public function has($key): bool;
+
+    /**
+     * @param $key
+     * @param $value
+     */
+    public function set($key, $value): void;
 
     /**
      * @param $key
@@ -108,6 +111,24 @@ interface Model extends QueArrayAccess
     public function getPreviousRecord(): ?Model;
 
     /**
+     * @param string $table
+     * @param string $foreignKey
+     * @param string $primaryKey
+     * @param string $modelKey
+     * @return Model|null
+     */
+    public function belongTo(string $table, string $foreignKey, string $primaryKey = "id", string $modelKey = "que"): ?Model;
+
+    /**
+     * @param string $table
+     * @param string $foreignKey
+     * @param string $primaryKey
+     * @param string $modelKey
+     * @return ModelCollection|null
+     */
+    public function hasMany(string $table, string $foreignKey, string $primaryKey = "id", string $modelKey = "que"): ?ModelCollection;
+
+    /**
      * @return bool
      */
     public function refresh(): bool;
@@ -131,4 +152,5 @@ interface Model extends QueArrayAccess
      */
     public function offsetRename($offset, $to): void;
 
+    public function __clone(): void;
 }

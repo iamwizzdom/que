@@ -6,8 +6,9 @@
  * Time: 9:34 AM
  */
 
+use custom\model\CustomModel;
 use que\database\drivers\mysql\MySqlDriver;
-use que\database\model\Model;
+use que\database\model\CentralModel;
 
 return [
 
@@ -67,8 +68,8 @@ return [
     |
     */
     'models' => [
-        'que' => Model::class,
-        'custom' => \custom\model\CustomModel::class
+        'que' => CentralModel::class,
+        'custom' => CustomModel::class
     ],
 
     /*

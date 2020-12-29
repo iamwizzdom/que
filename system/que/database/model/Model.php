@@ -1,26 +1,32 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Wisdom Emenike
- * Date: 12/10/2018
- * Time: 2:15 PM
- */
+
 
 namespace que\database\model;
 
+
 use ArrayIterator;
+use JetBrains\PhpStorm\Pure;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use que\common\validator\interfaces\Condition;
-use que\database\interfaces\model\Model as ModelAlias;
 use que\http\HTTP;
+use que\support\Arr;
+use relation\DbMapper;
+use Traversable;
 
-class Model implements ModelAlias
+abstract class Model implements \que\database\interfaces\model\Model
 {
+    use DbMapper;
+
     /**
      * @var string
      */
-    protected string $key = "que";
+    protected string $modelKey = "que";
+
+    /**
+     * @var array
+     */
+    protected array $appends = [];
 
     /**
      * @var object
@@ -45,28 +51,25 @@ class Model implements ModelAlias
         $this->setObject($tableRow);
         $this->setTable($tableName);
         $this->setPrimaryKey($primaryKey);
+        $this->__append();
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getModelKey(): string
     {
         // TODO: Implement getModelKey() method.
-        return $this->key;
+        return $this->modelKey;
     }
 
     /**
-     * @return object
+     * @inheritDoc
      */
     public function &getObject(): object
     {
+        // TODO: Implement getObject() method.
         return $this->object;
-    }
-
-    /**
-     * @return array
-     */
-    public function getArray(): array
-    {
-        return object_to_array($this->object);
     }
 
     /**
@@ -78,10 +81,20 @@ class Model implements ModelAlias
     }
 
     /**
-     * @return string
+     * @inheritDoc
+     */
+    #[Pure] public function getArray(): array
+    {
+        // TODO: Implement getArray() method.
+        return object_to_array($this->object);
+    }
+
+    /**
+     * @inheritDoc
      */
     public function getTable(): string
     {
+        // TODO: Implement getTable() method.
         return $this->table;
     }
 
@@ -94,121 +107,167 @@ class Model implements ModelAlias
     }
 
     /**
-     * @return string
+     * @inheritDoc
      */
     public function getPrimaryKey(): string
     {
+        // TODO: Implement getPrimaryKey() method.
         return $this->primaryKey;
     }
 
     /**
      * @param string $primaryKey
      */
-    public function setPrimaryKey(string $primaryKey): void
+    private function setPrimaryKey(string $primaryKey): void
     {
         $this->primaryKey = $primaryKey;
     }
 
+    public function setModelKey(string $modelKey): void
+    {
+        // TODO: Implement setModelKey() method.
+        $this->modelKey = $modelKey;
+    }
+
     /**
-     * @param $key
-     * @return bool
+     * @return array
+     */
+    public function getAppends(): array
+    {
+        return $this->appends;
+    }
+
+    public function setAppends(array $appends): void
+    {
+        // TODO: Implement setAppends() method.
+        $this->appends = $appends;
+    }
+
+    /**
+     * @inheritDoc
      */
     public function has($key): bool
     {
+        // TODO: Implement has() method.
         return $this->offsetExists($key);
     }
 
     /**
-     * @param $key
-     * @return bool
+     * @inheritDoc
      */
-    public function isEmpty($key): bool
+    public function set($key, $value): void
     {
-        return empty($this->object->{$key}) && $this->object->{$key} != "0";
-    }
-
-    /**
-     * @param $key
-     * @param null $default
-     * @return mixed|null
-     */
-    public function getValue($key, $default = null)
-    {
-        return !$this->isEmpty($key) ? $this->object->{$key} : $default;
-    }
-
-    /**
-     * @param $key
-     * @param int $default
-     * @return int
-     */
-    public function getInt($key, int $default = 0): int
-    {
-        return (int) $this->getValue($key, $default);
-    }
-
-    /**
-     * @param $key
-     * @param float $default
-     * @return float
-     */
-    public function getFloat($key, float $default = 0.0): float
-    {
-        return (float) $this->getValue($key, $default);
-    }
-
-    /**
-     * @param $key
-     * @param bool $default
-     * @return bool
-     */
-    public function getBool($key, bool $default = false): bool
-    {
-        // TODO: Implement getBool() method.
-        return (bool) $this->getValue($key, $default);
+        // TODO: Implement set() method.
+        $this->offsetSet($key, $value);
     }
 
 
     /**
      * @inheritDoc
      */
+    public function isEmpty($key): bool
+    {
+        // TODO: Implement isEmpty() method.
+        return empty($this->object->{$key}) && $this->object->{$key} != "0";
+    }
+
+    /**
+     * @inheritDoc
+     */
+    #[Pure] public function getValue($key, $default = null)
+    {
+        // TODO: Implement getValue() method.
+        return !$this->isEmpty($key) ? $this->object->{$key} : $default;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    #[Pure] public function getInt($key, int $default = 0): int
+    {
+        // TODO: Implement getInt() method.
+        return (int) $this->getValue($key, $default);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    #[Pure] public function getFloat($key, float $default = 0.0): float
+    {
+        // TODO: Implement getFloat() method.
+        return (float) $this->getValue($key, $default);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    #[Pure] public function getBool($key, bool $default = false): bool
+    {
+        // TODO: Implement getBool() method.
+        return (bool) $this->getValue($key, $default);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function validate($key): Condition
     {
-        // TODO: Implement get() method.
+        // TODO: Implement validate() method.
         if (!$this->offsetExists($key))
-            throw new QueRuntimeException("Undefined key: '{$key}' not found in current model object", "Model error",
+            throw new QueRuntimeException("Undefined key: '{$key}' not found in current model object", "Model Error",
                 0, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         return new \que\common\validator\condition\Condition($key, $this->getValue($key));
     }
 
     /**
-     * @return ModelAlias|null
+     * @inheritDoc
      */
-    public function getNextRecord(): ?ModelAlias
+    public function getNextRecord(): ?\que\database\interfaces\model\Model
     {
+        // TODO: Implement getNextRecord() method.
         $record = db()->select()->table($this->getTable())->limit(1)
             ->where($this->getPrimaryKey(), $this->getValue($this->getPrimaryKey()), '>')->exec();
-        if ($record->isSuccessful()) return $record->getFirstWithModel($this->primaryKey);
-        return null;
+        $record->setModelKey($this->modelKey);
+        return $record->isSuccessful() ? $record->getFirstWithModel($this->primaryKey) : null;
     }
 
     /**
-     * @return ModelAlias|null
+     * @inheritDoc
      */
-    public function getPreviousRecord(): ?ModelAlias
+    public function getPreviousRecord(): ?\que\database\interfaces\model\Model
     {
+        // TODO: Implement getPreviousRecord() method.
         $record = db()->select()->table($this->getTable())->limit(1)
             ->where($this->getPrimaryKey(), $this->getValue($this->getPrimaryKey()), '<')->exec();
-        if ($record->isSuccessful()) return $record->getFirstWithModel($this->primaryKey);
-        return null;
+        $record->setModelKey($this->modelKey);
+        return $record->isSuccessful() ? $record->getFirstWithModel($this->primaryKey) : null;
     }
 
     /**
-     * @return bool
+     * @inheritDoc
+     */
+    public function belongTo(string $table, string $foreignKey, string $primaryKey = "id", string $modelKey = "que"): ?\que\database\interfaces\model\Model
+    {
+        // TODO: Implement belongTo() method.
+        return !$this->isEmpty($foreignKey) ? $this->oneToOne($table, $this->getValue($foreignKey), $primaryKey, $modelKey) : null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasMany(string $table, string $foreignKey, string $primaryKey = "id", string $modelKey = "que"): ?ModelCollection
+    {
+        // TODO: Implement hasMany() method.
+        return !$this->isEmpty($foreignKey) ? $this->oneToMany($table, $this->getValue($foreignKey), $primaryKey, $modelKey) : null;
+    }
+
+    /**
+     * @inheritDoc
      */
     public function refresh(): bool
     {
+        // TODO: Implement refresh() method.
         $data = db()->find($this->getTable(), $this->getValue($this->getPrimaryKey()), $this->getPrimaryKey());
         if (!$data->isSuccessful()) return false;
         $this->object = (object) $data->getFirst();
@@ -216,18 +275,16 @@ class Model implements ModelAlias
     }
 
     /**
-     * @param array $columns
-     * @param string|null $primaryKey
-     * @return bool
+     * @inheritDoc
      */
     public function update(array $columns, string $primaryKey = null): bool
     {
+        // TODO: Implement update() method.
+        if (empty($columns)) return false;
 
         if ($primaryKey === null) $primaryKey = $this->getPrimaryKey();
 
         if (!$this->offsetExists($primaryKey)) return false;
-
-        if (empty($columns)) return false;
 
         $update = db()->update()->table($this->getTable())->columns($columns)
             ->where($primaryKey, $this->getValue($primaryKey))->exec();
@@ -240,12 +297,11 @@ class Model implements ModelAlias
     }
 
     /**
-     * @param string|null $primaryKey
-     * @return bool
+     * @inheritDoc
      */
     public function delete(string $primaryKey = null): bool
     {
-
+        // TODO: Implement delete() method.
         if ($primaryKey === null) $primaryKey = $this->getPrimaryKey();
 
         if (!$this->offsetExists($primaryKey)) return false;
@@ -258,100 +314,61 @@ class Model implements ModelAlias
     }
 
     /**
-     * Whether a offset exists
-     * @link https://php.net/manual/en/arrayaccess.offsetexists.php
-     * @param mixed $offset <p>
-     * An offset to check for.
-     * </p>
-     * @return boolean true on success or false on failure.
-     * </p>
-     * <p>
-     * The return value will be casted to boolean if non-boolean was returned.
-     * @since 5.0.0
+     * @inheritDoc
      */
-    public function offsetExists($offset)
+    #[Pure] public function array_keys(): array
     {
-        // TODO: Implement offsetExists() method.
-        return object_key_exists($offset, $this->object);
-    }
-
-    /**
-     * Offset to retrieve
-     * @link https://php.net/manual/en/arrayaccess.offsetget.php
-     * @param mixed $offset <p>
-     * The offset to retrieve.
-     * </p>
-     * @return mixed Can return all value types.
-     * @since 5.0.0
-     */
-    public function offsetGet($offset)
-    {
-        // TODO: Implement offsetGet() method.
-        return $this->object->{$offset} ?? null;
-    }
-
-    /**
-     * Offset to set
-     * @link https://php.net/manual/en/arrayaccess.offsetset.php
-     * @param mixed $offset <p>
-     * The offset to assign the value to.
-     * </p>
-     * @param mixed $value <p>
-     * The value to set.
-     * </p>
-     * @return void
-     * @since 5.0.0
-     */
-    public function offsetSet($offset, $value)
-    {
-        // TODO: Implement offsetSet() method.
-        $this->object->{$offset} = $value;
-    }
-
-    /**
-     * Offset to unset
-     * @link https://php.net/manual/en/arrayaccess.offsetunset.php
-     * @param mixed $offset <p>
-     * The offset to unset.
-     * </p>
-     * @return void
-     * @since 5.0.0
-     */
-    public function offsetUnset($offset)
-    {
-        // TODO: Implement offsetUnset() method.
-        unset($this->object->{$offset});
+        // TODO: Implement array_keys() method.
+        return array_keys($this->getArray());
     }
 
     /**
      * @inheritDoc
      */
-    public function offsetRename($offset, $to): void
+    #[Pure] public function array_values(): array
     {
-        // TODO: Implement offsetRename() method.
-        $this->object->{$to} = $this->offsetGet($offset);
-        if ($offset != $to) $this->offsetUnset($offset);
-    }
-
-    public function __clone()
-    {
-        // TODO: Implement __clone() method.
-        $this->object = clone $this->object;
+        // TODO: Implement array_values() method.
+        return array_values($this->getArray());
     }
 
     /**
      * @inheritDoc
      */
-    public function getIterator()
+    #[Pure] public function key(): int|string|null
     {
-        // TODO: Implement getIterator() method.
-        return new ArrayIterator($this->getArray());
+        // TODO: Implement key() method.
+        return key($this->getArray());
     }
 
     /**
      * @inheritDoc
      */
-    public function serialize()
+    #[Pure] public function current(): mixed
+    {
+        // TODO: Implement current() method.
+        return current($this->getArray());
+    }
+
+
+    public function shuffle(): void
+    {
+        // TODO: Implement shuffle() method.
+    }
+
+
+    /**
+     * @inheritDoc
+     */
+    #[Pure] public function jsonSerialize()
+    {
+        // TODO: Implement jsonSerialize() method.
+        return $this->getArray();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function serialize(): ?string
     {
         // TODO: Implement serialize() method.
         return serialize($this->object);
@@ -369,47 +386,125 @@ class Model implements ModelAlias
     /**
      * @inheritDoc
      */
-    public function count()
+    public function count(): int
     {
         // TODO: Implement count() method.
-        array_size($this->getArray());
-    }
-
-    public function array_keys(): array
-    {
-        // TODO: Implement array_keys() method.
-        return array_keys($this->getArray());
-    }
-
-    public function array_values(): array
-    {
-        // TODO: Implement array_values() method.
-        return array_values($this->getArray());
-    }
-
-    public function key()
-    {
-        // TODO: Implement key() method.
-        return key($this->getArray());
-    }
-
-    public function current()
-    {
-        // TODO: Implement current() method.
-        return current($this->getArray());
+        return array_size($this->getArray());
     }
 
     /**
      * @inheritDoc
      */
-    public function jsonSerialize()
+    public function getIterator(): Traversable|ArrayIterator
     {
-        // TODO: Implement jsonSerialize() method.
-        return json_encode($this->getArray());
+        // TODO: Implement getIterator() method.
+        return new ArrayIterator($this->getArray());
     }
 
-    public function shuffle(): void
+    /**
+     * @inheritDoc
+     */
+    public function offsetExists($offset): bool
     {
-        // TODO: Implement shuffle() method.
+        // TODO: Implement offsetExists() method.
+        return object_key_exists($offset, $this->object);
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function offsetGet($offset)
+    {
+        // TODO: Implement offsetGet() method.
+        return $this->object->{$offset} ?? null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function offsetSet($offset, $value)
+    {
+        // TODO: Implement offsetSet() method.
+        $this->object->{$offset} = $value;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function offsetUnset($offset)
+    {
+        // TODO: Implement offsetUnset() method.
+        unset($this->object->{$offset});
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function offsetRename($offset, $to): void
+    {
+        // TODO: Implement offsetRename() method.
+        $this->object->{$to} = $this->offsetGet($offset);
+        if ($offset != $to) $this->offsetUnset($offset);
+    }
+
+    public function __clone(): void
+    {
+        // TODO: Implement __clone() method.
+        $this->object = clone $this->object;
+    }
+
+    private function __append() {
+        if (!empty($this->appends = $this->getAppends())) {
+            foreach ($this->appends as $alias => $method) {
+                if (is_array($method)) {
+
+                    if (is_callable($method['method'])) {
+
+                        if (!empty($method['args'] ?? [])) {
+                            if (is_iterable($method['args'])) $this->object->{$alias} = $method['method'](...$method['args']);
+                            else $this->object->{$alias} = $method['method']($method['args']);
+                        } else $this->object->{$alias} = $method['method']();
+
+                        continue;
+                    }
+
+                    $alias = $method['method'] = strtolower($method['method']);
+                    $method['method'] = explode("_", $method['method']);
+
+                    Arr::callback($method['method'], function ($method) {
+                        return ucfirst($method);
+                    });
+
+                    $method['method'] = ("get" . implode("", $method['method']));
+
+                    if (!method_exists($this, $method['method'])) continue;
+
+                    if (!empty($method['args'] ?? [])) {
+                        if (is_iterable($method['args'])) $this->object->{$alias} = $this->{$method['method']}(...$method['args']);
+                        else $this->object->{$alias} = $this->{$method['method']}($method['args']);
+                    } else $this->object->{$alias} = $this->{$method['method']}();
+
+                } elseif (is_string($method)) {
+
+                    $alias = $method = strtolower($method);
+                    $method = explode("_", $method);
+
+                    Arr::callback($method, function ($method) {
+                        return ucfirst($method);
+                    });
+
+                    $method = ("get" . implode("", $method));
+
+                    if (!method_exists($this, $method)) continue;
+
+                    $this->object->{$alias} = $this->{$method}();
+
+                } elseif (is_callable($method)) {
+
+                    $this->object->{$alias} = $this->{$method}();
+                }
+            }
+        }
+    }
+
 }

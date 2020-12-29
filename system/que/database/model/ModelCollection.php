@@ -11,6 +11,7 @@ namespace que\database\model;
 
 use ArrayIterator;
 use Closure;
+use JetBrains\PhpStorm\Pure;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use que\database\interfaces\model\Model;
@@ -233,14 +234,16 @@ class ModelCollection implements QueArrayAccess
      * @param Closure $callback
      * @return float|int
      */
-    public function sum(Closure $callback) {
+    public function sum(Closure $callback): float|int
+    {
         return array_sum($this->map($callback));
     }
 
     /**
      * @return bool
      */
-    public function refresh() {
+    public function refresh(): bool
+    {
         $count = 0;
         foreach ($this->models as $model) {
             if (!$model instanceof Model) continue;
@@ -254,7 +257,8 @@ class ModelCollection implements QueArrayAccess
      * @param string|null $primaryKey
      * @return bool
      */
-    public function update(array $columns, string $primaryKey = null) {
+    public function update(array $columns, string $primaryKey = null): bool
+    {
         $count = 0;
         foreach ($this->models as $model) {
             if (!$model instanceof Model) continue;
@@ -267,7 +271,8 @@ class ModelCollection implements QueArrayAccess
      * @param string|null $primaryKey
      * @return bool
      */
-    public function delete(string $primaryKey = null) {
+    public function delete(string $primaryKey = null): bool
+    {
         $count = 0;
         foreach ($this->models as $key => $model) {
             if (!$model instanceof Model) continue;
@@ -288,9 +293,9 @@ class ModelCollection implements QueArrayAccess
     }
 
     /**
-     * @return Model[]
+     * @return ArrayIterator
      */
-    public function getIterator()
+    public function getIterator(): ArrayIterator
     {
         // TODO: Implement getIterator() method.
         return new ArrayIterator($this->models);
@@ -299,7 +304,7 @@ class ModelCollection implements QueArrayAccess
     /**
      * @inheritDoc
      */
-    public function count()
+    public function count(): int
     {
         // TODO: Implement count() method.
         return array_size($this->models);
@@ -314,7 +319,7 @@ class ModelCollection implements QueArrayAccess
     /**
      * @inheritDoc
      */
-    public function serialize()
+    public function serialize(): ?string
     {
         // TODO: Implement serialize() method.
         return serialize($this->models);
@@ -329,25 +334,25 @@ class ModelCollection implements QueArrayAccess
        $this->models = unserialize($serialized);
     }
 
-    public function array_keys(): array
+    #[Pure] public function array_keys(): array
     {
         // TODO: Implement array_keys() method.
         return array_keys($this->models);
     }
 
-    public function array_values(): array
+    #[Pure] public function array_values(): array
     {
         // TODO: Implement array_values() method.
         return array_values($this->models);
     }
 
-    public function key()
+    #[Pure] public function key(): int|string|null
     {
         // TODO: Implement key() method.
         return key($this->models);
     }
 
-    public function current()
+    #[Pure] public function current(): Model|bool
     {
         // TODO: Implement current() method.
         return current($this->models);
@@ -359,7 +364,7 @@ class ModelCollection implements QueArrayAccess
     public function jsonSerialize()
     {
         // TODO: Implement jsonSerialize() method.
-        return json_encode($this->models);
+        return $this->models;
     }
 
     public function shuffle(): void

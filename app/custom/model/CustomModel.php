@@ -12,5 +12,5 @@ use que\database\model\Model;
 
 class CustomModel extends Model
 {
-    protected string $key = 'custom';
+    protected string $modelKey = 'custom';
 }
