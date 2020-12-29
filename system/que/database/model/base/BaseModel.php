@@ -213,7 +213,7 @@ abstract class BaseModel implements Model
     public function isEmpty($key): bool
     {
         // TODO: Implement isEmpty() method.
-        return empty($this->object->{$key}) && $this->object->{$key} != "0";
+        return !$this->offsetExists($key) || (empty($this->object->{$key}) && $this->object->{$key} != "0");
     }
 
     /**
