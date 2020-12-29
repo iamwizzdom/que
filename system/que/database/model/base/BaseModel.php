@@ -513,7 +513,7 @@ abstract class BaseModel implements Model
         if (!empty($this->casts)) {
             foreach ($this->casts as $column => $dataType) {
                 if (!$this->offsetExists($column)) continue;
-                $format = null;
+                $format = DATE_FORMAT_MYSQL;
                 if (str_contains($dataType, ":")) {
                     $data = explode(":", $dataType);
                     $dataType = $data[0];
@@ -545,12 +545,17 @@ abstract class BaseModel implements Model
                     case 'float':
                         $this->offsetSet($column, $this->getFloat($column));
                         break;
+                    case 'time_ago':
+                        $this->offsetSet($column, _time()->time_ago($this->getValue($column)));
+                        break;
                     case 'date':
                     case 'time':
                     case 'datetime':
                         $value = $this->getValue($column);
                         if (is_numeric($value)) $value = date($format, $value);
-                        else $value = get_date($format, $value, $value);
+                        elseif ($this->validate($column)->isDate()) {
+                            $value = $this->validate($column)->toDate($format)->getValue();
+                        }
                         $this->offsetSet($column, $value);
                         break;
                     default:
