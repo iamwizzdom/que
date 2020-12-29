@@ -10,6 +10,7 @@ namespace que\http\request;
 
 
 use ArrayIterator;
+use JetBrains\PhpStorm\Pure;
 use que\support\interfaces\QueArrayAccess;
 use Traversable;
 
@@ -21,16 +22,17 @@ class Header implements QueArrayAccess
     private static Header $instance;
 
     /**
-     * @var array|false
+     * @var array
      */
-    private $pointer;
+    private array $pointer;
 
     /**
      * Header constructor.
      */
-    protected function __construct()
+    #[Pure] protected function __construct()
     {
-        $this->pointer = getallheaders();
+        $header = getallheaders();
+        $this->pointer = is_array($header) ? $header : [];
     }
 
     private function __clone()
@@ -61,7 +63,7 @@ class Header implements QueArrayAccess
      * @param string $offset
      * @param string $data
      * @param bool $replace
-     * @param int $response_code
+     * @param int|null $response_code
      */
     public function set(string $offset, string $data, bool $replace = true, int $response_code = null): void {
         if ($this->_isset($offset) && !$replace) return;
@@ -70,18 +72,20 @@ class Header implements QueArrayAccess
     }
 
     /**
-     * @return array|false
+     * @return array
      */
-    public function &_get() {
+    public function &_get(): array
+    {
         return $this->pointer;
     }
 
     /**
      * @param $offset
      * @param null $default
-     * @return mixed|null
+     * @return mixed
      */
-    public function get($offset, $default = null) {
+    public function get($offset, $default = null): mixed
+    {
         return $this->pointer[$offset] ?? $default;
     }
 
@@ -104,7 +108,8 @@ class Header implements QueArrayAccess
     /**
      * @return string
      */
-    public function _toString() {
+    public function _toString(): string
+    {
         return json_encode($this->pointer, JSON_PRETTY_PRINT);
     }
 
@@ -116,12 +121,13 @@ class Header implements QueArrayAccess
      * @param $offset
      * @param $function
      * @param mixed ...$parameter
+     * @return mixed
      * @note Due to the fact that the subject parameter position might vary across functions,
      * provision has been made for you to define the subject parameter with the key ":subject".
      * e.g to run a function like explode, you are to invoke it as follows: _call('offset', 'explode', 'delimiter', ':subject');
-     * @return mixed|null
      */
-    public function _call($offset, $function, ...$parameter) {
+    public function _call($offset, $function, ...$parameter): mixed
+    {
         if (!function_exists($function)) return $this->get($offset);
         if (!empty($parameter)) {
             $key = array_search(":subject", $parameter);
@@ -134,7 +140,7 @@ class Header implements QueArrayAccess
      * @param mixed $offset
      * @return bool
      */
-    public function offsetExists($offset)
+    public function offsetExists(mixed $offset): bool
     {
         // TODO: Implement offsetExists() method.
         return isset($this->pointer[$offset]);
@@ -142,9 +148,9 @@ class Header implements QueArrayAccess
 
     /**
      * @param mixed $offset
-     * @return mixed|null
+     * @return mixed
      */
-    public function offsetGet($offset)
+    public function offsetGet(mixed $offset): mixed
     {
         // TODO: Implement offsetGet() method.
         return $this->pointer[$offset] ?? null;
@@ -154,7 +160,7 @@ class Header implements QueArrayAccess
      * @param mixed $offset
      * @param mixed $value
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet(mixed $offset, mixed $value)
     {
         // TODO: Implement offsetSet() method.
         $this->set($offset, $value);
@@ -163,7 +169,7 @@ class Header implements QueArrayAccess
     /**
      * @param mixed $offset
      */
-    public function offsetUnset($offset)
+    public function offsetUnset(mixed $offset)
     {
         // TODO: Implement offsetUnset() method.
         unset($this->pointer[$offset]);
@@ -179,7 +185,7 @@ class Header implements QueArrayAccess
      * The return value is cast to an integer.
      * @since 5.1.0
      */
-    public function count()
+    #[Pure] public function count(): int
     {
         // TODO: Implement count() method.
         return count($this->pointer);
@@ -188,24 +194,24 @@ class Header implements QueArrayAccess
     /**
      * Specify data which should be serialized to JSON
      * @link https://php.net/manual/en/jsonserializable.jsonserialize.php
-     * @return mixed data which can be serialized by <b>json_encode</b>,
+     * @return array data which can be serialized by <b>json_encode</b>,
      * which is a value of any type other than a resource.
      * @since 5.4.0
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         // TODO: Implement jsonSerialize() method.
-        return json_encode($this->pointer);
+        return $this->pointer;
     }
 
     /**
      * Retrieve an external iterator
      * @link https://php.net/manual/en/iteratoraggregate.getiterator.php
-     * @return Traversable An instance of an object implementing <b>Iterator</b> or
+     * @return Traversable|ArrayIterator An instance of an object implementing <b>Iterator</b> or
      * <b>Traversable</b>
      * @since 5.0.0
      */
-    public function getIterator()
+    public function getIterator(): Traversable|ArrayIterator
     {
         // TODO: Implement getIterator() method.
         return new ArrayIterator($this->pointer);
@@ -217,7 +223,7 @@ class Header implements QueArrayAccess
      * @return string the string representation of the object or null
      * @since 5.1.0
      */
-    public function serialize()
+    public function serialize(): string
     {
         // TODO: Implement serialize() method.
         return serialize($this->pointer);
@@ -238,25 +244,25 @@ class Header implements QueArrayAccess
         $this->pointer = unserialize($serialized);
     }
 
-    public function array_keys(): array
+    #[Pure] public function array_keys(): array
     {
         // TODO: Implement array_keys() method.
         return array_keys($this->pointer);
     }
 
-    public function array_values(): array
+    #[Pure] public function array_values(): array
     {
         // TODO: Implement array_values() method.
         return array_values($this->pointer);
     }
 
-    public function key()
+    #[Pure] public function key(): int|string|null
     {
         // TODO: Implement key() method.
         return key($this->pointer);
     }
 
-    public function current()
+    #[Pure] public function current(): mixed
     {
         // TODO: Implement current() method.
         return current($this->pointer);

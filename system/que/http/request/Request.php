@@ -10,6 +10,7 @@ namespace que\http\request;
 
 
 use ArrayIterator;
+use JetBrains\PhpStorm\Pure;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use que\http\HTTP;
@@ -110,7 +111,7 @@ class Request implements QueArrayAccess
      *
      * @return bool True when the _method request parameter is enabled, false otherwise
      */
-    public static function getHttpMethodOverrideStatus()
+    public static function getHttpMethodOverrideStatus(): bool
     {
         return self::$httpMethodOverride;
     }
@@ -139,11 +140,11 @@ class Request implements QueArrayAccess
      *
      * The method is always an uppercased string.
      *
-     * @return string The request method
+     * @return string|null The request method
      *
      * @see getRealMethod()
      */
-    public static function getMethod()
+    public static function getMethod(): ?string
     {
         if (null !== self::$method) return self::$method;
 
@@ -174,7 +175,7 @@ class Request implements QueArrayAccess
      *
      * @see getMethod()
      */
-    public static function getRealMethod()
+    public static function getRealMethod(): string
     {
         return strtoupper(server('REQUEST_METHOD', 'GET'));
     }
@@ -185,7 +186,7 @@ class Request implements QueArrayAccess
      * @param string|null $method
      * @return bool
      */
-    public static function isSupportedMethod(string $method = null)
+    public static function isSupportedMethod(string $method = null): bool
     {
         return in_array(($method !== null ? strtoupper($method) : self::getMethod()), self::getSupportedMethods(), true);
     }
@@ -193,7 +194,7 @@ class Request implements QueArrayAccess
     /**
      * @return array
      */
-    private static function getSupportedMethods()
+    private static function getSupportedMethods(): array
     {
         if (!empty(self::$supportedMethods)) return self::$supportedMethods;
         $const = (new ReflectionClass(self::class))->getConstants();
@@ -205,9 +206,9 @@ class Request implements QueArrayAccess
     /**
      * Returns the clients real IP address
      *
-     * @return mixed|null
+     * @return mixed
      */
-    public static function getClientIp()
+    public static function getClientIp(): mixed
     {
         return IP::real();
     }
@@ -217,7 +218,7 @@ class Request implements QueArrayAccess
      *
      * @return string|null
      */
-    public static function getAuthUser()
+    public static function getAuthUser(): ?string
     {
         return headers('PHP_AUTH_USER');
     }
@@ -227,7 +228,7 @@ class Request implements QueArrayAccess
      *
      * @return string|null
      */
-    public static function getAuthPassword()
+    public static function getAuthPassword(): ?string
     {
         return headers('PHP_AUTH_PW');
     }
@@ -235,9 +236,9 @@ class Request implements QueArrayAccess
     /**
      * Returns the protocol version.
      *
-     * @return string
+     * @return string|null
      */
-    public static function getProtocolVersion()
+    public static function getProtocolVersion(): ?string
     {
         return server('SERVER_PROTOCOL');
     }
@@ -251,7 +252,7 @@ class Request implements QueArrayAccess
      *
      * @return bool
      */
-    public static function isSecure()
+    public static function isSecure(): bool
     {
         $proto = server("X-Forwarded-Proto");
         if (!empty($proto)) return in_array(strtolower($proto), ['https', 'ssl', '1', 'on'], true);
@@ -268,7 +269,7 @@ class Request implements QueArrayAccess
      *
      * @return string
      */
-    public static function getHost()
+    public static function getHost(): string
     {
         $host = server('X-Forwarded-Host');
 
@@ -304,7 +305,7 @@ class Request implements QueArrayAccess
      *
      * @return int|string can be a string if fetched from the server bag
      */
-    public static function getPort()
+    public static function getPort(): int|string
     {
 
         if ($host = headers('X-Forwarded-Port')) {
@@ -335,7 +336,7 @@ class Request implements QueArrayAccess
      *
      * @return string
      */
-    public static function getScheme()
+    public static function getScheme(): string
     {
         return self::isSecure() ? 'https' : 'http';
     }
@@ -347,7 +348,7 @@ class Request implements QueArrayAccess
      *
      * @return string
      */
-    public static function getHttpHost()
+    public static function getHttpHost(): string
     {
         $scheme = self::getScheme();
         $port = self::getPort();
@@ -366,11 +367,11 @@ class Request implements QueArrayAccess
      * ignoring any uri before the root.
      *
      * To get the full URI at all times
+     * @return mixed
      * @see getUriOriginal()
      *
-     * @return array|mixed|null
      */
-    public static function getUri()
+    public static function getUri(): mixed
     {
         return server('REQUEST_URI');
     }
@@ -378,28 +379,28 @@ class Request implements QueArrayAccess
     /**
      * Returns the full URI at all times
      *
-     * @return array|mixed|null
+     * @return mixed
      */
-    public static function getUriOriginal()
+    public static function getUriOriginal(): mixed
     {
         return server('REQUEST_URI_ORIGINAL');
     }
 
     /**
-     * Returns all definded URI params if any
+     * Returns all defined URI params if any
      * @return array|null
      */
-    public static function getUriParams()
+    public static function getUriParams(): ?array
     {
         return server('route.params');
     }
 
     /**
-     * Returns a definded URI param
+     * Returns a defined URI param
      * @param string $key
-     * @return mixed|null
+     * @return mixed
      */
-    public static function getUriParam(string $key)
+    public static function getUriParam(string $key): mixed
     {
         return server("route.params.{$key}");
     }
@@ -422,9 +423,10 @@ class Request implements QueArrayAccess
     /**
      * @param $offset
      * @param null $default
-     * @return array|mixed
+     * @return mixed
      */
-    public function get($offset, $default = null) {
+    public function get($offset, $default = null): mixed
+    {
         return Arr::get($this->pointer, $offset, $default);
     }
 
@@ -446,7 +448,8 @@ class Request implements QueArrayAccess
     /**
      * @return string
      */
-    public function _toString() {
+    public function _toString(): string
+    {
         return json_encode($this->pointer, JSON_PRETTY_PRINT);
     }
 
@@ -458,12 +461,13 @@ class Request implements QueArrayAccess
      * @param $offset
      * @param $function
      * @param mixed ...$parameter
+     * @return mixed
      * @note Due to the fact that the subject parameter position might vary across functions,
      * provision has been made for you to define the subject parameter with the key ":subject".
      * e.g to run a function like explode, you are to invoke it as follows: _call('offset', 'explode', 'delimiter', ':subject');
-     * @return mixed|null
      */
-    public function _call($offset, $function, ...$parameter) {
+    public function _call($offset, $function, ...$parameter): mixed
+    {
         if (!function_exists($function)) return $this->get($offset);
         if (!empty($parameter)) {
             $key = array_search(":subject", $parameter);
@@ -476,7 +480,7 @@ class Request implements QueArrayAccess
      * @param mixed $offset
      * @return bool
      */
-    public function offsetExists($offset)
+    public function offsetExists(mixed $offset): bool
     {
         // TODO: Implement offsetExists() method.
         return $this->_isset($offset);
@@ -484,9 +488,9 @@ class Request implements QueArrayAccess
 
     /**
      * @param mixed $offset
-     * @return mixed|null
+     * @return mixed
      */
-    public function offsetGet($offset)
+    public function offsetGet(mixed $offset): mixed
     {
         // TODO: Implement offsetGet() method.
         return $this->get($offset);
@@ -496,7 +500,7 @@ class Request implements QueArrayAccess
      * @param mixed $offset
      * @param mixed $value
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet(mixed $offset, mixed $value)
     {
         // TODO: Implement offsetSet() method.
         $this->set($offset, $value);
@@ -505,7 +509,7 @@ class Request implements QueArrayAccess
     /**
      * @param mixed $offset
      */
-    public function offsetUnset($offset)
+    public function offsetUnset(mixed $offset)
     {
         // TODO: Implement offsetUnset() method.
         $this->_unset($offset);
@@ -520,7 +524,7 @@ class Request implements QueArrayAccess
      * The return value is cast to an integer.
      * @since 5.1.0
      */
-    public function count()
+    #[Pure] public function count(): int
     {
         // TODO: Implement count() method.
         return count($this->pointer);
@@ -529,24 +533,24 @@ class Request implements QueArrayAccess
     /**
      * Specify data which should be serialized to JSON
      * @link https://php.net/manual/en/jsonserializable.jsonserialize.php
-     * @return mixed data which can be serialized by <b>json_encode</b>,
+     * @return array data which can be serialized by <b>json_encode</b>,
      * which is a value of any type other than a resource.
      * @since 5.4.0
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         // TODO: Implement jsonSerialize() method.
-        return json_encode($this->pointer);
+        return $this->pointer;
     }
 
     /**
      * Retrieve an external iterator
      * @link https://php.net/manual/en/iteratoraggregate.getiterator.php
-     * @return Traversable An instance of an object implementing <b>Iterator</b> or
+     * @return Traversable|ArrayIterator An instance of an object implementing <b>Iterator</b> or
      * <b>Traversable</b>
      * @since 5.0.0
      */
-    public function getIterator()
+    public function getIterator(): Traversable|ArrayIterator
     {
         // TODO: Implement getIterator() method.
         return new ArrayIterator($this->pointer);
@@ -558,7 +562,7 @@ class Request implements QueArrayAccess
      * @return string the string representation of the object or null
      * @since 5.1.0
      */
-    public function serialize()
+    public function serialize(): string
     {
         // TODO: Implement serialize() method.
         return serialize($this->pointer);
@@ -579,25 +583,25 @@ class Request implements QueArrayAccess
         $this->pointer = unserialize($serialized);
     }
 
-    public function array_keys(): array
+    #[Pure] public function array_keys(): array
     {
         // TODO: Implement array_keys() method.
         return array_keys($this->pointer);
     }
 
-    public function array_values(): array
+    #[Pure] public function array_values(): array
     {
         // TODO: Implement array_values() method.
         return array_values($this->pointer);
     }
 
-    public function key()
+    #[Pure] public function key(): int|string|null
     {
         // TODO: Implement key() method.
         return key($this->pointer);
     }
 
-    public function current()
+    #[Pure] public function current(): mixed
     {
         // TODO: Implement current() method.
         return current($this->pointer);

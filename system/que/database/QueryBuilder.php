@@ -661,7 +661,7 @@ class QueryBuilder implements Builder
 
         if (!$model instanceof Model) {
             $columns = (object) $this->builder->getColumns();
-            $model = new \que\database\model\Model($columns, $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
+            $model = new \que\database\model\CentralModel($columns, $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
         }
 
         $this->builder->setColumns($this->normalize_data($this->builder->getColumns()));
@@ -1421,14 +1421,14 @@ class QueryBuilder implements Builder
         if ($recursive) {
             array_callback_recursive($data, function ($value) {
                 if (is_array($value)) return json_encode($value);
-                if ($value instanceof JsonSerializable) return $value->jsonSerialize();
+                if ($value instanceof JsonSerializable) return json_encode($value);
                 return is_object($value) ? $this->mark_down($value) :
                     (is_string($value) ? $this->query->escape_string($value) : $value);
             });
         } else {
             array_callback($data, function ($value) {
                 if (is_array($value)) return json_encode($value);
-                if ($value instanceof JsonSerializable) return $value->jsonSerialize();
+                if ($value instanceof JsonSerializable) return json_encode($value);
                 return is_object($value) ? $this->mark_down($value) :
                     (is_string($value) ? $this->query->escape_string($value) : $value);
             });

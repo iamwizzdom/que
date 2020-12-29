@@ -199,7 +199,9 @@ final class Route extends Router
      */
     private static function render_api_route(RouteEntry $route) {
 
-        self::$http->_header()->set('Content-Type', $route->getContentType(), true);
+        $contentType = $route->getContentType();
+
+        if (!empty($contentType)) self::$http->_header()->set('Content-Type', $contentType, true);
 
         $module = $route->getModule();
         $instance = new $module();
@@ -225,11 +227,12 @@ final class Route extends Router
 
         } elseif ($response instanceof JsonSerializable) {
 
-            if (!$data = $response->jsonSerialize()) throw new RouteException(
+            if (!$data = Json::encode($response)) throw new RouteException(
                 "Failed to output response", "Output Error",
                 HTTP::NO_CONTENT, PreviousException::getInstance(1));
 
-            self::$http->_header()->set('Content-Type', mime_type_from_extension('js'), true);
+            if (empty($contentType)) self::$http->_header()->set('Content-Type', mime_type_from_extension('json'), true);
+
             echo $data;
 
         } elseif ($response instanceof Jsonp) {
@@ -243,12 +246,12 @@ final class Route extends Router
 
         } elseif ($response instanceof Html) {
 
-            self::$http->_header()->set('Content-Type', mime_type_from_extension('html'), true);
+            if (empty($contentType)) self::$http->_header()->set('Content-Type', mime_type_from_extension('html'), true);
             echo $response->getHtml();
 
         } elseif ($response instanceof Plain) {
 
-            self::$http->_header()->set('Content-Type', mime_type_from_extension('txt'), true);
+            if (empty($contentType)) self::$http->_header()->set('Content-Type', mime_type_from_extension('txt'), true);
             echo $response->getData();
 
         } elseif (is_array($response)) {
@@ -269,8 +272,12 @@ final class Route extends Router
             }
 
             $data = Json::encode($response, $option, $depth);
+
             if (!$data) throw new RouteException("Failed to output response", "Output Error",
                 HTTP::NO_CONTENT, PreviousException::getInstance(1));
+
+            if (empty($contentType)) self::$http->_header()->set('Content-Type', mime_type_from_extension('json'), true);
+
             echo $data;
 
         } else throw new RouteException(

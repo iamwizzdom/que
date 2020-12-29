@@ -17,9 +17,25 @@ use Serializable;
 
 interface QueArrayAccess extends ArrayAccess, Countable, IteratorAggregate, Serializable, JsonSerializable
 {
+    /**
+     * @return array
+     */
     public function array_keys(): array;
+
+    /**
+     * @return array
+     */
     public function array_values(): array;
-    public function key();
-    public function current();
+
+    /**
+     * @return int|string|null
+     */
+    public function key(): int|string|null;
+
+    /**
+     * @return mixed
+     */
+    public function current(): mixed;
+
     public function shuffle(): void;
 }
