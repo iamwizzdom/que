@@ -147,10 +147,10 @@ interface Model extends QueArrayAccess
     public function delete(string $primaryKey = null): bool;
 
     /**
-     * @param $offset
+     * @param $from
      * @param $to
      */
-    public function offsetRename($offset, $to): void;
+    public function offsetRename($from, $to): void;
 
     public function __clone(): void;
 }

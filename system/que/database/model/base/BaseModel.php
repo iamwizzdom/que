@@ -42,6 +42,11 @@ abstract class BaseModel implements Model
     protected array $hidden = [];
 
     /**
+     * @var array
+     */
+    protected array $rename = [];
+
+    /**
      * @var object
      */
     private object $object;
@@ -67,6 +72,7 @@ abstract class BaseModel implements Model
         $this->__hide();
         $this->__append();
         $this->__cast();
+        $this->__rename();
     }
 
     /**
@@ -479,17 +485,22 @@ abstract class BaseModel implements Model
     /**
      * @inheritDoc
      */
-    public function offsetRename($offset, $to): void
+    public function offsetRename($from, $to): void
     {
         // TODO: Implement offsetRename() method.
-        $this->object->{$to} = $this->offsetGet($offset);
-        if ($offset != $to) $this->offsetUnset($offset);
+        $this->object = Obj::rename_key($this->object, $from, $to);
     }
 
     public function __clone(): void
     {
         // TODO: Implement __clone() method.
         $this->object = clone $this->object;
+    }
+
+    private function __rename() {
+        if (!empty($this->rename)) {
+            foreach ($this->rename as $from => $to) $this->offsetRename($from, $to);
+        }
     }
 
     private function __hide() {
@@ -502,6 +513,12 @@ abstract class BaseModel implements Model
         if (!empty($this->casts)) {
             foreach ($this->casts as $column => $dataType) {
                 if (!$this->offsetExists($column)) continue;
+                $format = null;
+                if (str_contains($dataType, ":")) {
+                    $data = explode(":", $dataType);
+                    $dataType = $data[0];
+                    $format = ($data[1] ?? null) ?: DATE_FORMAT_MYSQL;
+                }
                 switch ($dataType) {
                     case 'json':
                     case 'array':
@@ -524,8 +541,17 @@ abstract class BaseModel implements Model
                     case 'double':
                         $this->offsetSet($column, (double) $this->getValue($column));
                         break;
+                    case 'real':
                     case 'float':
                         $this->offsetSet($column, $this->getFloat($column));
+                        break;
+                    case 'date':
+                    case 'time':
+                    case 'datetime':
+                        $value = $this->getValue($column);
+                        if (is_numeric($value)) $value = date($format, $value);
+                        else $value = get_date($format, $value, $value);
+                        $this->offsetSet($column, $value);
                         break;
                     default:
                         break;
