@@ -233,6 +233,17 @@ class Arr
     }
 
     /**
+     * @param array $array
+     * @param $from
+     * @param $to
+     * @return array
+     */
+    public static function rename_key (array &$array, $from, $to): array
+    {
+        return array_rename_key($array, $from, $to);
+    }
+
+    /**
      * @param array $array1
      * @param array $array2
      * @return bool

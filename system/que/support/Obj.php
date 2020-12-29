@@ -92,6 +92,23 @@ class Obj
     }
 
     /**
+     * @param object $object
+     * @param $from
+     * @param $to
+     * @return object
+     */
+    public static function rename_key (object $object, $from, $to) {
+        $backup = [];
+        foreach ($object as $key => $value) {
+            $backup[$key] = $value;
+            unset($object->{$key});
+        }
+        array_rename_key($backup, $from, $to);
+        foreach ($backup as $key => $value)  $object->{$key} = $value;
+        return $object;
+    }
+
+    /**
      * @param object $object1
      * @param object $object2
      * @return bool

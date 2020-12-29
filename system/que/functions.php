@@ -1191,6 +1191,33 @@ function array_extract_by_keys(array $array, array $keys): array
 }
 
 /**
+ * @param array $array
+ * @param $from
+ * @param $to
+ * @return array
+ */
+function array_rename_key(array &$array, $from, $to): array
+{
+    if(array_key_exists($from, $array)){
+        $keys = array_keys($array);
+        $i = 0;
+        $index = false;
+        foreach($array as $k => $v){
+            if($from === $k){
+                $index = $i;
+                break;
+            }
+            $i++;
+        }
+        if ($index !== false) {
+            $keys[$i] = $to;
+            $array = array_combine($keys, $array);
+        }
+    }
+    return $array;
+}
+
+/**
  * @param array $array1
  * @param array $array2
  * @return bool
