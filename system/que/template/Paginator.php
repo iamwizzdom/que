@@ -728,7 +728,7 @@ class Paginator
     public function _show_next(bool $returnUrl = false)
     {
         if ($returnUrl === true && ($this->_properties['always_show_navigation'] || $this->_properties['total_pages'] > $this->_properties['selectable_pages']))
-            return ($this->_properties['page'] == $this->_properties['total_pages'] ? '#' : $this->_build_uri($this->_properties['page'] + 1));
+            return (($this->_properties['total_pages'] == 0 || ($this->_properties['page'] == $this->_properties['total_pages'])) ? '#' : $this->_build_uri($this->_properties['page'] + 1));
 
         $output = '';
         // if "always_show_navigation" is TRUE or
@@ -736,7 +736,7 @@ class Paginator
         // it means we can show the "next page" link
         if ($this->_properties['always_show_navigation'] || $this->_properties['total_pages'] > $this->_properties['selectable_pages'])
             // if we're on the last page, the link is disabled
-            $output = '<li class="page-item' . ($this->_properties['page'] == $this->_properties['total_pages'] ? ' disabled' : '') . '"><a class="page-link" href="' .
+            $output = '<li class="page-item' . (($this->_properties['total_pages'] == 0 || ($this->_properties['page'] == $this->_properties['total_pages'])) ? ' disabled' : '') . '"><a class="page-link" href="' .
                 // the href is different if we're on the last page
                 ($this->_properties['page'] == $this->_properties['total_pages'] ? 'javascript:void(0)' : $this->_build_uri($this->_properties['page'] + 1)) . '"' .
                 // good for SEO
@@ -850,7 +850,7 @@ class Paginator
     {
 
         if ($returnUrl === true && ($this->_properties['always_show_navigation'] || $this->_properties['total_pages'] > $this->_properties['selectable_pages']))
-            return ($this->_properties['page'] == 1 ? '#' : $this->_build_uri($this->_properties['page'] - 1));
+            return ($this->_properties['page'] <= 1 ? '#' : $this->_build_uri($this->_properties['page'] - 1));
 
         $output = '';
         // if "always_show_navigation" is TRUE or
@@ -858,7 +858,7 @@ class Paginator
         // it means we can show the "previous page" link
         if ($this->_properties['always_show_navigation'] || $this->_properties['total_pages'] > $this->_properties['selectable_pages'])
             // if we're on the first page, the link is disabled
-            $output = '<li class="page-item' . ($this->_properties['page'] == 1 ? ' disabled' : '') . '"><a class="page-link" href="' .
+            $output = '<li class="page-item' . ($this->_properties['page'] <= 1 ? ' disabled' : '') . '"><a class="page-link" href="' .
                 // the href is different if we're on the first page
                 ($this->_properties['page'] == 1 ? 'javascript:void(0)' : $this->_build_uri($this->_properties['page'] - 1)) . '"' .
                 // good for SEO
