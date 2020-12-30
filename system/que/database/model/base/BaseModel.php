@@ -70,9 +70,9 @@ abstract class BaseModel implements Model
         $this->setTable($tableName);
         $this->setPrimaryKey($primaryKey);
         $this->__hide();
-        $this->__append();
         $this->__cast();
         $this->__rename();
+        $this->__append();
     }
 
     /**
@@ -221,7 +221,9 @@ abstract class BaseModel implements Model
     public function isEmpty($key): bool
     {
         // TODO: Implement isEmpty() method.
-        return !$this->offsetExists($key) || (empty($this->object->{$key}) && $this->object->{$key} != "0");
+        if (!$this->offsetExists($key)) return true;
+        $value = $this->getValue($key);
+        return empty($value) && $value != "0";
     }
 
     /**
@@ -230,7 +232,7 @@ abstract class BaseModel implements Model
     #[Pure] public function getValue($key, $default = null)
     {
         // TODO: Implement getValue() method.
-        return !$this->isEmpty($key) ? $this->object->{$key} : $default;
+        return Obj::get($this->object, $key, $default);
     }
 
     /**
@@ -460,7 +462,7 @@ abstract class BaseModel implements Model
     public function offsetExists($offset): bool
     {
         // TODO: Implement offsetExists() method.
-        return object_key_exists($offset, $this->object);
+        return Obj::has($this->object, $offset);
     }
 
     /**
@@ -469,7 +471,7 @@ abstract class BaseModel implements Model
     public function offsetGet($offset)
     {
         // TODO: Implement offsetGet() method.
-        return $this->object->{$offset} ?? null;
+        return Obj::get($this->object, $offset);
     }
 
     /**
@@ -478,7 +480,7 @@ abstract class BaseModel implements Model
     public function offsetSet($offset, $value)
     {
         // TODO: Implement offsetSet() method.
-        $this->object->{$offset} = $value;
+        Obj::set($this->object, $offset, $value);
     }
 
     /**
@@ -487,7 +489,7 @@ abstract class BaseModel implements Model
     public function offsetUnset($offset)
     {
         // TODO: Implement offsetUnset() method.
-        unset($this->object->{$offset});
+        Obj::unset($this->object, $offset);
     }
 
     /**
