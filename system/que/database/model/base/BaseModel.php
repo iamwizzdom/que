@@ -519,15 +519,15 @@ abstract class BaseModel implements Model
 
     private function __cast() {
         if (!empty($this->casts)) {
-            foreach ($this->casts as $column => $dataType) {
+            foreach ($this->casts as $column => $cast) {
                 if (!$this->offsetExists($column)) continue;
-                $format = DATE_FORMAT_MYSQL;
-                if (str_contains($dataType, ":")) {
-                    $data = explode(":", $dataType);
-                    $dataType = $data[0];
-                    $format = ($data[1] ?? null) ?: DATE_FORMAT_MYSQL;
+                $operand = null;
+                if (str_contains($cast, ":")) {
+                    $data = explode(":", $cast);
+                    $cast = $data[0];
+                    $operand = $data[1] ?? null;
                 }
-                switch ($dataType) {
+                switch ($cast) {
                     case 'json':
                     case 'array':
                         $this->offsetSet($column, json_decode($this->getValue($column), true));
@@ -560,11 +560,15 @@ abstract class BaseModel implements Model
                     case 'time':
                     case 'datetime':
                         $value = $this->getValue($column);
-                        if (is_numeric($value)) $value = date($format, $value);
+                        $operand = $operand ?: DATE_FORMAT_MYSQL;
+                        if (is_numeric($value)) $value = date($operand, $value);
                         elseif ($this->validate($column)->isDate()) {
-                            $value = $this->validate($column)->toDate($format)->getValue();
+                            $value = $this->validate($column)->toDate($operand)->getValue();
                         }
                         $this->offsetSet($column, $value);
+                        break;
+                    case 'func':
+                        $this->offsetSet($column, $this->validate($column)->_call($operand)->getValue());
                         break;
                     default:
                         break;
