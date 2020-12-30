@@ -1545,16 +1545,6 @@ class QueryBuilder implements Builder
         return $response;
     }
 
-    /**
-     * @param $n
-     * @param int $x
-     * @return float|int
-     */
-    private function round_up_to_nearest($n, $x = 5)
-    {
-        return ($n % $x === 0 && !is_float(($n / $x))) ? round($n) : round((($n + $x / 2) / $x)) * $x;
-    }
-
 
     /**
      * @param string $query

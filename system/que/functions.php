@@ -1418,6 +1418,7 @@ function array_get(array $haystack, $needle, $default = null): mixed
     }
 
     foreach (explode('.', $needle) as $segment) {
+        if (is_object($haystack)) $haystack = (array)$haystack;
         if (array_is_accessible($haystack) && array_has_key($haystack, $segment)) {
             $haystack = $haystack[$segment];
         } else {
@@ -1734,6 +1735,7 @@ function object_get(object $haystack, $needle, $default = null): mixed
     }
 
     foreach (explode('.', $needle) as $segment) {
+        if (is_array($haystack)) $haystack = (object)$haystack;
         if (is_object($haystack) && object_key_exists($segment, $haystack)) {
             $haystack = $haystack->{$segment};
         } else {

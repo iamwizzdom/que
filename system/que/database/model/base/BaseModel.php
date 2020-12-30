@@ -532,10 +532,10 @@ abstract class BaseModel implements Model
                 switch ($cast) {
                     case 'json':
                     case 'array':
-                        $this->offsetSet($column, json_decode($this->getValue($column), true));
+                        $this->offsetSet($column, is_string($value = $this->getValue($column)) ? json_decode($value, true) : (array) $value);
                         break;
                     case 'object':
-                        $this->offsetSet($column, json_decode($this->getValue($column)));
+                        $this->offsetSet($column, is_string($value = $this->getValue($column)) ? json_decode($value) : (object) $value);
                         break;
                     case 'int':
                     case 'integer':
