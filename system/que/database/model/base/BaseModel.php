@@ -44,7 +44,7 @@ abstract class BaseModel implements Model
     /**
      * @var array
      */
-    protected array $rename = [];
+    protected array $renames = [];
 
     /**
      * @var object
@@ -186,6 +186,14 @@ abstract class BaseModel implements Model
     public function setCasts(array $casts): void
     {
         $this->casts = $casts;
+    }
+
+    /**
+     * @param array $renames
+     */
+    public function setRenames(array $renames): void
+    {
+        $this->renames = $renames;
     }
 
     /**
@@ -498,8 +506,8 @@ abstract class BaseModel implements Model
     }
 
     private function __rename() {
-        if (!empty($this->rename)) {
-            foreach ($this->rename as $from => $to) $this->offsetRename($from, $to);
+        if (!empty($this->renames)) {
+            foreach ($this->renames as $from => $to) $this->offsetRename($from, $to);
         }
     }
 
