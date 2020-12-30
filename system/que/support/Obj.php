@@ -9,6 +9,7 @@
 namespace que\support;
 
 
+
 class Obj
 {
 
@@ -151,12 +152,124 @@ class Obj
     }
 
     /**
+     * Determine if the given key exists in the provided object.
+     *
+     * @param $object
+     * @param $key
+     * @return bool
+     */
+    public static function exists($object, $key): bool
+    {
+        return object_key_exists($key, $object);
+    }
+
+    /**
+     * Check if an item or items exist in an object using "dot" notation.
+     *
+     * @param  \ArrayAccess|object  $object
+     * @param  string|object  $keys
+     * @return bool
+     */
+    public static function has($object, $keys)
+    {
+        $keys = (array) $keys;
+
+        if (! $object || $keys === []) {
+            return false;
+        }
+
+        foreach ($keys as $key) {
+            $subKeyObject = $object;
+
+            if (static::exists($object, $key)) {
+                continue;
+            }
+
+            foreach (explode('.', $key) as $segment) {
+                if (is_object($subKeyObject) && static::exists($subKeyObject, $segment)) {
+                    $subKeyObject = $subKeyObject->{$segment};
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * @param object $object
      * @param $offset
      * @return bool
      */
-    public static function _isset(object $object, $offset) {
-        return isset($object->{$offset});
+    public static function isset(object $object, $offset) {
+        return object_key_exists($offset, $object);
+    }
+
+    /**
+     * Remove one or many object items from a given object using "dot" notation.
+     *
+     * @param $object
+     * @param $keys
+     */
+    public static function unset (object &$object, $keys)
+    {
+        $original = &$object;
+
+        $keys = (array) $keys;
+
+        if (count($keys) === 0) {
+            return;
+        }
+
+        foreach ($keys as $key) {
+            // if the exact key exists in the top-level, remove it
+            if (static::exists($object, $key)) {
+                unset($object->{$key});
+                continue;
+            }
+
+            $parts = explode('.', $key);
+
+            // clean up before each pass
+            $object = &$original;
+
+            while (count($parts) > 1) {
+                $part = array_shift($parts);
+
+                if (isset($object->{$part}) && is_object($object->{$part})) {
+                    $object = &$object->{$part};
+                } else {
+                    continue 2;
+                }
+            }
+
+            unset($object->{array_shift($parts)});
+        }
+    }
+
+    /**
+     * Set an item on an object using dot notation.
+     *
+     * @param object $object
+     * @param $key
+     * @param null $default
+     * @return object|mixed
+     */
+    public static function get ($object, $key, $default = null) {
+        return object_get($object, $key, $default);
+    }
+
+    /**
+     * Set an item on an object using dot notation.
+     *
+     * @param object $object
+     * @param $key
+     * @param $value
+     * @return object|mixed
+     */
+    public static function set (object &$object, $key, $value) {
+        return object_set($object, $key, $value);
     }
 
     /**

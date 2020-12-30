@@ -354,32 +354,7 @@ class Arr
      * @return array|mixed
      */
     public static function get ($array, $key, $default = null) {
-
-        if (!static::is_accessible($array)) {
-            return value($default);
-        }
-
-        if (is_null($key)) {
-            return $array;
-        }
-
-        if (static::exists($array, $key)) {
-            return $array[$key];
-        }
-
-        if (strpos($key, '.') === false) {
-            return $array[$key] ?? value($default);
-        }
-
-        foreach (explode('.', $key) as $segment) {
-            if (static::is_accessible($array) && static::exists($array, $segment)) {
-                $array = $array[$segment];
-            } else {
-                return value($default);
-            }
-        }
-
-        return $array;
+        return array_get($array, $key, $default);
     }
 
     /**

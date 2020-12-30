@@ -1721,17 +1721,62 @@ function object_identical(object $object1, object $object2): bool
  */
 function object_get(object $haystack, $needle, $default = null): mixed
 {
+    if (is_null($needle)) {
+        return $haystack;
+    }
 
-    if (is_blank($needle)) return $default;
+    if (object_key_exists($needle, $haystack)) {
+        return $haystack->{$needle};
+    }
+
+    if (!str__contains($needle, '.')) {
+        return $haystack->{$needle} ?? value($default);
+    }
 
     foreach (explode('.', $needle) as $segment) {
-        if (!object_key_exists($segment, $haystack)) {
+        if (is_object($haystack) && object_key_exists($segment, $haystack)) {
+            $haystack = $haystack->{$segment};
+        } else {
             return value($default);
         }
-        $haystack = $haystack->{$segment};
     }
 
     return $haystack;
+}
+
+/**
+ * Set an item on an object using dot notation.
+ *
+ * @param object $object
+ * @param $key
+ * @param $value
+ * @return mixed
+ */
+function object_set(object &$object, $key, $value): mixed
+{
+
+    if (is_null($key)) {
+        return $object = $value;
+    }
+
+    $keys = explode('.', $key);
+
+    while (count($keys) > 1) {
+        $key = array_shift($keys);
+
+        // If the key doesn't exist at this depth, we will just create an empty array
+        // to hold the next value, allowing us to create the arrays to hold final
+        // values at the correct depth. Then we'll keep digging into the array.
+        if (! isset($object->{$key}) || ! is_object($object->{$key})) {
+            $object->{$key} = (object)[];
+        }
+
+        $object = &$object->{$key};
+    }
+
+    $object->{array_shift($keys)} = $value;
+
+    return $object;
 }
 
 /**
