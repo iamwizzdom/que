@@ -47,6 +47,15 @@ class ObjectPool
 
     /**
      * @param string $key
+     * @return bool
+     */
+    public function has(string $key)
+    {
+        return array_key_exists($key, $this->instances);
+    }
+
+    /**
+     * @param string $key
      * @return mixed|null
      */
     public function load(string $key)
