@@ -69,10 +69,10 @@ abstract class BaseModel implements Model
         $this->setObject($tableRow);
         $this->setTable($tableName);
         $this->setPrimaryKey($primaryKey);
+        $this->__append();
         $this->__hide();
         $this->__cast();
         $this->__rename();
-        $this->__append();
     }
 
     /**
