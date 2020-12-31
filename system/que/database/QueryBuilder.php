@@ -685,7 +685,7 @@ class QueryBuilder implements Builder
             $observer = config("database.observers.{$this->builder->getTable()}");
             if ($observer !== null && class_exists($observer, true) &&
                 (($implements = class_implements($observer)) &&
-                    in_array(Observer::class, $implements))) {
+                    in_array(interfaces\observer\Observer::class, $implements))) {
 
                 $observer = new $observer(new ObserverSignal());
                 if ($observer instanceof Observer) {
@@ -857,7 +857,7 @@ class QueryBuilder implements Builder
             if ($observer !== null && class_exists($observer, true)) {
 
                 if (($implements = class_implements($observer)) &&
-                    in_array(Observer::class, $implements)) {
+                    in_array(interfaces\observer\Observer::class, $implements)) {
 
                     $observer = new $observer(new ObserverSignal());
                     if ($observer instanceof Observer) {
@@ -866,6 +866,13 @@ class QueryBuilder implements Builder
                     }
                 }
             }
+        }
+
+        $this->builder->clearWhereQuery();
+
+        foreach ($modelCollection as $model) {
+            if (!$model instanceof Model) continue;
+            $this->builder->setOrWhere($model->getPrimaryKey(), $model->getValue($model->getPrimaryKey()));
         }
 
         $this->builder->buildQuery();
@@ -1176,7 +1183,7 @@ class QueryBuilder implements Builder
             if ($observer !== null && class_exists($observer, true)) {
 
                 if (($implements = class_implements($observer)) &&
-                    in_array(Observer::class, $implements)) {
+                    in_array(interfaces\observer\Observer::class, $implements)) {
 
                     $observer = new $observer(new ObserverSignal());
                     if ($observer instanceof Observer) {
@@ -1185,6 +1192,13 @@ class QueryBuilder implements Builder
                     }
                 }
             }
+        }
+
+        $this->builder->clearWhereQuery();
+
+        foreach ($newModelCollection as $model) {
+            if (!$model instanceof Model) continue;
+            $this->builder->setOrWhere($model->getPrimaryKey(), $model->getValue($model->getPrimaryKey()));
         }
 
         $this->builder->buildQuery();
@@ -1257,7 +1271,7 @@ class QueryBuilder implements Builder
             }
 
             if ($retrying && $attempts < $observer->getSignal()->getTrials()) {
-                if ($attempts <= 1) $newModelCollection->refresh();
+//                if ($attempts <= 1) $newModelCollection->refresh();
                 $response->setResponse([array_map(function ($data) {
                     return (object) $data;
                 }, $newModelCollection->getArray())]);
@@ -1278,7 +1292,7 @@ class QueryBuilder implements Builder
             }
 
         } elseif ($observer instanceof Observer && $oldModelCollection instanceof ModelCollection) {
-            $newModelCollection->refresh();
+//            $newModelCollection->refresh();
             $observer->onUpdated($newModelCollection, $oldModelCollection);
         }
 
