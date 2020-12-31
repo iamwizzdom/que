@@ -18,7 +18,7 @@ use que\database\interfaces\Builder;
 use que\database\interfaces\drivers\Driver;
 use que\database\interfaces\drivers\DriverQueryBuilder;
 use que\database\interfaces\drivers\DriverResponse;
-use que\database\interfaces\observer\Observer;
+use que\database\observer\Observer;
 use que\database\observer\ObserverSignal;
 use que\database\interfaces\model\Model;
 use que\database\model\ModelCollection;
