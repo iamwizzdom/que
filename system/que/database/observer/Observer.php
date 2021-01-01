@@ -12,13 +12,13 @@ abstract class Observer implements \que\database\interfaces\observer\Observer
     /**
      * @var ObserverSignal
      */
-    private ObserverSignal $signal;
+    protected ObserverSignal $signal;
 
     /**
      * Observer constructor.
      * @param ObserverSignal $signal
      */
-    public final function __construct(ObserverSignal $signal)
+    public function __construct(ObserverSignal $signal)
     {
         $this->signal = $signal;
     }
