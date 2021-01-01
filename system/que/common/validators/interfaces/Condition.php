@@ -40,6 +40,16 @@ interface Condition
     /**
      * @return bool
      */
+    public function isNull(): bool;
+
+    /**
+     * @return bool
+     */
+    public function isNotNull(): bool;
+
+    /**
+     * @return bool
+     */
     public function isEmpty(): bool;
 
     /**

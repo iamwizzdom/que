@@ -88,6 +88,20 @@ class Condition implements ConditionAlias
     /**
      * @return bool
      */
+    public function isNull(): bool {
+        return $this->getValue() === null;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isNotNull(): bool {
+        return !$this->isNull();
+    }
+
+    /**
+     * @return bool
+     */
     public function isEmpty(): bool {
         return empty($this->getValue()) && $this->getValue() != "0";
     }

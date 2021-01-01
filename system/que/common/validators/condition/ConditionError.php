@@ -141,7 +141,7 @@ class ConditionError
      */
     public function isNullified(): bool
     {
-        return ($this->nullable && $this->condition->isEmpty());
+        return ($this->nullable && $this->condition->isNull());
     }
 
     /**
