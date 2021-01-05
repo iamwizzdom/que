@@ -70,7 +70,6 @@ abstract class BaseModel implements Model
         $this->setTable($tableName);
         $this->setPrimaryKey($primaryKey);
         $this->__append();
-        $this->__hide();
         $this->__cast();
         $this->__rename();
     }
@@ -107,7 +106,7 @@ abstract class BaseModel implements Model
     #[Pure] public function getArray(): array
     {
         // TODO: Implement getArray() method.
-        return object_to_array($this->object);
+        return object_to_array(Obj::exclude($this->object, ...$this->hidden));
     }
 
     /**
@@ -517,12 +516,6 @@ abstract class BaseModel implements Model
     private function __rename() {
         if (!empty($this->renames)) {
             foreach ($this->renames as $from => $to) $this->offsetRename($from, $to);
-        }
-    }
-
-    private function __hide() {
-        if (!empty($this->hidden)) {
-            $this->object = Obj::exclude($this->object, ...$this->hidden);
         }
     }
 
