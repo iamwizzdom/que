@@ -124,6 +124,15 @@ interface Model extends QueArrayAccess
      * @param string $foreignKey
      * @param string $primaryKey
      * @param string $modelKey
+     * @return Model|null
+     */
+    public function hasOne(string $table, string $foreignKey, string $primaryKey = "id", string $modelKey = "que"): ?Model;
+
+    /**
+     * @param string $table
+     * @param string $foreignKey
+     * @param string $primaryKey
+     * @param string $modelKey
      * @return ModelCollection|null
      */
     public function hasMany(string $table, string $foreignKey, string $primaryKey = "id", string $modelKey = "que"): ?ModelCollection;

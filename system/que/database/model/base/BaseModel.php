@@ -308,6 +308,13 @@ abstract class BaseModel implements Model
         return !$this->isEmpty($foreignKey) ? $this->oneToOne($table, $this->getValue($foreignKey), $primaryKey, $modelKey) : null;
     }
 
+    public function hasOne(string $table, string $foreignKey, string $primaryKey = "id", string $modelKey = "que"): ?Model
+    {
+        // TODO: Implement hasOne() method.
+        return !$this->isEmpty($primaryKey) ? $this->oneToOne($table, $this->getValue($primaryKey), $foreignKey, $modelKey) : null;
+    }
+
+
     /**
      * @inheritDoc
      */
