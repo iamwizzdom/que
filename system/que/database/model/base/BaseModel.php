@@ -311,7 +311,7 @@ abstract class BaseModel implements Model
     public function hasOne(string $table, string $foreignKey, string $primaryKey = "id", string $modelKey = "que"): ?Model
     {
         // TODO: Implement hasOne() method.
-        return !$this->isEmpty($primaryKey) ? $this->oneToOne($table, $this->getValue($primaryKey), $foreignKey, $modelKey) : null;
+        return !$this->isEmpty($primaryKey) ? $this->oneToOneRevered($table, $this->getValue($primaryKey), $foreignKey, $modelKey) : null;
     }
 
 
@@ -321,7 +321,7 @@ abstract class BaseModel implements Model
     public function hasMany(string $table, string $foreignKey, string $primaryKey = "id", string $modelKey = "que"): ?ModelCollection
     {
         // TODO: Implement hasMany() method.
-        return !$this->isEmpty($foreignKey) ? $this->oneToMany($table, $this->getValue($foreignKey), $primaryKey, $modelKey) : null;
+        return !$this->isEmpty($primaryKey) ? $this->oneToMany($table, $this->getValue($primaryKey), $foreignKey, $modelKey) : null;
     }
 
     /**
