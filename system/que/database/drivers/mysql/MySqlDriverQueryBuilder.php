@@ -792,20 +792,20 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
             $where = $this->build_sql_where_query();
 
             if (!empty($where['AND'])) {
-                $where['AND'] = array_map(function ($where) {
-                    return str_char_count($where, " OR ") > 0 ? "({$where})" : $where;
+                $where['AND'] = array_map(function ($sql) {
+                    return str_char_count($sql, " OR ") > 0 ? "({$sql})" : $sql;
                 }, $where['AND']);
                 $where_query = implode(" AND ", $where['AND']);
             }
 
             if (!empty($where['OR'])) {
                 if (!empty($where_query)) {
-                    $where['OR'] = array_map(function ($where) {
-                        return str_char_count($where, " OR ") > 0 ? "({$where})" : $where;
+                    $where['OR'] = array_map(function ($sql) {
+                        return str_char_count($sql, " OR ") > 0 ? "({$sql})" : $sql;
                     }, $where['OR']);
                 }
-                $where['OR'] = count($where['OR']) > 1 ? "(" . implode(" OR ", $where['OR']) . ")" : implode(" OR ", $where['OR']);
-                $where_query .= !empty($where_query) ? " OR {$where['OR']}" : " {$where['OR']}";
+                $where['OR'] = count($where['OR']) > 1 ? ("(" . implode(" OR ", $where['OR']) . ")") : implode(" OR ", $where['OR']);
+                $where_query .= !empty($where_query) ? " AND {$where['OR']}" : " {$where['OR']}";
             }
 
             if ($this->queryType == self::SELECT || $this->queryType == self::COUNT
