@@ -29,6 +29,11 @@ abstract class BaseModel implements Model
     /**
      * @var array
      */
+    protected array $copy = [];
+
+    /**
+     * @var array
+     */
     protected array $appends = [];
 
     /**
@@ -69,6 +74,7 @@ abstract class BaseModel implements Model
         $this->setObject($tableRow);
         $this->setTable($tableName);
         $this->setPrimaryKey($primaryKey);
+        $this->__copy();
         $this->__append();
         $this->__cast();
         $this->__rename();
@@ -601,6 +607,14 @@ abstract class BaseModel implements Model
                     default:
                         break;
                 }
+            }
+        }
+    }
+
+    private function __copy() {
+        if (!empty($this->copy)) {
+            foreach ($this->copy as $key => $alias) {
+                $this->set($alias, $this->getValue($key));
             }
         }
     }
