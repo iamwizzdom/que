@@ -292,8 +292,9 @@ class MySqlDriver implements Driver
 
         } catch (PDOException $e) {
 
-            if ($this->isInDebugMode()) throw new QueRuntimeException($e->getMessage(), "Database Error",
-                E_USER_ERROR, 0, PreviousException::getInstance(3));
+            if ($this->isInDebugMode()) throw new QueRuntimeException(
+                "{$e->getMessage()} | SQL: {$this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings())}",
+                "Database Error", E_USER_ERROR, 0, PreviousException::getInstance(3));
         }
 
         $i = $builder->getQueryType();

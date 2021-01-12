@@ -991,10 +991,25 @@ class QueryBuilder implements Builder
     private function selectQuery(): QueryResponse
     {
 
+        if (!isset(self::$primaryKeys[$this->builder->getTable()])) {
+
+            $this->builder->setQueryType(DriverQueryBuilder::SHOW);
+            $showTable = $this->show_table();
+            $this->builder->setQueryType(DriverQueryBuilder::SELECT);
+            self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? $showTable->getQueryResponse() : 'id';
+        }
+
         if ($this->pagination['status'] === true) {
 
             $this->builder->setQueryType(DriverQueryBuilder::COUNT);
+            $select = $this->builder->getSelect();
+            $this->builder->clearSelect();
+            $table = preg_replace("/ as /i", " as ", $this->builder->getTable());
+            if (str__contains($table, ' as ', true)) $table = (explode(' as ', $table))[1];
+            $this->builder->setSelect("{$table}." . self::$primaryKeys[$this->builder->getTable()]);
             $count = $this->count();
+            $this->builder->clearSelect();
+            $this->builder->setSelect(...$select);
             $this->builder->setQueryType(DriverQueryBuilder::SELECT);
 
             $paginator = new Paginator();
@@ -1013,14 +1028,6 @@ class QueryBuilder implements Builder
             Pagination::getInstance()->add($paginator, $this->pagination['tag']);
 
             $this->pagination['status'] = false;
-        }
-
-        if (!isset(self::$primaryKeys[$this->builder->getTable()])) {
-
-            $this->builder->setQueryType(DriverQueryBuilder::SHOW);
-            $showTable = $this->show_table();
-            $this->builder->setQueryType(DriverQueryBuilder::SELECT);
-            self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? $showTable->getQueryResponse() : 'id';
         }
 
         if (empty($this->builder->getSelect())) $this->builder->setSelect('*');
