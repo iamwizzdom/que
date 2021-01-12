@@ -285,6 +285,49 @@ class ModelCollection implements QueArrayAccess
     }
 
     /**
+     * Set data to all models in collection
+     * @param string $key
+     * @param $value
+     */
+    public function _set(string $key, $value) {
+        foreach ($this->models as $model) {
+            if (!$model instanceof Model) continue;
+            $model->set($key, $value);
+        }
+    }
+
+    /**
+     * Unset data from all models in collection
+     * @param string $key
+     */
+    public function _unset(string $key) {
+        foreach ($this->models as $model) {
+            if (!$model instanceof Model) continue;
+            $model->offsetUnset($key);
+        }
+    }
+
+    /**
+     * @param string $name
+     * @param callable|null $arguments
+     * @return $this
+     */
+    public function load(string $name, callable $arguments = null): ModelCollection {
+        foreach ($this->models as $model) {
+            if (!$model instanceof Model) continue;
+            if (!$arguments) {
+                $model->load($name);
+                continue;
+            }
+            $arguments = $arguments($model);
+            if (!is_array($arguments)) $arguments = [$arguments];
+            $model->load($name, ...$arguments);
+
+        }
+        return $this;
+    }
+
+    /**
      * @return bool
      */
     public function isEmpty(): bool
@@ -308,26 +351,6 @@ class ModelCollection implements QueArrayAccess
     {
         // TODO: Implement count() method.
         return array_size($this->models);
-    }
-
-    /**
-     * @param string $name
-     * @param callable|null $arguments
-     * @return $this
-     */
-    public function load(string $name, callable $arguments = null): ModelCollection {
-        foreach ($this->models as $model) {
-            if (!$model instanceof Model) continue;
-            if (!$arguments) {
-                $model->load($name);
-                continue;
-            }
-            $arguments = $arguments($model);
-            if (!is_array($arguments)) $arguments = [$arguments];
-            $model->load($name, ...$arguments);
-
-        }
-        return $this;
     }
 
     public function __clone()
