@@ -17,6 +17,7 @@ use que\database\interfaces\drivers\DriverQueryBuilder;
 use que\database\DB;
 use que\database\QueryBuilder;
 use que\http\HTTP;
+use que\support\Arr;
 
 class MySqlDriverQueryBuilder implements DriverQueryBuilder
 {
@@ -932,26 +933,26 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
             default:
                 throw new QueRuntimeException("Database driver query builder type '{$this->queryType}' is invalid",
                     "Database Driver Error", E_USER_ERROR, 0, PreviousException::getInstance(3));
-                break;
         }
 
-        if ($this->queryType != self::SHOW && !empty($this->groupBy)) {
-            $this->groupBy = (array)$this->groupBy;
-            $this->groupBy = implode(", ", $this->groupBy);
-            $query .= " GROUP BY {$this->groupBy}";
-        }
+        if ($this->queryType == self::SELECT || $this->queryType == self::UPDATE || $this->queryType == self::DELETE) {
 
-        if ($this->queryType != self::SHOW && !empty($having = $this->build_sql_having())) $query .= " HAVING {$having}";
+            if (!empty($this->groupBy)) {
+                $this->groupBy = (array)$this->groupBy;
+                $this->groupBy = implode(", ", $this->groupBy);
+                $query .= " GROUP BY {$this->groupBy}";
+            }
 
-        if ($this->queryType != self::SHOW && !empty($this->orderBy)) {
-            $query .= " ORDER BY " . $this->formatColumn(implode(', ',
-                    current($this->orderBy))) . " " . key($this->orderBy);
-        }
+            if (!empty($having = $this->build_sql_having())) $query .= " HAVING {$having}";
 
-        if ($this->queryType != self::SHOW) {
+            if (!empty($this->orderBy)) {
+                $query .= " ORDER BY " . $this->formatColumn(implode(', ',
+                        current($this->orderBy))) . " " . key($this->orderBy);
+            }
 
             if (is_numeric($this->limit)) $query .= " LIMIT {$this->addBinding('limit', $this->limit)}";
             elseif (is_array($this->limit)) $query .= " LIMIT {$this->addBinding('limit', ($this->limit[0] <= 0 ? 0 : $this->limit[0]))}, {$this->addBinding('offset', ($this->limit[1] <= 0 ? 1 : $this->limit[1]))}";
+
         }
 
         return str_strip_whitespaces($query);
