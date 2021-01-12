@@ -544,7 +544,7 @@ function get_date(string $format, string $date, string $default = ''): string {
     } catch (Exception $e) {
         log_error($e->getMessage(), $e->getFile(), $e->getLine(),
             E_USER_NOTICE, $e->getTrace(),
-            \http()->getHttpStatusTxt(HTTP::INTERNAL_SERVER_ERROR));
+            \http()->getHttpStatusTxt($http_code = HTTP::INTERNAL_SERVER_ERROR) . " [{$http_code}]");
         $dateTime = false;
     }
     return $dateTime ? $dateTime->format($format) : $default;
@@ -2866,7 +2866,7 @@ function log_err($message, $status = null): bool|int
     $backtrace = debug_backtrace();
     return log_error($message, $backtrace[0]['file'], $backtrace[0]['line'],
         E_USER_NOTICE, array_exclude($backtrace, 0),
-        \http()->getHttpStatusTxt($status ?: HTTP::INTERNAL_SERVER_ERROR));
+        \http()->getHttpStatusTxt($http_code = ($status ?: HTTP::INTERNAL_SERVER_ERROR)) . " [{$http_code}]");
 }
 
 /**
