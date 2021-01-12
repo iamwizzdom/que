@@ -4,6 +4,7 @@
 namespace que\route;
 
 
+use Exception;
 use que\common\exception\PreviousException;
 use que\common\exception\RouteException;
 use que\http\HTTP;
@@ -114,19 +115,23 @@ abstract class Router extends RouteInspector
      * @return RouteEntry|null
      * @throws RouteException
      */
-    protected static function resolveRoute(string $uri, string $type = null) {
+    protected static function resolveRoute(string $uri, string $type = null): ?RouteEntry
+    {
 
         self::compile(); // Compile registered routes
         $routeEntries = self::getRouteEntries();
         $uriTokens = self::tokenizeUri($uri);
+        $container = null;
 
         foreach ($routeEntries as $routeEntry) {
 
-            if ($type !== null && strcmp($type, $routeEntry->getType()) != 0) continue;
+            if ($type !== null && $type != $routeEntry->getType()) continue;
 
             if (self::matchTokens($uriTokens, $routeEntry->getUriTokens())) {
-                self::setRouteParams([]);
-                self::setCurrentRoute($routeEntry);
+                if (!self::getCurrentRoute()) {
+                    self::setCurrentRoute($routeEntry);
+                    self::setRouteParams([]);
+                }
                 return $routeEntry;
             }
 
@@ -160,33 +165,55 @@ abstract class Router extends RouteInspector
                 $uriTokens[$key] = $tokens[$key];
             }
 
+            $setRoute = false;
 
-            if (self::matchTokens($tokens, Arr::extract($uriTokens, 0, (($size1 = Arr::size($tokens)) - 1)))) {
+            try {
 
-                self::setRouteParams($args);
-                self::setCurrentRoute($routeEntry);
+                if (self::matchTokens($tokens, Arr::extract($uriTokens, 0, (($size1 = Arr::size($tokens)) - 1)))) {
 
-                if (!empty($failures)) {
+                    if (!self::getCurrentRoute()) {
+                        self::setCurrentRoute($routeEntry);
+                        self::setRouteParams($args);
+                        $setRoute = true;
+                    }
 
-                    if ($size1 == ($size2 = Arr::size($uriTokens)))
-                        throw new RouteException(implode(",\n ", $failures), "Route Error", HTTP::UNAUTHORIZED);
+                    if (!empty($failures)) {
 
-                    throw new RouteException("You are passing more arguments than required by the current route",
-                        "Route Error", HTTP::UNAUTHORIZED);
+                        if ($size1 == Arr::size($uriTokens))
+                            throw new RouteException(implode(",\n ", $failures), "Route Error", HTTP::UNAUTHORIZED);
+
+                        throw new RouteException("You are passing more arguments than required by the current route",
+                            "Route Error", HTTP::UNAUTHORIZED);
+                    }
+
+                    return $routeEntry;
                 }
 
-                return $routeEntry;
+                foreach ($uriTokens as $key => $uri) if ($uri === '--') unset($uriTokens[$key]);
+
+            } catch (Exception $exception) {
+                if ($setRoute) {
+                    self::setCurrentRoute(null);
+                    self::setRouteParams([]);
+                }
+                $container = [$exception->getMessage(), $routeEntry];
             }
 
-            foreach ($uriTokens as $key => $uri) if ($uri === '--') unset($uriTokens[$key]);
         }
+
+        if ($container !== null) {
+            list($error, $entry) = $container;
+            if (!self::getCurrentRoute()) self::setCurrentRoute($entry);
+            throw new RouteException($error, "Route Error", HTTP::UNAUTHORIZED);
+        }
+
         return null;
     }
 
     /**
-     * @param RouteEntry $routeEntry
+     * @param RouteEntry|null $routeEntry
      */
-    protected static function setCurrentRoute(RouteEntry $routeEntry)
+    protected static function setCurrentRoute(?RouteEntry $routeEntry)
     {
         http()->_server()->set('route.entry', $routeEntry);
     }
