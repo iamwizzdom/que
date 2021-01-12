@@ -161,5 +161,18 @@ interface Model extends QueArrayAccess
      */
     public function offsetRename($from, $to): void;
 
+    /**
+     * @param string $name
+     * @param mixed ...$arguments
+     */
+    public function load(string $name, ...$arguments): Model;
+
     public function __clone(): void;
+
+    /**
+     * @param string $name
+     * @param array $arguments
+     * @return mixed
+     */
+    public function __call(string $name, array $arguments);
 }

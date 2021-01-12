@@ -507,10 +507,36 @@ abstract class BaseModel implements Model
         $this->object = Obj::rename_key($this->object, $from, $to);
     }
 
+    /**
+     * @param string $name
+     * @param mixed ...$arguments
+     * @return Model
+     */
+    public function load(string $name, ...$arguments): Model {
+        $this->set($name, $this->__call($name, $arguments));
+        return $this;
+    }
+
     public function __clone(): void
     {
         // TODO: Implement __clone() method.
         $this->object = clone $this->object;
+    }
+
+    public function __call(string $name, array $arguments)
+    {
+        // TODO: Implement __call() method.
+        if (!method_exists($this, $name)) {
+            $name = strtolower($name);
+            $name = explode("_", $name);
+
+            Arr::callback($name, function ($method) {
+                return ucfirst($method);
+            });
+
+            $name = ("get" . implode("", $name));
+        }
+        return method_exists($this, $name) ? $this->{$name}(...$arguments) : null;
     }
 
     private function __rename() {

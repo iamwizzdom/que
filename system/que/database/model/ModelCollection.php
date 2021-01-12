@@ -310,6 +310,26 @@ class ModelCollection implements QueArrayAccess
         return array_size($this->models);
     }
 
+    /**
+     * @param string $name
+     * @param callable|null $arguments
+     * @return $this
+     */
+    public function load(string $name, callable $arguments = null): ModelCollection {
+        foreach ($this->models as $model) {
+            if (!$model instanceof Model) continue;
+            if (!$arguments) {
+                $model->load($name);
+                continue;
+            }
+            $arguments = $arguments($model);
+            if (!is_array($arguments)) $arguments = [$arguments];
+            $model->load($name, ...$arguments);
+
+        }
+        return $this;
+    }
+
     public function __clone()
     {
         // TODO: Implement __clone() method.
