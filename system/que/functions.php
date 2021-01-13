@@ -385,55 +385,64 @@ function strpos_in_array(
 /**
  * @param string $haystack
  * @param string $needle
+ * @param bool $case_insensitive
  * @return bool
  */
-#[Pure] function str__starts_with(string $haystack, string $needle): bool
+#[Pure] function str__starts_with(string $haystack, string $needle, bool $case_insensitive = false): bool
 {
+    if ($case_insensitive) {
+        $haystack = strtolower($haystack);
+        $needle = strtolower($needle);
+    }
     return strcmp(substr($haystack, 0, strlen($needle)), $needle) == 0;
 }
 
 /**
  * @param string $haystack
  * @param array $needles
+ * @param bool $case_insensitive
  * @return bool
  */
-#[Pure] function str_starts_with_any(string $haystack, array $needles): bool
+#[Pure] function str_starts_with_any(string $haystack, array $needles, bool $case_insensitive = false): bool
 {
-    $count = 0;
     foreach ($needles as $needle) {
-        if (str__starts_with($haystack, $needle)) {
-            $count++;
-            break;
+        if (str__starts_with($haystack, $needle, $case_insensitive)) {
+            return true;
         }
     }
-    return $count > 0;
+    return false;
 }
 
 /**
  * @param string $haystack
  * @param string $needle
+ * @param bool $case_insensitive
  * @return bool
  */
-#[Pure] function str__ends_with(string $haystack, string $needle): bool
+#[Pure] function str__ends_with(string $haystack, string $needle, bool $case_insensitive = false): bool
 {
+    if ($case_insensitive) {
+        $haystack = strtolower($haystack);
+        $needle = strtolower($needle);
+    }
     return strcmp(substr($haystack, (strlen($haystack) - ($len = strlen($needle))), $len), $needle) == 0;
 }
 
 /**
+ *
  * @param string $haystack
  * @param array $needles
+ * @param bool $case_insensitive
  * @return bool
  */
-#[Pure] function str_ends_with_any(string $haystack, array $needles): bool
+#[Pure] function str_ends_with_any(string $haystack, array $needles, bool $case_insensitive = false): bool
 {
-    $count = 0;
     foreach ($needles as $needle) {
-        if (str__ends_with($haystack, $needle)) {
-            $count++;
-            break;
+        if (str__ends_with($haystack, $needle, $case_insensitive)) {
+            return true;
         }
     }
-    return $count > 0;
+    return false;
 }
 
 /**

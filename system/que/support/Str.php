@@ -247,19 +247,21 @@ class Str
     /**
      * @param string $haystack
      * @param string $needle
+     * @param bool $case_insensitive
      * @return bool
      */
-    public static function starts_with (string $haystack, string $needle) {
-        return str__starts_with($haystack, $needle);
+    public static function starts_with (string $haystack, string $needle, bool $case_insensitive = false) {
+        return str__starts_with($haystack, $needle, $case_insensitive);
     }
 
     /**
      * @param string $haystack
      * @param string $needle
+     * @param bool $case_insensitive
      * @return bool
      */
-    public static function ends_with (string $haystack, string $needle) {
-        return str__ends_with($haystack, $needle);
+    public static function ends_with (string $haystack, string $needle, bool $case_insensitive = false) {
+        return str__ends_with($haystack, $needle, $case_insensitive);
     }
 
     /**
