@@ -170,9 +170,9 @@ interface Model extends QueArrayAccess
     public function __clone(): void;
 
     /**
-     * @param string $name
+     * @param string $method
      * @param array $arguments
      * @return mixed
      */
-    public function __call(string $name, array $arguments);
+    public function __call(string $method, array $arguments): mixed;
 }

@@ -529,20 +529,22 @@ abstract class BaseModel implements Model
         $this->object = clone $this->object;
     }
 
-    public function __call(string $name, array $arguments)
+    public function __call(string $method, array $arguments): mixed
     {
         // TODO: Implement __call() method.
-        if (!method_exists($this, $name)) {
-            $name = strtolower($name);
-            $name = explode("_", $name);
+        if (!method_exists($this, $method)) {
+            $method = strtolower($method);
+            $method = explode("_", $method);
 
-            Arr::callback($name, function ($method) {
+            Arr::callback($method, function ($method) {
                 return ucfirst($method);
             });
 
-            $name = ("get" . implode("", $name));
+            $prefix = strtolower(array_shift($method));
+
+            $method = (($prefix == 'is' ? $prefix : ("get" . ucfirst($prefix))) . implode("", $method));
         }
-        return method_exists($this, $name) ? $this->{$name}(...$arguments) : null;
+        return method_exists($this, $method) ? $this->{$method}(...$arguments) : null;
     }
 
     private function __rename() {
@@ -641,7 +643,9 @@ abstract class BaseModel implements Model
                         return ucfirst($method);
                     });
 
-                    $method['method'] = ("get" . implode("", $method['method']));
+                    $prefix = strtolower(array_shift($method['method']));
+
+                    $method['method'] = (($prefix == 'is' ? $prefix : ("get" . ucfirst($prefix))) . implode("", $method['method']));
 
                     if (!method_exists($this, $method['method'])) continue;
 
@@ -659,7 +663,9 @@ abstract class BaseModel implements Model
                         return ucfirst($method);
                     });
 
-                    $method = ("get" . implode("", $method));
+                    $prefix = strtolower(array_shift($method));
+
+                    $method = (($prefix == 'is' ? $prefix : ("get" . ucfirst($prefix))) . implode("", $method));
 
                     if (!method_exists($this, $method)) continue;
 
