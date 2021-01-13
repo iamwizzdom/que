@@ -30,12 +30,12 @@ class JWT
     const ALGORITHM_RS256 = 'RS256';
     const ALGORITHM_RS384 = 'RS384';
     const ALGORITHM_RS512 = 'RS512';
-    
+
     /**
      * Default algorithm key that will be used when encoding token in case no algorithm was provided in token's header nor as parameter to encode method.
      */
     const DEFAULT_ALGORITHM = self::ALGORITHM_HS256;
-    
+
     /**
      * Mapping of available algorithm keys with their types and target algorithms.
      */
@@ -50,9 +50,9 @@ class JWT
 
     /**
      * Decodes encoded token.
-     * 
+     *
      * @param TokenEncoded  $tokenEncoded   Encoded token
-     * 
+     *
      * @return TokenDecoded
      */
     public static function decode(TokenEncoded $tokenEncoded): TokenDecoded
@@ -132,17 +132,17 @@ class JWT
                 break;
             case 'openssl':
                 $signature = '';
-                
+
                 try {
                     $sign = openssl_sign($message, $signature, $secret, $type);
                 } catch (Exception $e) {
                     throw new SigningFailedException(sprintf('Signing failed: %s', $e->getMessage()));
                 }
-                
+
                 if (! $sign) {
                     throw new SigningFailedException('Signing failed');
                 }
-                
+
                 return $signature;
                 break;
             default:
@@ -215,11 +215,11 @@ class JWT
         if (array_key_exists('iat', $payload)) {
             Validation::checkIssuedAtDate($payload['iat'], $leeway);
         }
-           
+
         if (array_key_exists('exp', $payload)) {
             Validation::checkExpirationDate($payload['exp'], $leeway);
         }
-        
+
         if (array_key_exists('nbf', $payload)) {
             Validation::checkNotBeforeDate($payload['nbf'], $leeway);
         }
@@ -247,7 +247,7 @@ class JWT
      * @param bool $throwException
      * @return string|null
      */
-    public static function fromUser(User $user, int $expire = null, bool $throwException = false): ?string
+    public static function fromUser(User $user, int $expire = null, bool $throwException = true): ?string
     {
         $generator = new JWTGenerator();
         $generator->setAlgorithm(JWT::ALGORITHM_HS512);
@@ -265,10 +265,11 @@ class JWT
 
     /**
      * @param string $token
+     * @param string $modelKey
      * @param bool $throwException
      * @return User|null
      */
-    public static function toUser(string $token, bool $throwException = false): ?User
+    public static function toUser(string $token, string $modelKey = 'que', bool $throwException = true): ?User
     {
         try {
 
@@ -285,7 +286,8 @@ class JWT
                 throw new Exception("Login failed, no record found with the given token.");
             }
 
-            User::login($user->getFirst());
+            $user->setModelKey($modelKey);
+            User::login($user->getFirstWithModel()->getObject());
             return User::getInstance();
 
         } catch (Exception $e) {
