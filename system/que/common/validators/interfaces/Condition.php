@@ -27,9 +27,10 @@ interface Condition
     public function getKey();
 
     /**
+     * @param null $default
      * @return mixed
      */
-    public function getValue();
+    public function getValue($default = null);
 
     /**
      * @param $variable
@@ -104,6 +105,90 @@ interface Condition
      * @return bool
      */
     public function isNotEqualToAny(array $variable): bool;
+
+    /**
+     * @param String $needle
+     * @param bool $case_insensitive
+     * @return bool
+     */
+    public function contains(String $needle, bool $case_insensitive = false): bool;
+
+    /**
+     * @param String $needle
+     * @param bool $case_insensitive
+     * @return bool
+     */
+    public function notContains(String $needle, bool $case_insensitive = false): bool;
+
+    /**
+     * @param array $needles
+     * @param bool $case_insensitive
+     * @return bool
+     */
+    public function containsAny(array $needles, bool $case_insensitive = false): bool;
+
+    /**
+     * @param array $needles
+     * @param bool $case_insensitive
+     * @return bool
+     */
+    public function notContainsAny(array $needles, bool $case_insensitive = false): bool;
+
+    /**
+     * @param String $needle
+     * @param bool $case_insensitive
+     * @return bool
+     */
+    public function startsWith(String $needle, bool $case_insensitive = false): bool;
+
+    /**
+     * @param String $needle
+     * @param bool $case_insensitive
+     * @return bool
+     */
+    public function notStartsWith(String $needle, bool $case_insensitive = false): bool;
+
+    /**
+     * @param array $needles
+     * @param bool $case_insensitive
+     * @return bool
+     */
+    public function startsWithAny(array $needles, bool $case_insensitive = false): bool;
+
+    /**
+     * @param array $needles
+     * @param bool $case_insensitive
+     * @return bool
+     */
+    public function notStartsWithAny(array $needles, bool $case_insensitive = false): bool;
+
+    /**
+     * @param String $needle
+     * @param bool $case_insensitive
+     * @return bool
+     */
+    public function endsWith(String $needle, bool $case_insensitive = false): bool;
+
+    /**
+     * @param String $needle
+     * @param bool $case_insensitive
+     * @return bool
+     */
+    public function notEndsWith(String $needle, bool $case_insensitive = false): bool;
+
+    /**
+     * @param array $needles
+     * @param bool $case_insensitive
+     * @return bool
+     */
+    public function endsWithAny(array $needles, bool $case_insensitive = false): bool;
+
+    /**
+     * @param array $needles
+     * @param bool $case_insensitive
+     * @return bool
+     */
+    public function notEndsWithAny(array $needles, bool $case_insensitive = false): bool;
 
     /**
      * @param int $number

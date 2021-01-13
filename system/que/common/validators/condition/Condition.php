@@ -59,11 +59,12 @@ class Condition implements ConditionAlias
     }
 
     /**
-     * @return mixed
+     * @param null $default
+     * @return mixed|null
      */
-    public function getValue()
+    public function getValue($default = null)
     {
-        return $this->value;
+        return $this->value ?? $default;
     }
 
     /**
@@ -180,6 +181,142 @@ class Condition implements ConditionAlias
         // TODO: Implement isNotEqualToAny() method.
         return !$this->isEqualToAny($variable);
     }
+
+    /**
+     * @param string $needle
+     * @param bool $case_insensitive
+     * @return bool
+     */
+    public function contains(string $needle, bool $case_insensitive = false): bool
+    {
+        // TODO: Implement contains() method.
+        return str_contains($this->getValue(), $needle) || str__contains($this->getValue(), $needle, $case_insensitive);
+    }
+
+    /**
+     * @param string $needle
+     * @param bool $case_insensitive
+     * @return bool
+     */
+    public function notContains(string $needle, bool $case_insensitive = false): bool
+    {
+        // TODO: Implement notContains() method.
+        return !$this->contains($needle, $case_insensitive);
+    }
+
+
+    /**
+     * @param array $needles
+     * @param bool $case_insensitive
+     * @return bool
+     */
+    public function containsAny(array $needles, bool $case_insensitive = false): bool
+    {
+        // TODO: Implement containsAny() method.
+        return str_contains_any($this->getValue(), $needles, $case_insensitive);
+    }
+
+    /**
+     * @param array $needles
+     * @param bool $case_insensitive
+     * @return bool
+     */
+    public function notContainsAny(array $needles, bool $case_insensitive = false): bool
+    {
+        // TODO: Implement notContainsAny() method.
+        return !$this->containsAny($needles, $case_insensitive);
+    }
+
+    /**
+     * @param string $needle
+     * @param bool $case_insensitive
+     * @return bool
+     */
+    public function startsWith(string $needle, bool $case_insensitive = false): bool
+    {
+        // TODO: Implement startsWith() method.
+        return str_starts_with($this->getValue(), $needle) || str__starts_with($this->getValue(), $needle, $case_insensitive);
+    }
+
+    /**
+     * @param string $needle
+     * @param bool $case_insensitive
+     * @return bool
+     */
+    public function notStartsWith(string $needle, bool $case_insensitive = false): bool
+    {
+        // TODO: Implement notStartsWith() method.
+        return !$this->startsWith($needle, $case_insensitive);
+    }
+
+
+    /**
+     * @param array $needles
+     * @param bool $case_insensitive
+     * @return bool
+     */
+    public function startsWithAny(array $needles, bool $case_insensitive = false): bool
+    {
+        // TODO: Implement startsWithAny() method.
+        return str_starts_with_any($this->getValue(), $needles, $case_insensitive);
+    }
+
+    /**
+     * @param array $needles
+     * @param bool $case_insensitive
+     * @return bool
+     */
+    public function notStartsWithAny(array $needles, bool $case_insensitive = false): bool
+    {
+        // TODO: Implement notStartsWithAny() method.
+        return !$this->startsWithAny($needles, $case_insensitive);
+    }
+
+    /**
+     * @param string $needle
+     * @param bool $case_insensitive
+     * @return bool
+     */
+    public function endsWith(string $needle, bool $case_insensitive = false): bool
+    {
+        // TODO: Implement endsWith() method.
+        return str_ends_with($this->getValue(), $needle) || str__ends_with($this->getValue(), $needle, $case_insensitive);
+    }
+
+    /**
+     * @param string $needle
+     * @param bool $case_insensitive
+     * @return bool
+     */
+    public function notEndsWith(string $needle, bool $case_insensitive = false): bool
+    {
+        // TODO: Implement notEndsWith() method.
+        return !$this->endsWith($needle, $case_insensitive);
+    }
+
+
+    /**
+     * @param array $needles
+     * @param bool $case_insensitive
+     * @return bool
+     */
+    public function endsWithAny(array $needles, bool $case_insensitive = false): bool
+    {
+        // TODO: Implement endsWithAny() method.
+        return str_ends_with_any($this->getValue(), $needles, $case_insensitive);
+    }
+
+    /**
+     * @param array $needles
+     * @param bool $case_insensitive
+     * @return bool
+     */
+    public function notEndsWithAny(array $needles, bool $case_insensitive = false): bool
+    {
+        // TODO: Implement notEndsWithAny() method.
+        return !$this->endsWithAny($needles, $case_insensitive);
+    }
+
 
     /**
      * @param $number

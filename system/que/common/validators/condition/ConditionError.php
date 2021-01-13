@@ -61,9 +61,9 @@ class ConditionError
     /**
      * @return mixed
      */
-    public function getValue()
+    public function getValue($default = null)
     {
-        return $this->condition->getValue();
+        return $this->condition->getValue($default);
     }
 
     /**
@@ -116,7 +116,7 @@ class ConditionError
      */
     public function setError($error): ConditionError
     {
-        $this->error = $error !== null ? $error : "Value for '{$this->getKey()}' does not seem to be valid when '{$this->getValue()}' value is given";
+        $this->error = $error !== null ? $error : "Value for '{$this->getKey()}' does not seem to be valid when '{$this->getValue('null')}' value is given";
         return $this;
     }
 
@@ -157,9 +157,9 @@ class ConditionError
      * @param null $error
      * @return $this
      */
-    public function continueValidationIf(Closure $condition, $error = null): ConditionError {
+    public function if (Closure $condition, $error = null): ConditionError {
         if ($this->hasError() || $this->isNullified() || $this->hasFailedIf()) return $this;
-        if (!($this->failedIf = $condition($this->condition))) $this->setError($error);
+        if (!($this->failedIf = (!!($condition($this->condition))))) $this->setError($error);
         return $this;
     }
 
@@ -542,6 +542,162 @@ class ConditionError
     {
         if ($this->hasError() || $this->isNullified() || $this->hasFailedIf()) return $this;
         if (!$this->condition->isNotEqual($variable)) $this->setError($error);
+        return $this;
+    }
+
+    /**
+     * @param $needle
+     * @param null $error
+     * @param bool $case_insensitive
+     * @return ConditionError
+     */
+    public function contains(string $needle, $error = null, bool $case_insensitive = false): ConditionError
+    {
+        if ($this->hasError() || $this->isNullified() || $this->hasFailedIf()) return $this;
+        if (!$this->condition->contains($needle, $case_insensitive)) $this->setError($error);
+        return $this;
+    }
+
+    /**
+     * @param $needle
+     * @param null $error
+     * @param bool $case_insensitive
+     * @return ConditionError
+     */
+    public function notContains(string $needle, $error = null, bool $case_insensitive = false): ConditionError
+    {
+        if ($this->hasError() || $this->isNullified() || $this->hasFailedIf()) return $this;
+        if (!$this->condition->notContains($needle, $case_insensitive)) $this->setError($error);
+        return $this;
+    }
+
+    /**
+     * @param $needles
+     * @param null $error
+     * @param bool $case_insensitive
+     * @return ConditionError
+     */
+    public function containsAny(array $needles, $error = null, bool $case_insensitive = false): ConditionError
+    {
+        if ($this->hasError() || $this->isNullified() || $this->hasFailedIf()) return $this;
+        if (!$this->condition->containsAny($needles, $case_insensitive)) $this->setError($error);
+        return $this;
+    }
+
+    /**
+     * @param $needles
+     * @param null $error
+     * @param bool $case_insensitive
+     * @return ConditionError
+     */
+    public function notContainsAny(array $needles, $error = null, bool $case_insensitive = false): ConditionError
+    {
+        if ($this->hasError() || $this->isNullified() || $this->hasFailedIf()) return $this;
+        if (!$this->condition->notContainsAny($needles, $case_insensitive)) $this->setError($error);
+        return $this;
+    }
+
+    /**
+     * @param $needle
+     * @param null $error
+     * @param bool $case_insensitive
+     * @return ConditionError
+     */
+    public function startsWith(string $needle, $error = null, bool $case_insensitive = false): ConditionError
+    {
+        if ($this->hasError() || $this->isNullified() || $this->hasFailedIf()) return $this;
+        if (!$this->condition->startsWith($needle, $case_insensitive)) $this->setError($error);
+        return $this;
+    }
+
+    /**
+     * @param $needle
+     * @param null $error
+     * @param bool $case_insensitive
+     * @return ConditionError
+     */
+    public function notStartsWith(string $needle, $error = null, bool $case_insensitive = false): ConditionError
+    {
+        if ($this->hasError() || $this->isNullified() || $this->hasFailedIf()) return $this;
+        if (!$this->condition->notStartsWith($needle, $case_insensitive)) $this->setError($error);
+        return $this;
+    }
+
+    /**
+     * @param $needles
+     * @param null $error
+     * @param bool $case_insensitive
+     * @return ConditionError
+     */
+    public function startsWithAny(array $needles, $error = null, bool $case_insensitive = false): ConditionError
+    {
+        if ($this->hasError() || $this->isNullified() || $this->hasFailedIf()) return $this;
+        if (!$this->condition->startsWithAny($needles, $case_insensitive)) $this->setError($error);
+        return $this;
+    }
+
+    /**
+     * @param $needles
+     * @param null $error
+     * @param bool $case_insensitive
+     * @return ConditionError
+     */
+    public function notStartsWithAny(array $needles, $error = null, bool $case_insensitive = false): ConditionError
+    {
+        if ($this->hasError() || $this->isNullified() || $this->hasFailedIf()) return $this;
+        if (!$this->condition->notStartsWithAny($needles, $case_insensitive)) $this->setError($error);
+        return $this;
+    }
+
+    /**
+     * @param $needle
+     * @param null $error
+     * @param bool $case_insensitive
+     * @return ConditionError
+     */
+    public function endsWith(string $needle, $error = null, bool $case_insensitive = false): ConditionError
+    {
+        if ($this->hasError() || $this->isNullified() || $this->hasFailedIf()) return $this;
+        if (!$this->condition->endsWith($needle, $case_insensitive)) $this->setError($error);
+        return $this;
+    }
+
+    /**
+     * @param $needle
+     * @param null $error
+     * @param bool $case_insensitive
+     * @return ConditionError
+     */
+    public function notEndsWith(string $needle, $error = null, bool $case_insensitive = false): ConditionError
+    {
+        if ($this->hasError() || $this->isNullified() || $this->hasFailedIf()) return $this;
+        if (!$this->condition->notEndsWith($needle, $case_insensitive)) $this->setError($error);
+        return $this;
+    }
+
+    /**
+     * @param $needles
+     * @param null $error
+     * @param bool $case_insensitive
+     * @return ConditionError
+     */
+    public function endsWithAny(array $needles, $error = null, bool $case_insensitive = false): ConditionError
+    {
+        if ($this->hasError() || $this->isNullified() || $this->hasFailedIf()) return $this;
+        if (!$this->condition->endsWithAny($needles, $case_insensitive)) $this->setError($error);
+        return $this;
+    }
+
+    /**
+     * @param $needles
+     * @param null $error
+     * @param bool $case_insensitive
+     * @return ConditionError
+     */
+    public function notEndsWithAny(array $needles, $error = null, bool $case_insensitive = false): ConditionError
+    {
+        if ($this->hasError() || $this->isNullified() || $this->hasFailedIf()) return $this;
+        if (!$this->condition->notEndsWithAny($needles, $case_insensitive)) $this->setError($error);
         return $this;
     }
 
