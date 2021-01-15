@@ -529,6 +529,18 @@ abstract class BaseModel implements Model
         $this->object = clone $this->object;
     }
 
+    public function __get(string $name)
+    {
+        // TODO: Implement __get() method.
+        return $this->offsetGet($name);
+    }
+
+    public function __set(string $name, $value): void
+    {
+        // TODO: Implement __set() method.
+        $this->offsetSet($name, $value);
+    }
+
     public function __call(string $method, array $arguments): mixed
     {
         // TODO: Implement __call() method.

@@ -169,6 +169,14 @@ interface Model extends QueArrayAccess
 
     public function __clone(): void;
 
+    public function __get(string $name);
+
+    /**
+     * @param string $name
+     * @param $value
+     */
+    public function __set(string $name, $value): void;
+
     /**
      * @param string $method
      * @param array $arguments
