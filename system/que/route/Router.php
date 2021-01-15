@@ -177,16 +177,19 @@ abstract class Router extends RouteInspector
                         $setRoute = true;
                     }
 
-                    if (!empty($failures)) {
+                    if ($size1 == ($size2 = Arr::size($uriTokens)) && !empty($failures))
+                        throw new RouteException(implode(",\n ", $failures), "Route Error", HTTP::UNAUTHORIZED);
 
-                        if ($size1 == Arr::size($uriTokens))
-                            throw new RouteException(implode(",\n ", $failures), "Route Error", HTTP::UNAUTHORIZED);
 
+                    if ($size2 > $size1)
                         throw new RouteException("You are passing more arguments than required by the current route",
-                            "Route Error", HTTP::UNAUTHORIZED);
-                    }
+                        "Route Error", HTTP::UNAUTHORIZED);
 
                     return $routeEntry;
+
+                } elseif (self::matchTokens($uriTokens, Arr::extract($tokens, 0, (Arr::size($uriTokens) - 1)))) {
+                    throw new RouteException("You are passing fewer arguments than required by the current route",
+                        "Route Error", HTTP::UNAUTHORIZED);
                 }
 
                 foreach ($uriTokens as $key => $uri) if ($uri === '--') unset($uriTokens[$key]);
