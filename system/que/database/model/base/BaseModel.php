@@ -569,75 +569,81 @@ abstract class BaseModel implements Model
         if (!empty($this->casts)) {
             foreach ($this->casts as $column => $cast) {
                 if (!$this->offsetExists($column)) continue;
-                $operand = null;
-                if (str_contains($cast, ":")) {
-                    $data = explode(str__starts_with($cast, 'func') ? "::" : ":", $cast, 2);
-                    $cast = $data[0] ?? $cast;
-                    $operand = $data[1] ?? null;
-                }
-                switch ($cast) {
-                    case 'json':
-                    case 'array':
-                        $this->offsetSet($column, is_string($value = $this->getValue($column)) ? json_decode($value, true) : (array) $value);
-                        break;
-                    case 'object':
-                        $this->offsetSet($column, is_string($value = $this->getValue($column)) ? json_decode($value) : (object) $value);
-                        break;
-                    case 'int':
-                    case 'integer':
-                        $this->offsetSet($column, $this->getInt($column));
-                        break;
-                    case 'string':
-                        $this->offsetSet($column, (string) $this->getValue($column));
-                        break;
-                    case 'bool':
-                    case 'boolean':
-                        $this->offsetSet($column, $this->getBool($column));
-                        break;
-                    case 'double':
-                        $this->offsetSet($column, (double) $this->getValue($column));
-                        break;
-                    case 'real':
-                    case 'float':
-                        $this->offsetSet($column, $this->getFloat($column));
-                        break;
-                    case 'time_ago':
-                        $this->offsetSet($column, _time()->time_ago($this->getValue($column)));
-                        break;
-                    case 'date':
-                    case 'time':
-                    case 'datetime':
-                        $value = $this->getValue($column);
-                        $operand = $operand ?: DATE_FORMAT_MYSQL;
-                        if (is_numeric($value)) $value = date($operand, $value);
-                        elseif ($this->validate($column)->isDate()) {
-                            $value = $this->validate($column)->toDate($operand)->getValue();
-                        }
-                        $this->offsetSet($column, $value);
-                        break;
-                    case 'func':
-                        if (str__contains($operand, "|")) {
-                            foreach (explode("|", $operand) as $func) {
-                                if (str__contains($func, ","))  {
-                                    $func = explode(",", $func);
-                                    $this->offsetSet($column, $this->validate($column)->_call(...$func)->getValue());
-                                } else {
-                                    $this->offsetSet($column, $this->validate($column)->_call($func)->getValue());
-                                }
-                            }
-                        } else {
-                            if (str__contains($operand, ","))  {
-                                $operand = explode(",", $operand);
-                                $this->offsetSet($column, $this->validate($column)->_call(...$operand)->getValue());
-                            } else {
-                                $this->offsetSet($column, $this->validate($column)->_call($operand)->getValue());
-                            }
-                        }
-                        break;
-                    default:
-                        break;
-                }
+                if (str__contains($cast, "||")) {
+                    foreach (explode("||", $cast) as $c) $this->cast($column, $c);
+                } else $this->cast($column, $cast);
             }
+        }
+    }
+
+    private function cast(string $column, string $cast) {
+        $operand = null;
+        if (str_contains($cast, ":")) {
+            $data = explode(str__starts_with($cast, 'func') ? "::" : ":", $cast, 2);
+            $cast = $data[0] ?? $cast;
+            $operand = $data[1] ?? null;
+        }
+        switch ($cast) {
+            case 'json':
+            case 'array':
+                $this->offsetSet($column, is_string($value = $this->getValue($column)) ? json_decode($value, true) : (array) $value);
+                break;
+            case 'object':
+                $this->offsetSet($column, is_string($value = $this->getValue($column)) ? json_decode($value) : (object) $value);
+                break;
+            case 'int':
+            case 'integer':
+                $this->offsetSet($column, $this->getInt($column));
+                break;
+            case 'string':
+                $this->offsetSet($column, (string) $this->getValue($column));
+                break;
+            case 'bool':
+            case 'boolean':
+                $this->offsetSet($column, $this->getBool($column));
+                break;
+            case 'double':
+                $this->offsetSet($column, (double) $this->getValue($column));
+                break;
+            case 'real':
+            case 'float':
+                $this->offsetSet($column, $this->getFloat($column));
+                break;
+            case 'time_ago':
+                $this->offsetSet($column, _time()->time_ago($this->getValue($column)));
+                break;
+            case 'date':
+            case 'time':
+            case 'datetime':
+                $value = $this->getValue($column);
+                $operand = $operand ?: DATE_FORMAT_MYSQL;
+                if (is_numeric($value)) $value = date($operand, $value);
+                elseif ($this->validate($column)->isDate()) {
+                    $value = $this->validate($column)->toDate($operand)->getValue();
+                }
+                $this->offsetSet($column, $value);
+                break;
+            case 'func':
+                if (str__contains($operand, "|")) {
+                    foreach (explode("|", $operand) as $func) {
+                        if (str__contains($func, ","))  {
+                            $func = explode(",", $func);
+                            $this->offsetSet($column, $this->validate($column)->_call(...$func)->getValue());
+                        } else {
+                            $this->offsetSet($column, $this->validate($column)->_call($func)->getValue());
+                        }
+                    }
+                } else {
+                    if (str__contains($operand, ","))  {
+                        $operand = explode(",", $operand);
+                        $this->offsetSet($column, $this->validate($column)->_call(...$operand)->getValue());
+                    } else {
+                        $this->offsetSet($column, $this->validate($column)->_call($operand)->getValue());
+                    }
+                }
+                break;
+            default:
+                break;
         }
     }
 
