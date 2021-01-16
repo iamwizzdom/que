@@ -494,6 +494,21 @@ function str_tokenize(string $string, string $needle): array {
 }
 
 /**
+ * @param $data
+ * @return string
+ */
+function to_string($data): string
+{
+    if (is_array($data)) $data = json_encode($data);
+    elseif (is_object($data)) {
+        if ($data instanceof JsonSerializable) $data = json_encode($data);
+        else $data = json_encode((array) $data);
+    } elseif (is_bool($data)) $data = ($data ? 'true' : 'false');
+    $data = value($data);
+    return (string) (is_string($data) ? $data : to_string($data));
+}
+
+/**
  * Remove all characters from url except domain name and uri
  *
  * @param string $url
