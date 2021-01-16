@@ -616,7 +616,23 @@ abstract class BaseModel implements Model
                         $this->offsetSet($column, $value);
                         break;
                     case 'func':
-                        $this->offsetSet($column, $this->validate($column)->_call($operand)->getValue());
+                        if (str__contains($operand, "|")) {
+                            foreach (explode("|", $operand) as $func) {
+                                if (str__contains($func, ","))  {
+                                    $func = explode(",", $func);
+                                    $this->offsetSet($column, $this->validate($column)->_call(...$func)->getValue());
+                                } else {
+                                    $this->offsetSet($column, $this->validate($column)->_call($func)->getValue());
+                                }
+                            }
+                        } else {
+                            if (str__contains($operand, ","))  {
+                                $operand = explode(",", $operand);
+                                $this->offsetSet($column, $this->validate($column)->_call(...$operand)->getValue());
+                            } else {
+                                $this->offsetSet($column, $this->validate($column)->_call($operand)->getValue());
+                            }
+                        }
                         break;
                     default:
                         break;
