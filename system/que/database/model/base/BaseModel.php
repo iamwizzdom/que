@@ -571,8 +571,8 @@ abstract class BaseModel implements Model
                 if (!$this->offsetExists($column)) continue;
                 $operand = null;
                 if (str_contains($cast, ":")) {
-                    $data = explode(":", $cast);
-                    $cast = $data[0];
+                    $data = explode(str__starts_with($cast, 'func') ? "::" : ":", $cast, 2);
+                    $cast = $data[0] ?? $cast;
                     $operand = $data[1] ?? null;
                 }
                 switch ($cast) {
