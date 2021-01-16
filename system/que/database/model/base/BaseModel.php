@@ -74,10 +74,7 @@ abstract class BaseModel implements Model
         $this->setObject($tableRow);
         $this->setTable($tableName);
         $this->setPrimaryKey($primaryKey);
-        $this->__copy();
-        $this->__append();
-        $this->__cast();
-        $this->__rename();
+        $this->setUp();
     }
 
     /**
@@ -104,6 +101,13 @@ abstract class BaseModel implements Model
     private function setObject(object &$object)
     {
         $this->object = &$object;
+    }
+
+    private function setUp() {
+        $this->__copy();
+        $this->__append();
+        $this->__cast();
+        $this->__rename();
     }
 
     /**
@@ -338,6 +342,7 @@ abstract class BaseModel implements Model
         $data = db()->find($this->getTable(), $this->getValue($this->getPrimaryKey()), $this->getPrimaryKey());
         if (!$data->isSuccessful()) return false;
         $this->object = (object) $data->getFirst();
+        $this->setUp();
         return true;
     }
 
