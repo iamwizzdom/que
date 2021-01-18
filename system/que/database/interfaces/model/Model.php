@@ -167,8 +167,18 @@ interface Model extends QueArrayAccess
      */
     public function load(string $name, ...$arguments): Model;
 
+    /**
+     * @param Model $model
+     * @return static
+     */
+    public static function cast(Model $model): self;
+
     public function __clone(): void;
 
+    /**
+     * @param string $name
+     * @return mixed
+     */
     public function __get(string $name);
 
     /**

@@ -2251,15 +2251,15 @@ function db(): DB
 }
 
 /**
- * @param string $model | model key in database config
+ * @param string $modelKey | model key in database config
  * @return mixed
  */
-function model(string $model): mixed
+function model(string $modelKey): mixed
 {
-    $model = Arr::get(config("database.models", []), $model);
-    if ($model === null) return null;
-    if (!class_exists($model, true)) return null;
-    return $model;
+    $modelKey = Arr::get(config("database.models", []), $modelKey);
+    if ($modelKey === null) return null;
+    if (!class_exists($modelKey, true)) return null;
+    return $modelKey;
 }
 
 /**

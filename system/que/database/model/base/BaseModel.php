@@ -106,7 +106,7 @@ abstract class BaseModel implements Model
     private function setUp() {
         $this->__copy();
         $this->__append();
-        $this->__cast();
+        $this->__castParams();
         $this->__rename();
     }
 
@@ -528,6 +528,15 @@ abstract class BaseModel implements Model
         return $this;
     }
 
+    /**
+     * @param Model $model
+     * @return static
+     */
+    public static function cast(Model $model): self {
+        $modelName = get_called_class();
+        return new $modelName($model->getObject(), $model->getTable(), $model->getPrimaryKey());
+    }
+
     public function __clone(): void
     {
         // TODO: Implement __clone() method.
@@ -570,18 +579,18 @@ abstract class BaseModel implements Model
         }
     }
 
-    private function __cast() {
+    private function __castParams() {
         if (!empty($this->casts)) {
             foreach ($this->casts as $column => $cast) {
                 if (!$this->offsetExists($column)) continue;
                 if (str__contains($cast, "||")) {
-                    foreach (explode("||", $cast) as $c) $this->cast($column, $c);
-                } else $this->cast($column, $cast);
+                    foreach (explode("||", $cast) as $c) $this->castParams($column, $c);
+                } else $this->castParams($column, $cast);
             }
         }
     }
 
-    private function cast(string $column, string $cast) {
+    private function castParams(string $column, string $cast) {
         $operand = null;
         if (str_contains($cast, ":")) {
             $data = explode(str__starts_with($cast, 'func') ? "::" : ":", $cast, 2);
