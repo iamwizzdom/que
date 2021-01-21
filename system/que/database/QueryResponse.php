@@ -37,6 +37,11 @@ class QueryResponse
     private ?string $modelKey = null;
 
     /**
+     * @var string|null
+     */
+    private ?string $modelName = null;
+
+    /**
      * @var DriverResponse
      */
     private DriverResponse $driver_response;
@@ -84,7 +89,14 @@ class QueryResponse
      */
     public function getFirstWithModel(string $primaryKey = null): ?Model
     {
-        return $this->getQueryResponseWithModel(0, $primaryKey);
+        try {
+
+            return $this->getQueryResponseWithModel(0, $primaryKey);
+
+        } catch (QueRuntimeException $e) {
+            throw new QueRuntimeException($e->getMessage(), $e->getTitle(), $e->getCode(), $e->getHttpCode(),
+                PreviousException::getInstance(2, $e->getPrevious()->getTrace()));
+        }
     }
 
     /**
@@ -109,9 +121,16 @@ class QueryResponse
      */
     public function getAllWithModel(string $primaryKey = null): ?ModelCollection
     {
-        $response = $this->getQueryResponseWithModel(null, $primaryKey);
-        if (empty($response)) return null;
-        return $response instanceof ModelCollection ? $response : new ModelCollection([$response]);
+        try {
+
+            $response = $this->getQueryResponseWithModel(null, $primaryKey);
+            if (empty($response)) return null;
+            return $response instanceof ModelCollection ? $response : new ModelCollection([$response]);
+
+        } catch (QueRuntimeException $e) {
+            throw new QueRuntimeException($e->getMessage(), $e->getTitle(), $e->getCode(), $e->getHttpCode(),
+                PreviousException::getInstance(2, $e->getPrevious()->getTrace()));
+        }
     }
 
     /**
@@ -157,15 +176,7 @@ class QueryResponse
     {
         if ($primaryKey === null) $primaryKey = $this->getPrimaryKey();
 
-        $model = \model($this->getModelKey());
-
-        if ($model === null) throw new QueRuntimeException(
-            "No database model was found with the key '{$this->getModelKey()}', check your database configuration to fix this issue.",
-            "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
-
-        if (!($implements = class_implements($model)) || !isset($implements[Model::class])) throw new QueRuntimeException(
-            "The specified model ({$model}) with key '{$this->getModelKey()}' does not implement the Que database model interface.",
-            "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+        if (!$this->modelName) $this->setModelKey($this->getModelKey());
 
         $response = $this->getQueryResponse($key);
 
@@ -173,17 +184,17 @@ class QueryResponse
 
         if ($key !== null) {
             $response = (object)$response;
-            return new $model($response, $this->getTable(), $primaryKey);
+            return new $this->modelName($response, $this->getTable(), $primaryKey);
         }
 
         if (is_object($response)) {
             $response = (object)$response;
-            return new $model($response, $this->getTable(), $primaryKey);
+            return new $this->modelName($response, $this->getTable(), $primaryKey);
         }
 
-        array_callback($response, function ($row) use ($model, $primaryKey) {
-            $row = (object)$row;
-            return new $model($row, $this->getTable(), $primaryKey);
+        array_callback($response, function ($row) use ($primaryKey) {
+            $row = (object) $row;
+            return new $this->modelName($row, $this->getTable(), $primaryKey);
         });
 
         return new ModelCollection($response);
@@ -293,11 +304,19 @@ class QueryResponse
     }
 
     /**
-     * @param string|null $model
+     * @param string $modelKey
      */
-    public function setModelKey(?string $model): void
+    public function setModelKey(string $modelKey): void
     {
-        $this->modelKey = $model;
+        try {
+
+            $modelName = \model($this->modelKey = $modelKey);
+            $this->modelName = $this->verifyModel($modelName);
+
+        } catch (QueRuntimeException $e) {
+            throw new QueRuntimeException($e->getMessage(), $e->getTitle(), $e->getCode(), $e->getHttpCode(),
+                PreviousException::getInstance(2, $e->getPrevious()->getTrace()));
+        }
     }
 
 
@@ -395,6 +414,23 @@ class QueryResponse
             }
         }
         return null;
+    }
+
+    /**
+     * @param string|null $modelName
+     * @return string
+     */
+    private function verifyModel(?string $modelName): string
+    {
+        if ($modelName === null) throw new QueRuntimeException(
+            "No database model was found with the key '{$this->getModelKey()}', check your database configuration to fix this issue.",
+            "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+
+        if (!($implements = class_implements($modelName)) || !isset($implements[Model::class])) throw new QueRuntimeException(
+            "The specified model ({$modelName}) with key '{$this->getModelKey()}' does not implement the Que database model interface.",
+            "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+
+        return $modelName;
     }
 
     /**
