@@ -525,6 +525,7 @@ abstract class BaseModel implements Model
      * @return Model
      */
     public function load(string $name, ...$arguments): Model {
+        $this->appends[] = $name;
         $this->set($name, $this->__call($name, $arguments));
         return $this;
     }
