@@ -6,7 +6,7 @@
  * Time: 7:20 PM
  */
 
-namespace custom\model;
+namespace model;
 
 use que\database\model\Model;
 

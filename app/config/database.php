@@ -6,7 +6,7 @@
  * Time: 9:34 AM
  */
 
-use custom\model\CustomModel;
+use model\CustomModel;
 use que\database\drivers\mysql\MySqlDriver;
 use que\database\model\CentralModel;
 
@@ -204,7 +204,7 @@ return [
              | Set to [bool](true) to shutdown Que and output all MySQL/SQL errors,
              | otherwise [bool](false) to output only FATAL errors
              */
-            'debug' => true
+            'debug' => !LIVE
         ]
 
     ],
