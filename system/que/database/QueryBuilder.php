@@ -702,9 +702,9 @@ class QueryBuilder implements Builder
             if (!$observer->getSignal()->isContinueOperation()) {
 
                 return new QueryResponse($this->getCustomDriverResponse($this->builder, [
-                    "Observer for '{$this->builder->getTable()}' table stopped insert operation" . (
+                    $this->driver->isInDebugMode() ? ("Observer for '{$this->builder->getTable()}' table stopped insert operation" . (
                         $observer->getSignal()->getReason() ? " due to: {$observer->getSignal()->getReason()}" : ""
-                    )
+                        )) : $observer->getSignal()->getReason()
                 ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), $model->getPrimaryKey());
             }
 
@@ -793,9 +793,9 @@ class QueryBuilder implements Builder
             $this->query->transRollBack();
 
             return new QueryResponse($this->getCustomDriverResponse($this->builder, [
-                "Observer for '{$this->builder->getTable()}' table asked to undo the insert operation" . (
+                $this->driver->isInDebugMode() ? ("Observer for '{$this->builder->getTable()}' table asked to undo the insert operation" . (
                     $observer->getSignal()->getReason() ? " due to: {$observer->getSignal()->getReason()}" : ""
-                )
+                )) : $observer->getSignal()->getReason()
             ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), $model->getPrimaryKey());
 
         } else {
@@ -882,9 +882,9 @@ class QueryBuilder implements Builder
             if (!$observer->getSignal()->isContinueOperation()) {
 
                 return new QueryResponse($this->getCustomDriverResponse($this->builder, [
-                    "Observer for '{$this->builder->getTable()}' table stopped delete operation" . (
+                    $this->driver->isInDebugMode() ? ("Observer for '{$this->builder->getTable()}' table stopped delete operation" . (
                         $observer->getSignal()->getReason() ? " due to: {$observer->getSignal()->getReason()}" : ""
-                    )
+                        )) : $observer->getSignal()->getReason()
                 ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
             }
 
@@ -897,7 +897,9 @@ class QueryBuilder implements Builder
         if ($modelCollection->isEmpty()) {
 
             return new QueryResponse($this->getCustomDriverResponse($this->builder, [
-                "Observer for '{$this->builder->getTable()}' table removed all records to be deleted thereby stopping the delete operation"
+                $this->driver->isInDebugMode() ?
+                    "Observer for '{$this->builder->getTable()}' table removed all records to be deleted thereby stopping the delete operation" :
+                    "The delete operation was intercepted"
             ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
         }
 
@@ -970,9 +972,9 @@ class QueryBuilder implements Builder
                 $this->query->transRollBack();
 
                 return new QueryResponse($this->getCustomDriverResponse($this->builder, [
-                    "Observer for '{$this->builder->getTable()}' table asked to undo the delete operation" . (
+                    $this->driver->isInDebugMode() ? ("Observer for '{$this->builder->getTable()}' table asked to undo the delete operation" . (
                         $observer->getSignal()->getReason() ? " due to: {$observer->getSignal()->getReason()}" : ""
-                    )
+                        )) : $observer->getSignal()->getReason()
                 ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
             } else {
 
@@ -1215,9 +1217,9 @@ class QueryBuilder implements Builder
             if (!$observer->getSignal()->isContinueOperation()) {
 
                 return new QueryResponse($this->getCustomDriverResponse($this->builder, [
-                    "Observer for '{$this->builder->getTable()}' table stopped update operation" . (
+                    $this->driver->isInDebugMode() ? ("Observer for '{$this->builder->getTable()}' table stopped update operation" . (
                         $observer->getSignal()->getReason() ? " due to: {$observer->getSignal()->getReason()}" : ""
-                    )
+                        )) : $observer->getSignal()->getReason()
                 ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
             }
 
@@ -1230,7 +1232,9 @@ class QueryBuilder implements Builder
         if ($oldModelCollection->isEmpty()) {
 
             return new QueryResponse($this->getCustomDriverResponse($this->builder, [
-                "Observer for '{$this->builder->getTable()}' table removed all records to be updated thereby stopping the update operation"
+                $this->driver->isInDebugMode() ?
+                    "Observer for '{$this->builder->getTable()}' table removed all records to be updated thereby stopping the update operation" :
+                    "The update operation was intercepted"
             ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
         }
 
@@ -1311,9 +1315,9 @@ class QueryBuilder implements Builder
                 $this->query->transRollBack();
 
                 return new QueryResponse($this->getCustomDriverResponse($this->builder, [
-                    "Observer for '{$this->builder->getTable()}' table asked to undo the update operation" . (
+                    $this->driver->isInDebugMode() ? ("Observer for '{$this->builder->getTable()}' table asked to undo the update operation" . (
                         $observer->getSignal()->getReason() ? " due to: {$observer->getSignal()->getReason()}" : ""
-                    )
+                        )) : $observer->getSignal()->getReason()
                 ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
             } else {
 

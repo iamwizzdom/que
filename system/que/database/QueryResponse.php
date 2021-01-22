@@ -242,9 +242,7 @@ class QueryResponse
      */
     public function getQueryError(): string
     {
-        return serializer_recursive($this->getDriverResponse()->getErrors(), " -- ", function ($error) {
-            return !empty($error);
-        });
+        return implode(" | ", $this->getDriverResponse()->getErrors());
     }
 
     /**
