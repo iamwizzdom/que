@@ -314,7 +314,7 @@ class MySqlDriver implements Driver
                 return new MySqlDriverResponse(
                     $data = $stmt->fetchAll(PDO::FETCH_OBJ), $status,
                     $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()),
-                    (empty($data) && $stmt->errorCode() === "00000" ? ['No records found'] : $stmt->errorInfo()),
+                    (empty($data) && $stmt->errorCode() === "00000" ? [$this->isInDebugMode() ? "No record found in {$builder->getTable()} table" : 'No record found'] : $stmt->errorInfo()),
                     $stmt->errorCode()
                 );
 
@@ -324,7 +324,7 @@ class MySqlDriver implements Driver
                 return new MySqlDriverResponse(
                     null, $status,
                     $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()),
-                    ($stmt->rowCount() == 0 ? ['No records affected'] : $stmt->errorInfo()),
+                    ($stmt->rowCount() == 0 ? [$this->isInDebugMode() ? "No record affected in {$builder->getTable()} table" : 'No record affected'] : $stmt->errorInfo()),
                     $stmt->errorCode(), 0, $stmt->rowCount()
                 );
 
