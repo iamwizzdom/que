@@ -362,7 +362,7 @@ abstract class BaseModel implements Model
         $update = db()->update()->table($this->getTable())->columns($columns)
             ->where($primaryKey, $this->getValue($primaryKey))->exec();
 
-        if ($status = $update->isSuccessful()) {
+        if ($update->isSuccessful()) {
             foreach ($columns as $key => $value) if ($this->offsetExists($key)) $this->offsetSet($key, $value);
             $this->setUp();
         }
@@ -382,7 +382,7 @@ abstract class BaseModel implements Model
 
         $delete = db()->delete()->table($this->getTable())->where($primaryKey, $this->getValue($primaryKey))->exec();
 
-        if ($status = $delete->isSuccessful()) $this->object = (object)[];
+        if ($delete->isSuccessful()) $this->object = (object)[];
 
         return new ModelQueryResponse($delete);
     }
