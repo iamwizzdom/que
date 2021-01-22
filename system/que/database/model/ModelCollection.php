@@ -262,7 +262,7 @@ class ModelCollection implements QueArrayAccess
         $count = 0;
         foreach ($this->models as $model) {
             if (!$model instanceof Model) continue;
-            if ($model->update($columns, $primaryKey)) $count++;
+            if ($model->update($columns, $primaryKey)?->isSuccessful()) $count++;
         }
         return $count > 0;
     }
@@ -276,7 +276,7 @@ class ModelCollection implements QueArrayAccess
         $count = 0;
         foreach ($this->models as $key => $model) {
             if (!$model instanceof Model) continue;
-            if ($model->delete($primaryKey)) {
+            if ($model->delete($primaryKey)?->isSuccessful()) {
                 if (!$this->static) $this->offsetUnset($key);
                 $count++;
             }

@@ -11,6 +11,7 @@ use que\common\exception\QueRuntimeException;
 use que\common\validator\interfaces\Condition;
 use que\database\interfaces\model\Model;
 use que\database\model\ModelCollection;
+use que\database\model\ModelQueryResponse;
 use que\http\HTTP;
 use que\support\Arr;
 use que\support\Obj;
@@ -349,14 +350,14 @@ abstract class BaseModel implements Model
     /**
      * @inheritDoc
      */
-    public function update(array $columns, string $primaryKey = null): bool
+    public function update(array $columns, string $primaryKey = null): ?ModelQueryResponse
     {
         // TODO: Implement update() method.
-        if (empty($columns)) return false;
+        if (empty($columns)) return null;
 
         if ($primaryKey === null) $primaryKey = $this->getPrimaryKey();
 
-        if (!$this->offsetExists($primaryKey)) return false;
+        if (!$this->offsetExists($primaryKey)) return null;
 
         $update = db()->update()->table($this->getTable())->columns($columns)
             ->where($primaryKey, $this->getValue($primaryKey))->exec();
@@ -366,24 +367,24 @@ abstract class BaseModel implements Model
             $this->setUp();
         }
 
-        return $status;
+        return new ModelQueryResponse($update);
     }
 
     /**
      * @inheritDoc
      */
-    public function delete(string $primaryKey = null): bool
+    public function delete(string $primaryKey = null): ?ModelQueryResponse
     {
         // TODO: Implement delete() method.
         if ($primaryKey === null) $primaryKey = $this->getPrimaryKey();
 
-        if (!$this->offsetExists($primaryKey)) return false;
+        if (!$this->offsetExists($primaryKey)) return null;
 
         $delete = db()->delete()->table($this->getTable())->where($primaryKey, $this->getValue($primaryKey))->exec();
 
         if ($status = $delete->isSuccessful()) $this->object = (object)[];
 
-        return $status;
+        return new ModelQueryResponse($delete);
     }
 
     /**

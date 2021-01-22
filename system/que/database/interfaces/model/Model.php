@@ -11,6 +11,7 @@ namespace que\database\interfaces\model;
 use que\common\validator\interfaces\Condition;
 use que\database\interfaces\Builder;
 use que\database\model\ModelCollection;
+use que\database\model\ModelQueryResponse;
 use que\support\interfaces\QueArrayAccess;
 
 interface Model extends QueArrayAccess
@@ -145,15 +146,15 @@ interface Model extends QueArrayAccess
     /**
      * @param array $columns
      * @param string|null $primaryKey
-     * @return bool
+     * @return ModelQueryResponse|null
      */
-    public function update(array $columns, string $primaryKey = null): bool;
+    public function update(array $columns, string $primaryKey = null): ?ModelQueryResponse;
 
     /**
      * @param string|null $primaryKey
-     * @return bool
+     * @return ModelQueryResponse|null
      */
-    public function delete(string $primaryKey = null): bool;
+    public function delete(string $primaryKey = null): ?ModelQueryResponse;
 
     /**
      * @param $from
