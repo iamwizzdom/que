@@ -1311,16 +1311,16 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
     }
 
     /**
-     * @param callable $closure
+     * @param callable $callback
      * @return QueryBuilder
      */
-    private function runSubBuilder(callable $closure): QueryBuilder
+    private function runSubBuilder(callable $callback): QueryBuilder
     {
         $driverBuilder = new MySqlDriverQueryBuilder($this->driver, $this->bindings);
         $driverBuilder->setQueryType($this->queryType);
         $builder = new QueryBuilder($this->driver, $driverBuilder, DB::getInstance());
         $builder->table($this->table);
-        $closure($builder);
+        $callback($builder);
         $driverBuilder->buildQuery();
         $this->setBindings($builder->getBindings());
         return $builder;
