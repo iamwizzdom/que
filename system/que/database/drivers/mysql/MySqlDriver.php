@@ -299,73 +299,47 @@ class MySqlDriver implements Driver
 
         $i = $builder->getQueryType();
 
-        switch ($i) {
-            case DriverQueryBuilder::INSERT:
-
-                return new MySqlDriverResponse(
-                    null, $status,
-                    $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()), $stmt->errorInfo(),
-                    $stmt->errorCode(), $conn->lastInsertId()
-                );
-
-            case DriverQueryBuilder::SELECT:
-            case DriverQueryBuilder::RAW_SELECT:
-
-                return new MySqlDriverResponse(
-                    $data = $stmt->fetchAll(PDO::FETCH_OBJ), $status,
-                    $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()),
-                    (empty($data) && $stmt->errorCode() === "00000" ? [$this->isInDebugMode() ? "No record found in {$builder->getTable()} table" : 'No record found'] : $stmt->errorInfo()),
-                    $stmt->errorCode()
-                );
-
-            case DriverQueryBuilder::DELETE:
-            case DriverQueryBuilder::UPDATE:
-
-                return new MySqlDriverResponse(
-                    null, $status,
-                    $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()),
-                    ($stmt->rowCount() == 0 ? [$this->isInDebugMode() ? "No record affected in {$builder->getTable()} table" : 'No record affected'] : $stmt->errorInfo()),
-                    $stmt->errorCode(), 0, $stmt->rowCount()
-                );
-
-            case DriverQueryBuilder::AVG:
-            case DriverQueryBuilder::SUM:
-            case DriverQueryBuilder::COUNT:
-            case DriverQueryBuilder::CHECK:
-
-                return new MySqlDriverResponse(
-                    $stmt->fetch(PDO::FETCH_ASSOC)['aggregate'] ?? 0, $status,
-                    $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()), $stmt->errorInfo(),
-                    $stmt->errorCode()
-                );
-            case DriverQueryBuilder::RAW_OBJECT:
-
-                return new MySqlDriverResponse(
-                    $stmt->fetchAll(PDO::FETCH_OBJ), $status,
-                    $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()), $stmt->errorInfo(),
-                    $stmt->errorCode()
-                );
-
-            case DriverQueryBuilder::RAW_QUERY:
-
-                return new MySqlDriverResponse(
-                    null, $status,
-                    $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()), $stmt->errorInfo(),
-                    $stmt->errorCode()
-                );
-
-            case DriverQueryBuilder::SHOW:
-
-                return new MySqlDriverResponse(
-                    $stmt->fetch(PDO::FETCH_ASSOC)['Column_name'] ?? '', $status,
-                    $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()), $stmt->errorInfo(),
-                    $stmt->errorCode()
-                );
-
-            default:
-                throw new QueRuntimeException("Database driver query builder type '{$i}' is invalid",
-                    "Database Driver Error", E_USER_ERROR, 0, PreviousException::getInstance(3));
-        }
+        return match ($i) {
+            DriverQueryBuilder::INSERT => new MySqlDriverResponse(
+                null, $status,
+                $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()), $stmt->errorInfo(),
+                $stmt->errorCode(), $conn->lastInsertId()
+            ),
+            DriverQueryBuilder::SELECT, DriverQueryBuilder::RAW_SELECT => new MySqlDriverResponse(
+                $data = $stmt->fetchAll(PDO::FETCH_OBJ), $status,
+                $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()),
+                (empty($data) && $stmt->errorCode() === "00000" ? [$this->isInDebugMode() ? "No record found in {$builder->getTable()} table" : 'No record found'] : $stmt->errorInfo()),
+                $stmt->errorCode()
+            ),
+            DriverQueryBuilder::DELETE, DriverQueryBuilder::UPDATE => new MySqlDriverResponse(
+                null, $status,
+                $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()),
+                ($stmt->rowCount() == 0 ? [$this->isInDebugMode() ? "No record affected in {$builder->getTable()} table" : 'No record affected'] : $stmt->errorInfo()),
+                $stmt->errorCode(), 0, $stmt->rowCount()
+            ),
+            DriverQueryBuilder::AVG, DriverQueryBuilder::SUM, DriverQueryBuilder::COUNT, DriverQueryBuilder::CHECK => new MySqlDriverResponse(
+                $stmt->fetch(PDO::FETCH_ASSOC)['aggregate'] ?? 0, $status,
+                $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()), $stmt->errorInfo(),
+                $stmt->errorCode()
+            ),
+            DriverQueryBuilder::RAW_OBJECT => new MySqlDriverResponse(
+                $stmt->fetchAll(PDO::FETCH_OBJ), $status,
+                $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()), $stmt->errorInfo(),
+                $stmt->errorCode()
+            ),
+            DriverQueryBuilder::RAW_QUERY => new MySqlDriverResponse(
+                null, $status,
+                $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()), $stmt->errorInfo(),
+                $stmt->errorCode()
+            ),
+            DriverQueryBuilder::SHOW => new MySqlDriverResponse(
+                $stmt->fetch(PDO::FETCH_ASSOC)['Column_name'] ?? '', $status,
+                $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()), $stmt->errorInfo(),
+                $stmt->errorCode()
+            ),
+            default => throw new QueRuntimeException("Database driver query builder type '{$i}' is invalid",
+                "Database Driver Error", E_USER_ERROR, 0, PreviousException::getInstance(3)),
+        };
     }
 
     /**

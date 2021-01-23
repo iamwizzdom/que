@@ -95,6 +95,16 @@ interface Builder
     public function whenNot($value, Closure $callback, Closure $default = null): Builder;
 
     /**
+     * @return Builder
+     */
+    public function startWhereGroup(): Builder;
+
+    /**
+     * @return Builder
+     */
+    public function endWhereGroup(): Builder;
+
+    /**
      * @param $column
      * @param $value
      * @param null $operator

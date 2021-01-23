@@ -17,7 +17,6 @@ use que\database\interfaces\drivers\DriverQueryBuilder;
 use que\database\DB;
 use que\database\QueryBuilder;
 use que\http\HTTP;
-use que\support\Arr;
 
 class MySqlDriverQueryBuilder implements DriverQueryBuilder
 {
@@ -30,7 +29,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
     /**
      * @var array
      */
-    private array $bindings = [];
+    private array $bindings;
 
     /**
      * @var int
@@ -62,6 +61,19 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
      */
     private array $where = [];
 
+    /**
+     * @var int
+     */
+    private int $whereGroupStarted = 0;
+
+    /**
+     * @var int
+     */
+    private int $whereGroupStartedAt = 0;
+
+    /**
+     * @var array
+     */
     private array $having = [];
 
     /**
@@ -229,6 +241,41 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
     {
         // TODO: Implement clearWhereQuery() method.
         $this->where = [];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function startWhereGroup(): DriverQueryBuilder
+    {
+        // TODO: Implement startWhereGroup() method.
+        $this->whereGroupStarted++;
+        $this->whereGroupStartedAt = count($this->where);
+        $this->where[] = [
+            'type' => 'start_group',
+            'value' => '('
+        ];
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function endWhereGroup(): DriverQueryBuilder
+    {
+        // TODO: Implement endWhereGroup() method.
+        if ($this->whereGroupStarted <= 0) throw new QueRuntimeException("You can't end a where group when you've not started one.",
+            "Database Driver Error", E_USER_ERROR, 0, PreviousException::getInstance(2));
+
+        if (((count($this->where) - 1) - $this->whereGroupStartedAt) < 2) throw new QueRuntimeException("You must have at least 2 where queries in between a where group",
+            "Database Driver Error", E_USER_ERROR, 0, PreviousException::getInstance(2));
+
+        $this->whereGroupStarted--;
+        $this->where[] = [
+            'type' => 'end_group',
+            'value' => ')'
+        ];
+        return $this;
     }
 
     /**
@@ -790,24 +837,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
             if ($this->queryType == self::SELECT) $select_columns = $this->build_select_query() ?: '*';
 
-            $where = $this->build_sql_where_query();
-
-            if (!empty($where['AND'])) {
-                $where['AND'] = array_map(function ($sql) {
-                    return str_char_count($sql, " OR ") > 0 ? "({$sql})" : $sql;
-                }, $where['AND']);
-                $where_query = implode(" AND ", $where['AND']);
-            }
-
-            if (!empty($where['OR'])) {
-                if (!empty($where_query)) {
-                    $where['OR'] = array_map(function ($sql) {
-                        return str_char_count($sql, " OR ") > 0 ? "({$sql})" : $sql;
-                    }, $where['OR']);
-                }
-                $where['OR'] = count($where['OR']) > 1 ? ("(" . implode(" OR ", $where['OR']) . ")") : implode(" OR ", $where['OR']);
-                $where_query .= !empty($where_query) ? " AND {$where['OR']}" : " {$where['OR']}";
-            }
+            $where_query = $this->build_sql_where_query();
 
             if ($this->queryType == self::SELECT || $this->queryType == self::COUNT
                 || $this->queryType == self::AVG || $this->queryType == self::SUM) {
@@ -1080,34 +1110,43 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
     }
 
     /**
-     * @return array
+     * @return string
      */
-    private function build_sql_where_query(): array
+    private function build_sql_where_query(): string
     {
-        $where = [
-            'OR' => [],
-            'AND' => []
-        ];
+        $where = ""; $andCount = 0; $orCount = 0;
 
+        foreach ($this->where as $ex) {
+            if (str__ends_with($ex['type'] ?? '', 'and', true)) $andCount++;
+            elseif (str__ends_with($ex['type'] ?? '', 'or', true)) $orCount++;
+        }
+
+        $startedGroup = true; $groupStarter = '';
 
         foreach ($this->where as $expression) {
 
+            $type = ''; $sql = '';
+
             switch ($expression['type'] ?? '') {
                 case 'and':
-                    $where['AND'][] = $this->decode_where_query_expression($where['AND'], $expression);
+                    $type = 'and';
+                    $sql = $this->decode_where_query_expression($expression, $andCount > 0);
                     break;
                 case 'or':
-                    $where['OR'][] = $this->decode_where_query_expression($where['OR'], $expression);
+                    $type = 'or';
+                    $sql = $this->decode_where_query_expression($expression, $orCount > 0);
                     break;
                 case 'raw_and':
                     $binders = $this->addBindings($expression['bindings'] ?: []);
                     foreach ($binders as $bind) $expression['column'] = str_replace_first("?", $bind, $expression['column']);
-                    $where['AND'][] = $expression['column'];
+                    $type = 'and';
+                    $sql = $expression['column'];
                     break;
                 case 'raw_or':
                     $binders = $this->addBindings($expression['bindings'] ?: []);
                     foreach ($binders as $bind) $expression['column'] = str_replace_first("?", $bind, $expression['column']);
-                    $where['OR'][] = $expression['column'];
+                    $type = 'or';
+                    $sql = $expression['column'];
                     break;
                 case 'exists_and':
 
@@ -1118,8 +1157,8 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
                     $expression['column']($builder);
                     $driverBuilder->buildQuery();
                     $this->bindings = $builder->getQueryBindings();
-
-                    $where['AND'][] = "EXISTS ({$builder->getQuery()})";
+                    $type = 'and';
+                    $sql = "EXISTS ({$builder->getQuery()})";
                     break;
                 case 'exists_or':
                     $driverBuilder = new MySqlDriverQueryBuilder($this->driver, $this->bindings);
@@ -1129,8 +1168,8 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
                     $expression['column']($builder);
                     $driverBuilder->buildQuery();
                     $this->bindings = $builder->getQueryBindings();
-
-                    $where['OR'][] = "EXISTS ({$builder->getQuery()})";
+                    $type = 'or';
+                    $sql = "EXISTS ({$builder->getQuery()})";
                     break;
                 case 'exists_not_and':
 
@@ -1141,8 +1180,8 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
                     $expression['column']($builder);
                     $driverBuilder->buildQuery();
                     $this->bindings = $builder->getQueryBindings();
-
-                    $where['AND'][] = "NOT EXISTS ({$builder->getQuery()})";
+                    $type = 'and';
+                    $sql = "NOT EXISTS ({$builder->getQuery()})";
                     break;
                 case 'exists_not_or':
 
@@ -1153,62 +1192,100 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
                     $expression['column']($builder);
                     $driverBuilder->buildQuery();
                     $this->bindings = $builder->getQueryBindings();
-
-                    $where['OR'][] = "NOT EXISTS ({$builder->getQuery()})";
+                    $type = 'or';
+                    $sql = "NOT EXISTS ({$builder->getQuery()})";
                     break;
                 case 'json_value_and':
                     $binder = $this->addBinding("{$expression['column']}", $expression['value']);
-                    $where['AND'][] = "JSON_VALUE({$expression['column']}, '{$expression['path']}') = {$binder}";
+                    $type = 'and';
+                    $sql = "JSON_VALUE({$expression['column']}, '{$expression['path']}') = {$binder}";
                     break;
                 case 'json_value_or':
                     $binder = $this->addBinding("{$expression['column']}", $expression['value']);
-                    $where['OR'][] = "JSON_VALUE({$expression['column']}, '{$expression['path']}') = {$binder}";
+                    $type = 'or';
+                    $sql = "JSON_VALUE({$expression['column']}, '{$expression['path']}') = {$binder}";
                     break;
                 case 'json_contains_and':
                     $binder = $this->addBinding("{$expression['column']}", $expression['value']);
-                    $where['AND'][] = "JSON_CONTAINS({$expression['column']}, {$binder}, '{$expression['path']}')";
+                    $type = 'and';
+                    $sql = "JSON_CONTAINS({$expression['column']}, {$binder}, '{$expression['path']}')";
                     break;
                 case 'json_contains_or':
                     $binder = $this->addBinding("{$expression['column']}", $expression['value']);
-                    $where['OR'][] = "JSON_CONTAINS({$expression['column']}, {$binder}, '{$expression['path']}')";
+                    $type = 'or';
+                    $sql = "JSON_CONTAINS({$expression['column']}, {$binder}, '{$expression['path']}')";
                     break;
                 case 'json_contains_not_and':
                     $binder = $this->addBinding("{$expression['column']}", $expression['value']);
-                    $where['AND'][] = "NOT JSON_CONTAINS({$expression['column']}, {$binder}, '{$expression['path']}')";
+                    $type = 'and';
+                    $sql = "NOT JSON_CONTAINS({$expression['column']}, {$binder}, '{$expression['path']}')";
                     break;
                 case 'json_contains_not_or':
                     $binder = $this->addBinding("{$expression['column']}", $expression['value']);
-                    $where['OR'][] = "NOT JSON_CONTAINS({$expression['column']}, {$binder}, '{$expression['path']}')";
+                    $type = 'or';
+                    $sql = "NOT JSON_CONTAINS({$expression['column']}, {$binder}, '{$expression['path']}')";
                     break;
                 case 'json_valid_and':
                     $binder = $this->addBinding("{$expression['column']}", 1);
-                    $where['AND'][] = "JSON_VALID({$expression['column']}) = {$binder}";
+                    $type = 'and';
+                    $sql = "JSON_VALID({$expression['column']}) = {$binder}";
                     break;
                 case 'json_valid_or':
                     $binder = $this->addBinding("{$expression['column']}", 1);
-                    $where['OR'][] = "JSON_VALID({$expression['column']}) = {$binder}";
+                    $type = 'or';
+                    $sql = "JSON_VALID({$expression['column']}) = {$binder}";
                     break;
                 case 'json_valid_not_and':
                     $binder = $this->addBinding("{$expression['column']}", 1);
-                    $where['AND'][] = "NOT JSON_VALID({$expression['column']}) = {$binder}";
+                    $type = 'and';
+                    $sql = "NOT JSON_VALID({$expression['column']}) = {$binder}";
                     break;
                 case 'json_valid_not_or':
                     $binder = $this->addBinding("{$expression['column']}", 1);
-                    $where['OR'][] = "NOT JSON_VALID({$expression['column']}) = {$binder}";
+                    $type = 'or';
+                    $sql = "NOT JSON_VALID({$expression['column']}) = {$binder}";
+                    break;
+                case 'start_group':
+                case 'end_group':
+                    $type = $expression['type'];
+                    $sql = $expression['value'];
+                    break;
+                default:
                     break;
             }
 
+            if ($type == 'and') {
+                $type = 'AND';
+                $query['sql'] = (str__contains($sql, " OR ", true) ? "({$sql})" : "{$sql}");
+            } elseif ($type == 'or') {
+                $type = 'OR';
+                $query['sql'] = (str__contains($sql, " OR ", true) ? "({$sql})" : "{$sql}");
+            } elseif ($type == 'start_group') {
+                $groupStarter .= $sql;
+                $startedGroup = true;
+                continue;
+            } elseif ($type == 'end_group') {
+                $where .= $sql;
+                $groupStarter = '';
+                continue;
+            }
+
+            if ($startedGroup) {
+                $where .= ((!empty($where) ? " {$type} " : "") . "{$groupStarter}{$sql}");
+            } else $where .= ((!empty($where) ? " {$type} " : "") . $sql);
+
+            $startedGroup = false;
         }
 
         return $where;
     }
 
     /**
-     * @param $where_list
      * @param $expression
+     * @param bool $enclose
      * @return string
      */
-    private function decode_where_query_expression($where_list, $expression): string
+    private function decode_where_query_expression($expression, bool $enclose = false): string
     {
 
         if (is_array($expression['value'])) {
@@ -1233,9 +1310,9 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
                 default:
                     $ex_expression = "";
                     foreach ($expression['value'] as $value) {
-                        $ex_expression .= (!empty($ex_expression) ? " OR " : '') . $this->decode_where_query_expression($ex_expression, array_merge($expression, ['value' => $value]));
+                        $ex_expression .= (!empty($ex_expression) ? " OR " : '') . $this->decode_where_query_expression(array_merge($expression, ['value' => $value]), !empty($ex_expression));
                     }
-                    return (!empty($where_list) ? "({$ex_expression})" : "{$ex_expression}");
+                    return ($enclose ? "({$ex_expression})" : $ex_expression);
 
             }
 

@@ -110,6 +110,16 @@ interface DriverQueryBuilder
     public function clearWhereQuery(): void;
 
     /**
+     * @return DriverQueryBuilder
+     */
+    public function startWhereGroup(): DriverQueryBuilder;
+
+    /**
+     * @return DriverQueryBuilder
+     */
+    public function endWhereGroup(): DriverQueryBuilder;
+
+    /**
      * @param $column
      * @param $value
      * @param null $operator

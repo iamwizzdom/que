@@ -179,6 +179,26 @@ class QueryBuilder implements Builder
         return $this;
     }
 
+    /**
+     * @return Builder
+     */
+    public function startWhereGroup(): Builder
+    {
+        // TODO: Implement startWhereGroup() method.
+        $this->builder->startWhereGroup();
+        return $this;
+    }
+
+    /**
+     * @return Builder
+     */
+    public function endWhereGroup(): Builder
+    {
+        // TODO: Implement endWhereGroup() method.
+        $this->builder->endWhereGroup();
+        return $this;
+    }
+
 
     /**
      * @inheritDoc
