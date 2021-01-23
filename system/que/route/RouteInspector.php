@@ -37,7 +37,7 @@ abstract class RouteInspector
      * @return bool
      */
     public static function routeHasArgs(RouteEntry $entry) {
-        return preg_match('/{(.*?)}/', $entry->getUri(), $matches) == 1;
+        return preg_match('/{(.*?)}/', $entry->getUri()) == 1;
     }
 
     /**
