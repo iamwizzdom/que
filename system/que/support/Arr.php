@@ -216,20 +216,22 @@ class Arr
     /**
      * @param array $array
      * @param int $start
-     * @param int $end
+     * @param int|null $end
+     * @param bool $unset
      * @return array
      */
-    public static function extract (array $array, int $start, int $end) {
-        return array_extract($array, $start, $end);
+    public static function extract (array &$array, int $start, ?int $end = null, bool $unset = false) {
+        return array_extract($array, $start, $end, $unset);
     }
 
     /**
      * @param array $array
      * @param array $keys
+     * @param bool $unset
      * @return array
      */
-    public static function extract_by_keys (array $array, array $keys) {
-        return array_extract_by_keys($array, $keys);
+    public static function extract_by_keys (array &$array, array $keys, bool $unset = false) {
+        return array_extract_by_keys($array, $keys, $unset);
     }
 
     /**

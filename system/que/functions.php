@@ -1174,19 +1174,20 @@ function array_exclude(array $array, ...$exclude): array
 }
 
 /**
- * Note that this function does not support associative or multi-dimensional arrays
  *
  * @param array $array | Array to extract from
  * @param int $start | Extraction starting point
  * @param int|null $end | Extraction ending point
+ * @param bool $unset | Unset extracted values from array
  * @return array
  */
-function array_extract(array $array, int $start, int $end = null): array
+function array_extract(array &$array, int $start, ?int $end = null, bool $unset = false): array
 {
     $extracted = [];
     $size = count($array); $keys = array_keys($array);
     for ($i = $start; $i < $size; $i++) {
         $extracted[$keys[$i]] = $array[$keys[$i]];
+        if ($unset) unset($array[$keys[$i]]);
         if ($end && $i >= $end) break;
     }
     return $extracted;
@@ -1195,9 +1196,10 @@ function array_extract(array $array, int $start, int $end = null): array
 /**
  * @param array $array | Array to extract from
  * @param array $keys | Key to extracted
+ * @param bool $unset | Unset extracted values from array
  * @return array
  */
-function array_extract_by_keys(array $array, array $keys): array
+function array_extract_by_keys(array &$array, array $keys, bool $unset = false): array
 {
     $extracted = [];
 
@@ -1210,6 +1212,7 @@ function array_extract_by_keys(array $array, array $keys): array
 
         } elseif (array_key_exists($value, $array)) {
             $extracted[$value] = $array[$value];
+            if ($unset) unset($array[$value]);
         }
 
     }
