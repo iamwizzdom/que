@@ -26,6 +26,18 @@ function fisher_yates_shuffle(array $init_arr, int $repeat = 1)
 }
 
 /**
+ * @param array $arr
+ * @param bool $reverse
+ * @return array
+ */
+function bubble_sort_keys(array $arr, bool $reverse = false): array {
+    $keys = bubble_sort(array_keys($arr), $reverse);
+    $array = [];
+    foreach ($keys as $key) $array[$key] = $arr[$key];
+    return $array;
+}
+
+/**
  * This is a simple bubble sort algorithm
  *
  * @param array $arr
