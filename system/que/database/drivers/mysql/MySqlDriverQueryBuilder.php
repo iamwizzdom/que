@@ -1318,7 +1318,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
         $driverBuilder = new MySqlDriverQueryBuilder($this->driver, $this->bindings);
         $driverBuilder->setQueryType($this->queryType);
         $builder = new QueryBuilder($this->driver, $driverBuilder, DB::getInstance());
-        $builder->table($this->table);
+        $builder->table($this->getActualTable($this->table));
         $callback($builder);
         $driverBuilder->buildQuery();
         $this->setBindings($builder->getBindings());
@@ -1377,7 +1377,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
     {
         $column = preg_replace("/ as /i", " as ", $column);
         if (!str__contains($column, ' as ', true)) return $this->formatColumn($column);
-        $column = explode(' as ', $column);
+        $column = explode(' as ', $column, 2);
         return $this->formatColumn($column[$alias ? 1 : 0]);
     }
 
