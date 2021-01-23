@@ -1278,8 +1278,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
         } elseif (is_callable($expression['value'])) {
 
-            $builder = $this->runSubBuilder($expression['value']);
-            return "{$this->formatColumn($expression['column'])} {$expression['operator']} ({$builder->getQuery()})";
+            return "{$this->formatColumn($expression['column'])} {$expression['operator']} ({$this->runSubBuilder($expression['value'])->getQuery()})";
 
         } else $binder = $this->addBinding("{$expression['column']}", $expression['value']);
 
@@ -1333,6 +1332,8 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
      */
     private function addBinding(string $column, $value): string
     {
+        if ($v = $this->parseValue($value)) return $v;
+
         if (preg_match('/\((.*?)\)/', $column, $matches))
             $column = trim($matches[1], '?');
 
@@ -1353,6 +1354,18 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
         $this->bindings[$column] = $value;
         return $column;
+    }
+
+    /**
+     * @param string $value
+     * @return string|null
+     */
+    private function parseValue(string $value): ?string
+    {
+        if (preg_match('/{{(.*?)}}/', $value, $matches)) {
+            return $this->formatColumn($matches[1]);
+        }
+        return null;
     }
 
     /**
