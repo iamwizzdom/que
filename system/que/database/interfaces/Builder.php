@@ -373,12 +373,6 @@ interface Builder
                              string $pageName = 'page', int $page = 0): QueryResponse;
 
     /**
-     * @param int $queryType
-     * @return mixed
-     */
-    public function setQueryType(int $queryType);
-
-    /**
      * @param string $query
      */
     public function setQuery(string $query): void;
@@ -390,13 +384,19 @@ interface Builder
 
     /**
      * @param array $bindings
+     * @return array
      */
-    public function setQueryBindings(array $bindings): void;
+    public function addBindings(array $bindings): array;
+
+    /**
+     * @param array $bindings
+     */
+    public function setBindings(array $bindings): void;
 
     /**
      * @return array
      */
-    public function getQueryBindings(): array;
+    public function getBindings(): array;
 
     /**
      * @return QueryResponse

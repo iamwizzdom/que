@@ -793,7 +793,19 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
     /**
      * @inheritDoc
      */
-    public function setQueryBindings(array $bindings): void
+    public function addBindings(array $bindings): array
+    {
+        // TODO: Implement addBindings() method.
+        $binders = [];
+        foreach ($bindings as $key => $value) $binders[$key] = $this->addBinding($key, $value);
+        return $binders;
+    }
+
+
+    /**
+     * @inheritDoc
+     */
+    public function setBindings(array $bindings): void
     {
         // TODO: Implement setQueryBindValues() method.
         $this->bindings = $bindings;
@@ -802,7 +814,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
     /**
      * @inheritDoc
      */
-    public function getQueryBindings(): array
+    public function getBindings(): array
     {
         // TODO: Implement getQueryBindValues() method.
         return $this->bindings;
@@ -895,13 +907,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
                 if (!empty($this->union)) {
 
-                    $driverBuilder = new MySqlDriverQueryBuilder($this->driver, $this->bindings);
-                    $driverBuilder->setQueryType($this->queryType);
-                    $builder = new QueryBuilder($this->driver, $driverBuilder, DB::getInstance());
-                    $builder->table($this->table);
-                    $this->union['query']($builder);
-                    $driverBuilder->buildQuery();
-                    $this->bindings = $builder->getQueryBindings();
+                    $builder = $this->runSubBuilder($this->union['query']);
 
                     $union = ($this->union['type'] == 'distinct' ? " UNION {$builder->getQuery()}" : " UNION ALL {$builder->getQuery()}");
                 }
@@ -1007,14 +1013,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
                         if (is_callable($alias)) {
 
-                            $driverBuilder = new MySqlDriverQueryBuilder($this->driver, $this->bindings);
-                            $driverBuilder->setQueryType($this->queryType);
-                            $builder = new QueryBuilder($this->driver, $driverBuilder, DB::getInstance());
-                            $builder->table($this->table);
-                            $alias($builder);
-                            $driverBuilder->buildQuery();
-                            $this->bindings = $builder->getQueryBindings();
-                            $select .= (!empty($select) ? ', ' : '') . "({$builder->getQuery()}) AS {$this->formatColumn($column)}";
+                            $select .= (!empty($select) ? ', ' : '') . "({$this->runSubBuilder($alias)->getQuery()}) AS {$this->formatColumn($column)}";
 
                         } elseif (is_numeric($column)) $select .= (!empty($select) ? ', ' : '') . $this->formatColumn($alias);
                         else $select .= (!empty($select) ? ', ' : '') . $this->formatColumn("{$column} AS {$alias}");
@@ -1083,16 +1082,8 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
                     } elseif (is_callable($expression['value'])) {
 
-                        $driverBuilder = new MySqlDriverQueryBuilder($this->driver, $this->bindings);
-                        $driverBuilder->setQueryType($this->queryType);
-                        $builder = new QueryBuilder($this->driver, $driverBuilder, DB::getInstance());
-                        $builder->table($this->table);
-                        $expression['value']($builder);
-                        $driverBuilder->buildQuery();
-                        $this->bindings = $builder->getQueryBindings();
-
                         $having .= (!empty($having) ? " AND " : '') .
-                            "{$expression['column']} {$expression['operator']} ({$builder->getQuery()})";
+                            "{$expression['column']} {$expression['operator']} ({$this->runSubBuilder($expression['value'])->getQuery()})";
                     }
 
                     break;
@@ -1149,51 +1140,20 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
                     $sql = $expression['column'];
                     break;
                 case 'exists_and':
-
-                    $driverBuilder = new MySqlDriverQueryBuilder($this->driver, $this->bindings);
-                    $driverBuilder->setQueryType($this->queryType);
-                    $builder = new QueryBuilder($this->driver, $driverBuilder, DB::getInstance());
-                    $builder->table($this->table);
-                    $expression['column']($builder);
-                    $driverBuilder->buildQuery();
-                    $this->bindings = $builder->getQueryBindings();
                     $type = 'and';
-                    $sql = "EXISTS ({$builder->getQuery()})";
+                    $sql = "EXISTS ({$this->runSubBuilder($expression['column'])->getQuery()})";
                     break;
                 case 'exists_or':
-                    $driverBuilder = new MySqlDriverQueryBuilder($this->driver, $this->bindings);
-                    $driverBuilder->setQueryType($this->queryType);
-                    $builder = new QueryBuilder($this->driver, $driverBuilder, DB::getInstance());
-                    $builder->table($this->table);
-                    $expression['column']($builder);
-                    $driverBuilder->buildQuery();
-                    $this->bindings = $builder->getQueryBindings();
                     $type = 'or';
-                    $sql = "EXISTS ({$builder->getQuery()})";
+                    $sql = "EXISTS ({$this->runSubBuilder($expression['column'])->getQuery()})";
                     break;
                 case 'exists_not_and':
-
-                    $driverBuilder = new MySqlDriverQueryBuilder($this->driver, $this->bindings);
-                    $driverBuilder->setQueryType($this->queryType);
-                    $builder = new QueryBuilder($this->driver, $driverBuilder, DB::getInstance());
-                    $builder->table($this->table);
-                    $expression['column']($builder);
-                    $driverBuilder->buildQuery();
-                    $this->bindings = $builder->getQueryBindings();
                     $type = 'and';
-                    $sql = "NOT EXISTS ({$builder->getQuery()})";
+                    $sql = "NOT EXISTS ({$this->runSubBuilder($expression['column'])->getQuery()})";
                     break;
                 case 'exists_not_or':
-
-                    $driverBuilder = new MySqlDriverQueryBuilder($this->driver, $this->bindings);
-                    $driverBuilder->setQueryType($this->queryType);
-                    $builder = new QueryBuilder($this->driver, $driverBuilder, DB::getInstance());
-                    $builder->table($this->table);
-                    $expression['column']($builder);
-                    $driverBuilder->buildQuery();
-                    $this->bindings = $builder->getQueryBindings();
                     $type = 'or';
-                    $sql = "NOT EXISTS ({$builder->getQuery()})";
+                    $sql = "NOT EXISTS ({$this->runSubBuilder($expression['column'])->getQuery()})";
                     break;
                 case 'json_value_and':
                     $binder = $this->addBinding("{$expression['column']}", $expression['value']);
@@ -1318,14 +1278,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
         } elseif (is_callable($expression['value'])) {
 
-            $driverBuilder = new MySqlDriverQueryBuilder($this->driver, $this->bindings);
-            $driverBuilder->setQueryType($this->queryType);
-            $builder = new QueryBuilder($this->driver, $driverBuilder, DB::getInstance());
-            $builder->table($this->table);
-            $expression['value']($builder);
-            $driverBuilder->buildQuery();
-            $this->bindings = $builder->getQueryBindings();
-
+            $builder = $this->runSubBuilder($expression['value']);
             return "{$this->formatColumn($expression['column'])} {$expression['operator']} ({$builder->getQuery()})";
 
         } else $binder = $this->addBinding("{$expression['column']}", $expression['value']);
@@ -1358,6 +1311,22 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
     }
 
     /**
+     * @param callable $closure
+     * @return QueryBuilder
+     */
+    private function runSubBuilder(callable $closure): QueryBuilder
+    {
+        $driverBuilder = new MySqlDriverQueryBuilder($this->driver, $this->bindings);
+        $driverBuilder->setQueryType($this->queryType);
+        $builder = new QueryBuilder($this->driver, $driverBuilder, DB::getInstance());
+        $builder->table($this->table);
+        $closure($builder);
+        $driverBuilder->buildQuery();
+        $this->setBindings($builder->getBindings());
+        return $builder;
+    }
+
+    /**
      * @param string $column
      * @param $value
      * @return string
@@ -1374,8 +1343,6 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
             return ":{$column}";
         }
 
-        if ($this->bindings[":{$column}"] == $value) return ":{$column}";
-
         $size = (array_size($this->bindings) + 1);
         for ($i = 0; $i < $size; $i++) {
             if (!isset($this->bindings[":{$i}_{$column}"])) {
@@ -1386,16 +1353,6 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
         $this->bindings[$column] = $value;
         return $column;
-    }
-
-    /**
-     * @param array $bindings
-     * @return array
-     */
-    private function addBindings(array $bindings) {
-        $binders = [];
-        foreach ($bindings as $key => $value) $binders[$key] = $this->addBinding($key, $value);
-        return $binders;
     }
 
     /**

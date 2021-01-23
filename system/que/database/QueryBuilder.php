@@ -23,6 +23,7 @@ use que\database\observer\ObserverSignal;
 use que\database\interfaces\model\Model;
 use que\database\model\ModelCollection;
 use que\http\HTTP;
+use que\support\Str;
 use que\template\Pagination;
 use que\template\Paginator;
 use stdClass;
@@ -586,12 +587,6 @@ class QueryBuilder implements Builder
         return $this->exec();
     }
 
-    public function setQueryType(int $queryType)
-    {
-        // TODO: Implement setQueryType() method.
-        $this->builder->setQueryType($queryType);
-    }
-
 
     public function setQuery(string $query): void
     {
@@ -605,16 +600,23 @@ class QueryBuilder implements Builder
         return $this->builder->getQuery();
     }
 
-    public function setQueryBindings(array $bindings): void
+    public function addBindings(array $bindings): array
     {
-        // TODO: Implement setQueryBindings() method.
-        $this->builder->setQueryBindings($bindings);
+        // TODO: Implement addBindings() method.
+        return $this->builder->addBindings($bindings);
     }
 
-    public function getQueryBindings(): array
+
+    public function setBindings(array $bindings): void
+    {
+        // TODO: Implement setQueryBindings() method.
+        $this->builder->setBindings($bindings);
+    }
+
+    public function getBindings(): array
     {
         // TODO: Implement getQueryBindings() method.
-        return $this->builder->getQueryBindings();
+        return $this->builder->getBindings();
     }
 
 
@@ -1583,26 +1585,10 @@ class QueryBuilder implements Builder
             }
         };
 
-        $response->query = $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings());
+        $response->query = Str::interpolate($builder->getQuery(), $builder->getBindings());
         $response->errors = $errors;
         $response->errorCode = $errorCode;
 
         return $response;
-    }
-
-
-    /**
-     * @param string $query
-     * @param array $params
-     * @return string|string[]
-     */
-    private function interpolateQuery(string $query, array $params) {
-        foreach ($params as $key => $value) {
-            if ($value === null) $value = 'NULL';
-            elseif (is_bool($value)) $value = $value ? 1 : 0;
-            elseif (!is_numeric($value)) $value = "'{$value}'";
-            $query = str_replace_first($key, "{$value}", $query);
-        }
-        return $query;
     }
 }

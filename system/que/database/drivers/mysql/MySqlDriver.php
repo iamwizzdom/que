@@ -20,6 +20,7 @@ use que\database\interfaces\drivers\Driver;
 use que\database\interfaces\drivers\DriverQueryBuilder;
 use que\database\interfaces\drivers\DriverResponse;
 use que\support\Config;
+use que\support\Str;
 
 class MySqlDriver implements Driver
 {
@@ -273,7 +274,7 @@ class MySqlDriver implements Driver
 
         try {
 
-            foreach ($builder->getQueryBindings() as $key => $value) {
+            foreach ($builder->getBindings() as $key => $value) {
 
                 if (!str__contains($builder->getQuery(), $key)) continue;
 
@@ -293,7 +294,7 @@ class MySqlDriver implements Driver
         } catch (PDOException $e) {
 
             if ($this->isInDebugMode()) throw new QueRuntimeException(
-                "{$e->getMessage()} | SQL: {$this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings())}",
+                "{$e->getMessage()} | SQL: {$this->interpolateQuery($builder->getQuery(), $builder->getBindings())}",
                 "Database Error", E_USER_ERROR, 0, PreviousException::getInstance(3));
         }
 
@@ -302,39 +303,39 @@ class MySqlDriver implements Driver
         return match ($i) {
             DriverQueryBuilder::INSERT => new MySqlDriverResponse(
                 null, $status,
-                $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()), $stmt->errorInfo(),
+                $this->interpolateQuery($builder->getQuery(), $builder->getBindings()), $stmt->errorInfo(),
                 $stmt->errorCode(), $conn->lastInsertId()
             ),
             DriverQueryBuilder::SELECT, DriverQueryBuilder::RAW_SELECT => new MySqlDriverResponse(
                 $data = $stmt->fetchAll(PDO::FETCH_OBJ), $status,
-                $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()),
+                $this->interpolateQuery($builder->getQuery(), $builder->getBindings()),
                 (empty($data) && $stmt->errorCode() === "00000" ? [$this->isInDebugMode() ? "No record found in {$builder->getTable()} table" : 'No record found'] : $stmt->errorInfo()),
                 $stmt->errorCode()
             ),
             DriverQueryBuilder::DELETE, DriverQueryBuilder::UPDATE => new MySqlDriverResponse(
                 null, $status,
-                $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()),
+                $this->interpolateQuery($builder->getQuery(), $builder->getBindings()),
                 ($stmt->rowCount() == 0 ? [$this->isInDebugMode() ? "No record affected in {$builder->getTable()} table" : 'No record affected'] : $stmt->errorInfo()),
                 $stmt->errorCode(), 0, $stmt->rowCount()
             ),
             DriverQueryBuilder::AVG, DriverQueryBuilder::SUM, DriverQueryBuilder::COUNT, DriverQueryBuilder::CHECK => new MySqlDriverResponse(
                 $stmt->fetch(PDO::FETCH_ASSOC)['aggregate'] ?? 0, $status,
-                $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()), $stmt->errorInfo(),
+                $this->interpolateQuery($builder->getQuery(), $builder->getBindings()), $stmt->errorInfo(),
                 $stmt->errorCode()
             ),
             DriverQueryBuilder::RAW_OBJECT => new MySqlDriverResponse(
                 $stmt->fetchAll(PDO::FETCH_OBJ), $status,
-                $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()), $stmt->errorInfo(),
+                $this->interpolateQuery($builder->getQuery(), $builder->getBindings()), $stmt->errorInfo(),
                 $stmt->errorCode()
             ),
             DriverQueryBuilder::RAW_QUERY => new MySqlDriverResponse(
                 null, $status,
-                $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()), $stmt->errorInfo(),
+                $this->interpolateQuery($builder->getQuery(), $builder->getBindings()), $stmt->errorInfo(),
                 $stmt->errorCode()
             ),
             DriverQueryBuilder::SHOW => new MySqlDriverResponse(
                 $stmt->fetch(PDO::FETCH_ASSOC)['Column_name'] ?? '', $status,
-                $this->interpolateQuery($builder->getQuery(), $builder->getQueryBindings()), $stmt->errorInfo(),
+                $this->interpolateQuery($builder->getQuery(), $builder->getBindings()), $stmt->errorInfo(),
                 $stmt->errorCode()
             ),
             default => throw new QueRuntimeException("Database driver query builder type '{$i}' is invalid",
@@ -347,13 +348,8 @@ class MySqlDriver implements Driver
      * @param array $params
      * @return string|string[]
      */
-    private function interpolateQuery(string $query, array $params) {
-        foreach ($params as $key => $value) {
-            if ($value === null) $value = 'NULL';
-            elseif (is_bool($value)) $value = $value ? 1 : 0;
-            elseif (!is_numeric($value)) $value = "'{$value}'";
-            $query = str_replace_first($key, "{$value}", $query);
-        }
-        return $query;
+    private function interpolateQuery(string $query, array $params): array|string
+    {
+        return Str::interpolate($query, $params);
     }
 }

@@ -284,7 +284,7 @@ class DB extends Connect
         $driverBuilder->setQueryType(DriverQueryBuilder::RAW_SELECT);
         $driverBuilder->setTable($table);
         $driverBuilder->setQuery($query);
-        $driverBuilder->setQueryBindings($queryBindings);
+        $driverBuilder->setBindings($queryBindings);
         return (new QueryBuilder($this->getDriver(), $driverBuilder, $this))->exec();
     }
 
@@ -300,7 +300,7 @@ class DB extends Connect
         $driverBuilder->setQueryType(DriverQueryBuilder::RAW_QUERY);
         $driverBuilder->setTable($table);
         $driverBuilder->setQuery($query);
-        $driverBuilder->setQueryBindings($queryBindings);
+        $driverBuilder->setBindings($queryBindings);
         return (new QueryBuilder($this->getDriver(), $driverBuilder, $this))->exec();
     }
 
@@ -316,7 +316,7 @@ class DB extends Connect
         $driverBuilder->setQueryType(DriverQueryBuilder::RAW_OBJECT);
         $driverBuilder->setTable($table);
         $driverBuilder->setQuery($query);
-        $driverBuilder->setQueryBindings($queryBindings);
+        $driverBuilder->setBindings($queryBindings);
         return (new QueryBuilder($this->getDriver(), $driverBuilder, $this))->exec();
     }
 

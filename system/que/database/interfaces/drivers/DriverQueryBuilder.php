@@ -399,13 +399,19 @@ interface DriverQueryBuilder
 
     /**
      * @param array $bindings
+     * @return array
      */
-    public function setQueryBindings(array $bindings): void;
+    public function addBindings(array $bindings): array;
+
+    /**
+     * @param array $bindings
+     */
+    public function setBindings(array $bindings): void;
 
     /**
      * @return array
      */
-    public function getQueryBindings(): array;
+    public function getBindings(): array;
 
     public function buildQuery(): void;
 
