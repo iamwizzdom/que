@@ -494,6 +494,21 @@ function str_tokenize(string $string, string $needle): array {
 }
 
 /**
+ * @param string $string
+ * @param array $params
+ * @return array|string|string[]
+ */
+function str_interpolate(string $string, array $params) {
+    foreach ($params as $key => $value) {
+        if ($value === null) $value = 'NULL';
+        elseif (is_bool($value)) $value = $value ? 1 : 0;
+        elseif (!is_numeric($value)) $value = "'{$value}'";
+        $string = str_replace_first($key, "{$value}", $string);
+    }
+    return $string;
+}
+
+/**
  * @param $data
  * @return string
  */

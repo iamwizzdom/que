@@ -291,6 +291,15 @@ class Str
     }
 
     /**
+     * @param string $string
+     * @param array $params
+     * @return array|string|string[]
+     */
+    public static function interpolate (string $string, array $params) {
+        return str_interpolate($string, $params);
+    }
+
+    /**
      * @param string $url
      * @return string
      */
