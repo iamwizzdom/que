@@ -85,19 +85,19 @@ class Validation
         $elements = explode('.', $token);
 
         if (count($elements) !== 3) {
-            throw new InvalidStructureException('Wrong number of segments');
+            throw new InvalidStructureException('Wrong number of token segments');
         }
 
         list($header, $payload, $signature) = $elements;
 
         if (null === json_decode(Base64Url::decode($header))) {
-            throw new InvalidStructureException('Invalid header');
+            throw new InvalidStructureException('Invalid token header');
         }
         if (null === json_decode(Base64Url::decode($payload))) {
-            throw new InvalidStructureException('Invalid payload');
+            throw new InvalidStructureException('Invalid token payload');
         }
         if (false === Base64Url::decode($signature)) {
-            throw new InvalidStructureException('Invalid signature');
+            throw new InvalidStructureException('Invalid token signature');
         }
 
         return $elements;
@@ -129,7 +129,7 @@ class Validation
         }
 
         if (!array_key_exists($algorithm, JWT::ALGORITHMS)) {
-            throw new UnsupportedAlgorithmException('Invalid algorithm');
+            throw new UnsupportedAlgorithmException('Invalid token algorithm');
         }
     }
 
@@ -158,18 +158,18 @@ class Validation
         switch ($type) {
             case 'integer':
                 if (array_key_exists($claim, $payload) && !is_int($payload[$claim])) {
-                    throw new InvalidClaimTypeException(sprintf('Invalid %s claim - %s value required', $claim, $type));
+                    throw new InvalidClaimTypeException(sprintf('Invalid token %s claim - %s value required', $claim, $type));
                 }
                 break;
             case 'mixed':
                 if (array_key_exists($claim, $payload) && !(is_string($payload[$claim]) || is_int($payload[$claim]))) {
-                    throw new InvalidClaimTypeException(sprintf('Invalid %s claim - integer or string value required', $claim));
+                    throw new InvalidClaimTypeException(sprintf('Invalid token %s claim - integer or string value required', $claim));
                 }
                 break;
             case 'string':
             default:
                 if (array_key_exists($claim, $payload) && !is_string($payload[$claim])) {
-                    throw new InvalidClaimTypeException(sprintf('Invalid %s claim - %s value required', $claim, $type));
+                    throw new InvalidClaimTypeException(sprintf('Invalid token %s claim - %s value required', $claim, $type));
                 }
                 break;
         }
@@ -185,7 +185,7 @@ class Validation
     public static function checkRequiredClaims(array $claims, array $payload) {
         foreach ($claims as $claim) {
             if (!array_key_exists($claim, $payload)) {
-                throw new MissingClaimException(sprintf('Missing %s claim - required', $claim));
+                throw new MissingClaimException(sprintf('Missing token %s claim - required', $claim));
             }
         }
     }

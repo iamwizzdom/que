@@ -129,7 +129,6 @@ class JWT
                     throw new SigningFailedException('Signing failed');
                 }
                 return $signature;
-                break;
             case 'openssl':
                 $signature = '';
 
@@ -144,10 +143,8 @@ class JWT
                 }
 
                 return $signature;
-                break;
             default:
                 throw new UnsupportedAlgorithmException('Invalid function');
-                break;
         }
     }
 
@@ -190,17 +187,16 @@ class JWT
         switch ($function) {
             case 'hash_hmac':
                 if (hash_equals($signature, hash_hmac($type, $tokenEncoded->getMessage(), $secret, true)) !== true) {
-                    throw new IntegrityViolationException('Invalid signature');
+                    throw new IntegrityViolationException('Invalid token signature');
                 }
                 break;
             case 'openssl':
                 if (openssl_verify($tokenEncoded->getMessage(), $signature, $secret, $type) !== 1) {
-                    throw new IntegrityViolationException('Invalid signature');
+                    throw new IntegrityViolationException('Invalid token signature');
                 }
                 break;
             default:
-                throw new UnsupportedAlgorithmException('Unsupported algorithm type');
-                break;
+                throw new UnsupportedAlgorithmException('Unsupported token algorithm type');
         }
 
         if ($requiredClaims === null) $requiredClaims = config('auth.jwt.required_claims', []);
