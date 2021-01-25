@@ -1357,10 +1357,10 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
     }
 
     /**
-     * @param string $value
+     * @param string|null $value
      * @return string|null
      */
-    private function parseValue(string $value): ?string
+    private function parseValue(?string $value): ?string
     {
         if (preg_match('/{{(.*?)}}/', $value, $matches)) {
             return $this->formatColumn($matches[1]);
