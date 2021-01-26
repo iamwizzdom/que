@@ -845,7 +845,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
         if (is_null($this->table) || empty($this->table)) return $query;
 
-        if ($this->queryType != self::SHOW && $this->queryType != self::INSERT) {
+        if ($this->queryType != self::SHOW_TABLE_PRIMARY_KEY && $this->queryType != self::INSERT) {
 
             if ($this->queryType == self::SELECT) $select_columns = $this->build_select_query() ?: '*';
 
@@ -963,8 +963,11 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
                 $query = "SELECT SUM({$this->formatColumn("`countable`.{$actualColumn}")}) as `aggregate` FROM ({$this->getQuery()}) AS `countable`";
 
                 break;
-            case self::SHOW:
+            case self::SHOW_TABLE_PRIMARY_KEY:
                 $query = "SHOW KEYS FROM {$this->getActualTable($this->table)} WHERE Key_name = 'PRIMARY'";
+                break;
+            case self::SHOW_TABLE_COLUMNS:
+                $query = "SHOW COLUMNS FROM {$this->getActualTable($this->table)}";
                 break;
             default:
                 throw new QueRuntimeException("Database driver query builder type '{$this->queryType}' is invalid",

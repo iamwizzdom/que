@@ -62,6 +62,11 @@ class QueryBuilder implements Builder
     private static array $primaryKeys = [];
 
     /**
+     * @var array
+     */
+    private static array $fillables = [];
+
+    /**
      * QueryBuilder constructor.
      * @param Driver $driver
      * @param DriverQueryBuilder $builder
@@ -649,8 +654,10 @@ class QueryBuilder implements Builder
                 return $this->raw_object();
             case DriverQueryBuilder::RAW_QUERY:
                 return $this->raw_query();
-            case DriverQueryBuilder::SHOW:
-                return $this->show_table();
+            case DriverQueryBuilder::SHOW_TABLE_PRIMARY_KEY:
+                return $this->show_table_primary_key();
+            case DriverQueryBuilder::SHOW_TABLE_COLUMNS:
+                return $this->show_table_columns();
             default:
                 throw new QueRuntimeException("Invalid query type", "Query Builder Error",
                     E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
@@ -665,8 +672,8 @@ class QueryBuilder implements Builder
     {
         if (!isset(self::$primaryKeys[$this->builder->getTable()])) {
 
-            $this->builder->setQueryType(DriverQueryBuilder::SHOW);
-            $showTable = $this->show_table();
+            $this->builder->setQueryType(DriverQueryBuilder::SHOW_TABLE_PRIMARY_KEY);
+            $showTable = $this->show_table_primary_key();
             $this->builder->setQueryType(DriverQueryBuilder::INSERT);
 
             self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? $showTable->getQueryResponse() : 'id';
@@ -839,8 +846,8 @@ class QueryBuilder implements Builder
 
         if (!isset(self::$primaryKeys[$this->builder->getTable()])) {
 
-            $this->builder->setQueryType(DriverQueryBuilder::SHOW);
-            $showTable = $this->show_table();
+            $this->builder->setQueryType(DriverQueryBuilder::SHOW_TABLE_PRIMARY_KEY);
+            $showTable = $this->show_table_primary_key();
             $this->builder->setQueryType(DriverQueryBuilder::DELETE);
             self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? $showTable->getQueryResponse() : 'id';
         }
@@ -1017,8 +1024,8 @@ class QueryBuilder implements Builder
 
         if (!isset(self::$primaryKeys[$this->builder->getTable()])) {
 
-            $this->builder->setQueryType(DriverQueryBuilder::SHOW);
-            $showTable = $this->show_table();
+            $this->builder->setQueryType(DriverQueryBuilder::SHOW_TABLE_PRIMARY_KEY);
+            $showTable = $this->show_table_primary_key();
             $this->builder->setQueryType(DriverQueryBuilder::SELECT);
             self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? $showTable->getQueryResponse() : 'id';
         }
@@ -1160,8 +1167,8 @@ class QueryBuilder implements Builder
 
         if (!isset(self::$primaryKeys[$this->builder->getTable()])) {
 
-            $this->builder->setQueryType(DriverQueryBuilder::SHOW);
-            $showTable = $this->show_table();
+            $this->builder->setQueryType(DriverQueryBuilder::SHOW_TABLE_PRIMARY_KEY);
+            $showTable = $this->show_table_primary_key();
             $this->builder->setQueryType(DriverQueryBuilder::UPDATE);
             self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? $showTable->getQueryResponse() : 'id';
         }
@@ -1223,12 +1230,22 @@ class QueryBuilder implements Builder
 
                         $this->builder->clearWhereQuery();
 
+                        if (!isset(self::$fillables[$this->builder->getTable()])) {
+
+                            $this->builder->setQueryType(DriverQueryBuilder::SHOW_TABLE_COLUMNS);
+                            $showColumns = $this->show_table_columns();
+                            $this->builder->setQueryType(DriverQueryBuilder::UPDATE);
+                            self::$fillables[$this->builder->getTable()] = $showColumns->isSuccessful() ? (array) $showColumns->getQueryResponse() : [];
+                        }
+
+                        $newModelCollection->setFillable(self::$fillables[$this->builder->getTable()]);
+
                         $changes = $newModelCollection->map(function (Model $newModel) use ($oldModelCollection) {
                             $oldModel = $oldModelCollection->find(function (Model $m) use ($newModel) {
                                 return $newModel->validate($newModel->getPrimaryKey())->isEqual($m->getValue($m->getPrimaryKey()));
                             });
                             $this->builder->setOrWhere($newModel->getPrimaryKey(), $newModel->getValue($newModel->getPrimaryKey()));
-                            return array_diff_assoc($newModel->getArray($newModel->hasFillable()), $oldModel->getArray($newModel->hasFillable()));
+                            return array_diff_assoc($newModel->getArray($newModel->hasFillable()), $oldModel->getArray($oldModel->hasFillable()));
                         });
 
                         $commonColumns = [];
@@ -1242,7 +1259,7 @@ class QueryBuilder implements Builder
                             if ($isCommon) $commonColumns[$col] = $v;
                         }
 
-                        $this->builder->setColumns($this->normalize_data(array_merge($this->builder->getColumns(), $commonColumns)));
+                        $this->builder->setColumns($this->normalize_data(array_merge($cols = $this->builder->getColumns(), $commonColumns)));
                     }
                 }
             }
@@ -1381,8 +1398,8 @@ class QueryBuilder implements Builder
 
         if (!isset(self::$primaryKeys[$this->builder->getTable()])) {
 
-            $this->builder->setQueryType(DriverQueryBuilder::SHOW);
-            $showTable = $this->show_table();
+            $this->builder->setQueryType(DriverQueryBuilder::SHOW_TABLE_PRIMARY_KEY);
+            $showTable = $this->show_table_primary_key();
             $this->builder->setQueryType(DriverQueryBuilder::CHECK);
             self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? ($showTable->getQueryResponse() ?: 'id') : 'id';
         }
@@ -1404,8 +1421,8 @@ class QueryBuilder implements Builder
 
         if (!isset(self::$primaryKeys[$this->builder->getTable()])) {
 
-            $this->builder->setQueryType(DriverQueryBuilder::SHOW);
-            $showTable = $this->show_table();
+            $this->builder->setQueryType(DriverQueryBuilder::SHOW_TABLE_PRIMARY_KEY);
+            $showTable = $this->show_table_primary_key();
             $this->builder->setQueryType(DriverQueryBuilder::COUNT);
             self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? ($showTable->getQueryResponse() ?: 'id') : 'id';
         }
@@ -1427,8 +1444,8 @@ class QueryBuilder implements Builder
 
         if (!isset(self::$primaryKeys[$this->builder->getTable()])) {
 
-            $this->builder->setQueryType(DriverQueryBuilder::SHOW);
-            $showTable = $this->show_table();
+            $this->builder->setQueryType(DriverQueryBuilder::SHOW_TABLE_PRIMARY_KEY);
+            $showTable = $this->show_table_primary_key();
             $this->builder->setQueryType(DriverQueryBuilder::AVG);
             self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? ($showTable->getQueryResponse() ?: 'id') : 'id';
         }
@@ -1450,8 +1467,8 @@ class QueryBuilder implements Builder
 
         if (!isset(self::$primaryKeys[$this->builder->getTable()])) {
 
-            $this->builder->setQueryType(DriverQueryBuilder::SHOW);
-            $showTable = $this->show_table();
+            $this->builder->setQueryType(DriverQueryBuilder::SHOW_TABLE_PRIMARY_KEY);
+            $showTable = $this->show_table_primary_key();
             $this->builder->setQueryType(DriverQueryBuilder::SUM);
             self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? ($showTable->getQueryResponse() ?: 'id') : 'id';
         }
@@ -1468,7 +1485,17 @@ class QueryBuilder implements Builder
     /**
      * @return QueryResponse
      */
-    private function show_table(): QueryResponse
+    private function show_table_primary_key(): QueryResponse
+    {
+        $this->builder->buildQuery();
+        $response = $this->driver->exec($this->builder);
+        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), 'id');
+    }
+
+    /**
+     * @return QueryResponse
+     */
+    private function show_table_columns(): QueryResponse
     {
         $this->builder->buildQuery();
         $response = $this->driver->exec($this->builder);

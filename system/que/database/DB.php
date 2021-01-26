@@ -379,7 +379,7 @@ class DB extends Connect
     private function show_table(string $table): QueryResponse
     {
         $driverBuilder = $this->getDriver()->getQueryBuilder();
-        $driverBuilder->setQueryType(DriverQueryBuilder::SHOW);
+        $driverBuilder->setQueryType(DriverQueryBuilder::SHOW_TABLE_PRIMARY_KEY);
         $builder = new QueryBuilder($this->getDriver(), $driverBuilder, $this);
         $builder->table($table);
         return $builder->exec();

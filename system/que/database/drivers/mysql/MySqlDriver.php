@@ -333,8 +333,15 @@ class MySqlDriver implements Driver
                 $this->interpolateQuery($builder->getQuery(), $builder->getBindings()), $stmt->errorInfo(),
                 $stmt->errorCode()
             ),
-            DriverQueryBuilder::SHOW => new MySqlDriverResponse(
+            DriverQueryBuilder::SHOW_TABLE_PRIMARY_KEY => new MySqlDriverResponse(
                 $stmt->fetch(PDO::FETCH_ASSOC)['Column_name'] ?? '', $status,
+                $this->interpolateQuery($builder->getQuery(), $builder->getBindings()), $stmt->errorInfo(),
+                $stmt->errorCode()
+            ),
+            DriverQueryBuilder::SHOW_TABLE_COLUMNS => new MySqlDriverResponse(
+                array_map(function ($row) {
+                    return $row['Field'];
+                }, $stmt->fetchAll(PDO::FETCH_ASSOC)) ?: [], $status,
                 $this->interpolateQuery($builder->getQuery(), $builder->getBindings()), $stmt->errorInfo(),
                 $stmt->errorCode()
             ),
