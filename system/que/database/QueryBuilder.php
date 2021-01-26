@@ -1220,17 +1220,34 @@ class QueryBuilder implements Builder
                     if ($observer instanceof Observer) {
                         //Notify observer that insert operation has started
                         $observer->onUpdating($newModelCollection, $oldModelCollection);
+
+                        $this->builder->clearWhereQuery();
+
+                        $changes = $newModelCollection->map(function (Model $newModel) use ($oldModelCollection) {
+                            $oldModel = $oldModelCollection->find(function (Model $m) use ($newModel) {
+                                return $newModel->validate($newModel->getPrimaryKey())->isEqual($m->getValue($m->getPrimaryKey()));
+                            });
+                            $this->builder->setOrWhere($newModel->getPrimaryKey(), $newModel->getValue($newModel->getPrimaryKey()));
+                            return array_diff_assoc($newModel->getArray($newModel->hasFillable()), $oldModel->getArray($newModel->hasFillable()));
+                        });
+
+                        $commonColumns = [];
+
+                        $firstChange = array_shift($changes);
+                        foreach ($firstChange as $col => $v) {
+                            $isCommon = true;
+                            foreach ($changes as $change) {
+                                if ($change[$col] != $v) $isCommon = false;
+                            }
+                            if ($isCommon) $commonColumns[$col] = $v;
+                        }
+
+                        $this->builder->setColumns($this->normalize_data(array_merge($this->builder->getColumns(), $commonColumns)));
                     }
                 }
             }
         }
 
-        $this->builder->clearWhereQuery();
-
-        foreach ($newModelCollection as $model) {
-            if (!$model instanceof Model) continue;
-            $this->builder->setOrWhere($model->getPrimaryKey(), $model->getValue($model->getPrimaryKey()));
-        }
 
         $this->builder->buildQuery();
 

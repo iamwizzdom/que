@@ -35,9 +35,15 @@ interface Model extends QueArrayAccess
     public function &getObject(): object;
 
     /**
+     * @param bool $onlyFillable
      * @return array
      */
-    public function getArray(): array;
+    public function getArray(bool $onlyFillable = false): array;
+
+    /**
+     * @return bool
+     */
+    public function hasFillable(): bool;
 
     /**
      * @return string

@@ -30,6 +30,11 @@ abstract class BaseModel implements Model
     /**
      * @var array
      */
+    protected array $fillable = [];
+
+    /**
+     * @var array
+     */
     protected array $copy = [];
 
     /**
@@ -114,10 +119,17 @@ abstract class BaseModel implements Model
     /**
      * @inheritDoc
      */
-    #[Pure] public function getArray(): array
+    #[Pure] public function getArray(bool $onlyFillable = false): array
     {
         // TODO: Implement getArray() method.
-        return object_to_array(Obj::exclude($this->object, ...$this->hidden));
+        $arr = object_to_array(Obj::exclude($this->object, ...$this->hidden));
+        return $onlyFillable ? Arr::extract_by_keys($arr, $this->fillable) : $arr;
+    }
+
+    public function hasFillable(): bool
+    {
+        // TODO: Implement hasFillable() method.
+        return !empty($this->fillable);
     }
 
     /**
