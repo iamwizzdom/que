@@ -79,6 +79,11 @@ class RouteEntry
     private array $middleware = [];
 
     /**
+     * @var string|null
+     */
+    private ?string $moduleMethod = null;
+
+    /**
      * RouteEntry constructor.
      */
     public function __construct()
@@ -239,6 +244,22 @@ class RouteEntry
     public function setModule(string $module)
     {
         $this->module = $module;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getModuleMethod(): ?string
+    {
+        return $this->moduleMethod;
+    }
+
+    /**
+     * @param string|null $moduleMethod
+     */
+    public function setModuleMethod(?string $moduleMethod): void
+    {
+        $this->moduleMethod = $moduleMethod;
     }
 
     /**
