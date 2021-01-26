@@ -132,6 +132,18 @@ abstract class BaseModel implements Model
         return !empty($this->fillable);
     }
 
+    public function addFillable(string $fillable): void
+    {
+        // TODO: Implement addFillable() method.
+        $this->fillable[] = $fillable;
+    }
+
+    public function setFillable(array $fillables): void
+    {
+        // TODO: Implement setFillable() method.
+        $this->fillable = $fillables;
+    }
+
     /**
      * @inheritDoc
      */

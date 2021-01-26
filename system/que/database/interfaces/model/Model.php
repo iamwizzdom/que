@@ -46,6 +46,16 @@ interface Model extends QueArrayAccess
     public function hasFillable(): bool;
 
     /**
+     * @param string $fillable
+     */
+    public function addFillable(string $fillable): void;
+
+    /**
+     * @param array $fillables
+     */
+    public function setFillable(array $fillables): void;
+
+    /**
      * @return string
      */
     public function getTable(): string;

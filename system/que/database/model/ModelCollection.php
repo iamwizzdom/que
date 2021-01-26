@@ -105,12 +105,25 @@ class ModelCollection implements QueArrayAccess
     }
 
     /**
+     * @param bool $onlyFillable
      * @return array
      */
-    public function getArray(): array {
+    public function getArray(bool $onlyFillable = false): array {
         $list = [];
-        foreach ($this->models as $model) $list[] = $model->getArray();
+        foreach ($this->models as $model) $list[] = $model->getArray($onlyFillable);
         return $list;
+    }
+
+    public function addFillable(string $fillable): void
+    {
+        // TODO: Implement addFillable() method.
+        foreach ($this->models as $model) $model->addFillable($fillable);
+    }
+
+    public function setFillable(array $fillables): void
+    {
+        // TODO: Implement setFillable() method.
+        foreach ($this->models as $model) $model->setFillable($fillables);
     }
 
     /**
