@@ -609,15 +609,22 @@ abstract class BaseModel implements Model
     private function __castParams() {
         if (!empty($this->casts)) {
             foreach ($this->casts as $column => $cast) {
-                if (!$this->offsetExists($column)) continue;
-                if (str__contains($cast, "||")) {
-                    foreach (explode("||", $cast) as $c) $this->castParams($column, $c);
-                } else $this->castParams($column, $cast);
+                if (str__contains($column, ',')) {
+                    $columns = explode(",", $column);
+                    foreach ($columns as $col) $this->__castParam($col, $cast);
+                } else $this->__castParam($column, $cast);
             }
         }
     }
 
-    private function castParams(string $column, string $cast) {
+    private function __castParam(string $column, string $cast) {
+        if (!$this->offsetExists($column)) return;
+        if (str__contains($cast, "||")) {
+            foreach (explode("||", $cast) as $c) $this->castParam($column, $c);
+        } else $this->castParam($column, $cast);
+    }
+
+    private function castParam(string $column, string $cast) {
         $operand = null;
         if (str_contains($cast, ":")) {
             $data = explode(str__starts_with($cast, 'func') ? "::" : ":", $cast, 2);
