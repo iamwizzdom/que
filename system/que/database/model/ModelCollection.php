@@ -253,6 +253,18 @@ class ModelCollection implements QueArrayAccess
     }
 
     /**
+     * Calculates and returns the sum of the values on each model in the collection
+     * @param string $column
+     * @return float|int
+     */
+    public function sumColumn(string $column): float|int
+    {
+        return array_sum($this->map(function (Model $model) use($column) {
+            return $model->getValue($column);
+        }));
+    }
+
+    /**
      * @return bool
      */
     public function refresh(): bool
