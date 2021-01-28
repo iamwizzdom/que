@@ -698,7 +698,10 @@ abstract class BaseModel implements Model
     private function __copy() {
         if (!empty($this->copy)) {
             foreach ($this->copy as $key => $alias) {
-                $this->set($alias, $this->getValue($key));
+                if (str__contains($alias, ",")) {
+                    $aliases = explode(",", $alias);
+                    foreach ($aliases as $_alias) $this->set($_alias, $this->getValue($key));
+                } else $this->set($alias, $this->getValue($key));
             }
         }
     }
