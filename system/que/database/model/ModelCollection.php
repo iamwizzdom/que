@@ -15,7 +15,9 @@ use JetBrains\PhpStorm\Pure;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use que\database\interfaces\model\Model;
+use que\support\Arr;
 use que\support\interfaces\QueArrayAccess;
+use que\support\Obj;
 
 class ModelCollection implements QueArrayAccess
 {
@@ -340,16 +342,27 @@ class ModelCollection implements QueArrayAccess
     public function load(string $name, callable $arguments = null): ModelCollection {
         foreach ($this->models as $model) {
             if (!$model instanceof Model) continue;
-            if (!$arguments) {
-                $model->load($name);
-                continue;
-            }
-            $arguments = $arguments($model);
-            if (!is_array($arguments)) $arguments = [$arguments];
-            $model->load($name, ...$arguments);
-
+            if (str__contains($name, ".")) {
+                $names = explode(".", $name);
+                $haystack = $model;
+                foreach ($names as $n) {
+                    if (!$haystack instanceof Model) break;
+                    $this->__load($haystack, $n, $arguments);
+                    $haystack = $haystack->{$n};
+                }
+            } else $this->__load($model, $name, $arguments);
         }
         return $this;
+    }
+
+    private function __load(Model $model, string $name, callable $arguments = null) {
+        if (!$arguments) {
+            $model->load($name);
+            return;
+        }
+        $arguments = $arguments($model);
+        if (!is_array($arguments)) $arguments = [$arguments];
+        $model->load($name, ...$arguments);
     }
 
     /**
