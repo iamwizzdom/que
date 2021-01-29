@@ -41,6 +41,11 @@ class User extends State implements ArrayAccess
     private static array $model = [];
 
     /**
+     * @var string|null
+     */
+    private static ?string $modelKey = null;
+
+    /**
      * User constructor.
      */
     protected function __construct()
@@ -104,7 +109,7 @@ class User extends State implements ArrayAccess
      */
     public function getModel(string $model = null): Model
     {
-        $model = model(($modelKey = $model ?? config("database.default.model")));
+        $model = model(($modelKey = ($model ?: (self::$modelKey ?: config("database.default.model")))));
 
         if ($model === null) throw new QueRuntimeException(
             "No database model was found with the key '{$modelKey}', check your database configuration to fix this issue.",
@@ -159,7 +164,7 @@ class User extends State implements ArrayAccess
      */
     public function &getUserObject(): object
     {
-        return self::$user;
+        return $this->getModel()->getObject();
     }
 
     /**
@@ -167,7 +172,7 @@ class User extends State implements ArrayAccess
      */
     public function getUserArray(): array
     {
-        return object_to_array(self::$user);
+        return $this->getModel()->getArray();
     }
 
     /**
@@ -278,9 +283,11 @@ class User extends State implements ArrayAccess
     /**
      * Log in user
      * @param object $user
+     * @param string|null $modelKey
      */
-    public static function login(object $user)
+    public static function login(object $user, string $modelKey = null)
     {
+        self::$modelKey = $modelKey;
         self::set_state([
             'uid' => Session::getSessionID(),
             'data' => $user,
@@ -292,8 +299,8 @@ class User extends State implements ArrayAccess
 
     /**
      * Log out user
-     * @param string $redirect_to
      * @param null $message
+     * @param string|null $redirect_to
      */
     public static function logout($message = null, string $redirect_to = null)
     {

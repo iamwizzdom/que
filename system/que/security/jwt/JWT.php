@@ -261,11 +261,11 @@ class JWT
 
     /**
      * @param string $token
-     * @param string $modelKey
+     * @param string|null $modelKey
      * @param bool $throwException
      * @return User|null
      */
-    public static function toUser(string $token, string $modelKey = 'que', bool $throwException = true): ?User
+    public static function toUser(string $token, string $modelKey = null, bool $throwException = true): ?User
     {
         try {
 
@@ -282,8 +282,9 @@ class JWT
                 throw new Exception("Login failed, no record found with the given token.");
             }
 
+            $modelKey = $modelKey ?: config("database.default.model");
             $user->setModelKey($modelKey);
-            User::login($user->getFirstWithModel()->getObject());
+            User::login($user->getFirstWithModel()->getObject(), $modelKey);
             return User::getInstance();
 
         } catch (Exception $e) {
