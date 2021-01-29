@@ -95,10 +95,12 @@ abstract class BaseModel implements Model
     /**
      * @inheritDoc
      */
-    public function &getObject(): object
+    public function &getObject(bool $onlyFillable = false): object
     {
         // TODO: Implement getObject() method.
-        return $this->object;
+        if ($onlyFillable) $object = Obj::extract_by_keys((object) (array) $this->object, $this->fillable);
+        else $object = &$this->object;
+        return $object;
     }
 
     /**
@@ -122,7 +124,7 @@ abstract class BaseModel implements Model
     #[Pure] public function getArray(bool $onlyFillable = false): array
     {
         // TODO: Implement getArray() method.
-        $arr = object_to_array(Obj::exclude($this->object, ...$this->hidden));
+        $arr = object_to_array(Obj::exclude((object) (array) $this->object, ...$this->hidden));
         return $onlyFillable ? Arr::extract_by_keys($arr, $this->fillable) : $arr;
     }
 
@@ -302,6 +304,7 @@ abstract class BaseModel implements Model
     public function validate($key): Condition
     {
         // TODO: Implement validate() method.
+        log_err(['vali' => $this->object]);
         if (!$this->offsetExists($key))
             throw new QueRuntimeException("Undefined key: '{$key}' not found in current model object", "Model Error",
                 0, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));

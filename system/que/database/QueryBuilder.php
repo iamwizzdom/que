@@ -1245,7 +1245,7 @@ class QueryBuilder implements Builder
                                 return $newModel->validate($newModel->getPrimaryKey())->isEqual($m->getValue($m->getPrimaryKey()));
                             });
                             $this->builder->setOrWhere($newModel->getPrimaryKey(), $newModel->getValue($newModel->getPrimaryKey()));
-                            return array_diff_assoc($newModel->getArray($newModel->hasFillable()), $oldModel->getArray($oldModel->hasFillable()));
+                            return array_diff_assoc((array) $newModel->getObject($newModel->hasFillable()), (array) $oldModel->getObject($oldModel->hasFillable()));
                         });
 
                         $commonColumns = [];

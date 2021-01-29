@@ -30,9 +30,10 @@ interface Model extends QueArrayAccess
     public function getModelKey(): string;
 
     /**
+     * @param bool $onlyFillable
      * @return object
      */
-    public function &getObject(): object;
+    public function &getObject(bool $onlyFillable = false): object;
 
     /**
      * @param bool $onlyFillable
