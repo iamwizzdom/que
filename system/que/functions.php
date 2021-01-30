@@ -1387,7 +1387,7 @@ function find_in_array(array $haystack, $needle, $default = null): mixed
  */
 function array_find(array $input, callable $callback): mixed
 {
-    foreach ($input as $v) if ($callback($v)) return $v;
+    foreach ($input as $k => $v) if ($callback($v, $k)) return $v;
     return null;
 }
 
