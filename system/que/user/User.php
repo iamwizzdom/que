@@ -13,6 +13,7 @@ use ArrayAccess;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use que\database\interfaces\model\Model;
+use que\database\model\ModelQueryResponse;
 use que\http\HTTP;
 use que\session\Session;
 use que\utility\client\Browser;
@@ -177,20 +178,11 @@ class User extends State implements ArrayAccess
 
     /**
      * @param array $columns
-     * @return bool
+     * @return ModelQueryResponse|null
      */
-    public function update(array $columns): bool
+    public function update(array $columns): ?ModelQueryResponse
     {
-        if (!self::isLoggedIn() || empty($columns)) return false;
-
-        $columnsToUpdate = [];
-        foreach ($columns as $key => $value) {
-            if (object_key_exists($key, self::$user) && self::$user->{$key} != $value) {
-                $columnsToUpdate[$key] = $value;
-            }
-        }
-
-        if (empty($columnsToUpdate)) return false;
+        if (!self::isLoggedIn() || empty($columns)) return null;
 
         $database_config = (array) config('database', []);
 
@@ -198,14 +190,14 @@ class User extends State implements ArrayAccess
 
         $update = db()->update()->table(
             ($database_config['tables']['user']['name'] ?? 'users')
-        )->columns($columnsToUpdate)->where($primaryKey, $this->getValue($primaryKey, 0))->exec();
+        )->columns($columns)->where($primaryKey, $this->getValue($primaryKey, 0))->exec();
 
-        if ($status = $update->isSuccessful()) {
-            foreach ($columnsToUpdate as $key => $value) self::$user->{$key} = $value;
+        if ($update->isSuccessful()) {
+            foreach ($columns as $key => $value) if ($this->offsetExists($key)) $this->offsetSet($key, $value);
             self::updateState();
         }
 
-        return $status;
+        return new ModelQueryResponse($update);
     }
 
     /**
