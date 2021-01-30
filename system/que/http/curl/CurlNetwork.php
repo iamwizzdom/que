@@ -46,12 +46,12 @@ abstract class CurlNetwork
     /**
      * @var int
      */
-    private int $timeout = 60;
+    private int $timeout = 0;
 
     /**
      * @var bool
      */
-    private bool $verifySSL = false;
+    private ?bool $verifySSL = null;
 
     /**
      * @var int
@@ -108,8 +108,7 @@ abstract class CurlNetwork
     }
 
     /**
-     * @param string $name
-     * @param $value
+     * @param array $post
      */
     public function setPosts(array $post): void
     {
@@ -147,7 +146,7 @@ abstract class CurlNetwork
      */
     public function setHeader(string $name, $value): void
     {
-        $this->headers[$name] = $value;
+        $this->headers[] = "{$name}: {$value}";
     }
 
     /**
@@ -155,12 +154,11 @@ abstract class CurlNetwork
      */
     public function setHeaders(array $headers)
     {
-        if (!Arr::isAssoc($headers)) {
-            foreach ($headers as $k => $v) {
-                list($key, $value) = explode(':', $v, 2);
-                $headers[strtolower($key)] = trim($value);
-                unset($headers[$k]);
+        if (Arr::isAssoc($headers)) {
+            foreach ($headers as $key => $value) {
+                $this->headers[] = "{$key}: {$value}";
             }
+            return;
         }
 
         $this->headers = $headers;
@@ -215,9 +213,9 @@ abstract class CurlNetwork
     }
 
     /**
-     * @return bool
+     * @return bool|null
      */
-    public function isVerifySSL(): bool
+    public function isVerifySSL(): ?bool
     {
         return $this->verifySSL;
     }
@@ -230,6 +228,18 @@ abstract class CurlNetwork
         $this->verifySSL = $verifySSL;
     }
 
+    private function _flush() {
+        $this->url = "";
+        $this->method = "";
+        $this->post = [];
+        $this->postFiles = [];
+        $this->headers = [];
+        $this->isBodyPost = false;
+        $this->timeout = 0;
+        $this->verifySSL = null;
+        $this->httpVersion = CURL_HTTP_VERSION_NONE;
+    }
+
     /**
      * @return array
      */
@@ -238,44 +248,47 @@ abstract class CurlNetwork
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->getUrl());
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $this->isVerifySSL());
 
         $post = $this->getPost();
         $files = $this->getPostFiles();
         $headers = $this->getHeaders();
-        $headers = array_change_key_case($headers, CASE_LOWER);
+
+        $content_type = array_find($headers, function ($value) {
+            return str__starts_with($value, "content-type", true);
+        });
 
         if (!empty($files)) {
+
             foreach ($files as $name => $file) {
                 if (function_exists('curl_file_create')) $file = curl_file_create($file); // For PHP 5.5+
                 else $file = '@' . realpath($file);
                 $post[$name] = $file;
             }
-            $headers["content-type"] ??= "multipart/form-data";
+
+            if ($content_type == null) $headers[] = $content_type = "Content-Type: multipart/form-data";
+
         }
 
-        if ($headers["content-type"] ?? '' === mime_type_from_extension('json')) {
-            $this->setIsBodyPost(true);
-        }
+        if (!empty($post)) curl_setopt($ch, CURLOPT_POST, true);
 
-        if (!empty($post)) {
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $this->isBodyPost() ? json_encode($post) : $post);
-        }
+        if (!empty($headers)) curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+        $mime_type = mime_type_from_extension('json');
+
+        if ($content_type && strcmp(str_start_from(strtolower($content_type), 'content-type: '), $mime_type) == 0) $this->setIsBodyPost(true);
 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-        if (!empty($headers)) {
-            Arr::callback($headers, function ($value, $key) {
-                return "{$key}: {$value}";
-            });
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array_values($headers));
-        }
+        if (!empty($post)) curl_setopt($ch, CURLOPT_POSTFIELDS, ($this->isBodyPost() ? json_encode($post) : $post));
 
-        curl_setopt($ch, CURLOPT_TIMEOUT, $this->getTimeout());
+        if ($this->getTimeout() > 0) curl_setopt($ch, CURLOPT_TIMEOUT, $this->getTimeout());
+
         if (!empty($this->getMethod())) curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $this->getMethod());
 
-        curl_setopt($ch, CURLOPT_HTTP_VERSION, $this->getHttpVersion());
+        if ($this->getHttpVersion() != CURL_HTTP_VERSION_NONE) curl_setopt($ch, CURLOPT_HTTP_VERSION, $this->getHttpVersion());
+
+        if ($this->isVerifySSL() !== null) curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $this->isVerifySSL());
+
 
         $content = curl_exec($ch);
 
@@ -285,6 +298,7 @@ abstract class CurlNetwork
                 'response' => curl_error($ch)
             ];
             curl_close($ch);
+            $this->_flush();
             return $response;
         }
 
@@ -304,12 +318,14 @@ abstract class CurlNetwork
                 'response' => curl_error($ch)
             ];
             curl_close($ch);
+            $this->_flush();
             return $response;
         }
 
         $info = curl_getinfo($ch);
 
         curl_close($ch);
+        $this->_flush();
 
         return [
             'status' => true,
