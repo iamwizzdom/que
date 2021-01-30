@@ -54,6 +54,11 @@ abstract class CurlNetwork
     private bool $verifySSL = false;
 
     /**
+     * @var int
+     */
+    private int $httpVersion = CURL_HTTP_VERSION_1_1;
+
+    /**
      * @return string
      */
     public function getUrl(): string
@@ -180,6 +185,22 @@ abstract class CurlNetwork
     /**
      * @return int
      */
+    public function getHttpVersion(): int
+    {
+        return $this->httpVersion;
+    }
+
+    /**
+     * @param int $httpVersion
+     */
+    public function setHttpVersion(int $httpVersion): void
+    {
+        $this->httpVersion = $httpVersion;
+    }
+
+    /**
+     * @return int
+     */
     public function getTimeout(): int
     {
         return $this->timeout;
@@ -253,6 +274,8 @@ abstract class CurlNetwork
 
         curl_setopt($ch, CURLOPT_TIMEOUT, $this->getTimeout());
         if (!empty($this->getMethod())) curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $this->getMethod());
+
+        curl_setopt($ch, CURLOPT_HTTP_VERSION, $this->getHttpVersion());
 
         $content = curl_exec($ch);
 
