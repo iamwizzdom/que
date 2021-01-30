@@ -304,7 +304,6 @@ abstract class BaseModel implements Model
     public function validate($key): Condition
     {
         // TODO: Implement validate() method.
-        log_err(['vali' => $this->object]);
         if (!$this->offsetExists($key))
             throw new QueRuntimeException("Undefined key: '{$key}' not found in current model object", "Model Error",
                 0, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
