@@ -56,7 +56,7 @@ abstract class CurlNetwork
     /**
      * @var int
      */
-    private int $httpVersion = CURL_HTTP_VERSION_1_1;
+    private int $httpVersion = CURL_HTTP_VERSION_NONE;
 
     /**
      * @return string
