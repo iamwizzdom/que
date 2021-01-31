@@ -124,11 +124,11 @@ class Item implements JsonSerializable {
      * Returns the monetary value represented by this object.
      *
      * @param bool $format
+     * @param int $decimals
      * @return string
      */
-    public function getCents($format = false): string {
-        if($format)
-            return number_format($this->cents, 0); // Remove all precision
+    public function getCents($format = false, $decimals = MONEY_CONFIG_PRECISION): string {
+        if($format) return number_format($this->cents, $decimals); // Remove all precision
         return $this->cents;
     }
 
@@ -136,10 +136,11 @@ class Item implements JsonSerializable {
      *
      * Returns the monetary value represented by this object.
      * @param bool $format
+     * @param int $decimal
      * @return string
      */
-    public function getFactor($format = false): string {
-        if($format) return $this->format();
+    public function getFactor($format = false, $decimal = MONEY_CONFIG_PRECISION): string {
+        if($format) return $this->format($decimal);
         return $this->factor;
     }
 
@@ -152,6 +153,14 @@ class Item implements JsonSerializable {
      */
     public function format($decimal = MONEY_CONFIG_PRECISION){
         return number_format($this->factor, $decimal, MONEY_FORMAT_DECIMAL, MONEY_FORMAT_THOUSAND);
+    }
+
+    /**
+     * @param string $currency
+     */
+    public function setCurrency(string $currency): void
+    {
+        $this->currency = $currency;
     }
 
     /**

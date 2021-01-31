@@ -9,6 +9,9 @@
 namespace que\support;
 
 
+use que\utility\money\Helper;
+use que\utility\money\Item;
+
 class Num
 {
     /**
@@ -89,5 +92,21 @@ class Num
      */
     public static function convert_mega_bytes (int $mega_bytes, int $decimals = 0) {
         return convert_mega_bytes($mega_bytes, $decimals);
+    }
+
+    /**
+     * @param $amount
+     * @param null $precision
+     * @return Item
+     */
+    public static function item($amount, $precision = null) {
+        return new Item($amount, $precision);
+    }
+
+    /**
+     * @return Helper
+     */
+    public static function item_helper() {
+        return new Helper();
     }
 }
