@@ -370,6 +370,7 @@ abstract class BaseModel implements Model
         if (!$data->isSuccessful()) return false;
         $this->object = (object) $data->getFirst();
         $this->setUp();
+        foreach ($this->object as $item) if ($item instanceof Model) $item->refresh();
         return true;
     }
 
