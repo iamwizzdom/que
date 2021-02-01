@@ -1044,7 +1044,7 @@ function array_callback_recursive(array &$element, $callback, array $affected = 
  */
 function iterable_callback(&$element, $callback, array $affected = []): mixed
 {
-    if (!is_iterable($element)) throw new QueRuntimeException(
+    if (!is_iterable($element) && !is_object($element)) throw new QueRuntimeException(
         "element passed to iterable_callback is not iterable", "Que Function Error",
         E_USER_ERROR, 0, PreviousException::getInstance());
 
@@ -1071,7 +1071,7 @@ function iterable_callback(&$element, $callback, array $affected = []): mixed
         if (!empty($affected)) {
 
             foreach ($affected as $key) {
-                if (array_key_exists($key, $element)) {
+                if (object_key_exists($key, $element)) {
                     $element->{$key} = call_user_func($callback, $element->{$key}, $key, $element);
                 }
             }
@@ -1127,7 +1127,7 @@ function iterable_callback_recursive(&$element, $callback, array $affected = [])
 
         if (!empty($affected)) {
             foreach ($affected as $key)
-                if (array_key_exists($key, $element)) {
+                if (object_key_exists($key, $element)) {
                     if (is_array($element->{$key}) || is_object($element->{$key})) {
                         $value = &$element->{$key};
                         iterable_callback_recursive($value, $callback, $affected);
@@ -1883,6 +1883,19 @@ function json_size(string $json): int
 #[Pure] function is_email(string $email): bool
 {
     return filter_var($email, FILTER_VALIDATE_EMAIL);
+}
+
+/**
+ * Evaluates if a string is a valid JSON string
+ *
+ * @param string $string
+ * @return bool
+ */
+function is_json(string $string): bool
+{
+    return (!(empty($string) && $string != "0") && is_string($string) &&
+        ($value = json_decode($string)) != null &&
+        json_last_error() == JSON_ERROR_NONE && is_object($value));
 }
 
 /**
