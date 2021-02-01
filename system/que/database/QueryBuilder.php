@@ -18,7 +18,8 @@ use que\database\interfaces\Builder;
 use que\database\interfaces\drivers\Driver;
 use que\database\interfaces\drivers\DriverQueryBuilder;
 use que\database\interfaces\drivers\DriverResponse;
-use que\database\observer\Observer;
+use que\database\interfaces\observer\Observer;
+use que\database\model\CentralModel;
 use que\database\observer\ObserverSignal;
 use que\database\interfaces\model\Model;
 use que\database\model\ModelCollection;
@@ -631,38 +632,23 @@ class QueryBuilder implements Builder
     public function exec(): QueryResponse
     {
         // TODO: Implement exec() method.
-        switch ($this->builder->getQueryType()) {
-            case DriverQueryBuilder::INSERT:
-                return $this->insert();
-            case DriverQueryBuilder::SELECT:
-                return $this->selectQuery();
-            case DriverQueryBuilder::UPDATE:
-                return $this->update();
-            case DriverQueryBuilder::DELETE:
-                return $this->delete();
-            case DriverQueryBuilder::COUNT:
-                return $this->count();
-            case DriverQueryBuilder::CHECK:
-                return $this->check();
-            case DriverQueryBuilder::AVG:
-                return $this->avg();
-            case DriverQueryBuilder::SUM:
-                return $this->sum();
-            case DriverQueryBuilder::RAW_SELECT:
-                return $this->raw_select();
-            case DriverQueryBuilder::RAW_OBJECT:
-                return $this->raw_object();
-            case DriverQueryBuilder::RAW_QUERY:
-                return $this->raw_query();
-            case DriverQueryBuilder::SHOW_TABLE_PRIMARY_KEY:
-                return $this->show_table_primary_key();
-            case DriverQueryBuilder::SHOW_TABLE_COLUMNS:
-                return $this->show_table_columns();
-            default:
-                throw new QueRuntimeException("Invalid query type", "Query Builder Error",
-                    E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
-
-        }
+        return match ($this->builder->getQueryType()) {
+            DriverQueryBuilder::INSERT => $this->insert(),
+            DriverQueryBuilder::SELECT => $this->selectQuery(),
+            DriverQueryBuilder::UPDATE => $this->update(),
+            DriverQueryBuilder::DELETE => $this->delete(),
+            DriverQueryBuilder::COUNT => $this->count(),
+            DriverQueryBuilder::CHECK => $this->check(),
+            DriverQueryBuilder::AVG => $this->avg(),
+            DriverQueryBuilder::SUM => $this->sum(),
+            DriverQueryBuilder::RAW_SELECT => $this->raw_select(),
+            DriverQueryBuilder::RAW_OBJECT => $this->raw_object(),
+            DriverQueryBuilder::RAW_QUERY => $this->raw_query(),
+            DriverQueryBuilder::SHOW_TABLE_PRIMARY_KEY => $this->show_table_primary_key(),
+            DriverQueryBuilder::SHOW_TABLE_COLUMNS => $this->show_table_columns(),
+            default => throw new QueRuntimeException("Invalid query type", "Query Builder Error",
+                E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1)),
+        };
     }
 
     /**
@@ -679,53 +665,44 @@ class QueryBuilder implements Builder
             self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? $showTable->getQueryResponse() : 'id';
         }
 
-        $model = \model(config("database.default.model"));
+        $model = null;
 
-        if ($model !== null) {
-            if (($implements = class_implements($model)) && in_array(Model::class, $implements)) {
-                $columns = (object) $this->builder->getColumns();
-                $model = new $model($columns, $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
-            }
+        $observer = $this->getTableObserver($this->builder->getTable());
+
+        if ($observer && !empty($m = $observer->getModelKey())) $model = \model($m);
+
+        if ($model == null) $model = \model(config("database.default.model"));
+
+        if ($model && ($implements = class_implements($model)) && in_array(Model::class, $implements)) {
+            $columns = (object) $this->builder->getColumns();
+            $model = new $model($columns, $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
         }
 
         if (!$model instanceof Model) {
             $columns = (object) $this->builder->getColumns();
-            $model = new \que\database\model\CentralModel($columns, $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
+            $model = new CentralModel($columns, $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
         }
 
         $this->builder->setColumns($this->normalize_data($this->builder->getColumns()));
 
-        return $this->insertOps($model);
+        return $this->insertOps($model, $observer);
     }
 
     /**
      * @param Model $model
+     * @param interfaces\observer\Observer|null $observer
      * @param bool $retrying
-     * @param Observer|null $observer
      * @param int $attempts
      * @return QueryResponse
      */
-    private function insertOps(Model $model, bool $retrying = false,
-                               Observer $observer = null, int $attempts = 0): QueryResponse
+    private function insertOps(Model $model, ?interfaces\observer\Observer $observer,
+                               bool $retrying = false, int $attempts = 0): QueryResponse
     {
         $this->builder->buildQuery();
 
-        if ($observer === null) {
-            $observer = config("database.observers.{$this->builder->getTable()}");
-            if ($observer !== null && class_exists($observer, true) &&
-                (($implements = class_implements($observer)) &&
-                    in_array(interfaces\observer\Observer::class, $implements))) {
-
-                $observer = new $observer(new ObserverSignal());
-                if ($observer instanceof Observer) {
-                    //Notify observer that insert operation has started
-                    $observer->onCreating($model);
-                }
-            }
-
-        }
-
-        if ($observer instanceof Observer) {
+        if ($observer instanceof interfaces\observer\Observer) {
+            //Notify observer that insert operation has started
+            $observer->onCreating($model);
 
             //Check if observer wants to discontinue the insert operation
             if (!$observer->getSignal()->isContinueOperation()) {
@@ -747,7 +724,7 @@ class QueryBuilder implements Builder
 
         if (!$response->isSuccessful()) {
 
-            if ($observer instanceof Observer && $model instanceof Model) {
+            if ($observer instanceof interfaces\observer\Observer && $model instanceof Model) {
 
                 //Check that operation in not already on retry mode
                 if (!$retrying) {
@@ -771,7 +748,7 @@ class QueryBuilder implements Builder
 
                                 $totalAttempts = $attempt;
 
-                                return $this->insertOps($model,true, $observer, $attempt);
+                                return $this->insertOps($model,$observer, true, $attempt);
 
                             }, $signal->getTrials(), $signal->getInterval() * 1000, function (QueryResponse $retryResponse) {
                                 return $retryResponse->isSuccessful();
@@ -810,14 +787,14 @@ class QueryBuilder implements Builder
                     PreviousException::getInstance());
             }
 
-        } elseif ($observer instanceof Observer && $model instanceof Model) {
+        } elseif ($observer instanceof interfaces\observer\Observer && $model instanceof Model) {
             $model->offsetSet($model->getPrimaryKey(), $response->getLastInsertID());
             $model->refresh();
             $observer->onCreated($model);
         }
 
         //Check if observer wants to undo the insert operation
-        if ($observer instanceof Observer && $observer->getSignal()->isUndoOperation()) {
+        if ($observer instanceof interfaces\observer\Observer && $observer->getSignal()->isUndoOperation()) {
 
             $this->query->transRollBack();
 
@@ -863,39 +840,25 @@ class QueryBuilder implements Builder
                 $record->getQueryErrorCode()), $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
         }
 
+        $observer = $this->getTableObserver($this->builder->getTable());
+
+        if ($observer && !empty($m = $observer->getModelKey())) $record->setModelKey($m);
+
         $modelCollection = $record->getAllWithModel(self::$primaryKeys[$this->builder->getTable()]);
 
-        return $this->deleteOps($modelCollection);
+        return $this->deleteOps($modelCollection, $observer);
     }
 
     /**
-     * @param ModelCollection|Model[] $modelCollection
-     * @param Observer|null $observer
+     * @param ModelCollection $modelCollection
+     * @param interfaces\observer\Observer|null $observer
      * @param bool $retrying
      * @param int $attempts
      * @return QueryResponse
      */
-    private function deleteOps(ModelCollection $modelCollection, Observer $observer = null,
+    private function deleteOps(ModelCollection $modelCollection, ?interfaces\observer\Observer $observer,
                                bool $retrying = false, int $attempts = 0): QueryResponse
     {
-
-        if ($observer === null) {
-
-            $observer = config("database.observers.{$this->builder->getTable()}");
-
-            if ($observer !== null && class_exists($observer, true)) {
-
-                if (($implements = class_implements($observer)) &&
-                    in_array(interfaces\observer\Observer::class, $implements)) {
-
-                    $observer = new $observer(new ObserverSignal());
-                    if ($observer instanceof Observer) {
-                        //Notify observer that insert operation has started
-                        $observer->onDeleting($modelCollection);
-                    }
-                }
-            }
-        }
 
         $this->builder->clearWhereQuery();
 
@@ -906,7 +869,10 @@ class QueryBuilder implements Builder
 
         $this->builder->buildQuery();
 
-        if ($observer instanceof Observer) {
+        if ($observer instanceof interfaces\observer\Observer) {
+            //Notify observer that insert operation has started
+            $observer->onDeleting($modelCollection);
+
             //Check if observer wants to discontinue the delete operation
             if (!$observer->getSignal()->isContinueOperation()) {
 
@@ -937,7 +903,7 @@ class QueryBuilder implements Builder
         if (!$response->isSuccessful()) {
 
             //Check that operation in not already on retry mode
-            if (!$retrying && $observer instanceof Observer) {
+            if (!$retrying && $observer instanceof interfaces\observer\Observer) {
 
                 //Notify observer that operation failed
                 $observer->onDeleteFailed($modelCollection, $response->getErrors(), $response->getErrorCode());
@@ -991,9 +957,9 @@ class QueryBuilder implements Builder
                     PreviousException::getInstance());
             }
 
-        } elseif ($observer instanceof Observer && $modelCollection instanceof ModelCollection) $observer->onDeleted($modelCollection);
+        } elseif ($observer instanceof interfaces\observer\Observer && $modelCollection instanceof ModelCollection) $observer->onDeleted($modelCollection);
 
-        if ($observer instanceof Observer) {
+        if ($observer instanceof interfaces\observer\Observer) {
 
             //Check if observer wants to undo the delete operation
             if ($observer->getSignal()->isUndoOperation()) {
@@ -1184,11 +1150,15 @@ class QueryBuilder implements Builder
                 $record->getQueryErrorCode()), $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
         }
 
+        $observer = $this->getTableObserver($this->builder->getTable());
+
+        if ($observer && !empty($m = $observer->getModelKey())) $record->setModelKey($m);
+
         $modelCollection = $record->getAllWithModel(self::$primaryKeys[$this->builder->getTable()]);
 
         $this->builder->setColumns($this->normalize_data($this->builder->getColumns()));
 
-        return $this->updateOps($modelCollection);
+        return $this->updateOps($modelCollection, $observer);
     }
 
     /**
@@ -1198,7 +1168,7 @@ class QueryBuilder implements Builder
      * @param int $attempts
      * @return QueryResponse
      */
-    private function updateOps(ModelCollection $oldModelCollection, Observer $observer = null,
+    private function updateOps(ModelCollection $oldModelCollection, ?Observer $observer,
                                bool $retrying = false, int $attempts = 0): QueryResponse
     {
 
@@ -1214,61 +1184,48 @@ class QueryBuilder implements Builder
         }
 
 
-        if ($observer === null) {
+        if ($observer instanceof interfaces\observer\Observer) {
+            //Notify observer that insert operation has started
+            $observer->onUpdating($newModelCollection, $oldModelCollection);
 
-            $observer = config("database.observers.{$this->builder->getTable()}");
+            $this->builder->clearWhereQuery();
 
-            if ($observer !== null && class_exists($observer, true)) {
+            if (!isset(self::$fillables[$this->builder->getTable()])) {
 
-                if (($implements = class_implements($observer)) &&
-                    in_array(interfaces\observer\Observer::class, $implements)) {
-
-                    $observer = new $observer(new ObserverSignal());
-                    if ($observer instanceof Observer) {
-                        //Notify observer that insert operation has started
-                        $observer->onUpdating($newModelCollection, $oldModelCollection);
-
-                        $this->builder->clearWhereQuery();
-
-                        if (!isset(self::$fillables[$this->builder->getTable()])) {
-
-                            $this->builder->setQueryType(DriverQueryBuilder::SHOW_TABLE_COLUMNS);
-                            $showColumns = $this->show_table_columns();
-                            $this->builder->setQueryType(DriverQueryBuilder::UPDATE);
-                            self::$fillables[$this->builder->getTable()] = $showColumns->isSuccessful() ? (array) $showColumns->getQueryResponse() : [];
-                        }
-
-                        $newModelCollection->setFillable(self::$fillables[$this->builder->getTable()]);
-
-                        $changes = $newModelCollection->map(function (Model $newModel) use ($oldModelCollection) {
-                            $oldModel = $oldModelCollection->find(function (Model $m) use ($newModel) {
-                                return $newModel->validate($newModel->getPrimaryKey())->isEqual($m->getValue($m->getPrimaryKey()));
-                            });
-                            $this->builder->setOrWhere($newModel->getPrimaryKey(), $newModel->getValue($newModel->getPrimaryKey()));
-                            return array_diff_assoc((array) $newModel->getObject($newModel->hasFillable()), (array) $oldModel->getObject($oldModel->hasFillable()));
-                        });
-
-                        $commonColumns = [];
-
-                        $firstChange = array_shift($changes);
-                        foreach ($firstChange as $col => $v) {
-                            $isCommon = true;
-                            foreach ($changes as $change) {
-                                if ($change[$col] != $v) $isCommon = false;
-                            }
-                            if ($isCommon) $commonColumns[$col] = $v;
-                        }
-
-                        $this->builder->setColumns($this->normalize_data(array_merge($cols = $this->builder->getColumns(), $commonColumns)));
-                    }
-                }
+                $this->builder->setQueryType(DriverQueryBuilder::SHOW_TABLE_COLUMNS);
+                $showColumns = $this->show_table_columns();
+                $this->builder->setQueryType(DriverQueryBuilder::UPDATE);
+                self::$fillables[$this->builder->getTable()] = $showColumns->isSuccessful() ? (array) $showColumns->getQueryResponse() : [];
             }
+
+            $newModelCollection->setFillable(self::$fillables[$this->builder->getTable()]);
+
+            $changes = $newModelCollection->map(function (Model $newModel) use ($oldModelCollection) {
+                $oldModel = $oldModelCollection->find(function (Model $m) use ($newModel) {
+                    return $newModel->validate($newModel->getPrimaryKey())->isEqual($m->getValue($m->getPrimaryKey()));
+                });
+                $this->builder->setOrWhere($newModel->getPrimaryKey(), $newModel->getValue($newModel->getPrimaryKey()));
+                return array_diff_assoc((array) $newModel->getObject($newModel->hasFillable()), (array) $oldModel->getObject($oldModel->hasFillable()));
+            });
+
+            $commonColumns = [];
+
+            $firstChange = array_shift($changes);
+            foreach ($firstChange as $col => $v) {
+                $isCommon = true;
+                foreach ($changes as $change) {
+                    if ($change[$col] != $v) $isCommon = false;
+                }
+                if ($isCommon) $commonColumns[$col] = $v;
+            }
+
+            $this->builder->setColumns($this->normalize_data(array_merge($cols = $this->builder->getColumns(), $commonColumns)));
         }
 
 
         $this->builder->buildQuery();
 
-        if ($observer instanceof Observer) {
+        if ($observer instanceof interfaces\observer\Observer) {
             //Check if observer wants to discontinue the update operation
             if (!$observer->getSignal()->isContinueOperation()) {
 
@@ -1299,7 +1256,7 @@ class QueryBuilder implements Builder
         if (!$response->isSuccessful()) {
 
             //Check that operation in not already on retry mode
-            if (!$retrying && $observer instanceof Observer) {
+            if (!$retrying && $observer instanceof interfaces\observer\Observer) {
 
                 //Notify observer that operation failed
                 $observer->onUpdateFailed($oldModelCollection, $response->getErrors(), $response->getErrorCode());
@@ -1358,12 +1315,12 @@ class QueryBuilder implements Builder
                     PreviousException::getInstance());
             }
 
-        } elseif ($observer instanceof Observer && $oldModelCollection instanceof ModelCollection) {
+        } elseif ($observer instanceof interfaces\observer\Observer && $oldModelCollection instanceof ModelCollection) {
 //            $newModelCollection->refresh();
             $observer->onUpdated($newModelCollection, $oldModelCollection);
         }
 
-        if ($observer instanceof Observer) {
+        if ($observer instanceof interfaces\observer\Observer) {
 
             //Check if observer wants to undo the update operation
             if ($observer->getSignal()->isUndoOperation()) {
@@ -1511,17 +1468,15 @@ class QueryBuilder implements Builder
     {
         if ($recursive) {
             array_callback_recursive($data, function ($value) {
-                if (is_array($value)) return json_encode($value);
-                if ($value instanceof JsonSerializable) return json_encode($value);
-                return is_object($value) ? $this->mark_down($value) :
-                    (is_string($value) ? $this->query->escape_string($value) : $value);
+                if (is_object($value)) return $this->mark_down($value);
+                if (is_array($value) || $value instanceof JsonSerializable) return json_encode($value);
+                return is_string($value) ? $this->query->escape_string($value) : $value;
             });
         } else {
             array_callback($data, function ($value) {
-                if (is_array($value)) return json_encode($value);
-                if ($value instanceof JsonSerializable) return json_encode($value);
-                return is_object($value) ? $this->mark_down($value) :
-                    (is_string($value) ? $this->query->escape_string($value) : $value);
+                if (is_object($value)) return $this->mark_down($value);
+                if (is_array($value) || $value instanceof JsonSerializable) return json_encode($value);
+                return is_string($value) ? $this->query->escape_string($value) : $value;
             });
         }
         return $data;
@@ -1543,6 +1498,20 @@ class QueryBuilder implements Builder
         }
         $data = serialize($data);
         return "[{$data}]({$type})({$can_wakeup})";
+    }
+
+    /**
+     * @param string $table
+     * @return interfaces\observer\Observer|null
+     */
+    private function getTableObserver(string $table): ?interfaces\observer\Observer
+    {
+        $observer = config("database.observers.{$table}");
+        if ($observer && (($implements = class_implements($observer)) &&
+                in_array(interfaces\observer\Observer::class, $implements))) {
+            return new $observer(new ObserverSignal());
+        }
+        return null;
     }
 
     /**

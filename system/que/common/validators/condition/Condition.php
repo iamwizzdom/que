@@ -457,9 +457,7 @@ class Condition implements ConditionAlias
     public function isJson(): bool
     {
         // TODO: Implement isJson() method.
-        return ($this->isNotEmpty() && $this->isString() &&
-            ($value = json_decode($this->getValue())) != null &&
-            json_last_error() == JSON_ERROR_NONE && is_object($value));
+        return is_json($this->getValue());
     }
 
 

@@ -652,10 +652,8 @@ abstract class BaseModel implements Model
             case 'boolean':
                 $this->offsetSet($column, $this->getBool($column));
                 break;
-            case 'double':
-                $this->offsetSet($column, (double) $this->getValue($column));
-                break;
             case 'real':
+            case 'double':
             case 'float':
                 $this->offsetSet($column, $this->getFloat($column));
                 break;

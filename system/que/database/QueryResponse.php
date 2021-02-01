@@ -377,16 +377,17 @@ class QueryResponse
     }
 
     /**
-     * @param object|array|string $data
-     * @return object|array|string
+     * @param object|array|string|null $data
+     * @return object|array|string|null
      */
-    private function normalize_data(object|array|string $data): object|array|string
+    private function normalize_data(object|array|string|null $data): object|array|string|null
     {
         if (is_iterable($data) || is_object($data)) {
 
             iterable_callback_recursive($data, function ($value) {
-                if (is_iterable($value) || is_object($value)) return $this->normalize_data($value);
-                return !is_null($value) ? ((json_decode($value) ?: $this->get_mark_down($value)) ?: stripslashes($value)) : null;
+                if (is_object($value) || is_array($value)) return $this->normalize_data($value);
+                if (($s = is_string($value)) && is_object(($o = json_decode($value)))) return $o;
+                return $s ? ($this->get_mark_down($value) ?: stripslashes($value)) : $value;
             });
 
         }

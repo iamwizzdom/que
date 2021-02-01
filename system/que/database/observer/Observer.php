@@ -14,6 +14,8 @@ abstract class Observer implements \que\database\interfaces\observer\Observer
      */
     protected ObserverSignal $signal;
 
+    protected ?string $modelKey = null;
+
     /**
      * Observer constructor.
      * @param ObserverSignal $signal
@@ -27,6 +29,14 @@ abstract class Observer implements \que\database\interfaces\observer\Observer
     {
         // TODO: Implement getSignal() method.
         return $this->signal;
+    }
+
+    /**
+     * @return string|null
+     */
+    public final function getModelKey(): ?string
+    {
+        return $this->modelKey;
     }
 
     /**
