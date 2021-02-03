@@ -90,7 +90,7 @@ class CacheAutoload
         $_SESSION['autoload'] = [];
 
         if (is_file(self::$cache_file_path)) {
-            if (($cache_json_file = file_get_contents(self::$cache_file_path)) === false) die("Unable to read autoload cache file!");
+            if (($cache_json_file = @file_get_contents(self::$cache_file_path)) === false) die("Unable to read autoload cache file!");
             elseif (!empty($cache_json_file)) $_SESSION['autoload'] = json_decode($cache_json_file, true);
         }
 
@@ -104,8 +104,7 @@ class CacheAutoload
     private static function storeCache()
     {
         if (!is_dir($dir = pathinfo(self::$cache_file_path, PATHINFO_DIRNAME))) mkdir($dir, 0777, true);
-        file_put_contents(self::$cache_file_path, json_encode($_SESSION['autoload'], JSON_PRETTY_PRINT))
-        or die("Unable to write to autoload cache file!");
+        @file_put_contents(self::$cache_file_path, json_encode($_SESSION['autoload'], JSON_PRETTY_PRINT)) or die("Unable to write to autoload cache file!");
     }
 
     /**
