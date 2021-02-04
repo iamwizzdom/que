@@ -208,7 +208,8 @@ class MySqlDriver implements Driver
     {
         // TODO: Implement commit() method.
         if ($this->conn === null) return false;
-        return $this->conn->commit();
+        return $this->conn->commit() ?:
+            $this->conn->query('COMMIT') == true;
 
     }
 
@@ -219,7 +220,8 @@ class MySqlDriver implements Driver
     {
         // TODO: Implement rollback() method.
         if ($this->conn === null) return false;
-        return $this->conn->rollBack();
+        return $this->conn->rollBack() ?:
+            $this->conn->query('ROLLBACK') == true;
     }
 
     /**
