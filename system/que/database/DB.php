@@ -153,7 +153,7 @@ class DB extends Connect
     {
         if ($this->getTransDepth() > 0) $this->setTransSuccessful(false);
         $depth = null;
-        while ($this->getTransDepth() !== 0) {
+        while ($this->getTransDepth() > 0) {
             $depth = $this->getTransDepth();
             $this->transRollBack();
             if ($depth === $this->getTransDepth()) break;
