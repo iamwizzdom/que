@@ -155,7 +155,7 @@ class DB extends Connect
         $depth = null;
         while ($this->getTransDepth() !== 0) {
             $depth = $this->getTransDepth();
-            $this->transComplete();
+            $this->transRollBack();
             if ($depth === $this->getTransDepth()) break;
         }
         return $depth !== null;
