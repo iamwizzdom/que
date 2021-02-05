@@ -26,7 +26,7 @@ class DB extends Connect
     /**
      * DB constructor.
      */
-    public function __construct()
+    protected function __construct()
     {
         $this->changeDriver(Config::get('database.default.driver', ''));
     }
@@ -152,11 +152,12 @@ class DB extends Connect
     public function transRollBackAll()
     {
         if ($this->getTransDepth() > 0) $this->setTransSuccessful(false);
-        $depth = null;
+        $depth = null; $count = 0;
         while ($this->getTransDepth() > 0) {
             $depth = $this->getTransDepth();
             $this->transRollBack();
             if ($depth === $this->getTransDepth()) break;
+            if ($this->getTransDepth() == ++$count) break;
         }
         return $depth !== null;
     }

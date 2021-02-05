@@ -774,7 +774,7 @@ class QueryBuilder implements Builder
                 return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), $model->getPrimaryKey());
             }
 
-            $this->query->transComplete();
+            if ($observer instanceof interfaces\observer\Observer) $this->query->transRollBack();
 
             if ($this->driver->isInDebugMode()) {
 
@@ -794,20 +794,24 @@ class QueryBuilder implements Builder
         }
 
         //Check if observer wants to undo the insert operation
-        if ($observer instanceof interfaces\observer\Observer && $observer->getSignal()->isUndoOperation()) {
+        if ($observer instanceof interfaces\observer\Observer) {
 
-            $this->query->transRollBack();
+            if ($observer->getSignal()->isUndoOperation()) {
 
-            return new QueryResponse($this->getCustomDriverResponse($this->builder, [
-                $this->driver->isInDebugMode() ? ("Observer for '{$this->builder->getTable()}' table asked to undo the insert operation" . (
-                    $observer->getSignal()->getReason() ? " due to: {$observer->getSignal()->getReason()}" : ""
-                )) : ($observer->getSignal()->getReason() ?: "The insert operation was intercepted")
-            ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), $model->getPrimaryKey());
+                $this->query->transRollBack();
 
-        } else {
+                return new QueryResponse($this->getCustomDriverResponse($this->builder, [
+                    $this->driver->isInDebugMode() ? ("Observer for '{$this->builder->getTable()}' table asked to undo the insert operation" . (
+                        $observer->getSignal()->getReason() ? " due to: {$observer->getSignal()->getReason()}" : ""
+                        )) : ($observer->getSignal()->getReason() ?: "The insert operation was intercepted")
+                ], "00101"), $this->builder->getQueryType(), $this->builder->getTable(), $model->getPrimaryKey());
 
-            //Here we complete the transaction, since the developer didn't ask us to undo the operation
-            $this->query->transComplete();
+            } else {
+
+                //Here we complete the transaction, since the developer didn't ask us to undo the operation
+                $this->query->transComplete();
+            }
+
         }
 
         $response->setResponse([$model->getObject()]);
@@ -944,7 +948,7 @@ class QueryBuilder implements Builder
             if ($retrying && $attempts < $observer->getSignal()->getTrials())
                 return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
 
-            $this->query->transRollBack();
+            if ($observer instanceof interfaces\observer\Observer) $this->query->transRollBack();
 
             if ($this->driver->isInDebugMode()) {
 
@@ -1302,7 +1306,7 @@ class QueryBuilder implements Builder
                 return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
             }
 
-            $this->query->transRollBack();
+            if ($observer instanceof interfaces\observer\Observer) $this->query->transRollBack();
 
             if ($this->driver->isInDebugMode()) {
 

@@ -9,9 +9,15 @@
 namespace que\common\exception;
 
 use Exception;
+use Throwable;
 
 class PreviousException extends Exception
 {
+
+    protected function __construct($message = "", $code = 0, Throwable $previous = null)
+    {
+        parent::__construct($message, $code, $previous);
+    }
 
     /**
      * @param int $backtrace_index
