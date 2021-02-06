@@ -86,6 +86,7 @@ const STATE_PENDING = 17;
 const STATE_UNSEEN = 18;
 const STATE_SEEN = 19;
 const STATE_COMPLETED = 20;
+const STATE_REVOKED = 21;
 
 /**
  * Age constants
