@@ -202,6 +202,8 @@ class Mailer
 
             $status = (bool) $this->mail->Send();
 
+            if (LIVE && !$status) log_err([$mail->getKey() => "Mail Error: {$this->mail->ErrorInfo}"]);
+
             $mail->setError(!LIVE ? $this->mail->ErrorInfo : (!$status ? "Couldn't send mail, please contact webmaster." : ""));
             $this->error[$mail->getKey()] = $mail->getError();
 
