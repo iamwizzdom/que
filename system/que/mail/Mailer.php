@@ -202,7 +202,7 @@ class Mailer
 
             $status = (bool) $this->mail->Send();
 
-            $mail->setError($this->mail->ErrorInfo);
+            $mail->setError(!LIVE ? $this->mail->ErrorInfo : (!$status ? "Mail failed. Contact webmaster" : ""));
             $this->error[$mail->getKey()] = $mail->getError();
 
             $this->__flush();
