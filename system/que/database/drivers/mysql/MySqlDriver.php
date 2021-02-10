@@ -9,12 +9,13 @@
 namespace que\database\drivers\mysql;
 
 
+use DateTime;
+use DateTimeZone;
 use Exception;
 use PDO;
 use PDOException;
 use PDOStatement;
 use que\common\exception\PreviousException;
-use que\common\exception\QueException;
 use que\common\exception\QueRuntimeException;
 use que\database\interfaces\drivers\Driver;
 use que\database\interfaces\drivers\DriverQueryBuilder;
@@ -33,6 +34,8 @@ class MySqlDriver implements Driver
      * @var int
      */
     private int $connTime = 0;
+
+    private static ?string $timezoneOffset = null;
 
     public function __destruct()
     {
@@ -76,10 +79,19 @@ class MySqlDriver implements Driver
 
             $config = Config::get('database.connections.mysql');
 
+            if (empty(($config['timezone'] ?? null)) && !self::$timezoneOffset) {
+                self::$timezoneOffset = timezone_offset_get(new DateTimeZone(date_default_timezone_get()), new DateTime() );
+                self::$timezoneOffset = $this->timezone_offset_string(self::$timezoneOffset);
+            }
+
+            $offset = self::$timezoneOffset;
+
+            $options = $config['options'] ?? [];
+            $options[PDO::ATTR_ERRMODE] = PDO::ERRMODE_EXCEPTION;
+            $options[PDO::MYSQL_ATTR_INIT_COMMAND] ??= "SET time_zone = '" . (($config['timezone'] ?? null) ?: $offset) . "'";
+
             $this->conn = new PDO("mysql:{$this->buildConnectionParams()}",
-                $config['username'] ?? 'root', $config['password'] ?? '', [
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-                ]);
+                $config['username'] ?? 'root', $config['password'] ?? '', $options);
 
             // set the PDO options
             $options = [];
@@ -100,6 +112,11 @@ class MySqlDriver implements Driver
                 "Database Error", E_USER_ERROR, 0, PreviousException::getInstance(4));
         }
 
+    }
+
+    private function timezone_offset_string( $offset )
+    {
+        return sprintf( "%s%02d:%02d", ( $offset >= 0 ) ? '+' : '-', abs( $offset / 3600 ), abs( $offset % 3600 ) );
     }
 
     /**
