@@ -1279,7 +1279,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
             }
 
-        } elseif (is_callable($expression['value'])) {
+        } elseif (!is_string($expression['value']) && is_callable($expression['value'])) {
 
             return "{$this->formatColumn($expression['column'])} {$expression['operator']} ({$this->runSubBuilder($expression['value'])->getQuery()})";
 
