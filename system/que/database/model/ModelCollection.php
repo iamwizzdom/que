@@ -355,7 +355,7 @@ class ModelCollection implements QueArrayAccess
         return $this;
     }
 
-    private function __load(Model $model, string $name, callable $arguments = null) {
+    private function __load(Model $model, string $name, ?callable $arguments = null) {
         if (!$arguments) {
             $model->load($name);
             return;
