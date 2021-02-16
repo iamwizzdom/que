@@ -1203,7 +1203,7 @@ function array_extract(array &$array, int $start, ?int $end = null, bool $unset 
     for ($i = $start; $i < $size; $i++) {
         $extracted[$keys[$i]] = $array[$keys[$i]];
         if ($unset) unset($array[$keys[$i]]);
-        if ($end && $i >= $end) break;
+        if ($end !== null && $i >= $end) break;
     }
     return $extracted;
 }
