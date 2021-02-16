@@ -125,6 +125,7 @@ abstract class BaseModel implements Model
     {
         // TODO: Implement getArray() method.
         $arr = object_to_array(Obj::exclude((object) (array) $this->object, ...$this->hidden));
+        foreach ($arr as $k => $d) if ($d instanceof Model) $arr[$k] = $d->getArray($onlyFillable);
         return $onlyFillable ? Arr::extract_by_keys($arr, $this->fillable) : $arr;
     }
 
