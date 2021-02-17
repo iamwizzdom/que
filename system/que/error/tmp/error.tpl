@@ -115,8 +115,6 @@
 
     </div>
 
-    {if !empty($data.trace)}
-
     <div class="alert alert-info">
         <h3>Back Trace</h3>
         <hr>
@@ -125,8 +123,6 @@
         {if !empty($data.line)}<p><b>Error Line:</b> {$data.line}</p>{/if}
         {if !empty($data.trace)}<p><b>Error Trace:</b> {debug_print($data.trace, true)}</p>{/if}
     </div>
-
-    {/if}
 </div>
 
 </body>
