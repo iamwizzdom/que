@@ -5,10 +5,12 @@ namespace que\middleware;
 use que\common\exception\QueException;
 use que\http\HTTP;
 use que\http\input\Input;
+use que\http\request\Request;
 use que\route\Route;
 use que\security\CSRF;
 use que\security\Middleware;
 use que\security\MiddlewareResponse;
+use que\support\Arr;
 
 class VerifyCsrfToken extends Middleware
 {
@@ -16,7 +18,7 @@ class VerifyCsrfToken extends Middleware
     {
         $route = Route::getCurrentRoute();
 
-        if ($route->isForbidCSRF() === true) {
+        if ($route->isForbidCSRF() === true && Arr::has($route->getCRSFForbiddenMethods(), Request::getMethod())) {
 
             try {
 

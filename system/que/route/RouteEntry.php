@@ -68,6 +68,8 @@ class RouteEntry
      */
     private bool $forbidCSRF;
 
+    private array $CRSFForbiddenMethods = [];
+
     /**
      * @var bool
      */
@@ -142,8 +144,8 @@ class RouteEntry
 
     /**
      * @param string $argName
-     * @param string $expression
-     * @param bool $nullable
+     * @param string|null $expression
+     * @param bool|null $nullable
      * @return $this
      */
     public function where(string $argName, ?string $expression, bool $nullable = null) {
@@ -215,7 +217,7 @@ class RouteEntry
     }
 
     /**
-     * @param string|null $contentType
+     * @param string $contentType
      */
     public function setContentType(string $contentType): void
     {
@@ -298,10 +300,20 @@ class RouteEntry
 
     /**
      * @param bool $status
+     * @param array $forbiddenMethods
      */
-    public function forbidCSRF(bool $status = true): void
+    public function forbidCSRF(bool $status = true, array $forbiddenMethods = []): void
     {
+        $this->CRSFForbiddenMethods = $forbiddenMethods ?: $this->allowedMethods;
         $this->forbidCSRF = $status;
+    }
+
+    /**
+     * @return array
+     */
+    public function getCRSFForbiddenMethods(): array
+    {
+        return $this->CRSFForbiddenMethods;
     }
 
     /**
