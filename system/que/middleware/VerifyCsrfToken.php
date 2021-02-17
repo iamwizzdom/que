@@ -18,7 +18,7 @@ class VerifyCsrfToken extends Middleware
     {
         $route = Route::getCurrentRoute();
 
-        if ($route->isForbidCSRF() === true && Arr::has($route->getCRSFForbiddenMethods(), Request::getMethod())) {
+        if ($route->isForbidCSRF() === true && Arr::includes($route->getCRSFForbiddenMethods(), Request::getMethod())) {
 
             try {
 
