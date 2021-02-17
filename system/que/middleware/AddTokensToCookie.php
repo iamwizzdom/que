@@ -14,9 +14,9 @@ class AddTokensToCookie extends Middleware
 
     public function handle(Input $input): MiddlewareResponse
     {
-        $csrf = CSRF::getInstance();
 
         if (!$input->getCookie()->_isset('XSRF-TOKEN')) {
+            $csrf = CSRF::getInstance();
             $input->getCookie()->set("XSRF-TOKEN", $csrf->getToken(), $csrf->getExpiryTime());
         }
 

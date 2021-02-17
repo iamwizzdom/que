@@ -19,7 +19,7 @@ class AddTokensToHeaderResponse extends Middleware
         $route = Route::getCurrentRoute();
 
         if ($route->getType() === 'api' || $route->getType() === 'resource') {
-            $input->getHeader()->set('X-Xsrf-Token', $csrf = CSRF::getInstance()->getToken());
+            $input->getHeader()->set('X-Xsrf-Token', CSRF::getInstance()->getToken());
             $input->getHeader()->set('X-Track-Token', Track::generateToken());
         }
 

@@ -6,6 +6,14 @@
  * Time: 12:23 PM
  */
 
+use que\middleware\AddTokensToCookie;
+use que\middleware\AddTokensToHeaderResponse;
+use que\middleware\CheckAuthentication;
+use que\middleware\CheckForAllowedRequestMethod;
+use que\middleware\CheckForMaintenanceMode;
+use que\middleware\StartSession;
+use que\middleware\VerifyCsrfToken;
+
 return [
 
 
@@ -18,13 +26,13 @@ return [
     |
     */
     'global' => [
-        \que\middleware\StartSession::class,
-        \que\middleware\CheckAuthentication::class,
-        \que\middleware\CheckForAllowedRequestMethod::class,
-        \que\middleware\CheckForMaintenanceMode::class,
-        \que\middleware\VerifyCsrfToken::class,
-        \que\middleware\AddTokensToHeaderResponse::class,
-        \que\middleware\AddTokensToCookie::class
+        StartSession::class,
+        CheckAuthentication::class,
+        CheckForAllowedRequestMethod::class,
+        CheckForMaintenanceMode::class,
+        AddTokensToHeaderResponse::class,
+        AddTokensToCookie::class,
+        VerifyCsrfToken::class
     ],
 
     /*
