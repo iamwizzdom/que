@@ -30,9 +30,9 @@ return [
         CheckAuthentication::class,
         CheckForAllowedRequestMethod::class,
         CheckForMaintenanceMode::class,
+        VerifyCsrfToken::class,
         AddTokensToHeaderResponse::class,
-        AddTokensToCookie::class,
-        VerifyCsrfToken::class
+        AddTokensToCookie::class
     ],
 
     /*
