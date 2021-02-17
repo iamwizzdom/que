@@ -42,6 +42,15 @@ class Arr
     }
 
     /**
+     * @param $array
+     * @param $needle
+     * @return bool
+     */
+    public static function includes($array, $needle) {
+        return in_array($needle, $array);
+    }
+
+    /**
      * Add an element to an array using "dot" notation if it doesn't exist.
      *
      * @param  array   $array
