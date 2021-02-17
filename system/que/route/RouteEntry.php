@@ -304,6 +304,9 @@ class RouteEntry
      */
     public function forbidCSRF(bool $status = true, array $forbiddenMethods = []): void
     {
+        array_callback($forbiddenMethods, function ($value) {
+            return strtoupper($value);
+        });
         $this->CRSFForbiddenMethods = $forbiddenMethods ?: $this->allowedMethods;
         $this->forbidCSRF = $status;
     }
