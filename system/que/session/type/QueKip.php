@@ -42,7 +42,7 @@ class QueKip
     protected function __construct(string $session_id)
     {
         $this->session_id = $session_id;
-        $this->sessionFilePath = (string) config('cache.quekip.save_path') ?:  session_save_path();
+        $this->sessionFilePath = ((string) config('cache.quekip.save_path') ?:  session_save_path()) ?: (APP_PATH . '/cache');
         $this->fetch_data();
     }
 
