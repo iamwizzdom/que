@@ -72,6 +72,14 @@ class Form implements ArrayAccess
      */
     public function setFormData(array $formData): void
     {
+        $this->formData = $formData;
+    }
+
+    /**
+     * @param array $formData
+     */
+    public function addFormData(array $formData): void
+    {
         $this->formData = array_merge_recursive($this->formData, $formData);
     }
 

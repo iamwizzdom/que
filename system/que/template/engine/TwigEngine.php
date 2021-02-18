@@ -133,16 +133,17 @@ class TwigEngine
 
     public function render() {
 
-        if (!isset($this->twig))
-            $this->twig = new Environment(new FilesystemLoader($this->getTmpDir()), [
-                'cache' => "{$this->getCacheDir()}/compile_dir",
-            ]);
+        if (!isset($this->twig)) $this->twig = new Environment(new FilesystemLoader($this->getTmpDir()), [
+            'debug' => !LIVE,
+            'cache' => "{$this->getCacheDir()}/compile_dir"
+        ]);
+
+        if (($cache_dir = "{$this->getCacheDir()}/compile_dir") != $this->twig->getCache()) $this->twig->setCache($cache_dir);
 
         try {
             $this->twig->display($this->getTmpFileName(), $this->getContext());
         } catch (Exception $e) {
-            throw new QueRuntimeException($e->getMessage(),
-                method_exists($e, 'getTitle') ?
+            throw new QueRuntimeException($e->getMessage(), method_exists($e, 'getTitle') ?
                     (!empty($e->getTitle()) ? $e->getTitle() : "Que Runtime Error") : "Que Templating Error",
                 E_USER_ERROR, 0, $e->getPrevious() ?: PreviousException::getInstance(2));
         }

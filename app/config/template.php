@@ -59,7 +59,7 @@ return [
         /*
          | Path to your default js files
          */
-        'js' => [
+        'script' => [
 
         ]
     ],

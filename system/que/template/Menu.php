@@ -42,7 +42,7 @@ class Menu
      */
     private function filter(array &$menus) {
 
-        $routes = [];
+        $menuList = [];
 
         if (array_size($menus) > 0) {
 
@@ -94,13 +94,13 @@ class Menu
 
                 }
 
-                $routes[] = $menu['href'];
+                $menuList[] = $menu['href'];
 
                 $menu['href'] = base_url($menu['href']);
             }
         }
 
-        return $routes;
+        return $menuList;
     }
 
     /**

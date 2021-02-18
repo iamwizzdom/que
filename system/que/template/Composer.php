@@ -8,8 +8,11 @@
 
 namespace que\template;
 
+use JetBrains\PhpStorm\ArrayShape;
+use JetBrains\PhpStorm\Pure;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
+use que\common\exception\RouteException;
 use que\common\validator\Track;
 use que\route\Route;
 use que\security\CSRF;
@@ -19,7 +22,7 @@ use que\session\Session;
 class Composer
 {
     /**
-     * @var Composer
+     * @var Composer|null
      */
     private static ?Composer $instance = null;
 
@@ -39,7 +42,7 @@ class Composer
     private string $tmpFileName = '';
 
     /**
-     * @var Menu
+     * @var Menu|null
      */
     private ?Menu $menu = null;
 
@@ -111,7 +114,7 @@ class Composer
      * @param bool $singleton
      * @return Composer
      */
-    public static function getInstance(bool $singleton = true)
+    public static function getInstance(bool $singleton = true): Composer
     {
         if (!$singleton) return new self($singleton);
 
@@ -259,7 +262,7 @@ class Composer
      */
     public function form(array $formData)
     {
-        $this->form->setFormData($formData);
+        $this->form->addFormData($formData);
     }
 
     /**
@@ -352,7 +355,7 @@ class Composer
     /**
      * @return string|string[]|null
      */
-    private function get_tmp_module()
+    private function get_tmp_module(): array|string|null
     {
         $route = Route::getCurrentRoute();
         if (empty($route)) return "";
@@ -363,7 +366,7 @@ class Composer
     /**
      * @return array
      */
-    private function get_tmp_module_files(): array
+    #[ArrayShape(['js' => "array", 'css' => "array"])] private function get_tmp_module_files(): array
     {
         $files = [
             'js' => [],
@@ -383,7 +386,7 @@ class Composer
      * @param null $key
      * @return array
      */
-    public function getContext($key = null): array
+    #[Pure] public function getContext($key = null): array
     {
         return !is_null($key) && isset($this->context[$key]) ? $this->context[$key] : $this->context;
     }
@@ -418,10 +421,9 @@ class Composer
      * @param bool $ignoreDefaultScript
      * @param bool $ignoreDefaultHeader
      * @return $this
+     * @throws RouteException
      */
-    public function prepare(bool $ignoreDefaultCss = false,
-                            bool $ignoreDefaultScript = false,
-                            bool $ignoreDefaultHeader = false)
+    public function prepare(bool $ignoreDefaultCss = false, bool $ignoreDefaultScript = false, bool $ignoreDefaultHeader = false): self
     {
 
         $this->http_header();
@@ -437,7 +439,7 @@ class Composer
         $tmpHeader['desc'] = ((!empty($route) && !empty($route->getDescription())) ? $route->getDescription() : $tmpHeader['desc'] ?? '');
 
         $css = (!$ignoreDefaultCss ? array_merge(config('template.app.css', []), $this->getCss()) : $this->getCss());
-        $js = (!$ignoreDefaultScript ? array_merge(config('template.app.js', []), $this->getScript()) : $this->getScript());
+        $js = (!$ignoreDefaultScript ? array_merge(config('template.app.script', []), $this->getScript()) : $this->getScript());
 
         $module_files = $this->get_tmp_module_files();
         $js = array_merge($js, $module_files['js']);
@@ -502,14 +504,14 @@ class Composer
     /**
      * This will render your template using the smarty templating engine
      * @param bool $returnAsString
-     * @return false|string|void
+     * @return bool|string|null
      */
-    public function renderWithSmarty(bool $returnAsString = false)
+    public function renderWithSmarty(bool $returnAsString = false): bool|string|null
     {
         if ($returnAsString) ob_start();
 
-        if (!$this->isPrepared())
-            throw new QueRuntimeException("The current template '{$this->getTmpFileName()}' is not prepared for rending. You cannot render an unprepared template.",
+        if (!$this->isPrepared()) throw new QueRuntimeException(
+            "The current template '{$this->getTmpFileName()}' is not prepared for rending. You cannot render an unprepared template.",
             'Composer error', E_USER_ERROR, 0, PreviousException::getInstance(1));
 
         $smarty = SmartyEngine::getInstance();
@@ -526,19 +528,20 @@ class Composer
             if (ob_get_length()) ob_end_clean();
             return $content;
         }
+        return null;
     }
 
     /**
      * This will render your template using the twig templating engine
      * @param bool $returnAsString
-     * @return false|string|void
+     * @return bool|string|null
      */
-    public function renderWithTwig(bool $returnAsString = false)
+    public function renderWithTwig(bool $returnAsString = false): bool|string|null
     {
         if ($returnAsString) ob_start();
 
-        if (!$this->isPrepared())
-            throw new QueRuntimeException("The current template '{$this->getTmpFileName()}' is not prepared for rending. You cannot render an unprepared template.",
+        if (!$this->isPrepared()) throw new QueRuntimeException(
+            "The current template '{$this->getTmpFileName()}' is not prepared for rending. You cannot render an unprepared template.",
                 'Composer error', E_USER_ERROR, 0, PreviousException::getInstance(1));
 
         $twig = TwigEngine::getInstance();
@@ -555,6 +558,7 @@ class Composer
             if (ob_get_length()) ob_end_clean();
             return $content;
         }
+        return null;
     }
 
     /**

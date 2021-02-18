@@ -1,15 +1,13 @@
 
 {if isset($alert.error)}
 
-<div class="m-alert m-alert--icon alert alert-danger" role="alert">
+<div class="alert alert-danger" role="alert">
 
-    <div class="m-alert__icon">
-        <i class="la la-warning"></i>
-    </div>
+    <div class="m-alert__icon"><i class="fa fa-warning"></i></div>
 
     <div class="m-alert__text">
 
-        <h3>{$alert.error.title}</h3>
+        <h3 class="alert-heading">{$alert.error.title}</h3>
 
         {if is_array($alert.error.message)}
 
@@ -47,15 +45,13 @@
 
 {elseif isset($alert.warning)}
 
-<div class="m-alert m-alert--icon alert alert-warning" role="alert">
+<div class="alert alert-warning" role="alert">
 
-    <div class="m-alert__icon">
-        <i class="la la-warning"></i>
-    </div>
+    <div class="m-alert__icon"><i class="fa fa-warning"></i></div>
 
     <div class="m-alert__text">
 
-        <h3>{$alert.warning.title}</h3>
+        <h3 class="alert-heading">{$alert.warning.title}</h3>
 
         {if is_array($alert.warning.message)}
 
@@ -93,15 +89,13 @@
 
 {elseif isset($alert.success)}
 
-<div class="m-alert m-alert--icon alert alert-success" role="alert">
+<div class="alert alert-success" role="alert">
 
-    <div class="m-alert__icon">
-        <i class="la la-check"></i>
-    </div>
+    <div class="m-alert__icon"><i class="fa fa-check"></i></div>
 
     <div class="m-alert__text">
 
-        <h3>{$alert.success.title}</h3>
+        <h3 class="alert-heading">{$alert.success.title}</h3>
 
         {if is_array($alert.success.message)}
 

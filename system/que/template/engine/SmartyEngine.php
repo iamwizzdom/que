@@ -128,8 +128,7 @@ class SmartyEngine
 
     public function render() {
 
-        foreach ($this->getContext() as $key => $context)
-            $this->smarty->assign($key, $context);
+        foreach ($this->getContext() as $key => $context) $this->smarty->assign($key, $context);
 
         $this->smarty->setTemplateDir($this->getTmpDir());
         $this->smarty->setCompileDir( "{$this->getCacheDir()}/compile_dir/");
@@ -142,8 +141,7 @@ class SmartyEngine
         try {
             $this->smarty->display($this->getTmpFileName());
         } catch (Exception $e) {
-            throw new QueRuntimeException($e->getMessage(),
-                method_exists($e, 'getTitle') ?
+            throw new QueRuntimeException($e->getMessage(), method_exists($e, 'getTitle') ?
                     (!empty($e->getTitle()) ? $e->getTitle() : "Que Runtime Error") : "Que Templating Error",
                 E_USER_ERROR, 0, $e->getPrevious() ?: PreviousException::getInstance(2));
         }
