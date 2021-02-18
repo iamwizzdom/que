@@ -1,0 +1,123 @@
+<html lang="en-US">
+
+<head>
+    <title>AJAX The XMLHttpRequest Object</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="../net-bridge.js" type="text/javascript"></script>
+</head>
+
+<body>
+</body>
+
+<script>
+
+    let instance = NetBridge.getInstance();
+
+    let request = instance.addToRequestQueue({
+        id: 'list-people',
+        url: "https://swapi.co/api/people/2",
+        method: "get",
+        timeout: 2000,
+        queue: function () {
+            console.log('queue:', 'I am waiting');
+        },
+        beforeSend: function () {
+            console.log('beforeSend:', 'I ran before sending request');
+        },
+        success: (data, status, xhr) => {
+            console.info('success:', {data: data, status: status, xhr: xhr});
+        },
+        error: (data, xhr, status, statusText) => {
+            console.error('error:', {data: data, xhr: xhr, status: status, statusText: statusText});
+        },
+        complete: (data, xhr, status) => {
+            console.debug('complete:', {data: data, xhr: xhr, status: status});
+        }
+    });
+
+    request.done((data, status, xhr) => {
+        console.info('done:', {data: data, status: status, xhr: xhr});
+    });
+
+    request.fail((data, xhr, status, statusText) => {
+        console.error('fail:', {data: data, xhr: xhr, status: status, statusText: statusText});
+    });
+
+    request.always((data, xhr, status) => {
+        console.debug('always:', {data: data, xhr: xhr, status: status});
+    });
+
+    request.always((data, xhr, status) => {
+        console.debug('always:', {data: data, xhr: xhr, status: status});
+    });
+
+    instance.addToRequestQueue({
+        id: 'list-people-2',
+        url: "https://swapi.co/api/people/3",
+        method: "get",
+        timeout: 2000,
+        queue: function () {
+            console.log('queue:', 'I am waiting');
+        },
+        beforeSend: function () {
+            console.log('beforeSend:', 'I ran before sending request');
+        },
+        success: (data, status, xhr) => {
+            console.info('success:', {data: data, status: status, xhr: xhr});
+        },
+        error: (data, xhr, status, statusText) => {
+            console.error('error:', {data: data, xhr: xhr, status: status, statusText: statusText});
+        },
+        complete: (data, xhr, status) => {
+            console.debug('complete:', {data: data, xhr: xhr, status: status});
+        }
+    });
+
+    instance.addToRequestQueue({
+        id: 'list-people-3',
+        url: "https://swapi.co/api/people/4",
+        method: "get",
+        timeout: 2000,
+        queue: function () {
+            console.log('queue:', 'I am waiting');
+        },
+        beforeSend: function () {
+            console.log('beforeSend:', 'I ran before sending request');
+        },
+        success: (data, status, xhr) => {
+            console.info('success:', {data: data, status: status, xhr: xhr});
+        },
+        error: (data, xhr, status, statusText) => {
+            console.error('error:', {data: data, xhr: xhr, status: status, statusText: statusText});
+        },
+        complete: (data, xhr, status) => {
+            console.debug('complete:', {data: data, xhr: xhr, status: status});
+        }
+    });
+
+    instance.finally((responseStack) => {
+        console.info('finally:', responseStack);
+    });
+
+    setTimeout(() => {
+
+        instance.reDispatch('list-people', {url: 'https://swapi.co/api/people/46'})
+            .always(() => {
+            console.log("I am an always func for list-people");
+        });
+
+        setTimeout(() => {
+
+            instance.reDispatch('list-people-3', {url: 'https://swapi.co/api/people/46', dataType: "json"})
+                .always(() => {
+                    console.log("I am an always func for list-people-3");
+                });
+
+        }, 5000);
+
+    }, 7000);
+
+</script>
+
+</html>

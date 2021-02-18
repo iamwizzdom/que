@@ -1,0 +1,30 @@
+{
+  "name": "net-bridge",
+  "version": "1.8.0",
+  "description": "NetBridge is used for making asynchronous network (ajax) calls on web applications.",
+  "main": "net-bridge.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iamwizzdom/net-bridge.git"
+  },
+  "keywords": [
+    "net",
+    "bridge",
+    "ajax",
+    "fetch",
+    "javascript",
+    "iamwizzdom"
+  ],
+  "author": "Wisdom Emenike",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/iamwizzdom/net-bridge/issues"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/@iamwizzdom"
+  },
+  "homepage": "https://github.com/iamwizzdom/net-bridge#readme"
+}
