@@ -19,7 +19,7 @@ class RouteEntry
     private array $allowedMethods = [];
 
     /**
-     * @var string
+     * @var string|null
      */
     private ?string $name = null;
 
@@ -29,17 +29,17 @@ class RouteEntry
     private string $type = "";
 
     /**
-     * @var string
+     * @var string|null
      */
     private ?string $uri = "";
 
     /**
-     * @var string
+     * @var string|null
      */
     private ?string $title = null;
 
     /**
-     * @var string
+     * @var string|null
      */
     private ?string $description = null;
 
@@ -49,7 +49,7 @@ class RouteEntry
     private ?string $contentType = null;
 
     /**
-     * @var string
+     * @var string|null
      */
     private ?string $module = null;
 
@@ -59,7 +59,7 @@ class RouteEntry
     private ?bool $requireLogin = null;
 
     /**
-     * @var string
+     * @var string|null
      */
     private ?string $redirectUrl = null;
 
@@ -68,6 +68,9 @@ class RouteEntry
      */
     private bool $forbidCSRF;
 
+    /**
+     * @var array
+     */
     private array $CRSFForbiddenMethods = [];
 
     /**
@@ -300,11 +303,11 @@ class RouteEntry
 
     /**
      * @param bool $status
-     * @param array $forbiddenMethods
+     * @param array|null $forbiddenMethods
      */
-    public function forbidCSRF(bool $status = true, array $forbiddenMethods = []): void
+    public function forbidCSRF(bool $status = true, array $forbiddenMethods = null): void
     {
-        array_callback($forbiddenMethods, function ($value) {
+        if ($forbiddenMethods) array_callback($forbiddenMethods, function ($value) {
             return strtoupper($value);
         });
         $this->CRSFForbiddenMethods = $forbiddenMethods ?: $this->allowedMethods;
@@ -335,7 +338,7 @@ class RouteEntry
     /**
      * @return string[]
      */
-    public function getMiddleware()
+    public function getMiddleware(): array
     {
         return $this->middleware;
     }
@@ -343,7 +346,7 @@ class RouteEntry
     /**
      * @param string|string[] $middleware
      */
-    public function setMiddleware($middleware): void
+    public function setMiddleware(array|string $middleware): void
     {
         if (!is_array($middleware)) $middleware = [(string) $middleware];
         $this->middleware = $middleware;
