@@ -92,7 +92,7 @@ class Composer
     /**
      * @var array
      */
-    private array $script = [];
+    private array $js = [];
 
     /**
      * @var bool
@@ -290,19 +290,19 @@ class Composer
     }
 
     /**
-     * @param array $script
+     * @param array $js
      */
-    public function script(array $script = [])
+    public function js(array $js = [])
     {
-        $this->script = $script;
+        $this->js = $js;
     }
 
     /**
      * @return array
      */
-    public function getScript(): array
+    public function getJs(): array
     {
-        return $this->script;
+        return $this->js;
     }
 
     /**
@@ -439,7 +439,7 @@ class Composer
         $tmpHeader['desc'] = ((!empty($route) && !empty($route->getDescription())) ? $route->getDescription() : $tmpHeader['desc'] ?? '');
 
         $css = (!$ignoreDefaultCss ? array_merge(config('template.app.css', []), $this->getCss()) : $this->getCss());
-        $js = (!$ignoreDefaultScript ? array_merge(config('template.app.script', []), $this->getScript()) : $this->getScript());
+        $js = (!$ignoreDefaultScript ? array_merge(config('template.app.js', []), $this->getJs()) : $this->getJs());
 
         $module_files = $this->get_tmp_module_files();
         $js = array_merge($js, $module_files['js']);
@@ -480,14 +480,14 @@ class Composer
         });
 
         $this->css($css);
-        $this->script($js);
+        $this->js($js);
         $this->form([
             'track' => Track::generateToken(),
             'csrf' => (config('auth.csrf', false) === true ? CSRF::getInstance()->getToken() : null)
         ]);
         $this->header((!$ignoreDefaultHeader ? array_merge($tmpHeader, $this->getHeader()) : $this->getHeader()));
 
-        $this->setContext("script", $this->getScript());
+        $this->setContext("js", $this->getJs());
         $this->setContext("css", $this->getCss());
         $this->setContext("misc", $this->getMisc());
         $this->setContext("data", $this->getData());
@@ -566,7 +566,7 @@ class Composer
      */
     public function _flush()
     {
-        $this->data = $this->header = $this->script =
+        $this->data = $this->header = $this->js =
         $this->css = $this->alert = $this->context = [];
         $this->prepared = false;
     }
