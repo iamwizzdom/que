@@ -336,26 +336,23 @@ class ModelCollection implements QueArrayAccess
 
     /**
      * @param string $name
-     * @param callable|null $arguments
+     * @param Closure|null $arguments
      * @return $this
      */
-    public function load(string $name, callable $arguments = null): ModelCollection {
+    public function load(string $name, Closure $arguments = null): ModelCollection {
         foreach ($this->models as $model) {
             if (!$model instanceof Model) continue;
-            if (str__contains($name, ".")) {
-                $names = explode(".", $name);
-                $haystack = $model;
-                foreach ($names as $n) {
-                    if (!$haystack instanceof Model) break;
-                    $this->__load($haystack, $n, $arguments);
-                    $haystack = $haystack->{$n};
-                }
-            } else $this->__load($model, $name, $arguments);
+            $this->__load($model, $name, $arguments);
         }
         return $this;
     }
 
-    private function __load(Model $model, string $name, ?callable $arguments = null) {
+    /**
+     * @param Model $model
+     * @param string $name
+     * @param Closure|null $arguments
+     */
+    private function __load(Model $model, string $name, ?Closure $arguments = null) {
         if (!$arguments) {
             $model->load($name);
             return;

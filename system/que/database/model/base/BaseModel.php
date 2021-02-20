@@ -555,7 +555,15 @@ abstract class BaseModel implements Model
      */
     public function load(string $name, ...$arguments): Model {
         $this->appends[] = $name;
-        $this->set($name, $this->__call($name, $arguments));
+        if (str__contains($name, ".")) {
+            $names = explode(".", $name);
+            $haystack = $this;
+            foreach ($names as $n) {
+                if (!$haystack instanceof Model) break;
+                $haystack->set($n, $haystack->__call($n, $arguments));
+                $haystack = $haystack->{$n};
+            }
+        } else $this->set($name, $this->__call($name, $arguments));
         return $this;
     }
 
