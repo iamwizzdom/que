@@ -72,6 +72,7 @@ class ConditionError
     private function setValue($value)
     {
         $this->getValidator()->setValue($this->getKey(), $value);
+        if ($this->condition->isNotEqual($value)) $this->condition = new Condition($this->getKey(), $value);
     }
 
     /**

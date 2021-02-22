@@ -21,14 +21,9 @@ class Validator
 {
 
     /**
-     * @var array
-     */
-    private array $errors = [];
-
-    /**
      * @var Input
      */
-    private $input = [];
+    private Input $input;
 
     /**
      * @var ConditionError[]|ConditionErrorStack[]
@@ -36,7 +31,7 @@ class Validator
     private array $conditions = [];
 
     /**
-     * @var Track
+     * @var Track|null
      */
     private static ?Track $track = null;
 
@@ -52,7 +47,8 @@ class Validator
     /**
      * @return Track
      */
-    public function track(): Track {
+    public function track(): Track
+    {
         if (!self::$track instanceof Track)
             self::$track = Track::getInstance();
         return self::$track;
@@ -69,14 +65,16 @@ class Validator
     /**
      * @param Input $input
      */
-    public function setInput(Input $input) {
+    public function setInput(Input $input)
+    {
         $this->input = $input;
     }
 
     /**
      * @return array
      */
-    public function getValues(): array {
+    public function getValues(): array
+    {
         return $this->input->_get();
     }
 
@@ -95,7 +93,7 @@ class Validator
      */
     public function getInt($key)
     {
-        return (int) $this->getValue($key);
+        return (int)$this->getValue($key);
     }
 
     /**
@@ -104,24 +102,36 @@ class Validator
      */
     public function getFloat($key)
     {
-        return (float) $this->getValue($key);
+        return (float)$this->getValue($key);
     }
 
     /**
      * @param $key
      * @param $value
      */
-    public function setValue($key, $value) {
+    public function setValue($key, $value)
+    {
         $this->input[$key] = $value;
     }
 
     /**
-     * @param $values
-     * @param array $errors
+     * @param array $values
      */
-    public function updateValues($values, $errors = []){
-        $this->input = $values;
-        array_merge($this->errors, $errors);
+    public function updateValues(array $values)
+    {
+        foreach ($values as $key => $value) if (isset($this->input[$key])) $this->setValue($key, $value);
+    }
+
+    /**
+     * @param ConditionError[]|ConditionErrorStack[] $conditions
+     */
+    public function updateConditions(array $conditions)
+    {
+        foreach ($conditions as $key => $condition) {
+            if (($condition instanceof ConditionError || $condition instanceof ConditionErrorStack) && isset($this->conditions[$key])) {
+                $this->conditions[$key] = $condition;
+            }
+        }
     }
 
     /**
@@ -129,7 +139,8 @@ class Validator
      * @param bool $nullable
      * @return ConditionError
      */
-    public function validate($key, bool $nullable = false): ConditionError {
+    public function validate($key, bool $nullable = false): ConditionError
+    {
 
         if (is_array($this->input[$key] ?? null))
             throw new QueRuntimeException("Value for input with key '{$key}' is of type array, use the [validateMulti] method instead",
@@ -147,7 +158,8 @@ class Validator
      * @param bool $nullable
      * @return ConditionErrorStack
      */
-    public function validateMulti($key, bool $nullable = false): ConditionErrorStack {
+    public function validateMulti($key, bool $nullable = false): ConditionErrorStack
+    {
 
         if (!is_array($this->input[$key] ?? []))
             throw new QueRuntimeException("Value for input with key '{$key}' is not of type array, use the [validate] method instead",
@@ -163,14 +175,16 @@ class Validator
     /**
      * @return File
      */
-    public function validateFile(): File {
+    public function validateFile(): File
+    {
         return File::getInstance($this->input->getFiles());
     }
 
     /**
      * @return Base64File
      */
-    public function validateBase64File(): Base64File {
+    public function validateBase64File(): Base64File
+    {
         return Base64File::getInstance();
     }
 
@@ -179,7 +193,8 @@ class Validator
      * @param $value
      * @return ConditionError
      */
-    public function validateValue($key, $value) {
+    public function validateValue($key, $value)
+    {
 
         if (is_array($value))
             throw new QueRuntimeException("Value must not be of type array, or use the [validateMultiValue] method instead",
@@ -193,7 +208,8 @@ class Validator
      * @param $value
      * @return ConditionErrorStack
      */
-    public function validateMultiValue($key, $value) {
+    public function validateMultiValue($key, $value)
+    {
 
         if (!is_array($value))
             throw new QueRuntimeException("Value must be of type array, or use the [validateValue] method instead",
@@ -205,9 +221,10 @@ class Validator
     /**
      * @return bool
      */
-    public function hasError(): bool {
+    public function hasError(): bool
+    {
         $hasError = false;
-        foreach($this->conditions as $condition) {
+        foreach ($this->conditions as $condition) {
             if ($condition->hasError()) {
                 $hasError = true;
                 break;
@@ -219,9 +236,10 @@ class Validator
     /**
      * @return int
      */
-    public function totalError(): int {
+    public function totalError(): int
+    {
         $count = 0;
-        foreach($this->conditions as $condition) {
+        foreach ($this->conditions as $condition) {
             if ($condition->hasError()) $count++;
         }
         return $count;
@@ -232,7 +250,8 @@ class Validator
      * @param $variable
      * @return bool
      */
-    public function isEqual(string $key, $variable): bool {
+    public function isEqual(string $key, $variable): bool
+    {
         return $this->input[$key] == $variable;
     }
 
@@ -241,7 +260,8 @@ class Validator
      * @param $variable
      * @return bool
      */
-    public function isIdentical(string $key, $variable): bool {
+    public function isIdentical(string $key, $variable): bool
+    {
         return $this->input[$key] === $variable;
     }
 
@@ -249,7 +269,8 @@ class Validator
      * @param $key
      * @return bool
      */
-    public function isEmpty($key): bool {
+    public function isEmpty($key): bool
+    {
         return empty($this->input[$key]) && $this->input[$key] != "0";
     }
 
@@ -257,7 +278,8 @@ class Validator
      * @param string $key
      * @return bool
      */
-    public function has(string $key): bool {
+    public function has(string $key): bool
+    {
         return $this->input->_isset($key);
     }
 
@@ -265,7 +287,8 @@ class Validator
      * @param string $key
      * @return bool
      */
-    public function hasFile(string $key): bool {
+    public function hasFile(string $key): bool
+    {
 
         $files = $this->input->getFiles();
 
@@ -286,7 +309,8 @@ class Validator
      * @param $key
      * @return bool
      */
-    public function hasConditionError($key): bool {
+    public function hasConditionError($key): bool
+    {
 
         if (!isset($this->conditions[$key])) return false;
 
@@ -296,9 +320,10 @@ class Validator
     /**
      * @return array
      */
-    public function getValidated(): array {
+    public function getValidated(): array
+    {
         $validated = [];
-        foreach($this->conditions as $condition) {
+        foreach ($this->conditions as $condition) {
 
             if ($condition instanceof ConditionError) {
 
@@ -319,7 +344,8 @@ class Validator
      * @param $key
      * @return array
      */
-    public function getError($key): array {
+    public function getError($key): array
+    {
         $errors = [];
         $condition = ($this->conditions[$key] ?? null);
         if ($condition instanceof ConditionError) {
@@ -339,9 +365,10 @@ class Validator
     /**
      * @return array
      */
-    public function getErrors(): array {
+    public function getErrors(): array
+    {
         $errors = [];
-        foreach($this->conditions as $condition) {
+        foreach ($this->conditions as $condition) {
 
             if ($condition instanceof ConditionError) {
 
@@ -362,8 +389,10 @@ class Validator
      * @param $key
      * @return array
      */
-    public function getStatus($key): array {
-        $status = []; $session = \session()->getFiles();
+    public function getStatus($key): array
+    {
+        $status = [];
+        $session = \session()->getFiles();
         $condition = ($this->conditions[$key] ?? null);
         if ($condition instanceof ConditionError) {
 
@@ -388,9 +417,10 @@ class Validator
     /**
      * @return array
      */
-    public function getStatuses(): array {
+    public function getStatuses(): array
+    {
         $status = [];
-        foreach($this->conditions as $condition) {
+        foreach ($this->conditions as $condition) {
             $status = array_merge_recursive($status, $this->getStatus($condition->getKey()));
         }
         return $status;
@@ -401,7 +431,8 @@ class Validator
      * @param $error
      * @return ConditionError|ConditionErrorStack
      */
-    public function addError($key, $error) {
+    public function addError($key, $error)
+    {
         if (!isset($this->conditions[$key])) {
             if (is_array($this->input[$key])) {
                 $this->conditions[$key] = new ConditionErrorStack($key, $this->input[$key], $this);
@@ -416,13 +447,14 @@ class Validator
      * @param array $errors
      * @return ConditionError|ConditionErrorStack
      */
-    public function addErrors($key, array $errors) {
+    public function addErrors($key, array $errors)
+    {
         if (!isset($this->conditions[$key])) {
             if (is_array($this->input[$key])) {
                 $this->conditions[$key] = new ConditionErrorStack($key, $this->input[$key], $this);
             } else $this->conditions[$key] = new ConditionError($key, $this->input[$key], $this);
         }
-        foreach($errors as $error) $this->conditions[$key]->setError($error);
+        foreach ($errors as $error) $this->conditions[$key]->setError($error);
         return $this->conditions[$key];
     }
 
@@ -432,7 +464,8 @@ class Validator
      * @param bool $force_add - Setting this to [bool](true) might result in some unexpected errors
      * @return ConditionError
      */
-    public function addConditionError($key, $error, bool $force_add = false) {
+    public function addConditionError($key, $error, bool $force_add = false)
+    {
 
         if (is_array($this->input[$key]) && !$force_add)
             throw new QueRuntimeException("Value for input with key '{$key}' is of type array, use the [addConditionStackError] method instead",
@@ -451,7 +484,8 @@ class Validator
      * @param bool $force_add - Setting this to [bool](true) might result in some unexpected errors
      * @return ConditionError
      */
-    public function addConditionErrors($key, array $errors, bool $force_add = false) {
+    public function addConditionErrors($key, array $errors, bool $force_add = false)
+    {
 
         if (is_array($this->input[$key]) && !$force_add)
             throw new QueRuntimeException("Value for input with key '{$key}' is of type array, use the [addConditionStackErrors] method instead",
@@ -460,7 +494,7 @@ class Validator
         if (!isset($this->conditions[$key]))
             $this->conditions[$key] = new ConditionError($key, $this->input[$key], $this);
 
-        foreach($errors as $error) $this->conditions[$key]->setError($error);
+        foreach ($errors as $error) $this->conditions[$key]->setError($error);
         return $this->conditions[$key];
     }
 
@@ -470,7 +504,8 @@ class Validator
      * @param bool $force_add - Setting this to [bool](true) might result in some unexpected errors
      * @return ConditionErrorStack
      */
-    public function addConditionStackError($key, $error, bool $force_add = false) {
+    public function addConditionStackError($key, $error, bool $force_add = false)
+    {
 
         if (!is_array($this->input[$key]) && !$force_add)
             throw new QueRuntimeException("Value for input with key '{$key}' is not of type array, use the [addConditionError] method instead",
@@ -489,7 +524,8 @@ class Validator
      * @param bool $force_add - Setting this to [bool](true) might result in some unexpected errors
      * @return ConditionErrorStack
      */
-    public function addConditionStackErrors($key, array $errors, bool $force_add = false) {
+    public function addConditionStackErrors($key, array $errors, bool $force_add = false)
+    {
 
         if (!is_array($this->input[$key]) && !$force_add)
             throw new QueRuntimeException("Value for input with key '{$key}' is not of type array, use the [addConditionErrors] method instead",
@@ -498,7 +534,7 @@ class Validator
         if (!isset($this->conditions[$key]))
             $this->conditions[$key] = new ConditionErrorStack($key, $this->input[$key], $this);
 
-        foreach($errors as $error) $this->conditions[$key]->setError($error);
+        foreach ($errors as $error) $this->conditions[$key]->setError($error);
         return $this->conditions[$key];
     }
 
@@ -507,7 +543,8 @@ class Validator
      * @param ConditionError $condition
      * @return ConditionError
      */
-    public function addCondition($key, ConditionError $condition): ConditionError {
+    public function addCondition($key, ConditionError $condition): ConditionError
+    {
         $this->conditions[$key] = $condition;
         return $this->conditions[$key];
     }
@@ -517,7 +554,8 @@ class Validator
      * @param ConditionErrorStack $condition
      * @return ConditionErrorStack
      */
-    public function addConditionStack($key, ConditionErrorStack $condition): ConditionErrorStack {
+    public function addConditionStack($key, ConditionErrorStack $condition): ConditionErrorStack
+    {
         $this->conditions[$key] = $condition;
         return $this->conditions[$key];
     }
@@ -527,14 +565,16 @@ class Validator
      * @param null $default [Default condition]
      * @return ConditionError|ConditionErrorStack
      */
-    public function getConditions($key, $default = null) {
+    public function getConditions($key, $default = null)
+    {
         return $this->conditions[$key] ?? $default;
     }
 
     /**
      * @return array
      */
-    public function getConditionFlat(): array {
+    public function getConditionFlat(): array
+    {
         return $this->conditions;
     }
 
@@ -543,7 +583,8 @@ class Validator
      * @param string $algo
      * @return $this
      */
-    public function hash($key, string $algo = "SHA256"): Validator {
+    public function hash($key, string $algo = "SHA256"): Validator
+    {
         $this->setValue($key, Hash::sha($this->getValue($key), $algo));
         return $this;
     }
@@ -553,7 +594,8 @@ class Validator
      * @param string $charlist
      * @return $this
      */
-    public function trim($key, string $charlist = " \t\n\r\0\x0B"): Validator {
+    public function trim($key, string $charlist = " \t\n\r\0\x0B"): Validator
+    {
         $this->setValue($key, trim($this->getValue($key), $charlist));
         return $this;
     }
@@ -562,7 +604,8 @@ class Validator
      * @param $key
      * @return $this
      */
-    public function toUpper($key): Validator {
+    public function toUpper($key): Validator
+    {
         $this->setValue($key, strtoupper($this->getValue($key)));
         return $this;
     }
@@ -571,7 +614,8 @@ class Validator
      * @param $key
      * @return $this
      */
-    public function toLower($key): Validator {
+    public function toLower($key): Validator
+    {
         $this->setValue($key, strtolower($this->getValue($key)));
         return $this;
     }
@@ -580,7 +624,8 @@ class Validator
      * @param $key
      * @return $this
      */
-    public function toUcFirst($key): Validator {
+    public function toUcFirst($key): Validator
+    {
         $this->setValue($key, ucfirst($this->getValue($key)));
         return $this;
     }
@@ -589,7 +634,8 @@ class Validator
      * @param $key
      * @return $this
      */
-    public function toUcWords($key): Validator {
+    public function toUcWords($key): Validator
+    {
         $this->setValue($key, ucwords($this->getValue($key)));
         return $this;
     }
@@ -603,7 +649,8 @@ class Validator
      * e.g to run a function like explode, you are to invoke it as follows: _call('key', 'explode', 'delimiter', ':subject');
      * @return Validator
      */
-    public function _call($key, $function, ...$parameter): Validator {
+    public function _call($key, $function, ...$parameter): Validator
+    {
         if (!function_exists($function)) return $this;
         if (!empty($parameter)) {
             $key = array_search(":subject", $parameter);
