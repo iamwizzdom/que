@@ -8,6 +8,7 @@
 
 namespace que\error;
 
+use que\common\exception\QueException;
 use que\common\exception\QueRuntimeException;
 use que\http\HTTP;
 use que\route\Route;
@@ -127,7 +128,7 @@ abstract class RuntimeError
             beginning:
             try {
                 $composer->prepare()->renderWithSmarty();
-            } catch (QueRuntimeException $e) {
+            } catch (QueException|QueRuntimeException $e) {
                 $composer->resetTmpDir((QUE_PATH . "/error/tmp"));
                 $composer->setTmpFileName("error.tpl");
                 goto beginning;

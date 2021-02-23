@@ -235,10 +235,10 @@ class Mailer
      * @param string $file
      * @param array $data
      * @param int $compose_using
-     * @return false|string
+     * @return bool|string
      * @throws QueException
      */
-    protected function render(string $file, array $data, int $compose_using)
+    protected function render(string $file, array $data, int $compose_using): bool|string
     {
         $this->composer->dataOverwrite($data);
         $this->composer->setTmpFileName($file);

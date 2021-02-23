@@ -11,6 +11,7 @@ namespace que\template;
 use JetBrains\PhpStorm\ArrayShape;
 use JetBrains\PhpStorm\Pure;
 use que\common\exception\PreviousException;
+use que\common\exception\QueException;
 use que\common\exception\QueRuntimeException;
 use que\common\exception\RouteException;
 use que\common\validator\Track;
@@ -421,7 +422,7 @@ class Composer
      * @param bool $ignoreDefaultScript
      * @param bool $ignoreDefaultHeader
      * @return $this
-     * @throws RouteException
+     * @throws QueException
      */
     public function prepare(bool $ignoreDefaultCss = false, bool $ignoreDefaultScript = false, bool $ignoreDefaultHeader = false): self
     {
@@ -459,7 +460,11 @@ class Composer
 
             } else $uri = "template/js/{$uri}";
 
-            return base_url($uri);
+            try {
+                return base_url($uri);
+            } catch (\Exception $e) {
+                throw new QueException("Template preparation failed", "Composer Error", E_ERROR, PreviousException::getInstance(1));
+            }
         });
 
         array_callback($css, function ($uri) {
@@ -475,8 +480,11 @@ class Composer
                 $uri = "template/{$uri}";
 
             } else $uri = "template/css/{$uri}";
-
-            return base_url($uri);
+            try {
+                return base_url($uri);
+            } catch (\Exception $e) {
+                throw new QueException("Template preparation failed", "Composer Error", E_ERROR, PreviousException::getInstance(1));
+            }
         });
 
         $this->css($css);
