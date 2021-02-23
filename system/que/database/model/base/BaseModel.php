@@ -5,6 +5,7 @@ namespace que\database\model\base;
 
 
 use ArrayIterator;
+use Closure;
 use JetBrains\PhpStorm\Pure;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
@@ -621,7 +622,9 @@ abstract class BaseModel implements Model
     private function __castParams() {
         if (!empty($this->casts)) {
             foreach ($this->casts as $column => $cast) {
-                if (str__contains($column, ',')) {
+                if ($cast instanceof Closure) {
+                    $this->offsetSet($column, $cast($this->offsetGet($column)));
+                } elseif (str__contains($column, ',')) {
                     $columns = explode(",", $column);
                     foreach ($columns as $col) $this->__castParam($col, $cast);
                 } else $this->__castParam($column, $cast);
