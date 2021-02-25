@@ -37,7 +37,7 @@ class User extends State implements ArrayAccess
     private static object $user;
 
     /**
-     * @var array
+     * @var Model[]
      */
     private static array $model = [];
 
@@ -105,7 +105,7 @@ class User extends State implements ArrayAccess
     }
 
     /**
-     * @param string $model
+     * @param string|null $model
      * @return Model
      */
     public function getModel(string $model = null): Model
@@ -120,13 +120,14 @@ class User extends State implements ArrayAccess
             "The specified model ({$model}) with key '{$modelKey}' does not implement the Que database model interface.",
             "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
-        $database_config = (array) config('database', []);
-
-        if (!isset(self::$model[$modelKey]))
+        if (!isset(self::$model[$modelKey])) {
+            $database_config = (array) config('database', []);
             self::$model[$modelKey] = new $model(self::$user,
                 $database_config['tables']['user']['name'] ?? 'users',
                 $database_config['tables']['user']['primary_key'] ?? 'id'
             );
+        }
+
         return self::$model[$modelKey];
     }
 
@@ -161,19 +162,21 @@ class User extends State implements ArrayAccess
     }
 
     /**
+     * @param bool $onlyFillable
      * @return object
      */
-    public function &getUserObject(): object
+    public function &getUserObject(bool $onlyFillable = false): object
     {
-        return $this->getModel()->getObject();
+        return $this->getModel()->getObject($onlyFillable);
     }
 
     /**
+     * @param bool $onlyFillable
      * @return array
      */
-    public function getUserArray(): array
+    public function getUserArray(bool $onlyFillable = false): array
     {
-        return $this->getModel()->getArray();
+        return $this->getModel()->getArray($onlyFillable);
     }
 
     /**
