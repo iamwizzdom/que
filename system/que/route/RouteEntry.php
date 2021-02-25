@@ -71,7 +71,7 @@ class RouteEntry
     /**
      * @var array
      */
-    private array $CRSFForbiddenMethods = [];
+    private array $IgnoredCRSFRequestMethods = [];
 
     /**
      * @var bool
@@ -303,23 +303,25 @@ class RouteEntry
 
     /**
      * @param bool $status
-     * @param array|null $forbiddenMethods
+     * @param string[] $ignoredRequestMethods
      */
-    public function forbidCSRF(bool $status = true, array $forbiddenMethods = null): void
+    public function forbidCSRF(bool $status = true, array $ignoredRequestMethods = null): void
     {
-        if ($forbiddenMethods) array_callback($forbiddenMethods, function ($value) {
-            return strtoupper($value);
-        });
-        $this->CRSFForbiddenMethods = $forbiddenMethods ?: $this->allowedMethods;
         $this->forbidCSRF = $status;
+        if ($ignoredRequestMethods) {
+            array_callback($ignoredRequestMethods, function ($value) {
+                return strtoupper($value);
+            });
+            $this->IgnoredCRSFRequestMethods = $ignoredRequestMethods;
+        }
     }
 
     /**
      * @return array
      */
-    public function getCRSFForbiddenMethods(): array
+    public function getIgnoredCRSFRequestMethods(): array
     {
-        return $this->CRSFForbiddenMethods;
+        return $this->IgnoredCRSFRequestMethods;
     }
 
     /**
