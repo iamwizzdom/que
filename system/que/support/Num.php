@@ -95,15 +95,6 @@ class Num
     }
 
     /**
-     * @param $amount
-     * @param null $precision
-     * @return Item
-     */
-    public static function item($amount, $precision = null) {
-        return new Item($amount, $precision);
-    }
-
-    /**
      * @return Helper
      */
     public static function item_helper() {

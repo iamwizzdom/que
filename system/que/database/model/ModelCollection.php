@@ -316,7 +316,7 @@ class ModelCollection implements QueArrayAccess
      * @param string $key
      * @param $value
      */
-    public function _set(string $key, $value) {
+    public function set(string $key, $value) {
         foreach ($this->models as $model) {
             if (!$model instanceof Model) continue;
             $model->set($key, $value);
@@ -327,7 +327,7 @@ class ModelCollection implements QueArrayAccess
      * Unset data from all models in collection
      * @param string $key
      */
-    public function _unset(string $key) {
+    public function unset(string $key) {
         foreach ($this->models as $model) {
             if (!$model instanceof Model) continue;
             $model->offsetUnset($key);
