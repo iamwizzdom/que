@@ -221,37 +221,49 @@ class Paginator
                 // page propagation is SEO friendly
                 $this->_properties['method'] == 'url' &&
                 // the current page is set in the URL
-                preg_match('/\b' . preg_quote($this->_properties['variable_name']) . '([0-9]+)\b/i', Request::getInstance()->getUri(), $matches) > 0)
+                preg_match('/\b' . preg_quote($this->_properties['variable_name']) . '([0-9]+)\b/i', Request::getInstance()->getUri(), $matches) > 0) {
+
+
                 // set the current page to whatever it is indicated in the URL
                 $this->set_page((int)$matches[1]);
-            // if page propagation is done through GET and the current page is set in $_GET
-            elseif (isset($_GET[$this->_properties['variable_name']]))
+                // if page propagation is done through GET and the current page is set in $_GET
+
+            } elseif (isset($_GET[$this->_properties['variable_name']])) {
+
                 // set the current page to whatever it was set to
                 $this->set_page((int)$_GET[$this->_properties['variable_name']]);
+            }
         }
+
         // if showing records in reverse order we must know the total number of records and the number of records per page
         // *before* calling the "get_page" method
-        if ($this->_properties['reverse'] && $this->_properties['records'] == '')
+        if ($this->_properties['reverse'] && $this->_properties['records'] == '') {
             throw new \Exception('When showing records in reverse order you must specify the total number of records (by calling the "records" method) *before* the first use of the "get_page" method!', E_USER_ERROR);
-        if ($this->_properties['reverse'] && $this->_properties['records_per_page'] == '')
+        }
+
+        if ($this->_properties['reverse'] && $this->_properties['records_per_page'] == '') {
             throw new \Exception('When showing records in reverse order you must specify the number of records per page (by calling the "records_per_page" method) *before* the first use of the "get_page" method!', E_USER_ERROR);
+        }
         // get the total number of pages
         $this->_properties['total_pages'] = $this->getTotalPages();
         // if there are any pages
         if ($this->_properties['total_pages'] > 0) {
             // if current page is beyond the total number pages
             // / make the current page be the last page
-            if ($this->_properties['page'] > $this->_properties['total_pages'])
+            if ($this->_properties['page'] > $this->_properties['total_pages']) {
                 $this->_properties['page'] = $this->_properties['total_pages'];
+            }
             // if current page is smaller than 1
             // make the current page 1
-            elseif ($this->_properties['page'] < 1)
+            elseif ($this->_properties['page'] < 1) {
                 $this->_properties['page'] = 1;
+            }
         }
         // if we're just starting and we have to display links in reverse order
         // set the first to the last one rather then first
-        if (!$this->_properties['page_set'] && $this->_properties['reverse'])
+        if (!$this->_properties['page_set'] && $this->_properties['reverse']) {
             $this->set_page($this->_properties['total_pages']);
+        }
         // return the current page
         return $this->_properties['page'];
     }
