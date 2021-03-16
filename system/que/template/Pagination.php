@@ -151,11 +151,10 @@ class Pagination
                 "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(1));
 
         try {
-            return self::$paginators[$tag]->render(true);
+            return self::$paginators[$tag]->render();
         } catch (\Exception $e) {
+            throw new QueRuntimeException($e->getMessage(), "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(1));
         }
-
-        return '';
     }
 
     /**
@@ -166,8 +165,9 @@ class Pagination
         $pagination = [];
         foreach (self::$paginators as $tag => $paginator) {
             try {
-                $pagination[$tag] = $paginator->render(true);
+                $pagination[$tag] = $paginator->render();
             } catch (\Exception $e) {
+                throw new QueRuntimeException($e->getMessage(), "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(1));
             }
         }
         return $pagination;
