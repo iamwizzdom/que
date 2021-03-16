@@ -9,7 +9,9 @@
 use que\middleware\AddTokensToCookie;
 use que\middleware\AddTokensToHeaderResponse;
 use que\middleware\CheckAuthentication;
+use que\middleware\CheckForAllowedRequestIP;
 use que\middleware\CheckForAllowedRequestMethod;
+use que\middleware\CheckForAllowedRequestPort;
 use que\middleware\CheckForMaintenanceMode;
 use que\middleware\StartSession;
 use que\middleware\VerifyCsrfToken;
@@ -29,6 +31,8 @@ return [
         StartSession::class,
         CheckAuthentication::class,
         CheckForAllowedRequestMethod::class,
+        CheckForAllowedRequestIP::class,
+        CheckForAllowedRequestPort::class,
         CheckForMaintenanceMode::class,
         VerifyCsrfToken::class,
         AddTokensToHeaderResponse::class,

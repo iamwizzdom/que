@@ -19,6 +19,16 @@ class RouteEntry
     private array $allowedMethods = [];
 
     /**
+     * @var array
+     */
+    private array $allowedIPs = [];
+
+    /**
+     * @var array
+     */
+    private array $allowedPorts = [];
+
+    /**
      * @var string|null
      */
     private ?string $name = null;
@@ -405,6 +415,38 @@ class RouteEntry
     {
         $this->allowedMethods[] = Request::METHOD_DELETE;
         return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAllowedIPs(): array
+    {
+        return $this->allowedIPs;
+    }
+
+    /**
+     * @param array $allowedIPs
+     */
+    public function setAllowedIPs(array $allowedIPs): void
+    {
+        $this->allowedIPs = $allowedIPs;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAllowedPorts(): array
+    {
+        return $this->allowedPorts;
+    }
+
+    /**
+     * @param array $allowedPorts
+     */
+    public function setAllowedPorts(array $allowedPorts): void
+    {
+        $this->allowedPorts = $allowedPorts;
     }
 
 }
