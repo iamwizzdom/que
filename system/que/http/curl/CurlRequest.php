@@ -45,7 +45,8 @@ class CurlRequest extends CurlNetwork
     /**
      * @return CurlResponse
      */
-    public function _exec() {
+    public function send(): CurlResponse
+    {
         return new CurlResponse($this->exec());
     }
 
