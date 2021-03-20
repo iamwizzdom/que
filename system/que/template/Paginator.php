@@ -179,7 +179,7 @@ class Paginator
         // parse the URL
         $parsed_url = parse_url($baseURL);
         // cache the "path" part of the URL (that is, everything *before* the "?")
-        $this->_properties['base_url'] = $parsed_url['path'] ?? base_url();
+        $this->_properties['base_url'] = base_url($parsed_url['path'] ?? '');
         // cache the "query" part of the URL (that is, everything *after* the "?")
         $this->_properties['base_url_query'] = $parsed_url['query'] ?? '';
         // store query string as an associative array
@@ -696,35 +696,39 @@ class Paginator
                     ($page == 1 ? '' : $this->_properties['variable_name'] . $page), $this->_properties['base_url']));
                 // if the current page is not yet in the URL, set it, unless we're on the first page
                 // case in which we don't set it in order to avoid duplicate content
-            } else
+            } else {
                 $url = rtrim($this->_properties['base_url'], '/') . '/' . ($this->_properties['variable_name'] . $page);
+            }
             // handle trailing slash according to preferences
             $url = rtrim($url, '/') . ($this->_properties['trailing_slash'] ? '/' : '');
             // if values in the query string - other than those set through base_url() - are not to be preserved
             // preserve only those set initially
-            if (!$this->_properties['preserve_query_string'])
+            if (!$this->_properties['preserve_query_string']) {
                 $query = implode('&', $this->_properties['base_url_query']);
-            // otherwise, get the current query string
-            else
+                // otherwise, get the current query string
+            } else {
                 $query = server('QUERY_STRING');
-            // return the built string also appending the query string, if any
+                // return the built string also appending the query string, if any
+            }
             return $url . ($query != '' ? '?' . $query : '');
             // if page propagation is to be done through GET
         } else {
             // if values in the query string - other than those set through base_url() - are not to be preserved
             // preserve only those set initially
-            if (!$this->_properties['preserve_query_string'])
+            if (!$this->_properties['preserve_query_string']) {
                 $query = $this->_properties['base_url_query'];
-            // otherwise, get the current query string, if any, and transform it to an array
-            else
+                // otherwise, get the current query string, if any, and transform it to an array
+            } else {
                 parse_str(server('QUERY_STRING'), $query);
+            }
             // if we are avoiding duplicate content and if not the first/last page (depending on whether the pagination links are shown in natural or reversed order)
-            if (!$this->_properties['avoid_duplicate_content'] || ($page != ($this->_properties['reverse'] ? $this->_properties['total_pages'] : 1)))
+            if (!$this->_properties['avoid_duplicate_content'] || ($page != ($this->_properties['reverse'] ? $this->_properties['total_pages'] : 1))) {
                 // add/update the page number
                 $query[$this->_properties['variable_name']] = $page;
-            // if we are avoiding duplicate content, don't use the "page" variable on the first/last page
-            elseif ($this->_properties['avoid_duplicate_content'] && $page == ($this->_properties['reverse'] ? $this->_properties['total_pages'] : 1))
+                // if we are avoiding duplicate content, don't use the "page" variable on the first/last page
+            } elseif ($this->_properties['avoid_duplicate_content'] && $page == ($this->_properties['reverse'] ? $this->_properties['total_pages'] : 1)) {
                 unset($query[$this->_properties['variable_name']]);
+            }
             // make sure the returned HTML is W3C compliant
             return htmlspecialchars(html_entity_decode($this->_properties['base_url']) . (!empty($query) ? '?' . urldecode(http_build_query($query)) : ''));
         }
