@@ -243,7 +243,7 @@ class QueryResponse
     public function getQueryError(): ?string
     {
         $errors = $this->getDriverResponse()->getErrors();
-        return empty($errors) ? implode(" | ", $errors) : null;
+        return !empty($errors) ? implode(" | ", $errors) : null;
     }
 
     /**
