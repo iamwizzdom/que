@@ -1403,7 +1403,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
         $column = preg_replace("/ as /i", " as ", $column);
 
         if (!str__contains($column, '.') && !str__contains($column, ',') &&
-            !str__contains(strtolower($column), ' as ')) {
+            !str__contains($column, ' as ')) {
             $column = str_strip_spaces($column);
             return !str__contains($column, '`') ? "`{$column}`" : $column;
         }
@@ -1429,6 +1429,9 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
 
         } else {
 
+            if (preg_match('/(.*?)\((.*?)\)/', $column, $matches)) {
+                return "{$matches[1]}({$this->formatColumn($matches[2])})";
+            }
             $column = explode('.', $column);
             array_callback($column, function ($value) {
                 $value = str_strip_spaces($value);
