@@ -20,6 +20,7 @@ use que\common\exception\QueRuntimeException;
 use que\database\interfaces\drivers\Driver;
 use que\database\interfaces\drivers\DriverQueryBuilder;
 use que\database\interfaces\drivers\DriverResponse;
+use que\http\HTTP;
 use que\support\Config;
 use que\support\Str;
 
@@ -109,7 +110,7 @@ class MySqlDriver implements Driver
 
         } catch (PDOException $e) {
             throw new QueRuntimeException("Connection failed: {$e->getMessage()}",
-                "Database Error", E_USER_ERROR, 0, PreviousException::getInstance(4));
+                "Database Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(4));
         }
 
     }
@@ -136,7 +137,7 @@ class MySqlDriver implements Driver
         }
 
         if (is_null($this->conn)) throw new QueRuntimeException("Failed to establish database connection after {$limit} trials",
-            "Database Error", E_USER_ERROR, 0, PreviousException::getInstance(3));
+            "Database Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(3));
 
         return $this->conn;
     }
@@ -289,7 +290,7 @@ class MySqlDriver implements Driver
 
         if (!$stmt instanceof PDOStatement)
             throw new QueRuntimeException("Error preparing SQL statement: {$builder->getQuery()} after {$attempts} trial(s)",
-                "Database Error", E_USER_ERROR, 0, PreviousException::getInstance(3));
+                "Database Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(3));
 
         try {
 
@@ -314,7 +315,7 @@ class MySqlDriver implements Driver
 
             if ($this->isInDebugMode()) throw new QueRuntimeException(
                 "{$e->getMessage()} | SQL: {$this->interpolateQuery($builder->getQuery(), $builder->getBindings())}",
-                "Database Error", E_USER_ERROR, 0, PreviousException::getInstance(3));
+                "Database Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(3));
         }
 
         $i = $builder->getQueryType();
@@ -365,7 +366,7 @@ class MySqlDriver implements Driver
                 $stmt->errorCode()
             ),
             default => throw new QueRuntimeException("Database driver query builder type '{$i}' is invalid",
-                "Database Driver Error", E_USER_ERROR, 0, PreviousException::getInstance(3)),
+                "Database Driver Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(3)),
         };
     }
 

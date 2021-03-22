@@ -11,6 +11,7 @@ namespace que\user;
 
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
+use que\http\HTTP;
 use que\session\Session;
 
 abstract class State
@@ -35,7 +36,7 @@ abstract class State
 
         if (!isset($state['uid'])) throw new QueRuntimeException(
             "Trying to set state without a 'uid' key. Your state must have a unique id",
-            "State Error", E_USER_ERROR, 0, PreviousException::getInstance());
+            "State Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance());
 
         Session::getInstance()->getFiles()->_get()['session']['user'] = $state;
 

@@ -265,10 +265,10 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
     {
         // TODO: Implement endWhereGroup() method.
         if ($this->whereGroupStarted <= 0) throw new QueRuntimeException("You can't end a where group when you've not started one.",
-            "Database Driver Error", E_USER_ERROR, 0, PreviousException::getInstance(2));
+            "Database Driver Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(2));
 
         if (((count($this->where) - 1) - $this->whereGroupStartedAt) < 2) throw new QueRuntimeException("You must have at least 2 where queries in between a where group",
-            "Database Driver Error", E_USER_ERROR, 0, PreviousException::getInstance(2));
+            "Database Driver Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(2));
 
         $this->whereGroupStarted--;
         $this->where[] = [
@@ -971,7 +971,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
                 break;
             default:
                 throw new QueRuntimeException("Database driver query builder type '{$this->queryType}' is invalid",
-                    "Database Driver Error", E_USER_ERROR, 0, PreviousException::getInstance(3));
+                    "Database Driver Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(3));
         }
 
         if ($this->queryType == self::SELECT || $this->queryType == self::UPDATE || $this->queryType == self::DELETE) {

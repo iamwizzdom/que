@@ -11,6 +11,7 @@ namespace que\session\type;
 use que\common\exception\PreviousException;
 use que\common\exception\QueException;
 use que\common\exception\QueRuntimeException;
+use que\http\HTTP;
 use que\support\Arr;
 
 class QueKip
@@ -179,7 +180,7 @@ class QueKip
                 $this->mk_dir("{$this->sessionFilePath}/quekip");
             } catch (QueException $e) {
                 throw new QueRuntimeException($e->getMessage(), $e->getTitle(),
-                    E_USER_ERROR, 0, PreviousException::getInstance(2));
+                    E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(2));
             }
         }
 
@@ -190,7 +191,7 @@ class QueKip
 
         if (($cache = @file_get_contents("{$this->sessionFilePath}/quekip/que_session_{$fileName}.tmp")) === false)
             throw new QueRuntimeException("Unable to read from quekip cache file!", "QueKip Error",
-                E_USER_ERROR, 0, PreviousException::getInstance(5));
+                E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(5));
 
         $this->pointer = !empty($cache) && strlen($cache) > 0 ? unserialize($cache) : [];
     }
@@ -206,7 +207,7 @@ class QueKip
                 $this->mk_dir($this->sessionFilePath);
             } catch (QueException $e) {
                 throw new QueRuntimeException($e->getMessage(), $e->getTitle(),
-                    E_USER_ERROR, 0, PreviousException::getInstance(5));
+                    E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(5));
             }
         }
 
@@ -217,7 +218,7 @@ class QueKip
 
         if (($status = file_put_contents("{$this->sessionFilePath}/quekip/que_session_{$fileName}.tmp",
             serialize($this->pointer))) === false) throw new QueRuntimeException("Unable to write to quekip cache file!",
-            "QueKip Error", E_USER_ERROR, 0, PreviousException::getInstance(5));
+            "QueKip Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(5));
 
         return $status;
     }

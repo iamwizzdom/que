@@ -10,6 +10,7 @@ namespace que\template;
 
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
+use que\http\HTTP;
 
 class Pagination
 {
@@ -73,7 +74,7 @@ class Pagination
     {
         if (!isset(self::$paginators[$tag]))
             throw new QueRuntimeException("Undefined Tag: No Database Query was found paginated with the tag '{$tag}'",
-                "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(1));
+                "Pagination Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         return self::$paginators[$tag]->_show_next($returnUrl);
     }
@@ -87,7 +88,7 @@ class Pagination
     {
         if (!isset(self::$paginators[$tag]))
             throw new QueRuntimeException("Undefined Tag: No Database Query was found paginated with the tag '{$tag}'",
-                "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(1));
+                "Pagination Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         return self::$paginators[$tag]->_show_previous($returnUrl);
     }
@@ -100,7 +101,7 @@ class Pagination
     {
         if (!isset(self::$paginators[$tag]))
             throw new QueRuntimeException("Undefined Tag: No Database Query was found paginated with the tag '{$tag}'",
-                "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(1));
+                "Pagination Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         return self::$paginators[$tag]->getTotalPages();
     }
@@ -124,7 +125,7 @@ class Pagination
     {
         if (!isset(self::$paginators[$tag]))
             throw new QueRuntimeException("Undefined Tag: No Database Query was found paginated with the tag '{$tag}'",
-                "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(1));
+                "Pagination Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         return self::$paginators[$tag]->getTotalRecords();
     }
@@ -148,12 +149,13 @@ class Pagination
     {
         if (!isset(self::$paginators[$tag]))
             throw new QueRuntimeException("Undefined Tag: No Database Query was found paginated with the tag '{$tag}'",
-                "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(1));
+                "Pagination Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         try {
             return self::$paginators[$tag]->render();
         } catch (\Exception $e) {
-            throw new QueRuntimeException($e->getMessage(), "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(1));
+            throw new QueRuntimeException($e->getMessage(), "Pagination Error", E_USER_ERROR,
+                HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
         }
     }
 
@@ -167,7 +169,8 @@ class Pagination
             try {
                 $pagination[$tag] = $paginator->render();
             } catch (\Exception $e) {
-                throw new QueRuntimeException($e->getMessage(), "Pagination Error", E_USER_ERROR, 0, PreviousException::getInstance(1));
+                throw new QueRuntimeException($e->getMessage(), "Pagination Error", E_USER_ERROR,
+                    HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
             }
         }
         return $pagination;

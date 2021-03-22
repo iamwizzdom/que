@@ -1046,7 +1046,7 @@ function iterable_callback(&$element, $callback, array $affected = []): mixed
 {
     if (!is_iterable($element) && !is_object($element)) throw new QueRuntimeException(
         "element passed to iterable_callback is not iterable", "Que Function Error",
-        E_USER_ERROR, 0, PreviousException::getInstance());
+        E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance());
 
     if (array_is_accessible($element)) {
 
@@ -1096,7 +1096,7 @@ function iterable_callback_recursive(&$element, $callback, array $affected = [])
 {
     if (!is_iterable($element) && !is_object($element)) throw new QueRuntimeException(
         "element passed to iterable_callback_recursive is not iterable", "Que Function Error",
-        E_USER_ERROR, 0, PreviousException::getInstance());
+        E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance());
 
     if (array_is_accessible($element)) {
 

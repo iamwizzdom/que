@@ -783,7 +783,7 @@ class QueryBuilder implements Builder
                 });
 
                 throw new QueRuntimeException("Error: {$errors} \nDB: '{$response->getQueryString()}'\n",
-                    "Database Error", E_USER_ERROR, 0,
+                    "Database Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR,
                     PreviousException::getInstance());
             }
 
@@ -957,7 +957,7 @@ class QueryBuilder implements Builder
                 });
 
                 throw new QueRuntimeException("Error: {$errors} \nDB: '{$response->getQueryString()}'\n",
-                    "Database Error", E_USER_ERROR, 0,
+                    "Database Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR,
                     PreviousException::getInstance());
             }
 
@@ -1046,7 +1046,7 @@ class QueryBuilder implements Builder
                 });
 
                 throw new QueRuntimeException("Error: {$errors} \nDB: '{$response->getQueryString()}'\n",
-                    "Database Error", E_USER_ERROR, 0,
+                    "Database Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR,
                     PreviousException::getInstance());
             }
         }
@@ -1071,7 +1071,7 @@ class QueryBuilder implements Builder
                 });
 
                 throw new QueRuntimeException("Error: {$errors} \nDB: '{$response->getQueryString()}'\n",
-                    "Database Error", E_USER_ERROR, 0,
+                    "Database Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR,
                     PreviousException::getInstance());
             }
         }
@@ -1096,7 +1096,7 @@ class QueryBuilder implements Builder
                 });
 
                 throw new QueRuntimeException("Error: {$errors} \nDB: '{$response->getQueryString()}'\n",
-                    "Database Error", E_USER_ERROR, 0,
+                    "Database Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR,
                     PreviousException::getInstance());
             }
         }
@@ -1121,7 +1121,7 @@ class QueryBuilder implements Builder
                 });
 
                 throw new QueRuntimeException("Error: {$errors} \nDB: '{$response->getQueryString()}'\n",
-                    "Database Error", E_USER_ERROR, 0,
+                    "Database Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR,
                     PreviousException::getInstance());
             }
         }
@@ -1315,7 +1315,7 @@ class QueryBuilder implements Builder
                 });
 
                 throw new QueRuntimeException("Error: {$errors} \nDB: '{$response->getQueryString()}'\n",
-                    "Database Error", E_USER_ERROR, 0,
+                    "Database Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR,
                     PreviousException::getInstance());
             }
 

@@ -15,6 +15,7 @@ use JetBrains\PhpStorm\Pure;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use que\database\interfaces\model\Model;
+use que\http\HTTP;
 use que\support\Arr;
 use que\support\interfaces\QueArrayAccess;
 use que\support\Obj;
@@ -55,12 +56,12 @@ class ModelCollection implements QueArrayAccess
         // TODO: Implement offsetSet() method.
         if ($this->static) throw new QueRuntimeException(
             "You cannot add an item to a static " . self::class,
-            "Que Runtime Error", E_USER_ERROR, 0, PreviousException::getInstance(1));
+            "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         if (!$value instanceof Model) throw new QueRuntimeException(
             self::class . " expects an instance of " .
             Model::class . " got " . (is_object($value) ? get_class($value) : gettype($value)) . " instead",
-        "Que Runtime Error", E_USER_ERROR, 0, PreviousException::getInstance(1));
+        "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         $this->models[$offset] = $value;
     }
@@ -72,8 +73,8 @@ class ModelCollection implements QueArrayAccess
     {
         // TODO: Implement offsetUnset() method.
         if ($this->static) throw new QueRuntimeException(
-            "You cannot unset an item from a static " . self::class,
-            "Que Runtime Error", E_USER_ERROR, 0, PreviousException::getInstance(1));
+            "You cannot unset an item from a static " . self::class, "Que Runtime Error",
+            E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
         unset($this->models[$offset]);
     }
 
@@ -100,7 +101,7 @@ class ModelCollection implements QueArrayAccess
             if (!$model instanceof Model) throw new QueRuntimeException(
                 self::class . " expects an instance of " .
                 Model::class . " got " . (is_object($model) ? get_class($model) : gettype($model)) . " instead",
-                "Que Runtime Error", E_USER_ERROR, 0, PreviousException::getInstance(1));
+                "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
             $this->addModel($model);
         }
@@ -164,8 +165,8 @@ class ModelCollection implements QueArrayAccess
     {
         // TODO: Implement addToSTack() method.
         if ($this->static) throw new QueRuntimeException(
-            "You cannot add an item to a static " . self::class,
-            "Que Runtime Error", E_USER_ERROR, 0, PreviousException::getInstance(1));
+            "You cannot add an item to a static " . self::class, "Que Runtime Error",
+            E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
         array_push($this->models, $model);
     }
 

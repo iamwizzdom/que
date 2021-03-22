@@ -10,6 +10,7 @@ namespace que\session\type;
 
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
+use que\http\HTTP;
 use que\support\Arr;
 
 class Redis
@@ -115,15 +116,15 @@ class Redis
     private function connect() {
 
         if (!$this->enable) throw new QueRuntimeException("Can't use redis, redis is disabled from config.",
-            "Redis Error", E_USER_ERROR, 0, PreviousException::getInstance(4));
+            "Redis Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(4));
 
         if (class_exists(\Redis::class)) $this->redis = new \Redis();
         else throw new QueRuntimeException("Redis is not installed on this server.", "Redis Error",
-            E_USER_ERROR, 0, PreviousException::getInstance(4));
+            E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(4));
 
         if (!$this->redis->connect($this->host, $this->port))
             throw new QueRuntimeException("Unable to connect to redis.", "Redis Error",
-                E_USER_ERROR, 0, PreviousException::getInstance(4));
+                E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(4));
     }
 
     /**

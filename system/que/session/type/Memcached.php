@@ -11,6 +11,7 @@ namespace que\session\type;
 use Memcache;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
+use que\http\HTTP;
 use que\support\Arr;
 
 class Memcached
@@ -120,16 +121,16 @@ class Memcached
     private function connect() {
 
         if (!$this->enable) throw new QueRuntimeException("Can't use memcached, memcached is disabled from config.",
-                "Memcached Error", E_USER_ERROR, 0, PreviousException::getInstance(4));
+                "Memcached Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(4));
 
         if (class_exists(\Memcached::class)) $this->memcached = new \Memcached();
         elseif (class_exists(Memcache::class)) $this->memcached = new Memcache();
         else throw new QueRuntimeException("Memcached is not installed on this server.", "Memcached Error",
-            E_USER_ERROR, 0, PreviousException::getInstance(4));
+            E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(4));
 
         if (!$this->memcached->addserver($this->host, $this->port))
             throw new QueRuntimeException("Unable to connect to memcached.", "Memcached Error",
-                E_USER_ERROR, 0, PreviousException::getInstance(4));
+                E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(4));
     }
 
     /**

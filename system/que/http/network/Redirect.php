@@ -10,6 +10,7 @@ namespace que\http\network;
 
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
+use que\http\HTTP;
 use que\session\Session;
 
 class Redirect
@@ -128,7 +129,7 @@ class Redirect
                     throw new QueRuntimeException(
                         'The HTTP/Redirect setHeaderArray method expects ' .
                         'its "$headers" param to be an array list with each entry having a "message" and "status" index',
-                        "HTTP Redirect Error", E_USER_ERROR, 0, PreviousException::getInstance());
+                        "HTTP Redirect Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance());
                 }
 
                 $headers = Session::getInstance()->getFiles()->get("http.header", []);

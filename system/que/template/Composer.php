@@ -15,6 +15,7 @@ use que\common\exception\QueException;
 use que\common\exception\QueRuntimeException;
 use que\common\exception\RouteException;
 use que\common\validator\Track;
+use que\http\HTTP;
 use que\route\Route;
 use que\security\CSRF;
 use que\session\Session;
@@ -216,7 +217,7 @@ class Composer
 
         if ($type !== ALERT_SUCCESS && $type !== ALERT_ERROR && $type !== ALERT_WARNING)
             throw new QueRuntimeException("You passed an invalid alert type", 'Composer error',
-                E_USER_ERROR, 0, PreviousException::getInstance(1));
+                E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         if ($type === ALERT_SUCCESS) {
             $this->alert['success'] = [
@@ -520,7 +521,7 @@ class Composer
 
         if (!$this->isPrepared()) throw new QueRuntimeException(
             "The current template '{$this->getTmpFileName()}' is not prepared for rending. You cannot render an unprepared template.",
-            'Composer error', E_USER_ERROR, 0, PreviousException::getInstance(1));
+            'Composer error', E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         $smarty = SmartyEngine::getInstance();
         $smarty->setTmpDir($this->getTmpDir());
@@ -550,7 +551,7 @@ class Composer
 
         if (!$this->isPrepared()) throw new QueRuntimeException(
             "The current template '{$this->getTmpFileName()}' is not prepared for rending. You cannot render an unprepared template.",
-                'Composer error', E_USER_ERROR, 0, PreviousException::getInstance(1));
+                'Composer error', E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
         $twig = TwigEngine::getInstance();
         $twig->setTmpDir($this->getTmpDir());

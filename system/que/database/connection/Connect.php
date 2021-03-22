@@ -5,6 +5,7 @@ namespace que\database\connection;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use que\database\interfaces\drivers\Driver;
+use que\http\HTTP;
 use que\support\Arr;
 use que\support\Config;
 
@@ -56,17 +57,17 @@ abstract class Connect
 
             if (is_null($driver)) throw new QueRuntimeException(
                 "Invalid Driver: No database driver exists with the key '{$this->driver}', check your database configuration to fix this issue.",
-                "Database Error", E_USER_ERROR, 0, PreviousException::getInstance());
+                "Database Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance());
 
             if (!class_exists($driver)) throw new QueRuntimeException(
                 "Invalid Driver: Database driver with the key '{$this->driver}' is not a class, check your database configuration to fix this issue.",
-                "Database Error", E_USER_ERROR, 0, PreviousException::getInstance());
+                "Database Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance());
 
             $driver = new $driver;
 
             if (!$driver instanceof Driver) throw new QueRuntimeException(
                 "Invalid Driver: Database driver '{$this->getDriverName($driver)}' with key '{$this->driver}' does not implement the system database driver interface.",
-                "Database Error", E_USER_ERROR, 0, PreviousException::getInstance());
+                "Database Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance());
 
             $this->drivers[$this->driver] = $driver;
         }

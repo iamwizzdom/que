@@ -7,6 +7,7 @@ namespace que\template;
 use Exception;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
+use que\http\HTTP;
 use Smarty;
 
 class SmartyEngine
@@ -143,7 +144,7 @@ class SmartyEngine
         } catch (Exception $e) {
             throw new QueRuntimeException($e->getMessage(), method_exists($e, 'getTitle') ?
                     (!empty($e->getTitle()) ? $e->getTitle() : "Que Runtime Error") : "Que Templating Error",
-                E_USER_ERROR, 0, $e->getPrevious() ?: PreviousException::getInstance(2));
+                E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, $e->getPrevious() ?: PreviousException::getInstance(2));
         }
     }
 }
