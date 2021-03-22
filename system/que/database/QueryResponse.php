@@ -238,11 +238,12 @@ class QueryResponse
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getQueryError(): string
+    public function getQueryError(): ?string
     {
-        return implode(" | ", $this->getDriverResponse()->getErrors());
+        $errors = $this->getDriverResponse()->getErrors();
+        return empty($errors) ? implode(" | ", $errors) : null;
     }
 
     /**

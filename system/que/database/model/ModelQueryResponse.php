@@ -30,9 +30,9 @@ class ModelQueryResponse
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getQueryError(): string {
+    public function getQueryError(): ?string {
         return $this->response->getQueryError();
     }
 
