@@ -301,6 +301,14 @@ abstract class BaseModel implements Model
     }
 
     /**
+     * @param $key
+     * @return Model|null
+     */
+    #[Pure] public function getModel($key): ?Model {
+        return $this->getValue($key);
+    }
+
+    /**
      * @inheritDoc
      */
     public function validate($key): Condition

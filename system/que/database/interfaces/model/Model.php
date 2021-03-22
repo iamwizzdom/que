@@ -114,6 +114,12 @@ interface Model extends QueArrayAccess
 
     /**
      * @param $key
+     * @return Model|null
+     */
+    public function getModel($key): ?Model;
+
+    /**
+     * @param $key
      * @return Condition
      */
     public function validate($key): Condition;
