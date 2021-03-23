@@ -19,7 +19,7 @@ class CheckForAllowedRequestMethod extends Middleware
 
         if (!in_array($method = Request::getMethod(), $route->getAllowedMethods())) {
 
-            $message = "The {$method} method is not supported for this route.";
+            $message = "The {$method} request method is not supported for this route.";
             if (!LIVE) $message .= " Supported methods: " . (implode(", ", $route->getAllowedMethods()) ?: "None") . ".";
             $this->setAccess(false);
             $this->setTitle("Unsupported Request Method");
