@@ -50,14 +50,10 @@ class RouteRegistrar
     /**
      * @param string $prefix
      * @param Closure $callback
-     * @param string|null $middleware
-     * @param bool|null $requireLogin
-     * @param string|null $redirectUrl
-     * @return RouteRegistrar
+     * @param Closure|null $entryCallback
+     * @return $this
      */
-    public function group(string $prefix, Closure $callback,
-                          string $middleware = null, bool $requireLogin = null,
-                          string $redirectUrl = null): RouteRegistrar {
+    public function group(string $prefix, Closure $callback, Closure $entryCallback = null): RouteRegistrar {
 
         try {
             $group_arr = call_user_func($callback, $prefix);
@@ -73,6 +69,7 @@ class RouteRegistrar
 
                 $entry = new RouteEntry();
 
+                if ($entryCallback) call_user_func($entryCallback, $entry);
                 call_user_func($callback, $entry);
 
 
@@ -80,9 +77,6 @@ class RouteRegistrar
 
                 if ('web' !== $entry->getType() && 'api' !== $entry->getType() && 'resource' !== $entry->getType())
                     throw new RouteException("Invalid group route type for {$prefix}[::]{$entry->getUri()}", "Route Error");
-
-                if ($middleware !== null) $entry->setMiddleware($middleware);
-                if ($requireLogin !== null) $entry->requireLogin($requireLogin, $redirectUrl);
 
                 $route = trim($entry->getUri());
 
@@ -110,14 +104,10 @@ class RouteRegistrar
     /**
      * @param string $prefix
      * @param Closure $callback
-     * @param string|null $middleware
-     * @param bool|null $requireLogin
-     * @param string|null $redirectUrl
-     * @return RouteRegistrar
+     * @param Closure|null $entryCallback
+     * @return $this
      */
-    public function groupWeb(string $prefix, Closure $callback,
-                          string $middleware = null, bool $requireLogin = null,
-                          string $redirectUrl = null): RouteRegistrar {
+    public function groupWeb(string $prefix, Closure $callback, Closure $entryCallback = null): RouteRegistrar {
 
         try {
             $group_arr = call_user_func($callback, $prefix);
@@ -133,12 +123,10 @@ class RouteRegistrar
                 $entry = new RouteEntry();
                 $entry->setContentTypeByExtension('html');
 
+                if ($entryCallback) call_user_func($entryCallback, $entry);
                 call_user_func($callback, $entry);
 
                 $entry->setType('web');
-
-                if ($middleware !== null) $entry->setMiddleware($middleware);
-                if ($requireLogin !== null) $entry->requireLogin($requireLogin, $redirectUrl);
 
                 $route = trim($entry->getUri());
 
@@ -166,14 +154,10 @@ class RouteRegistrar
     /**
      * @param string $prefix
      * @param Closure $callback
-     * @param string|null $middleware
-     * @param bool|null $requireLogin
-     * @param string|null $redirectUrl
-     * @return RouteRegistrar
+     * @param Closure|null $entryCallback
+     * @return $this
      */
-    public function groupApi(string $prefix, Closure $callback,
-                          string $middleware = null, bool $requireLogin = null,
-                          string $redirectUrl = null): RouteRegistrar {
+    public function groupApi(string $prefix, Closure $callback, Closure $entryCallback = null): RouteRegistrar {
 
         try {
             $group_arr = call_user_func($callback, $prefix);
@@ -189,12 +173,10 @@ class RouteRegistrar
                 $entry = new RouteEntry();
                 $entry->setContentTypeByExtension('json');
 
+                if ($entryCallback) call_user_func($entryCallback, $entry);
                 call_user_func($callback, $entry);
 
                 $entry->setType('api');
-
-                if ($middleware !== null) $entry->setMiddleware($middleware);
-                if ($requireLogin !== null) $entry->requireLogin($requireLogin, $redirectUrl);
 
                 $route = trim($entry->getUri());
 
@@ -222,14 +204,10 @@ class RouteRegistrar
     /**
      * @param string $prefix
      * @param Closure $callback
-     * @param string|null $middleware
-     * @param bool|null $requireLogin
-     * @param string|null $redirectUrl
-     * @return RouteRegistrar
+     * @param Closure|null $entryCallback
+     * @return $this
      */
-    public function groupResource(string $prefix, Closure $callback,
-                          string $middleware = null, bool $requireLogin = null,
-                          string $redirectUrl = null): RouteRegistrar {
+    public function groupResource(string $prefix, Closure $callback, Closure $entryCallback = null): RouteRegistrar {
 
         try {
             $group_arr = call_user_func($callback, $prefix);
@@ -244,12 +222,10 @@ class RouteRegistrar
 
                 $entry = new RouteEntry();
 
+                if ($entryCallback) call_user_func($entryCallback, $entry);
                 call_user_func($callback, $entry);
 
                 $entry->setType('resource');
-
-                if ($middleware !== null) $entry->setMiddleware($middleware);
-                if ($requireLogin !== null) $entry->requireLogin($requireLogin, $redirectUrl);
 
                 $route = trim($entry->getUri());
 
