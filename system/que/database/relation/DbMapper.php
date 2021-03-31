@@ -22,6 +22,7 @@ trait DbMapper
         $response->setModelKey($modelKey);
         return $response->isSuccessful() ? $response->getFirstWithModel() : null;
     }
+
     /**
      * @param string $table
      * @param string $foreignKey

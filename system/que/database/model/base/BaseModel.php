@@ -324,7 +324,7 @@ abstract class BaseModel implements Model
     /**
      * @inheritDoc
      */
-    public function getNextRecord(): ?\que\database\interfaces\model\Model
+    public function getNextRecord(): ?Model
     {
         // TODO: Implement getNextRecord() method.
         $record = db()->select()->table($this->getTable())->limit(1)
@@ -336,7 +336,7 @@ abstract class BaseModel implements Model
     /**
      * @inheritDoc
      */
-    public function getPreviousRecord(): ?\que\database\interfaces\model\Model
+    public function getPreviousRecord(): ?Model
     {
         // TODO: Implement getPreviousRecord() method.
         $record = db()->select()->table($this->getTable())->limit(1)
@@ -348,26 +348,29 @@ abstract class BaseModel implements Model
     /**
      * @inheritDoc
      */
-    public function belongTo(string $table, string $foreignKey, string $primaryKey = "id", string $modelKey = "que"): ?\que\database\interfaces\model\Model
+    public function belongTo(string $table, string $foreignKey, string $primaryKey = "id", string $modelKey = null): ?Model
     {
         // TODO: Implement belongTo() method.
-        return !$this->isEmpty($foreignKey) ? $this->oneToOne($table, $this->getValue($foreignKey), $primaryKey, $modelKey) : null;
+        return !$this->isEmpty($foreignKey) ? $this->oneToOne($table, $this->getValue($foreignKey),
+            $primaryKey, $modelKey ?: config("database.default.model")) : null;
     }
 
-    public function hasOne(string $table, string $foreignKey, string $primaryKey = "id", string $modelKey = "que"): ?Model
+    public function hasOne(string $table, string $foreignKey, string $primaryKey = "id", string $modelKey = null): ?Model
     {
         // TODO: Implement hasOne() method.
-        return !$this->isEmpty($primaryKey) ? $this->oneToOneRevered($table, $this->getValue($primaryKey), $foreignKey, $modelKey) : null;
+        return !$this->isEmpty($primaryKey) ? $this->oneToOneRevered($table, $this->getValue($primaryKey),
+            $foreignKey, $modelKey ?: config("database.default.model")) : null;
     }
 
 
     /**
      * @inheritDoc
      */
-    public function hasMany(string $table, string $foreignKey, string $primaryKey = "id", string $modelKey = "que"): ?ModelCollection
+    public function hasMany(string $table, string $foreignKey, string $primaryKey = "id", string $modelKey = null): ?ModelCollection
     {
         // TODO: Implement hasMany() method.
-        return !$this->isEmpty($primaryKey) ? $this->oneToMany($table, $this->getValue($primaryKey), $foreignKey, $modelKey) : null;
+        return !$this->isEmpty($primaryKey) ? $this->oneToMany($table, $this->getValue($primaryKey),
+            $foreignKey, $modelKey ?: config("database.default.model")) : null;
     }
 
     /**
