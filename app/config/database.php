@@ -315,7 +315,7 @@ return [
 
     /*
     | Table column name for managing record status.
-    | This column must be present in all tables in your application.
+    | This column should be present in all tables in your application.
     | @Note: It's strongly recommended that you make this a boolean column with tinyint(1)
     */
     'table_status_key' => ''
