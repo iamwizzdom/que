@@ -165,6 +165,20 @@ class ConditionError
     }
 
     /**
+     * @param $value
+     * @param Closure $callback
+     * @param Closure|null $default
+     * @return $this
+     */
+    public function when($value, Closure $callback, Closure $default = null): ConditionError
+    {
+        if ($value) $callback($this, $value);
+        elseif ($default) $default($this, $value);
+
+        return $this;
+    }
+
+    /**
      * @param null $error
      * @return ConditionError
      */
