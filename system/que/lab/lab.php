@@ -14,41 +14,80 @@ use que\support\Config;
 
 require "../../../app/app.settings.php";
 
+//$doc = new DOMDocument("1.0");
+//$doc->loadXML("xml goes here");
+//$responseDoc = new DOMDocument("1.0");
+//$responseDoc->loadXML(trim($doc->getElementsByTagName("ResultMsg")->item(0)->nodeValue));
+//echo $responseDoc->getElementsByTagName("OriginatorConversationID")->item(0)->nodeValue;
+
 //echo $startTime;
+
+debug_print(array_diff_assoc([
+    'name' => 'Wisdom Samuel',
+    'gender' => 'Male'
+], [
+    'name' => 'Wisdom Emenike',
+    'gender' => 'Male'
+]));
+
+if (preg_match('/{{(.*?)}}/', "{{la.loan_id}}", $matches)) {
+    debug_print($matches[1]);
+}
+
+echo preg_match('/{{(.*?)}}/', "{{la.loan_id}}") . "\n";
+
+//$ar = [1 => 'one', 3 => 'three', 5 => 'five', 8 => 'eight'];
+//
+//unset($ar[3]);
+//unset($ar[5]);
+//$ar[3] = '_three';
+//debug_print(bubble_sort_keys($ar));
 
 //echo preg_match("/^[a-zA-Z0-9]+$/", 'jfh76') == 1 ? 'true' : 'false';
 
-if (preg_match("/{(\?)(.*?):(.*?)}|{(.*?):(.*?)}|{(\?)(.*?)}|{(.*?)}/", "{id}", $matches) == 1) {
-
-    if (!empty($matches[8] ?? null)) {
-        debug_print([
-            'arg' => $matches[8],
-            'nullable' => false,
-            'expression' => null
-        ]);
-    }
-    if (!empty($matches[7] ?? null) && !empty($matches[6] ?? null)) {
-        debug_print([
-            'arg' => $matches[7],
-            'nullable' => true,
-            'expression' => null
-        ]);
-    }
-    if (!empty($matches[5] ?? null) && !empty($matches[4] ?? null)) {
-        debug_print([
-            'arg' => $matches[4],
-            'nullable' => false,
-            'expression' => $matches[5]
-        ]);
-    }
-    if (!empty($matches[3] ?? null) && !empty($matches[2] ?? null) && !empty($matches[1] ?? null)) {
-        debug_print([
-            'arg' => $matches[2],
-            'nullable' => true,
-            'expression' => $matches[3]
-        ]);
-    }
+if (preg_match("/\\d+/", '{{$31970101287}}', $matches) == 1) {
+    echo $matches[0];
 }
+
+//try {
+//    $date = new DateTime(null);
+//} catch (Exception $e) {
+//    $date = null;
+//}
+
+//debug_print([DateTime::createFromFormat("Y", null)]);
+
+//if (preg_match("/{(\?)(.*?):(.*?)}|{(.*?):(.*?)}|{(\?)(.*?)}|{(.*?)}/", "{id}", $matches) == 1) {
+//
+//    if (!empty($matches[8] ?? null)) {
+//        debug_print([
+//            'arg' => $matches[8],
+//            'nullable' => false,
+//            'expression' => null
+//        ]);
+//    }
+//    if (!empty($matches[7] ?? null) && !empty($matches[6] ?? null)) {
+//        debug_print([
+//            'arg' => $matches[7],
+//            'nullable' => true,
+//            'expression' => null
+//        ]);
+//    }
+//    if (!empty($matches[5] ?? null) && !empty($matches[4] ?? null)) {
+//        debug_print([
+//            'arg' => $matches[4],
+//            'nullable' => false,
+//            'expression' => $matches[5]
+//        ]);
+//    }
+//    if (!empty($matches[3] ?? null) && !empty($matches[2] ?? null) && !empty($matches[1] ?? null)) {
+//        debug_print([
+//            'arg' => $matches[2],
+//            'nullable' => true,
+//            'expression' => $matches[3]
+//        ]);
+//    }
+//}
 
 //$mds = [90,6,78,9];
 //array_callback($mds, function ($md) {
