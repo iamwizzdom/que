@@ -191,6 +191,22 @@ abstract class BaseModel implements Model
     /**
      * @return array
      */
+    public function getCopy(): array
+    {
+        return $this->copy;
+    }
+
+    /**
+     * @param array $copy
+     */
+    public function setCopy(array $copy): void
+    {
+        $this->copy = $copy;
+    }
+
+    /**
+     * @return array
+     */
     public function getAppends(): array
     {
         return $this->appends;
@@ -219,12 +235,28 @@ abstract class BaseModel implements Model
     }
 
     /**
+     * @return array
+     */
+    public function getCasts(): array
+    {
+        // TODO: Implement getCasts() method.
+        return $this->casts;
+    }
+
+    /**
      * @param array $casts
      */
     public function setCasts(array $casts): void
     {
         $this->casts = $casts;
     }
+
+    public function getRenames(): array
+    {
+        // TODO: Implement getRenames() method.
+        return $this->renames;
+    }
+
 
     /**
      * @param array $renames
@@ -383,7 +415,6 @@ abstract class BaseModel implements Model
         if (!$data->isSuccessful()) return false;
         $this->object = (object) $data->getFirst();
         $this->setUp();
-        foreach ($this->object as $item) if ($item instanceof Model) $item->refresh();
         return true;
     }
 

@@ -10,57 +10,51 @@ namespace que\user;
 
 
 use ArrayAccess;
+use Exception;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use que\database\interfaces\model\Model;
 use que\database\model\ModelQueryResponse;
 use que\http\HTTP;
 use que\session\Session;
+use que\support\interfaces\QueArrayAccess;
 use que\utility\client\Browser;
 use que\utility\client\IP;
+use Traversable;
 
-class User extends State implements ArrayAccess
+class User implements QueArrayAccess
 {
+    use State;
+
     /**
      * @var User
      */
     private static User $instance;
 
     /**
-     * @var array
+     * @var Model|null
      */
-    private static array $state;
+    private static ?Model $model = null;
 
     /**
-     * @var object
+     * @var array|null
      */
-    private static object $user;
-
-    /**
-     * @var Model[]
-     */
-    private static array $model = [];
-
-    /**
-     * @var string|null
-     */
-    private static ?string $modelKey = null;
+    private static ?array $state = null;
 
     /**
      * User constructor.
+     * @param bool $update
      */
-    protected function __construct()
+    protected function __construct(bool $update)
     {
+        if ($update) self::updateState();
     }
 
-    private function __clone()
+    protected function __clone(): void
     {
         // TODO: Implement __clone() method.
-    }
-
-    public function __wakeup()
-    {
-        // TODO: Implement __wakeup() method.
+        self::$instance = clone self::$instance;
+        self::$model = clone self::$model;
     }
 
     /**
@@ -76,7 +70,8 @@ class User extends State implements ArrayAccess
 
         if (!isset(self::$instance)) {
 
-            self::$state = (array) self::get_state() ?: [];
+            $updateState = self::$state === null;
+            self::$state ??= ((array) self::get_state() ?: []);
 
             if (!self::is_equal_state()) {
                 self::logout(vsprintf("Your connection state got corrupted due to access from (IP::%s) using " .
@@ -91,116 +86,100 @@ class User extends State implements ArrayAccess
             if ($session_config['timeout'] === true && (APP_TIME >= (self::getLastSeen() + $session_config['timeout_time'])))
                 self::logout(vsprintf("System session expired for security reasons. Please re-login (IP::%s)", [self::getLastIP()]));
 
-            self::$user = &self::$state['data'];
-
             if ($session_config['regeneration'] === true && ((APP_TIME - self::getLastSeen()) >= $session_config['regeneration_time']))
                 self::regenerate();
 
-            self::updateState();
+            $provider = self::$state['provider'] ?? config('auth.default.provider');
+            $model = \model(config("auth.providers.{$provider}"));
 
-            self::$instance = new self;
+            if ($model && ($implements = class_implements($model)) && in_array(Model::class, $implements)) {
+                self::$model = new $model(self::$state['data'], self::$state['table'], self::$state['primaryKey']);
+            }
+
+            if (self::$model === null) throw new QueRuntimeException("Trying to get a user instance with an invalid auth provider. Check your auth config to fix this",
+                "User Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+
+            self::$instance = new self($updateState);
         }
 
         return self::$instance;
     }
 
     /**
-     * @param string|null $model
-     * @return Model
+     * @return string
      */
-    public function getModel(string $model = null): Model
+    public function getTable(): string
     {
-        $model = model(($modelKey = ($model ?: (self::$modelKey ?: config("database.default.model")))));
+        return self::$model->getTable();
+    }
 
-        if ($model === null) throw new QueRuntimeException(
-            "No database model was found with the key '{$modelKey}', check your database configuration to fix this issue.",
-            "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
-
-        if (!($implements = class_implements($model)) || !isset($implements[Model::class])) throw new QueRuntimeException(
-            "The specified model ({$model}) with key '{$modelKey}' does not implement the Que database model interface.",
-            "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
-
-        if (!isset(self::$model[$modelKey])) {
-            $database_config = (array) config('database', []);
-            self::$model[$modelKey] = new $model(self::$user,
-                $database_config['tables']['user']['name'] ?? 'users',
-                $database_config['tables']['user']['primary_key'] ?? 'id'
-            );
-        }
-
-        return self::$model[$modelKey];
+    /**
+     * @return string
+     */
+    public function getPrimaryKey(): string
+    {
+        return self::$model->getPrimaryKey();
     }
 
     /**
      * @param $key
      * @param null $default
-     * @return mixed|null
+     * @return mixed
      */
-    public function getValue($key, $default = null)
+    public function getValue($key, $default = null): mixed
     {
-        return self::$user->{$key} ?? $default;
-    }
-
-    /**
-     * @param $key
-     * @param int $default
-     * @return int
-     */
-    public function getInt($key, int $default = 0): int
-    {
-        return (int) $this->getValue($key, $default);
-    }
-
-    /**
-     * @param $key
-     * @param float $default
-     * @return float
-     */
-    public function getFloat($key, float $default = 0.0): float
-    {
-        return (float) $this->getValue($key, $default);
-    }
-
-    /**
-     * @param bool $onlyFillable
-     * @return object
-     */
-    public function &getUserObject(bool $onlyFillable = false): object
-    {
-        return $this->getModel()->getObject($onlyFillable);
+        return self::$model->getValue($key, $default);
     }
 
     /**
      * @param bool $onlyFillable
      * @return array
      */
-    public function getUserArray(bool $onlyFillable = false): array
+    public function getArray(bool $onlyFillable = false): array
     {
-        return $this->getModel()->getArray($onlyFillable);
+        return self::$model->getArray($onlyFillable);
+    }
+
+    /**
+     * @param bool $onlyFillable
+     * @return object
+     */
+    public function &getObject(bool $onlyFillable = false): object
+    {
+        return self::$model->getObject($onlyFillable);
+    }
+
+    /**
+     * @return bool
+     */
+    public function refresh(): bool
+    {
+        $status = self::$model->refresh();
+        if ($status) self::updateState();
+        return $status;
+    }
+
+    /**
+     * @param string|null $primaryKey
+     * @return ModelQueryResponse|null
+     */
+    public function delete(string $primaryKey = null): ?ModelQueryResponse
+    {
+        $response = self::$model->delete($primaryKey ?: self::$state['primaryKey']);
+        if ($response->isSuccessful()) self::logout(sprintf("User account deleted. Good bye. Log-out successful (IP::%s)", self::getLastIP()));
+        return $response;
     }
 
     /**
      * @param array $columns
+     * @param string|null $primaryKey
      * @return ModelQueryResponse|null
      */
-    public function update(array $columns): ?ModelQueryResponse
+    public function update(array $columns, string $primaryKey = null): ?ModelQueryResponse
     {
-        if (!self::isLoggedIn() || empty($columns)) return null;
-
-        $database_config = (array) config('database', []);
-
-        $primaryKey = $database_config['tables']['user']['primary_key'] ?? 'id';
-
-        $update = db()->update()->table(
-            ($database_config['tables']['user']['name'] ?? 'users')
-        )->columns($columns)->where($primaryKey, $this->getValue($primaryKey, 0))->exec();
-
-        if ($update->isSuccessful()) {
-            foreach ($columns as $key => $value) if ($this->offsetExists($key)) $this->offsetSet($key, $value);
-            self::updateState();
-        }
-
-        return new ModelQueryResponse($update);
+        $response = self::$model->update($columns, $primaryKey ?: self::$model->getPrimaryKey());
+        if ($response->isSuccessful()) self::updateState();
+        return $response; // TODO: Change the autogenerated stub
     }
 
     /**
@@ -209,8 +188,8 @@ class User extends State implements ArrayAccess
      * @return bool
      */
     public function updateInMemory($key, $value): bool {
-        if (!isset(self::$user->{$key}) || self::$user->{$key} == $value) return false;
-        self::$user->{$key} = $value;
+        if (!self::$model->has($key) || self::$model->validate($key)->isEqual($value)) return false;
+        self::$model->set($key, $value);
         self::updateState();
         return true;
     }
@@ -220,13 +199,13 @@ class User extends State implements ArrayAccess
      */
     private static function updateState()
     {
-        self::login(self::$user);
+        self::login(self::$model->getObject());
     }
 
     /**
      * @return mixed
      */
-    private static function getLastSeen()
+    private static function getLastSeen(): mixed
     {
         return self::$state['time'] ?? APP_TIME;
     }
@@ -234,7 +213,7 @@ class User extends State implements ArrayAccess
     /**
      * @return mixed
      */
-    private static function getLastIP()
+    private static function getLastIP(): mixed
     {
         return self::$state['ip'] ?? 'unknown';
     }
@@ -242,7 +221,7 @@ class User extends State implements ArrayAccess
     /**
      * @return mixed
      */
-    private static function getLastBrowser()
+    private static function getLastBrowser(): mixed
     {
         return self::$state['browser'] ?? [];
     }
@@ -250,19 +229,7 @@ class User extends State implements ArrayAccess
     private static function regenerate()
     {
         Session::getInstance()->regenerateID();
-
-        $database_config = (array) config('database', []);
-
-        $primaryKey = ($database_config['tables']['user']['primary_key'] ?? 'id');
-
-        $user = db()->find(($database_config['tables']['user']['name'] ?? 'users'),
-            self::$state['data']->{$primaryKey} ?? 0, $primaryKey);
-
-        if ($user->isSuccessful()) {
-            $userData = $user->getQueryResponseArray(0);
-            foreach ($userData as $key => $value) self::$user->{$key} = $value;
-        }
-
+        self::$model->refresh();
         self::updateState();
     }
 
@@ -277,15 +244,35 @@ class User extends State implements ArrayAccess
 
     /**
      * Log in user
+     *
      * @param object $user
-     * @param string|null $modelKey
+     * @param string|null $provider
+     * @param string|null $table
+     * @param string|null $primaryKey
      */
-    public static function login(object $user, string $modelKey = null)
+    public static function login(object $user, string $provider = null, string $table = null, string $primaryKey = null)
     {
-        self::$modelKey = $modelKey;
-        self::set_state([
+        $provider ??= config('auth.default.provider');
+
+        $model = \model(config("auth.providers.{$provider}") ?: '');
+
+        $database_config = (array) config('database', []);
+        $table ??= ($database_config['tables']['user']['name'] ?? 'users');
+        $primaryKey ??= ($database_config['tables']['user']['primary_key'] ?? 'id');
+
+        if ($model && ($implements = class_implements($model)) && in_array(Model::class, $implements)) {
+            self::$model = new $model($user, $table, $primaryKey);
+        }
+
+        if (self::$model === null) throw new QueRuntimeException("Trying to login with an invalid auth provider. Check your auth config to fix this",
+            "User Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+
+        self::set_state(self::$state = [
             'uid' => Session::getSessionID(),
-            'data' => $user,
+            'data' => self::$model->getObject(),
+            'table' => $table,
+            'primaryKey' => $primaryKey,
+            'provider' => $provider,
             'time' => APP_TIME,
             'ip' => IP::real(),
             'browser' => Browser::browserInfo()
@@ -307,70 +294,107 @@ class User extends State implements ArrayAccess
         else http()->redirect()->setUrl($redirect_to ?? '/')->setHeader($message, SUCCESS)->initiate();
     }
 
-    /**
-     * Whether a offset exists
-     * @link https://php.net/manual/en/arrayaccess.offsetexists.php
-     * @param mixed $offset <p>
-     * An offset to check for.
-     * </p>
-     * @return boolean true on success or false on failure.
-     * </p>
-     * <p>
-     * The return value will be casted to boolean if non-boolean was returned.
-     * @since 5.0.0
-     */
+    public function __get(string $name)
+    {
+        // TODO: Implement __get() method.
+        return self::$model->{$name};
+    }
+
+    public function __set(string $name, $value): void
+    {
+        // TODO: Implement __set() method.
+        self::$model->{$name} = $value;
+    }
+
+    public function __call(string $name, array $arguments)
+    {
+        // TODO: Implement __call() method.
+        return self::$model->{$name}(...$arguments);
+    }
+
+    public function getIterator()
+    {
+        // TODO: Implement getIterator() method.
+        return self::$model->getIterator();
+    }
+
     public function offsetExists($offset)
     {
         // TODO: Implement offsetExists() method.
-        return object_key_exists($offset, self::$user);
+        return self::$model->offsetExists($offset);
     }
 
-    /**
-     * Offset to retrieve
-     * @link https://php.net/manual/en/arrayaccess.offsetget.php
-     * @param mixed $offset <p>
-     * The offset to retrieve.
-     * </p>
-     * @return mixed Can return all value types.
-     * @since 5.0.0
-     */
     public function offsetGet($offset)
     {
         // TODO: Implement offsetGet() method.
-        return self::$user->{$offset} ?? null;
+        return self::$model->offsetGet($offset);
     }
 
-    /**
-     * Offset to set
-     * @link https://php.net/manual/en/arrayaccess.offsetset.php
-     * @param mixed $offset <p>
-     * The offset to assign the value to.
-     * </p>
-     * @param mixed $value <p>
-     * The value to set.
-     * </p>
-     * @return void
-     * @since 5.0.0
-     */
     public function offsetSet($offset, $value)
     {
         // TODO: Implement offsetSet() method.
-        self::$user->{$offset} = $value;
-
+        self::$model->offsetSet($offset, $value);
+        self::updateState();
     }
 
-    /**
-     * Offset to unset
-     * @link https://php.net/manual/en/arrayaccess.offsetunset.php
-     * @param mixed $offset <p>
-     * The offset to unset.
-     * </p>
-     * @return void
-     * @since 5.0.0
-     */
     public function offsetUnset($offset)
     {
         // TODO: Implement offsetUnset() method.
-        unset(self::$user->{$offset});
+        self::$model->offsetUnset($offset);
+        self::updateState();
+    }
+
+    public function serialize()
+    {
+        // TODO: Implement serialize() method.
+        return self::$model->serialize();
+    }
+
+    public function unserialize($serialized)
+    {
+        // TODO: Implement unserialize() method.
+        self::$model->unserialize($serialized);
+        self::updateState();
+    }
+
+    public function count()
+    {
+        // TODO: Implement count() method.
+        return self::$model->count();
+    }
+
+    public function array_keys(): array
+    {
+        // TODO: Implement array_keys() method.
+        return self::$model->array_keys();
+    }
+
+    public function array_values(): array
+    {
+        // TODO: Implement array_values() method.
+        return self::$model->array_values();
+    }
+
+    public function key(): int|string|null
+    {
+        // TODO: Implement key() method.
+        return self::$model->key();
+    }
+
+    public function current(): mixed
+    {
+        // TODO: Implement current() method.
+        return self::$model->current();
+    }
+
+    public function shuffle(): void
+    {
+        // TODO: Implement shuffle() method.
+    }
+
+    public function jsonSerialize()
+    {
+        // TODO: Implement jsonSerialize() method.
+        return self::$model->jsonSerialize();
     }
 }

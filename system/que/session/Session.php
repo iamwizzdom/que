@@ -70,8 +70,8 @@ class Session
     {
         $session_id = $session_id ?: session_id();
         if (isset(self::$sessionIDs[$session_id])) return self::$sessionIDs[$session_id];
-        $package_name = config('session.partition', APP_PACKAGE_NAME);
-        return self::$sessionIDs[$session_id] = "{$package_name}-session-id:" . wordwrap($session_id, 4, ":", true);
+        $partition = config('session.partition', APP_PACKAGE_NAME);
+        return self::$sessionIDs[$session_id] = "{$partition}-session-id:" . wordwrap($session_id, 4, ":", true);
     }
 
     /**

@@ -158,18 +158,18 @@ class Validation
         switch ($type) {
             case 'integer':
                 if (array_key_exists($claim, $payload) && !is_int($payload[$claim])) {
-                    throw new InvalidClaimTypeException(sprintf('Invalid token %s claim - %s value required', $claim, $type));
+                    throw new InvalidClaimTypeException(sprintf('Invalid token %s claim - %s value required, %s given', $claim, $type, gettype($payload[$claim])));
                 }
                 break;
             case 'mixed':
                 if (array_key_exists($claim, $payload) && !(is_string($payload[$claim]) || is_int($payload[$claim]))) {
-                    throw new InvalidClaimTypeException(sprintf('Invalid token %s claim - integer or string value required', $claim));
+                    throw new InvalidClaimTypeException(sprintf('Invalid token %s claim - integer or string value required, %s given', $claim, gettype($payload[$claim])));
                 }
                 break;
             case 'string':
             default:
                 if (array_key_exists($claim, $payload) && !is_string($payload[$claim])) {
-                    throw new InvalidClaimTypeException(sprintf('Invalid token %s claim - %s value required', $claim, $type));
+                    throw new InvalidClaimTypeException(sprintf('Invalid token %s claim - %s value required, %s given', $claim, $type, gettype($payload[$claim])));
                 }
                 break;
         }

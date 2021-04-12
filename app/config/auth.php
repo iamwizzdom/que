@@ -104,9 +104,43 @@ return [
         */
         'leeway' => 0,
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | App Keys
+    |--------------------------------------------------------------------------
+    |
+    | Here you specify your app unique keys
+    |
+    */
     'app' => [
         'salt' => '',
         'secret' => '',
         'version' => ''
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Default Auth Provider
+    |--------------------------------------------------------------------------
+    |
+    | Here you specify the default provider
+    |
+    */
+    'default' => [
+        'provider' => 'user'
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Auth Providers
+    |--------------------------------------------------------------------------
+    |
+    | Here you specify the db model keys to be used to provide user authentication.
+    | Note: Theses model keys must be registered in your database config.
+    |
+    */
+    'providers' => [
+        'user' => 'que'
     ]
 ];

@@ -10,6 +10,7 @@ namespace que\user;
 
 
 use ArrayAccess;
+use JetBrains\PhpStorm\Pure;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use que\database\interfaces\model\Model;
@@ -50,7 +51,7 @@ class XUser implements ArrayAccess
     /**
      * @return object
      */
-    public function getUserObject(): object
+    public function getObject(): object
     {
         return $this->user;
     }
@@ -58,7 +59,7 @@ class XUser implements ArrayAccess
     /**
      * @return array
      */
-    public function getUserArray(): array
+    #[Pure] public function getArray(): array
     {
         return object_to_array($this->user);
     }
@@ -124,14 +125,13 @@ class XUser implements ArrayAccess
             throw new QueRuntimeException("The key '{$primaryKey}' was not found in the present user object",
                 "User Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance());
 
-        return User::isLoggedIn() && User::getInstance()->getModel()
-                ->validate($primaryKey)->is($this->getValue($primaryKey));
+        return User::isLoggedIn() && User::getInstance()->validate($primaryKey)->is($this->getValue($primaryKey));
     }
 
     /**
      * @param int $userID
-     * @param string $dataType = array|object|model
-     * @return array|object|Model|XUser|null
+     * @param string|null $dataType
+     * @return array|object|Model|null
      */
     public static function getUser(int $userID, string $dataType = null)
     {
@@ -142,16 +142,12 @@ class XUser implements ArrayAccess
 
         $xuser = new XUser($user->getQueryResponse(0));
 
-        switch (strtolower($dataType)) {
-            case 'array':
-                return $xuser->getUserArray();
-            case 'object':
-                return $xuser->getUserObject();
-            case 'model':
-                return $xuser->getModel();
-            default:
-                return $xuser;
-        }
+        return match (strtolower($dataType)) {
+            'array' => $xuser->getArray(),
+            'object' => $xuser->getObject(),
+            'model' => $xuser->getModel(),
+            default => $xuser,
+        };
     }
 
     /**

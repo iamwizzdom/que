@@ -42,6 +42,56 @@ interface Model extends QueArrayAccess
     public function getArray(bool $onlyFillable = false): array;
 
     /**
+     * @return array
+     */
+    public function getCopy(): array;
+
+    /**
+     * @param array $copy
+     */
+    public function setCopy(array $copy): void;
+
+    /**
+     * @return array
+     */
+    public function getAppends(): array;
+
+    /**
+     * @param array $appends
+     */
+    public function setAppends(array $appends): void;
+
+    /**
+     * @return array
+     */
+    public function getHidden(): array;
+
+    /**
+     * @param array $hidden
+     */
+    public function setHidden(array $hidden): void;
+
+    /**
+     * @return array
+     */
+    public function getCasts(): array;
+
+    /**
+     * @param array $casts
+     */
+    public function setCasts(array $casts): void;
+
+    /**
+     * @return array
+     */
+    public function getRenames(): array;
+
+    /**
+     * @param array $renames
+     */
+    public function setRenames(array $renames): void;
+
+    /**
      * @return bool
      */
     public function hasFillable(): bool;
