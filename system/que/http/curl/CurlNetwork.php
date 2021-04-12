@@ -279,7 +279,7 @@ abstract class CurlNetwork
 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-        if (!empty($post)) curl_setopt($ch, CURLOPT_POSTFIELDS, ($this->isBodyPost() ? json_encode($post) : $post));
+        if (!empty($post)) curl_setopt($ch, CURLOPT_POSTFIELDS, ($this->isBodyPost() ? http_build_query($post) : $post));
 
         if ($this->getTimeout() > 0) curl_setopt($ch, CURLOPT_TIMEOUT, $this->getTimeout());
 
