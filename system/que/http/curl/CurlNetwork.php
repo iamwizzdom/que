@@ -275,11 +275,16 @@ abstract class CurlNetwork
 
         $mime_type = mime_type_from_extension('json');
 
-        if ($content_type && strcmp(str_start_from(strtolower($content_type), 'content-type: '), $mime_type) == 0) $this->setIsBodyPost(true);
+        $isJSON = false;
+
+        if ($content_type && strcmp(str_start_from(strtolower($content_type), 'content-type: '), $mime_type) == 0) {
+            $isJSON = true;
+            $this->setIsBodyPost(true);
+        }
 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-        if (!empty($post)) curl_setopt($ch, CURLOPT_POSTFIELDS, ($this->isBodyPost() ? http_build_query($post) : $post));
+        if (!empty($post)) curl_setopt($ch, CURLOPT_POSTFIELDS, ($this->isBodyPost() ? ($isJSON ? json_encode($post) : http_build_query($post)) : $post));
 
         if ($this->getTimeout() > 0) curl_setopt($ch, CURLOPT_TIMEOUT, $this->getTimeout());
 
