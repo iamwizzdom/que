@@ -434,7 +434,7 @@ abstract class BaseModel implements Model
             ->where($primaryKey, $this->getValue($primaryKey))->exec();
 
         if ($update->isSuccessful()) {
-            foreach ($columns as $key => $value) if ($this->offsetExists($key)) $this->offsetSet($key, $value);
+            foreach ($columns as $key => $value) $this->offsetSet($key, $value);
             $this->setUp();
         }
 

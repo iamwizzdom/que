@@ -791,6 +791,8 @@ class QueryBuilder implements Builder
             $model->offsetSet($model->getPrimaryKey(), $response->getLastInsertID());
             $model->refresh();
             $observer->onCreated($model);
+        } else {
+            $model->offsetSet($model->getPrimaryKey(), $response->getLastInsertID());
         }
 
         //Check if observer wants to undo the insert operation
