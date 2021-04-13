@@ -205,20 +205,13 @@ class QueryResponse
      */
     public function isSuccessful(): bool
     {
-        return $this->getDriverResponse()->isSuccessful() && (
-            $this->getQueryType() === DriverQueryBuilder::SELECT ||
-            $this->getQueryType() === DriverQueryBuilder::RAW_SELECT ?
-                $this->getResponseSize() > 0 : (
-            $this->getQueryType() === DriverQueryBuilder::UPDATE ||
-            $this->getQueryType() === DriverQueryBuilder::DELETE ?
-                $this->getAffectedRows() > 0 : (
-            $this->getQueryType() === DriverQueryBuilder::CHECK ?
-                $this->getQueryResponse() > 0 : (
-            $this->getQueryType() === DriverQueryBuilder::RAW_OBJECT ?
-                !empty($this->getQueryResponse()) : (
-            $this->getQueryType() === DriverQueryBuilder::SUM ?
-                !empty($this->getQueryResponse()) : true
-            )))));
+        return $this->getDriverResponse()->isSuccessful() && match ($this->getQueryType()) {
+                DriverQueryBuilder::EXISTS, DriverQueryBuilder::COUNT, DriverQueryBuilder::AVG, DriverQueryBuilder::SUM => $this->getQueryResponse() > 0,
+                DriverQueryBuilder::SELECT, DriverQueryBuilder::RAW_SELECT => $this->getResponseSize() > 0,
+                DriverQueryBuilder::UPDATE, DriverQueryBuilder::DELETE => $this->getAffectedRows() > 0,
+                DriverQueryBuilder::RAW_OBJECT => !empty($this->getQueryResponse()),
+                default => true
+            };
     }
 
     /**

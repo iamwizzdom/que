@@ -338,7 +338,12 @@ class MySqlDriver implements Driver
                 ($stmt->rowCount() == 0 ? [$this->isInDebugMode() ? "No record affected in {$builder->getTable()} table" : 'No record affected'] : $stmt->errorInfo()),
                 $stmt->errorCode(), 0, $stmt->rowCount()
             ),
-            DriverQueryBuilder::AVG, DriverQueryBuilder::SUM, DriverQueryBuilder::COUNT, DriverQueryBuilder::CHECK => new MySqlDriverResponse(
+            DriverQueryBuilder::EXISTS => new MySqlDriverResponse(
+                $stmt->fetch(PDO::FETCH_ASSOC)['existence'] ?? 0, $status,
+                $this->interpolateQuery($builder->getQuery(), $builder->getBindings()), $stmt->errorInfo(),
+                $stmt->errorCode()
+            ),
+            DriverQueryBuilder::AVG, DriverQueryBuilder::SUM, DriverQueryBuilder::COUNT => new MySqlDriverResponse(
                 $stmt->fetch(PDO::FETCH_ASSOC)['aggregate'] ?? 0, $status,
                 $this->interpolateQuery($builder->getQuery(), $builder->getBindings()), $stmt->errorInfo(),
                 $stmt->errorCode()

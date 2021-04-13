@@ -861,7 +861,7 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
         $actualColumn = '`id`';
 
         if ($this->queryType == self::COUNT || $this->queryType == self::SUM ||
-            $this->queryType == self::AVG || $this->queryType == self::CHECK) {
+            $this->queryType == self::AVG || $this->queryType == self::EXISTS) {
 
             $actualColumn = $this->getActualColumn(implode(', ', array_map(function ($column) {
                 if (is_array($column['column'])) {
@@ -934,7 +934,15 @@ class MySqlDriverQueryBuilder implements DriverQueryBuilder
                 }
 
                 break;
-            case self::CHECK:
+            case self::EXISTS:
+
+                $queryType = $this->getQueryType();
+                $this->setQueryType(self::SELECT);
+                $this->buildQuery();
+                $this->setQueryType($queryType);
+
+                $query = "SELECT EXISTS({$this->getQuery()}) AS `existence`";
+                break;
             case self::COUNT:
 
                 $queryType = $this->getQueryType();

@@ -638,7 +638,7 @@ class QueryBuilder implements Builder
             DriverQueryBuilder::UPDATE => $this->update(),
             DriverQueryBuilder::DELETE => $this->delete(),
             DriverQueryBuilder::COUNT => $this->count(),
-            DriverQueryBuilder::CHECK => $this->check(),
+            DriverQueryBuilder::EXISTS => $this->recordExists(),
             DriverQueryBuilder::AVG => $this->avg(),
             DriverQueryBuilder::SUM => $this->sum(),
             DriverQueryBuilder::RAW_SELECT => $this->raw_select(),
@@ -1356,14 +1356,14 @@ class QueryBuilder implements Builder
     /**
      * @return QueryResponse
      */
-    private function check(): QueryResponse
+    private function recordExists(): QueryResponse
     {
 
         if (!isset(self::$primaryKeys[$this->builder->getTable()])) {
 
             $this->builder->setQueryType(DriverQueryBuilder::SHOW_TABLE_PRIMARY_KEY);
             $showTable = $this->show_table_primary_key();
-            $this->builder->setQueryType(DriverQueryBuilder::CHECK);
+            $this->builder->setQueryType(DriverQueryBuilder::EXISTS);
             self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? ($showTable->getQueryResponse() ?: 'id') : 'id';
         }
 

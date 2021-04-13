@@ -216,10 +216,10 @@ class DB extends Connect
      * @param Closure $callbackQuery
      * @return QueryResponse
      */
-    public function check(string $table, Closure $callbackQuery): QueryResponse
+    public function exists(string $table, Closure $callbackQuery): QueryResponse
     {
         $driverBuilder = $this->getDriver()->getQueryBuilder();
-        $driverBuilder->setQueryType(DriverQueryBuilder::CHECK);
+        $driverBuilder->setQueryType(DriverQueryBuilder::EXISTS);
         $driverBuilder->setTable($table);
         $builder = new QueryBuilder($this->getDriver(), $driverBuilder, $this);
         $callbackQuery($builder);
