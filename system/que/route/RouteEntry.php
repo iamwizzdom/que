@@ -402,6 +402,15 @@ class RouteEntry
     /**
      * @return RouteEntry
      */
+    public function allowOptionsRequest(): RouteEntry
+    {
+        $this->allowedMethods[] = Request::METHOD_OPTIONS;
+        return $this;
+    }
+
+    /**
+     * @return RouteEntry
+     */
     public function allowPatchRequest(): RouteEntry
     {
         $this->allowedMethods[] = Request::METHOD_PATCH;

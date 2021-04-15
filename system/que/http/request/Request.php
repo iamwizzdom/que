@@ -31,6 +31,7 @@ class Request implements QueArrayAccess
     const METHOD_PUT = 'PUT';
     const METHOD_PATCH = 'PATCH';
     const METHOD_DELETE = 'DELETE';
+    const METHOD_OPTIONS = 'OPTIONS';
 
     /**
      * @var bool
