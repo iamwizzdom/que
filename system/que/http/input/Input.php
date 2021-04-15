@@ -220,6 +220,8 @@ class Input implements QueArrayAccess
      * @return array
      */
     private function get_all_input(): array {
+        $body = $this->getBody(); $bodyArr = [];
+        if (!empty($body) && is_json($body)) $bodyArr = json_decode($body, true);
         return array_merge(
             ($this->post = HTTP::getInstance()->_post())->_get(),
             ($this->put = HTTP::getInstance()->_put())->_get(),
@@ -228,7 +230,8 @@ class Input implements QueArrayAccess
             ($this->get = HTTP::getInstance()->_get())->_get(),
             ($this->server = HTTP::getInstance()->_server())->_get(),
             ($this->header = HTTP::getInstance()->_header())->_get(),
-            ($this->files = HTTP::getInstance()->_files())->_get()
+            ($this->files = HTTP::getInstance()->_files())->_get(),
+            $bodyArr
         );
     }
 
