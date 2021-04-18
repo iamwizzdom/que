@@ -120,8 +120,10 @@ final class Route extends Router
 
         self::handleRequestMiddleware($route);
 
+        $origins = $route->getAllowedOrigins();
+
         self::$http->_header()->setBulk([
-            'Access-Control-Allow-Origin' => implode(", ", $route->getAllowedOrigins()),
+            'Access-Control-Allow-Origin' => (in_array('*', $origins) ? '*' : (in_array(Request::getOrigin(), $origins) ? Request::getOrigin() : current($origins))),
             'Access-Control-Allow-Methods' => implode(", ", $route->getAllowedMethods()),
             'Cache-Control' => 'no-cache, must-revalidate',
             'Expires' => 'Mon, 26 Jul 1997 05:00:00 GMT'
