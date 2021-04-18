@@ -155,7 +155,11 @@ abstract class RouteInspector
      */
     public static function handleRequestMiddleware(RouteEntry $route) {
 
-        $middlewareStack = array_merge(self::getGlobalMiddlewareStack(), self::getRouteMiddlewareStack($route));
+        $middlewareStack = self::getGlobalMiddlewareStack();
+
+        $routeMiddlewares = self::getRouteMiddlewareStack($route);
+
+        foreach ($routeMiddlewares as $routeMiddleware) $middlewareStack[] = $routeMiddleware;
 
         if (!empty($middlewareStack)) {
 

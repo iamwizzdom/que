@@ -16,6 +16,11 @@ class RouteEntry
     /**
      * @var array
      */
+    private array $allowedOrigins = ['*'];
+
+    /**
+     * @var array
+     */
     private array $allowedMethods = [];
 
     /**
@@ -103,7 +108,8 @@ class RouteEntry
      */
     public function __construct()
     {
-        $this->forbidCSRF = (bool) config('auth.csrf', false);
+        $this->forbidCSRF((bool) config('auth.csrf', false));
+        $this->setAllowedOrigins((array) config('cors.allowed_origins') ?: ['*']);
     }
 
     /**
@@ -361,7 +367,23 @@ class RouteEntry
     public function setMiddleware(array|string $middleware): void
     {
         if (!is_array($middleware)) $middleware = [(string) $middleware];
-        $this->middleware = $middleware;
+        $this->middleware = [...$this->middleware, ...$middleware];
+    }
+
+    /**
+     * @return array
+     */
+    public function getAllowedOrigins(): array
+    {
+        return $this->allowedOrigins;
+    }
+
+    /**
+     * @param array $allowedOrigins
+     */
+    public function setAllowedOrigins(array $allowedOrigins): void
+    {
+        $this->allowedOrigins = $allowedOrigins;
     }
 
     /**

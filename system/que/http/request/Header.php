@@ -16,6 +16,7 @@ use Traversable;
 
 class Header implements QueArrayAccess
 {
+
     /**
      * @var Header
      */
@@ -66,6 +67,7 @@ class Header implements QueArrayAccess
      * @param int|null $response_code
      */
     public function set(string $offset, string $data, bool $replace = true, int $response_code = null): void {
+
         if ($this->_isset($offset) && !$replace) return;
         $this->pointer[$offset] = $data;
         header("{$offset}: {$data}", $replace, $response_code);
@@ -103,6 +105,15 @@ class Header implements QueArrayAccess
      */
     public function _isset(string $offset): bool {
         return isset($this->pointer[$offset]);
+    }
+
+    /**
+     * @param $offset
+     * @return bool
+     */
+    #[Pure] public function has($offset): bool
+    {
+        return array_key_exists($offset, $this->pointer);
     }
 
     /**
@@ -172,8 +183,7 @@ class Header implements QueArrayAccess
     public function offsetUnset(mixed $offset)
     {
         // TODO: Implement offsetUnset() method.
-        unset($this->pointer[$offset]);
-        header_remove($offset);
+        $this->_unset($offset);
     }
 
     /**

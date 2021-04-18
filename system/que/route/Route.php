@@ -118,14 +118,17 @@ final class Route extends Router
         if (empty($route) || !$route instanceof RouteEntry)
             throw new RouteException(sprintf("%s is an invalid url", current_url()), "Route Error", HTTP::NOT_FOUND);
 
+        self::handleRequestMiddleware($route);
+
         self::$http->_header()->setBulk([
-            'Access-Control-Allow-Origin' => '*',
+            'Access-Control-Allow-Origin' => implode(", ", $route->getAllowedOrigins()),
             'Access-Control-Allow-Methods' => implode(", ", $route->getAllowedMethods()),
             'Cache-Control' => 'no-cache, must-revalidate',
             'Expires' => 'Mon, 26 Jul 1997 05:00:00 GMT'
-        ]);
+        ], false);
 
-        self::handleRequestMiddleware($route);
+        $contentType = self::$http->_header()->get("Accept", $route->getContentType());
+        if (!empty($contentType)) self::$http->_header()->set('Content-Type', $contentType, true);
 
         if (empty($module = $route->getModule())) throw new RouteException(
             "This route is not bound to a module\n", "Route Error", HTTP::NOT_FOUND);
@@ -157,8 +160,6 @@ final class Route extends Router
      */
     private function render_web_route(RouteEntry $route)
     {
-
-        self::$http->_header()->set('Content-Type', $route->getContentType(), true);
 
         $module = $route->getModule();
         $instance = new $module();
@@ -239,10 +240,6 @@ final class Route extends Router
     private function render_api_route(RouteEntry $route)
     {
 
-        $contentType = $route->getContentType();
-
-        if (!empty($contentType)) self::$http->_header()->set('Content-Type', $contentType, true);
-
         $module = $route->getModule();
         $instance = new $module();
 
@@ -279,7 +276,7 @@ final class Route extends Router
                 "Failed to output response", "Output Error",
                 HTTP::NO_CONTENT, PreviousException::getInstance(1));
 
-            if (empty($contentType)) self::$http->_header()->set('Content-Type', mime_type_from_extension('json'), true);
+            if (!self::$http->_header()->has('Accept')) self::$http->_header()->set('Content-Type', mime_type_from_extension('json'), true);
 
             echo $data;
 
@@ -294,12 +291,12 @@ final class Route extends Router
 
         } elseif ($response instanceof Html) {
 
-            if (empty($contentType)) self::$http->_header()->set('Content-Type', mime_type_from_extension('html'), true);
+            if (!self::$http->_header()->has('Accept')) self::$http->_header()->set('Content-Type', mime_type_from_extension('html'), true);
             echo $response->getHtml();
 
         } elseif ($response instanceof Plain) {
 
-            if (empty($contentType)) self::$http->_header()->set('Content-Type', mime_type_from_extension('txt'), true);
+            if (!self::$http->_header()->has('Accept')) self::$http->_header()->set('Content-Type', mime_type_from_extension('txt'), true);
             echo $response->getData();
 
         } elseif (is_array($response)) {
@@ -325,7 +322,7 @@ final class Route extends Router
             if (!$data) throw new RouteException("Failed to output response", "Output Error",
                 HTTP::NO_CONTENT, PreviousException::getInstance(1));
 
-            if (empty($contentType)) self::$http->_header()->set('Content-Type', mime_type_from_extension('json'), true);
+            if (!self::$http->_header()->has('Accept')) self::$http->_header()->set('Content-Type', mime_type_from_extension('json'), true);
 
             echo $data;
 
@@ -342,8 +339,6 @@ final class Route extends Router
      */
     private function render_resource_route(RouteEntry $route)
     {
-
-        self::$http->_header()->set('Content-Type', $route->getContentType(), true);
 
         $module = $route->getModule();
         $instance = new $module();
