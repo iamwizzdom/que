@@ -143,6 +143,30 @@ class Pagination
 
     /**
      * @param $tag
+     * @return int
+     */
+    public function getPerPage($tag): int
+    {
+        if (!isset(self::$paginators[$tag]))
+            throw new QueRuntimeException("Undefined Tag: No Database Query was found paginated with the tag '{$tag}'",
+                "Pagination Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+
+        return self::$paginators[$tag]->getPerPage();
+    }
+
+    /**
+     * @return array
+     */
+    public function getPerPageFlat(): array
+    {
+        $perPages = [];
+        foreach (self::$paginators as $tag => $paginator)
+            $perPages[$tag] = $paginator->getPerPage();
+        return $perPages;
+    }
+
+    /**
+     * @param $tag
      * @return string
      */
     public function getLinks($tag): string

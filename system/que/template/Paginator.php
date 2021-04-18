@@ -269,6 +269,14 @@ class Paginator
     }
 
     /**
+     * Returns the total records per page
+     * @return mixed
+     */
+    public function getPerPage() {
+        return $this->_properties['records_per_page'];
+    }
+
+    /**
      * Returns the total number of records
      *
      * <code>
