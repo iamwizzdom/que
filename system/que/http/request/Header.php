@@ -16,6 +16,8 @@ use Traversable;
 
 class Header implements QueArrayAccess
 {
+    protected const UPPER = '_ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    protected const LOWER = '-abcdefghijklmnopqrstuvwxyz';
 
     /**
      * @var Header
@@ -88,7 +90,7 @@ class Header implements QueArrayAccess
      */
     public function get($offset, $default = null): mixed
     {
-        return $this->pointer[$offset] ?? $default;
+        return $this->pointer[$offset] ?? ($this->pointer[$this->translate($offset)] ?? $default);
     }
 
     /**
@@ -96,7 +98,9 @@ class Header implements QueArrayAccess
      */
     public function _unset(string $offset) {
         unset($this->pointer[$offset]);
+        unset($this->pointer[$this->translate($offset)]);
         header_remove($offset);
+        header_remove($this->translate($offset));
     }
 
     /**
@@ -104,7 +108,7 @@ class Header implements QueArrayAccess
      * @return bool
      */
     public function _isset(string $offset): bool {
-        return isset($this->pointer[$offset]);
+        return isset($this->pointer[$offset]) || isset($this->pointer[$this->translate($offset)]);
     }
 
     /**
@@ -113,7 +117,7 @@ class Header implements QueArrayAccess
      */
     #[Pure] public function has($offset): bool
     {
-        return array_key_exists($offset, $this->pointer);
+        return array_key_exists($offset, $this->pointer) || array_key_exists($this->translate($offset), $this->pointer);
     }
 
     /**
@@ -154,7 +158,7 @@ class Header implements QueArrayAccess
     public function offsetExists(mixed $offset): bool
     {
         // TODO: Implement offsetExists() method.
-        return isset($this->pointer[$offset]);
+        return $this->has($offset);
     }
 
     /**
@@ -164,7 +168,7 @@ class Header implements QueArrayAccess
     public function offsetGet(mixed $offset): mixed
     {
         // TODO: Implement offsetGet() method.
-        return $this->pointer[$offset] ?? null;
+        return $this->get($offset);
     }
 
     /**
@@ -282,5 +286,9 @@ class Header implements QueArrayAccess
     {
         // TODO: Implement shuffle() method.
         shuffle($this->pointer);
+    }
+
+    private function translate($key) {
+        return strtr($key, self::UPPER, self::LOWER);
     }
 }
