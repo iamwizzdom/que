@@ -109,7 +109,6 @@ class RouteEntry
     public function __construct()
     {
         $this->forbidCSRF((bool) config('auth.csrf', false));
-        $this->setAllowedOrigins((array) config('cors.allowed_origins') ?: ['*']);
     }
 
     /**
