@@ -11,6 +11,7 @@ use que\database\DB;
 use que\error\Logger;
 use que\error\RuntimeError;
 use que\http\HTTP;
+use que\http\request\Request;
 use que\route\Route;
 use que\route\RouteEntry;
 use que\security\CSRF;
@@ -2745,7 +2746,7 @@ function render_file($filepath, $filename = 'download', bool $auto_download = fa
  */
 function server_protocol(): string
 {
-    return (http()->_server()["HTTPS"] == "on") ? "https://" : "http://";
+    return (Request::getScheme() . "://");
 }
 
 /**
@@ -2754,7 +2755,7 @@ function server_protocol(): string
 function server_host(): string
 {
 
-    return http()->_server()["HTTP_HOST"] ?? 'localhost';
+    return Request::getHttpHost();
 }
 
 /**
