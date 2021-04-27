@@ -60,7 +60,7 @@ class Server implements QueArrayAccess
      * @param $value
      */
     public function set($offset, $value) {
-        Arr::set($this->pointer, $offset, $value);
+        Arr::set($this->pointer, $this->translate($offset), $value);
     }
 
     /**
@@ -77,14 +77,15 @@ class Server implements QueArrayAccess
      */
     public function get($offset, $default = null): mixed
     {
-        return Arr::get($this->pointer, $offset, $default);
+        $offset = $this->translate($offset);
+        return Arr::get($this->pointer, $offset) ?: Arr::get($this->pointer, "HTTP_{$offset}", $default);
     }
 
     /**
      * @param $offset
      */
     public function _unset($offset) {
-        Arr::unset($this->pointer, $offset);
+        Arr::unset($this->pointer, $this->translate($offset));
     }
 
     /**
@@ -261,5 +262,9 @@ class Server implements QueArrayAccess
     {
         // TODO: Implement shuffle() method.
         shuffle($this->pointer);
+    }
+
+    private function translate($key) {
+        return str_replace("-", "_", $key);
     }
 }

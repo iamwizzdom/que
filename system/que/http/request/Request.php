@@ -321,7 +321,7 @@ class Request implements QueArrayAccess
      */
     public static function isSecure(): bool
     {
-        $proto = server("X-Forwarded-Proto");
+        $proto = server("HTTP_X_FORWARDED_PROTO");
         if (!empty($proto)) return in_array(strtolower($proto), ['https', 'ssl', '1', 'on'], true);
         $https = server('HTTPS');
         return !empty($https) && 'off' !== strtolower($https);
@@ -338,7 +338,7 @@ class Request implements QueArrayAccess
      */
     public static function getHost(): string
     {
-        $host = server('X-Forwarded-Host');
+        $host = server('HTTP_X_FORWARDED_HOST');
 
         if (empty($host)) {
             if (!$host = headers('HOST')) {
