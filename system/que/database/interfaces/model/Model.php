@@ -46,6 +46,8 @@ interface Model extends QueArrayAccess
      */
     public function getCopy(): array;
 
+    public function addCopy(): ?array;
+
     /**
      * @param array $copy
      */
@@ -55,6 +57,8 @@ interface Model extends QueArrayAccess
      * @return array
      */
     public function getAppends(): array;
+
+    public function addAppends(): ?array;
 
     /**
      * @param array $appends
@@ -66,6 +70,8 @@ interface Model extends QueArrayAccess
      */
     public function getHidden(): array;
 
+    public function addHidden(): ?array;
+
     /**
      * @param array $hidden
      */
@@ -76,6 +82,8 @@ interface Model extends QueArrayAccess
      */
     public function getCasts(): array;
 
+    public function addCasts(): ?array;
+
     /**
      * @param array $casts
      */
@@ -85,6 +93,8 @@ interface Model extends QueArrayAccess
      * @return array
      */
     public function getRenames(): array;
+
+    public function addRenames(): ?array;
 
     /**
      * @param array $renames

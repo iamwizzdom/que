@@ -113,6 +113,11 @@ abstract class BaseModel implements Model
     }
 
     private function setUp() {
+        $this->copy = array_merge($this->copy, $this->addCopy() ?: []);
+        $this->appends = array_merge($this->appends, $this->addAppends() ?: []);
+        $this->casts = array_merge($this->casts, $this->addCasts() ?: []);
+        $this->hidden = array_merge($this->hidden, $this->addHidden() ?: []);
+        $this->renames = array_merge($this->renames, $this->addRenames() ?: []);
         $this->__copy();
         $this->__append();
         $this->__castParams();
@@ -196,6 +201,13 @@ abstract class BaseModel implements Model
         return $this->copy;
     }
 
+    public function addCopy(): ?array
+    {
+        // TODO: Implement addCopy() method.
+        return null;
+    }
+
+
     /**
      * @param array $copy
      */
@@ -212,6 +224,13 @@ abstract class BaseModel implements Model
         return $this->appends;
     }
 
+    public function addAppends(): ?array
+    {
+        // TODO: Implement addAppends() method.
+        return null;
+    }
+
+
     public function setAppends(array $appends): void
     {
         // TODO: Implement setAppends() method.
@@ -225,6 +244,13 @@ abstract class BaseModel implements Model
     {
         return $this->hidden;
     }
+
+    public function addHidden(): ?array
+    {
+        // TODO: Implement addHidden() method.
+        return null;
+    }
+
 
     /**
      * @param array $hidden
@@ -243,6 +269,13 @@ abstract class BaseModel implements Model
         return $this->casts;
     }
 
+    public function addCasts(): ?array
+    {
+        // TODO: Implement addCasts() method.
+        return null;
+    }
+
+
     /**
      * @param array $casts
      */
@@ -255,6 +288,12 @@ abstract class BaseModel implements Model
     {
         // TODO: Implement getRenames() method.
         return $this->renames;
+    }
+
+    public function addRenames(): ?array
+    {
+        // TODO: Implement addRenames() method.
+        return null;
     }
 
 
