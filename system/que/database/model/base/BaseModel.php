@@ -664,9 +664,7 @@ abstract class BaseModel implements Model
     private function __castParams() {
         if (!empty($this->casts)) {
             foreach ($this->casts as $column => $cast) {
-                if ($cast instanceof Closure) {
-                    $this->offsetSet($column, $cast($this->offsetGet($column)));
-                } elseif (str__contains($column, ',')) {
+                if (str__contains($column, ',')) {
                     $columns = explode(",", $column);
                     foreach ($columns as $col) $this->__castParam($col, $cast);
                 } else $this->__castParam($column, $cast);
@@ -674,9 +672,11 @@ abstract class BaseModel implements Model
         }
     }
 
-    private function __castParam(string $column, string $cast) {
+    private function __castParam(string $column, $cast) {
         if (!$this->offsetExists($column)) return;
-        if (str__contains($cast, "||")) {
+        if ($cast instanceof Closure) {
+            $this->offsetSet($column, $cast($this->offsetGet($column)));
+        } elseif (str__contains($cast, "||")) {
             foreach (explode("||", $cast) as $c) $this->castParam($column, $c);
         } else $this->castParam($column, $cast);
     }
@@ -736,13 +736,11 @@ abstract class BaseModel implements Model
                             $this->offsetSet($column, $this->validate($column)->_call($func)->getValue());
                         }
                     }
+                } elseif (str__contains($operand, ","))  {
+                    $operand = explode(",", $operand);
+                    $this->offsetSet($column, $this->validate($column)->_call(...$operand)->getValue());
                 } else {
-                    if (str__contains($operand, ","))  {
-                        $operand = explode(",", $operand);
-                        $this->offsetSet($column, $this->validate($column)->_call(...$operand)->getValue());
-                    } else {
-                        $this->offsetSet($column, $this->validate($column)->_call($operand)->getValue());
-                    }
+                    $this->offsetSet($column, $this->validate($column)->_call($operand)->getValue());
                 }
                 break;
             default:
