@@ -520,10 +520,11 @@ function to_string($data): string
         if ($data instanceof JsonSerializable) $data = json_encode($data);
         else $data = json_encode((array) $data);
     }
+    elseif ($data === true || $data === false) $data = ($data ? 'true' : 'false');
+    elseif (is_numeric($data)) $data = "$data";
     elseif (is_null($data)) $data = "null";
-    elseif (is_bool($data)) $data = ($data ? 'true' : 'false');
     $data = value($data);
-    return (string) (is_string($data) ? $data : to_string($data));
+    return is_string($data) ? $data : to_string($data);
 }
 
 /**
