@@ -114,14 +114,14 @@ abstract class BaseModel implements Model
 
     private function setUp() {
         $this->copy = array_merge($this->copy, $this->addCopy() ?: []);
-        $this->appends = array_merge($this->appends, $this->addAppends() ?: []);
-        $this->casts = array_merge($this->casts, $this->addCasts() ?: []);
-        $this->hidden = array_merge($this->hidden, $this->addHidden() ?: []);
-        $this->renames = array_merge($this->renames, $this->addRenames() ?: []);
         $this->__copy();
+        $this->appends = array_merge($this->appends, $this->addAppends() ?: []);
         $this->__append();
+        $this->casts = array_merge($this->casts, $this->addCasts() ?: []);
         $this->__castParams();
+        $this->renames = array_merge($this->renames, $this->addRenames() ?: []);
         $this->__rename();
+        $this->hidden = array_merge($this->hidden, $this->addHidden() ?: []);
     }
 
     /**
