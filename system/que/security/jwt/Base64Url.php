@@ -26,9 +26,9 @@ class Base64Url
 
     /**
      * @param $data
-     * @return string
+     * @return string|bool
      */
-    public static function decode($data) : string
+    public static function decode($data) : string|bool
     {
         return base64_decode(str_pad(strtr($data, '-_', '+/'), strlen($data) % 4, '=', STR_PAD_RIGHT));
     }

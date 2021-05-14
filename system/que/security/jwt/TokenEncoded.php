@@ -60,10 +60,7 @@ class TokenEncoded
     {
         if (empty($token)) throw new EmptyTokenException('Token not provided');
 
-        list($header, $payload, $signature) = $elements = Validation::checkTokenStructure($token);
-
-        $headerArray = json_decode(Base64Url::decode($header), true);
-        $payloadArray = json_decode(Base64Url::decode($payload), true);
+        list($header, $payload, $signature, $headerArray, $payloadArray) = Validation::checkTokenStructure($token);
 
         Validation::checkTokenType($headerArray);
         Validation::checkAlgorithmDefined($headerArray);
@@ -79,8 +76,8 @@ class TokenEncoded
         Validation::checkClaimType('jti', 'mixed', $payloadArray);
         
         $this->token = $token;
-        $this->payload = $payload;
         $this->header = $header;
+        $this->payload = $payload;
         $this->signature = $signature;
 
         $this->validate($secret, $algorithm, $leeway, $requiredClaims);

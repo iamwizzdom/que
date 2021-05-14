@@ -187,6 +187,7 @@ const DATE_FORMAT_MYSQL_SHORT = "Y-m-d";
 const DATE_FORMAT_ISSUE = "F Y";
 const DATE_FORMAT_SELECT = "d/m/Y";
 const DATE_FORMAT_REPORT = "F j, Y";
+const DATE_FORMAT_REPORT_TIME = "F j, Y - G:i";
 const DATE_FORMAT_DISPLAY = "d F Y";
 const DATE_FORMAT_PICKER_DATETIME = "d F Y - G:i";
 const DATE_FORMAT_JS = "F d, Y G:i:s";

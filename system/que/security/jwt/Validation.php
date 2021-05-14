@@ -36,10 +36,10 @@ class Validation
      */
     public static function checkExpirationDate(int $exp, ?int $leeway = null): void
     {
-        $time = time() - ($leeway ? $leeway : 0);
+        $time = time() - ($leeway ?: 0);
 
         if ($time >= $exp) {
-            throw new TokenExpiredException('Token has expired since: ' . date(DateTime::ISO8601, $exp));
+            throw new TokenExpiredException('Token has expired since: ' . date(DATE_FORMAT_REPORT_TIME, $exp));
         }
     }
 
@@ -53,9 +53,9 @@ class Validation
      */
     public static function checkNotBeforeDate(int $nbf, ?int $leeway = null): void
     {
-        $time = time() + ($leeway ? $leeway : 0);
+        $time = time() + ($leeway ?: 0);
         if ($time < $nbf) {
-            throw new TokenInactiveException('Token is not valid before: ' . date(DateTime::ISO8601, $nbf));
+            throw new TokenInactiveException('Token is not valid before: ' . date(DATE_FORMAT_REPORT_TIME, $nbf));
         }
     }
 
@@ -69,9 +69,9 @@ class Validation
      */
     public static function checkIssuedAtDate(int $iat, ?int $leeway = null): void
     {
-        $time = time() + ($leeway ? $leeway : 0);
+        $time = time() + ($leeway ?: 0);
         if ($time < $iat) {
-            throw new TokenInactiveException("Token is not valid before it's issue time: " . date(DateTime::ISO8601, $iat));
+            throw new TokenInactiveException("Token is not valid before it's issue time: " . date(DATE_FORMAT_REPORT_TIME, $iat));
         }
     }
 
@@ -90,15 +90,23 @@ class Validation
 
         list($header, $payload, $signature) = $elements;
 
-        if (null === json_decode(Base64Url::decode($header))) {
+        if (null === ($h = json_decode(Base64Url::decode($header), true))) {
             throw new InvalidStructureException('Invalid token header');
         }
-        if (null === json_decode(Base64Url::decode($payload))) {
+
+        $elements[] = $h;
+
+        if (null === ($p = json_decode(Base64Url::decode($payload), true))) {
             throw new InvalidStructureException('Invalid token payload');
         }
+
+        $elements[] = $p;
+
         if (false === Base64Url::decode($signature)) {
             throw new InvalidStructureException('Invalid token signature');
         }
+
+        log_err(['seg' => $elements]);
 
         return $elements;
     }
