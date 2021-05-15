@@ -175,6 +175,7 @@ class Base64File extends FileBase
         $this->fileInfo['dir'] = $this->uploadDir;
         $this->fileInfo['path'] = $this->uploadDir . $files['name'];
         $this->fileInfo['full_path'] = $this->storageDir . $this->fileInfo['path'];
+        $this->fileInfo['url'] = base_url($this->fileInfo['full_path']);
         $this->fileInfo['ext'] = $files['ext'];
         $this->fileInfo['size'] = $files['size'];
         $this->fileInfo['type'] = $files['type'];

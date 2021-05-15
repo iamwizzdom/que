@@ -78,6 +78,16 @@ abstract class FileBase
     }
 
     /**
+     * @param int $pos
+     * @param null $key
+     * @return array|mixed|null
+     */
+    public function getMultiFileInfo(int $pos, $key = null) {
+        if (empty($key)) return $this->fileInfo;
+        return $this->fileInfo[$pos][$key] ?? null;
+    }
+
+    /**
      * @return string|null
      */
     public function getFileName(): ?string
