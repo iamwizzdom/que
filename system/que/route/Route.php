@@ -125,12 +125,16 @@ final class Route extends Router
         self::$http->_header()->setBulk([
             'Access-Control-Allow-Origin' => (in_array('*', $origins) ? '*' : (in_array(Request::getOrigin(), $origins) ? Request::getOrigin() : current($origins))),
             'Access-Control-Allow-Methods' => implode(", ", $route->getAllowedMethods()),
+            'X-Content-Type-Options' => 'nosniff',
             'Cache-Control' => 'no-cache, must-revalidate',
             'Expires' => 'Mon, 26 Jul 1997 05:00:00 GMT'
         ], false);
 
         $contentType = self::$http->_header()->get("Accept", $route->getContentType());
-        if (!empty($contentType)) self::$http->_header()->set('Content-Type', $contentType, true);
+        if (!empty($contentType)) {
+            $contentType = explode(',', $contentType);
+            self::$http->_header()->set('Content-Type', $contentType[0], true);
+        }
 
         if (empty($module = $route->getModule())) throw new RouteException(
             "This route is not bound to a module\n", "Route Error", HTTP::NOT_FOUND);
@@ -269,6 +273,8 @@ final class Route extends Router
             if (!$data = $response->getJson()) throw new RouteException(
                 "Failed to output response", "Output Error",
                 HTTP::NO_CONTENT, PreviousException::getInstance(1));
+
+            if (!self::$http->_header()->has('Accept')) self::$http->_header()->set('Content-Type', mime_type_from_extension('json'), true);
 
             echo $data;
 
