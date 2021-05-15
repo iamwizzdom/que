@@ -423,7 +423,6 @@ class Composer
      * @param bool $ignoreDefaultScript
      * @param bool $ignoreDefaultHeader
      * @return $this
-     * @throws QueException
      */
     public function prepare(bool $ignoreDefaultCss = false, bool $ignoreDefaultScript = false, bool $ignoreDefaultHeader = false): self
     {
@@ -464,7 +463,8 @@ class Composer
             try {
                 return base_url($uri);
             } catch (\Exception $e) {
-                throw new QueException("Template preparation failed", "Composer Error", E_ERROR, PreviousException::getInstance(1));
+                throw new QueRuntimeException("Template preparation failed due to: {$e->getMessage()}",
+                    "Composer Error", E_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
             }
         });
 
@@ -484,7 +484,8 @@ class Composer
             try {
                 return base_url($uri);
             } catch (\Exception $e) {
-                throw new QueException("Template preparation failed", "Composer Error", E_ERROR, PreviousException::getInstance(1));
+                throw new QueRuntimeException("Template preparation failed due to: {$e->getMessage()}",
+                    "Composer Error", E_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
             }
         });
 
