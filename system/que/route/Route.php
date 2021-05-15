@@ -134,7 +134,8 @@ final class Route extends Router
         if (!empty($contentType)) {
             $contentType = explode(',', $contentType);
             if (isset($contentType[0])) self::$http->_header()->set('Content-Type', $contentType[0], true);
-        }
+            else self::$http->_header()->_unset("Accept");
+        } else self::$http->_header()->_unset("Accept");
 
         if (empty($module = $route->getModule())) throw new RouteException(
             "This route is not bound to a module\n", "Route Error", HTTP::NOT_FOUND);
