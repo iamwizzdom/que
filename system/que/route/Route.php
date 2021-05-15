@@ -167,7 +167,7 @@ final class Route extends Router
         $instance = new $module();
 
         if ($instance instanceof RoutePermission && !$instance->hasPermission($route))
-            throw new RouteException("You don't have permission to this route\n",
+            throw new RouteException("You don't have permission to this route",
                 "Access Denied", HTTP::UNAUTHORIZED);
 
         switch (true) {
@@ -202,7 +202,7 @@ final class Route extends Router
                         else {
 
                             if (!$instance instanceof Receiver) throw new RouteException(sprintf(
-                                "The module bound to this route is not compatible with the %s request method.\n Compatible method: GET",
+                                "The module bound to this route is not compatible with the %s request method. Compatible method: GET",
                                 self::$method), "Route Error", HTTP::METHOD_NOT_ALLOWED);
 
                             $instance->onReceive(self::$http->input(), $instance->info(self::$http->input()));
@@ -214,7 +214,7 @@ final class Route extends Router
                         else {
 
                             if (!$instance instanceof Receiver) throw new RouteException(sprintf(
-                                "The module bound to this route is not compatible with the %s request method.\n Compatible method: GET",
+                                "The module bound to this route is not compatible with the %s request method. Compatible method: GET",
                                 self::$method), "Route Error", HTTP::METHOD_NOT_ALLOWED);
 
                             $instance->onReceive(self::$http->input());
@@ -226,8 +226,8 @@ final class Route extends Router
                 break;
             default:
                 throw new RouteException(
-                    "The module bound to this route is registered\n as a web module but does not implement \n" .
-                    "a valid web module interface\n"
+                    "The module bound to this route is registered as a web module but does not implement " .
+                    "a valid web module interface"
                 );
         }
 
@@ -246,12 +246,12 @@ final class Route extends Router
         $instance = new $module();
 
         if ($instance instanceof RoutePermission && !$instance->hasPermission($route))
-            throw new RouteException("You don't have permission to this route\n",
+            throw new RouteException("You don't have permission to this route",
                 "Access Denied", HTTP::UNAUTHORIZED);
 
         if (!$instance instanceof Api) throw new RouteException(
-            "The module bound to this route is registered\n as an API module but does not implement \n" .
-            "a valid API module interface\n"
+            "The module bound to this route is registered as an API module but does not implement " .
+            "a valid API module interface"
         );
 
         if ($method = $route->getModuleMethod()) {
@@ -346,7 +346,7 @@ final class Route extends Router
         $instance = new $module();
 
         if ($instance instanceof RoutePermission && !$instance->hasPermission($route))
-            throw new RouteException("You don't have permission to this route\n",
+            throw new RouteException("You don't have permission to this route",
                 "Access Denied", HTTP::UNAUTHORIZED);
 
         if (!$instance instanceof Resource) throw new RouteException(
