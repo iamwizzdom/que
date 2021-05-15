@@ -96,10 +96,8 @@ class Upload extends Manager implements Page, Receiver
             $this->composer()->alert(ALERT_SUCCESS, "Upload successful", "Your file has been uploaded successfully");
 
         } catch (BulkException $exception) {
-            $this->composer()->form([
-                'status' => $validate->getStatuses(),
-                'error' => $validate->getErrorsFlat()
-            ]);
+            $this->composer()->setFormError($validate->getErrors());
+            $this->composer()->setFormStatus($validate->getStatuses());
             $this->composer()->alert($exception->getCode() ?: ALERT_ERROR, $exception->getTitle(),
                 $exception->getMessage() ?: $exception->getMessageArray());
         }

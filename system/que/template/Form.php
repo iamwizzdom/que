@@ -23,18 +23,21 @@ class Form implements ArrayAccess
     /**
      * @var string
      */
-    private string $formAction = '';
+    private string $action = '';
 
     /**
      * @var string
      */
-    private string $formMethod = '';
+    private string $method = '';
 
     /**
      * @var array
      */
-    private array $formData = [];
+    private array $data = [];
 
+    /**
+     * Form constructor.
+     */
     protected function __construct()
     {
     }
@@ -57,30 +60,87 @@ class Form implements ArrayAccess
         return self::$instance;
     }
 
+    public function hasError($key)
+    {
+        return Arr::isset($this->data['error'] ?? [], $key);
+    }
+
+    /**
+     * @param $key
+     * @return mixed
+     */
+    public function getError($key): mixed
+    {
+        return $this->data['error'][$key] ?? null;
+    }
+
+    /**
+     * @param array $error
+     */
+    public function setError(array $error) {
+        $this->data['error'] = $error;
+    }
+
+    /**
+     * @param array $error
+     */
+    public function addError(array $error) {
+        $this->data['error'] ??= [];
+        $this->data['error'] = array_merge($this->data['error'], $error);
+    }
+
+    /**
+     * @param $key
+     * @return mixed
+     */
+    public function getStatus($key): mixed
+    {
+        return $this->data['status'][$key] ?? SUCCESS;
+    }
+
+    /**
+     * @param array $status
+     */
+    public function setStatus(array $status) {
+        $this->data['status'] = $status;
+    }
+
+    /**
+     * @param array $status
+     */
+    public function addStatus(array $status) {
+        $this->data['status'] ??= [];
+        $this->data['status'] = array_merge($this->data['status'], $status);
+    }
+
     /**
      * @param $offset
      * @param null $default
      * @return array|string|null
      */
-    public function getFormData($offset, $default = null)
+    public function getData($offset, $default = null): array|string|null
     {
-        return Arr::get($this->formData, $offset, $default);
+        return Arr::get($this->data, $offset, $default);
     }
 
     /**
      * @param array $formData
      */
-    public function setFormData(array $formData): void
+    public function setData(array $formData): void
     {
-        $this->formData = $formData;
+        if (isset($formData['error'])) unset($formData['error']);
+        if (isset($formData['status'])) unset($formData['status']);
+        $this->data = array_merge($this->data, $formData);
     }
 
     /**
      * @param array $formData
      */
-    public function addFormData(array $formData): void
+    public function addData(array $formData): void
     {
-        $this->formData = array_merge_recursive($this->formData, $formData);
+        if (isset($formData['error'])) unset($formData['error']);
+        if (isset($formData['status'])) unset($formData['status']);
+        $this->data = array_merge_recursive($this->data, $formData);
     }
 
     /**
@@ -89,7 +149,7 @@ class Form implements ArrayAccess
      * @param bool $multipart
      * @return string
      */
-    function formOpen(string $action = '#', array $attributes = [], bool $multipart = false)
+    function formOpen(string $action = '#', array $attributes = [], bool $multipart = false): string
     {
 
         if ($action != "#" && !str__contains($action, "://")) $action = base_url($action);
@@ -100,27 +160,29 @@ class Form implements ArrayAccess
         if ($multipart === true && !in_array('enctype', $keys))
             $attributes['enctype'] = 'multipart/form-data';
 
-        $this->formAction = $action;
-        $this->formMethod = $attributes['method'];
+        $this->action = $action;
+        $this->method = $attributes['method'];
 
         return "<form action='{$action}' {$this->attributesToString($attributes)}>\n";
     }
 
     /**
      * @return string
+     * @throws \que\common\exception\RouteException
      */
-    public function formClose() {
+    public function formClose(): string
+    {
 
         $formClose = '';
 
-        if (strtolower($this->formMethod) != "get") {
+        if (strtolower($this->method) != "get") {
 
-            if ($this->formAction == '#') {
+            if ($this->action == '#') {
 
                 if (($currentRoute = current_route()) && $currentRoute->isForbidCSRF())
                     $formClose .= "<input type='hidden' name='csrf' value='{$this->getCsrfToken()}'/>";
 
-            } elseif (($currentRoute = Route::getRouteEntryFromUri($this->formAction))) {
+            } elseif (($currentRoute = Route::getRouteEntryFromUri($this->action))) {
 
                 if ($currentRoute->isForbidCSRF())
                     $formClose .= "<input type='hidden' name='csrf' value='{$this->getCsrfToken()}'/>";
@@ -138,7 +200,8 @@ class Form implements ArrayAccess
      * @param array $attributes
      * @return string
      */
-    public function formElement(string $tagName, $value, array $attributes = []) {
+    public function formElement(string $tagName, $value, array $attributes = []): string
+    {
 
         $elem = '';
 
@@ -210,9 +273,9 @@ class Form implements ArrayAccess
     /**
      * @param string $name
      * @param null $default
-     * @return array|mixed
+     * @return mixed
      */
-    public function old(string $name, $default = null)
+    public function old(string $name, $default = null): mixed
     {
         return http()->_request()->get($name, $default);
     }
@@ -230,16 +293,18 @@ class Form implements ArrayAccess
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
-    private function getCsrfToken() {
+    private function getCsrfToken(): mixed
+    {
         return csrf_token();
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
-    private function getTrackToken() {
+    private function getTrackToken(): mixed
+    {
         return track_token();
     }
 
@@ -249,7 +314,7 @@ class Form implements ArrayAccess
     public function offsetExists($offset)
     {
         // TODO: Implement offsetExists() method.
-        return $this->getFormData($offset, $id = unique_id(16)) !== $id;
+        return Arr::isset($this->data, $offset);
     }
 
     /**
@@ -258,7 +323,7 @@ class Form implements ArrayAccess
     public function offsetGet($offset)
     {
         // TODO: Implement offsetGet() method.
-        return $this->getFormData($offset);
+        return $this->getData($offset);
     }
 
     /**
@@ -267,7 +332,7 @@ class Form implements ArrayAccess
     public function offsetSet($offset, $value)
     {
         // TODO: Implement offsetSet() method.
-        Arr::set($this->formData, $offset, $value);
+        if ('error' != $offset && 'status' != $offset) Arr::set($this->data, $offset, $value);
     }
 
     /**
@@ -276,6 +341,6 @@ class Form implements ArrayAccess
     public function offsetUnset($offset)
     {
         // TODO: Implement offsetUnset() method.
-        Arr::unset($this->formData, $offset);
+        if ('error' != $offset && 'status' != $offset) Arr::unset($this->data, $offset);
     }
 }

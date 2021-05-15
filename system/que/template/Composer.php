@@ -260,11 +260,51 @@ class Composer
     }
 
     /**
+     * @param array $error
+     */
+    public function setFormError(array $error)
+    {
+        $this->form->setError($error);
+    }
+
+    /**
+     * @param array $error
+     */
+    public function addFormError(array $error)
+    {
+        $this->form->addError($error);
+    }
+
+    /**
+     * @param array $status
+     */
+    public function setFormStatus(array $status)
+    {
+        $this->form->setStatus($status);
+    }
+
+    /**
+     * @param array $status
+     */
+    public function addFormStatus(array $status)
+    {
+        $this->form->addStatus($status);
+    }
+
+    /**
      * @param array $formData
      */
-    public function form(array $formData)
+    public function setFormData(array $formData)
     {
-        $this->form->addFormData($formData);
+        $this->form->setData($formData);
+    }
+
+    /**
+     * @param array $formData
+     */
+    public function addFormData(array $formData)
+    {
+        $this->form->addData($formData);
     }
 
     /**
@@ -482,7 +522,7 @@ class Composer
 
         $this->css($css);
         $this->js($js);
-        $this->form([
+        $this->addFormData([
             'track' => Track::generateToken(),
             'csrf' => (config('auth.csrf', false) === true ? CSRF::getInstance()->getToken() : null)
         ]);
