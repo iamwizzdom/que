@@ -294,7 +294,7 @@ class RouteEntry
      * @param bool $requireLogin
      * @param string|null $redirectUrl
      */
-    public function requireLogin(bool $requireLogin, string $redirectUrl = null)
+    public function requireLogin(bool $requireLogin = true, string $redirectUrl = null)
     {
         $this->requireLogin = $requireLogin;
         $this->redirectUrl = $redirectUrl;
