@@ -2833,7 +2833,6 @@ function route(string $name, array $args = [], bool $addBaseUrl = true): string
  * valid url regardless of login or permission restriction
  *
  * @return string
- * @throws RouteException
  */
 function base_url(string $url = null, bool $forceUrl = false): string
 {
@@ -2861,11 +2860,16 @@ function base_url(string $url = null, bool $forceUrl = false): string
     if (!$isNull && str__contains($url, $host)) $url = str_start_from($url, $host);
 
     if (!$isNull) {
-        $routeEntry = Route::getRouteEntryFromUri($url);
-        if ($routeEntry instanceof RouteEntry) {
-            if ($routeEntry->isRequireLogin() === true && !is_logged_in()) {
-                if (!$forceUrl) return '#';
-            } elseif (!has_route_permission($routeEntry) && !$forceUrl) return '#';
+        try {
+            $routeEntry = Route::getRouteEntryFromUri($url);
+            if ($routeEntry instanceof RouteEntry) {
+                if ($routeEntry->isRequireLogin() === true && !is_logged_in()) {
+                    if (!$forceUrl) return '#';
+                } elseif (!has_route_permission($routeEntry) && !$forceUrl) return '#';
+            }
+        } catch (RouteException $e) {
+            throw new QueRuntimeException($e->getMessage(), "Base URL Error", E_ERROR,
+                HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
         }
     }
 

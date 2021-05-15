@@ -460,12 +460,7 @@ class Composer
 
             } else $uri = "template/js/{$uri}";
 
-            try {
-                return base_url($uri);
-            } catch (\Exception $e) {
-                throw new QueRuntimeException("Template preparation failed due to: {$e->getMessage()}",
-                    "Composer Error", E_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
-            }
+            return base_url($uri);
         });
 
         array_callback($css, function ($uri) {
@@ -481,12 +476,8 @@ class Composer
                 $uri = "template/{$uri}";
 
             } else $uri = "template/css/{$uri}";
-            try {
-                return base_url($uri);
-            } catch (\Exception $e) {
-                throw new QueRuntimeException("Template preparation failed due to: {$e->getMessage()}",
-                    "Composer Error", E_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
-            }
+
+            return base_url($uri);
         });
 
         $this->css($css);
