@@ -86,9 +86,6 @@ class User implements QueArrayAccess
             if ($session_config['timeout'] === true && (APP_TIME >= (self::getLastSeen() + $session_config['timeout_time'])))
                 self::logout(vsprintf("System session expired for security reasons. Please re-login (IP::%s)", [self::getLastIP()]));
 
-            if ($session_config['regeneration'] === true && ((APP_TIME - self::getLastSeen()) >= $session_config['regeneration_time']))
-                self::regenerate();
-
             $provider = self::$state['provider'] ?? config('auth.default.provider');
             $model = \model(config("auth.providers.{$provider}"));
 
@@ -98,6 +95,9 @@ class User implements QueArrayAccess
 
             if (self::$model === null) throw new QueRuntimeException("Trying to get a user instance with an invalid auth provider. Check your auth config to fix this",
                 "User Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+
+            if ($session_config['regeneration'] === true && ((APP_TIME - self::getLastSeen()) >= $session_config['regeneration_time']))
+                self::regenerate();
 
             self::$instance = new self($updateState);
         }
