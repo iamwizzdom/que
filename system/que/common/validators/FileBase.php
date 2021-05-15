@@ -10,7 +10,8 @@ namespace que\common\validator;
 
 abstract class FileBase
 {
-    protected string $storageDir = APP_PATH . "/storage/";
+    protected const ROOT_DIR = "storage/";
+    protected string $storageDir = APP_PATH . "/" . self::ROOT_DIR;
     protected string $uploadDir = "";
     protected int $uploadMax = 0;
     protected bool $uploadOverwrite = false;

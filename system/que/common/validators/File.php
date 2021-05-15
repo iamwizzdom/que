@@ -209,10 +209,10 @@ class File extends FileBase
         }
 
         $this->fileInfo['name'] = $files['name'];
-        $this->fileInfo['dir'] = $this->uploadDir;
-        $this->fileInfo['path'] = $this->uploadDir . $files['name'];
-        $this->fileInfo['full_path'] = $this->storageDir . $this->fileInfo['path'];
-        $this->fileInfo['url'] = base_url($this->fileInfo['full_path']);
+        $this->fileInfo['dir'] = self::ROOT_DIR . $this->uploadDir;
+        $this->fileInfo['path'] = self::ROOT_DIR . $this->uploadDir . $files['name'];
+        $this->fileInfo['full_path'] = $this->storageDir . $this->uploadDir . $files['name'];
+        $this->fileInfo['url'] = base_url($this->fileInfo['path']);
         $this->fileInfo['ext'] = $ext;
         $this->fileInfo['size'] = $files['size'];
         $this->fileInfo['type'] = $files['type'];
@@ -286,10 +286,10 @@ class File extends FileBase
 
             $uploaded[] = $files['name'][$current];
             $this->fileInfo[$current]['name'] = $files['name'][$current];
-            $this->fileInfo[$current]['dir'] = $this->uploadDir;
-            $this->fileInfo[$current]['path'] = $this->uploadDir . $files['name'];
-            $this->fileInfo[$current]['full_path'] = $this->storageDir . $this->fileInfo[$current]['path'];
-            $this->fileInfo[$current]['url'] = base_url($this->fileInfo[$current]['full_path']);
+            $this->fileInfo[$current]['dir'] = self::ROOT_DIR . $this->uploadDir;
+            $this->fileInfo[$current]['path'] = self::ROOT_DIR . $this->uploadDir . $files['name'][$current];
+            $this->fileInfo[$current]['full_path'] = $this->storageDir . $this->uploadDir . $files['name'][$current];
+            $this->fileInfo[$current]['url'] = base_url($this->fileInfo[$current]['path']);
             $this->fileInfo[$current]['ext'] = $ext;
             $this->fileInfo[$current]['size'] = $files['size'][$current];
             $this->fileInfo[$current]['type'] = $files['type'][$current];
