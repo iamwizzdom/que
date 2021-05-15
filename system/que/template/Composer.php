@@ -368,7 +368,7 @@ class Composer
     /**
      * @return array
      */
-    #[ArrayShape(['js' => "array", 'css' => "array"])] private function get_tmp_module_files(): array
+    #[ArrayShape(['js' => "array", 'css' => "array"])] private function get_tmp_module_assets(): array
     {
         $files = [
             'js' => [],
@@ -376,8 +376,8 @@ class Composer
         ];
         $module = $this->get_tmp_module();
         foreach ($this->tmp_module_suffix as $suffix) {
-            $js = "js/module/{$module}{$suffix}";
-            $css = "css/module/{$module}{$suffix}";
+            $js = "asset/js/module/{$module}{$suffix}";
+            $css = "asset/css/module/{$module}{$suffix}";
             if (file_exists($this->tmpDir . $js)) $files['js'][] = str_start_from($js, 'js/');
             elseif (file_exists($this->tmpDir . $css)) $files['css'][] = str_start_from($css, 'css/');
         }
@@ -442,7 +442,7 @@ class Composer
         $css = (!$ignoreDefaultCss ? array_merge(config('template.app.css', []), $this->getCss()) : $this->getCss());
         $js = (!$ignoreDefaultScript ? array_merge(config('template.app.js', []), $this->getJs()) : $this->getJs());
 
-        $module_files = $this->get_tmp_module_files();
+        $module_files = $this->get_tmp_module_assets();
         $js = array_merge($js, $module_files['js']);
         $css = array_merge($css, $module_files['css']);
 
@@ -456,9 +456,9 @@ class Composer
                 str__starts_with($uri, '../')) {
 
                 $uri = str_start_from($uri, '/');
-                $uri = "template/{$uri}";
+                $uri = "template/asset/{$uri}";
 
-            } else $uri = "template/js/{$uri}";
+            } else $uri = "template/asset/js/{$uri}";
 
             return base_url($uri);
         });
@@ -473,9 +473,9 @@ class Composer
                 str__starts_with($uri, '../')) {
 
                 $uri = str_start_from($uri, '/');
-                $uri = "template/{$uri}";
+                $uri = "template/asset/{$uri}";
 
-            } else $uri = "template/css/{$uri}";
+            } else $uri = "template/asset/css/{$uri}";
 
             return base_url($uri);
         });

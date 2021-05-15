@@ -14,6 +14,13 @@ use que\support\Config;
 
 require "../../../app/app.settings.php";
 
+//$exist = db()->exists('bank_accounts', function ($query) {
+//    $query->where('user_id', 48);
+//    $query->where('is_active', true);
+//});
+
+//echo $exist->getQueryString();
+//debug_print($exist->isSuccessful() ? 'true' : 'false');
 //$doc = new DOMDocument("1.0");
 //$doc->loadXML("xml goes here");
 //$responseDoc = new DOMDocument("1.0");
@@ -22,19 +29,19 @@ require "../../../app/app.settings.php";
 
 //echo $startTime;
 
-debug_print(array_diff_assoc([
-    'name' => 'Wisdom Samuel',
-    'gender' => 'Male'
-], [
-    'name' => 'Wisdom Emenike',
-    'gender' => 'Male'
-]));
+//debug_print(array_diff_assoc([
+//    'name' => 'Wisdom Samuel',
+//    'gender' => 'Male'
+//], [
+//    'name' => 'Wisdom Emenike',
+//    'gender' => 'Male'
+//]));
 
-if (preg_match('/{{(.*?)}}/', "{{la.loan_id}}", $matches)) {
-    debug_print($matches[1]);
-}
+//if (preg_match('/{{(.*?)}}/', "{{la.loan_id}}", $matches)) {
+//    debug_print($matches[1]);
+//}
 
-echo preg_match('/{{(.*?)}}/', "{{la.loan_id}}") . "\n";
+//echo preg_match('/{{(.*?)}}/', "{{la.loan_id}}") . "\n";
 
 //$ar = [1 => 'one', 3 => 'three', 5 => 'five', 8 => 'eight'];
 //
@@ -45,9 +52,9 @@ echo preg_match('/{{(.*?)}}/', "{{la.loan_id}}") . "\n";
 
 //echo preg_match("/^[a-zA-Z0-9]+$/", 'jfh76') == 1 ? 'true' : 'false';
 
-if (preg_match("/\\d+/", '{{$31970101287}}', $matches) == 1) {
-    echo $matches[0];
-}
+//if (preg_match("/\\d+/", '{{$31970101287}}', $matches) == 1) {
+//    echo $matches[0];
+//}
 
 //try {
 //    $date = new DateTime(null);
