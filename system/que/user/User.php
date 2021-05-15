@@ -294,6 +294,13 @@ class User implements QueArrayAccess
         else http()->redirect()->setUrl($redirect_to ?? '/')->setHeader($message, SUCCESS)->initiate();
     }
 
+    /**
+     * Log out user silently without redirection or any further action
+     */
+    public static function logout_silently() {
+        self::flush();
+    }
+
     public function __get(string $name)
     {
         // TODO: Implement __get() method.
