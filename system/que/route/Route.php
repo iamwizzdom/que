@@ -133,7 +133,7 @@ final class Route extends Router
         $contentType = self::$http->_header()->get("Accept", $route->getContentType());
         if (!empty($contentType)) {
             $contentType = explode(',', $contentType);
-            self::$http->_header()->set('Content-Type', $contentType[0], true);
+            if (isset($contentType[0])) self::$http->_header()->set('Content-Type', $contentType[0], true);
         }
 
         if (empty($module = $route->getModule())) throw new RouteException(
