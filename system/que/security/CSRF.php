@@ -95,21 +95,21 @@ class CSRF
 
         $data = [
             'signature' => $this->getSignature(),
-            'unique' => unique_id(32),
-            'expire' => $this->getExpiryTime()
+            'unique' => unique_id(),
+            'expire' => $this->getExpiryTime(),
         ];
 
         $data['hash'] = Hash::sha(json_encode($data));
-
         $token = base64_encode(json_encode($data));
-        $this->session->set("csrf.token", "csrf:" . wordwrap($token, 4, ":", true));
+
+        $this->session->set("csrf.token", ("csrf:" . wordwrap($token, 4, ":", true)));
         return $this;
     }
 
     private function getSignature(): string
     {
-        return sprintf("%s-%s-%s", config("auth.app.salt", APP_PACKAGE_NAME), Session::getSessionID(),
-            (is_logged_in() ? user(config('database.tables.user.primary_key', 'id')) : ''));
+        return Hash::sha(sprintf("%s-%s-%s", config("auth.app.salt", APP_PACKAGE_NAME), Session::getSessionID(),
+            (is_logged_in() ? user(config('database.tables.user.primary_key', 'id')) : '')));
     }
 
     private function decodeToken(string $token)
