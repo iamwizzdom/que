@@ -17,6 +17,8 @@ class Session
 {
     const SESSION_STARTED = true;
     const SESSION_NOT_STARTED = false;
+    protected const UPPER = '_ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    protected const LOWER = '-abcdefghijklmnopqrstuvwxyz';
 
     /**
      * @var bool
@@ -70,7 +72,7 @@ class Session
     {
         $session_id = $session_id ?: session_id();
         if (isset(self::$sessionIDs[$session_id])) return self::$sessionIDs[$session_id];
-        $partition = config('session.partition', APP_PACKAGE_NAME);
+        $partition = strtr(config('session.partition', APP_PACKAGE_NAME), self::UPPER, self::LOWER);
         return self::$sessionIDs[$session_id] = "{$partition}-session-id:" . wordwrap($session_id, 4, ":", true);
     }
 
