@@ -28,6 +28,15 @@ abstract class Router extends RouteInspector
         return server('route.params');
     }
 
+    /**
+     * @param string $name
+     * @return bool
+     */
+    public static function has(string $name): bool
+    {
+        return self::getRouteEntryFromName($name) !== null;
+    }
+
 
     /**
      * @param string $routeName
