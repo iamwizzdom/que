@@ -30,16 +30,16 @@ interface Model extends QueArrayAccess
     public function getModelKey(): string;
 
     /**
-     * @param bool $onlyFillable
+     * @param bool $onlyViewable
      * @return object
      */
-    public function &getObject(bool $onlyFillable = false): object;
+    public function &getObject(bool $onlyViewable = false): object;
 
     /**
-     * @param bool $onlyFillable
+     * @param bool $onlyViewable
      * @return array
      */
-    public function getArray(bool $onlyFillable = false): array;
+    public function getArray(bool $onlyViewable = false): array;
 
     /**
      * @return array
@@ -104,17 +104,17 @@ interface Model extends QueArrayAccess
     /**
      * @return bool
      */
-    public function hasFillable(): bool;
+    public function hasViewable(): bool;
 
     /**
-     * @param string $fillable
+     * @param string $viewable
      */
-    public function addFillable(string $fillable): void;
+    public function addViewable(string $viewable): void;
 
     /**
-     * @param array $fillables
+     * @param array $viewable
      */
-    public function setFillable(array $fillables): void;
+    public function setViewable(array $viewable): void;
 
     /**
      * @return string

@@ -65,7 +65,7 @@ class QueryBuilder implements Builder
     /**
      * @var array
      */
-    private static array $fillables = [];
+    private static array $viewable = [];
 
     /**
      * QueryBuilder constructor.
@@ -1197,22 +1197,22 @@ class QueryBuilder implements Builder
 
             $this->builder->clearWhereQuery();
 
-            if (!isset(self::$fillables[$this->builder->getTable()])) {
+            if (!isset(self::$viewable[$this->builder->getTable()])) {
 
                 $this->builder->setQueryType(DriverQueryBuilder::SHOW_TABLE_COLUMNS);
                 $showColumns = $this->show_table_columns();
                 $this->builder->setQueryType(DriverQueryBuilder::UPDATE);
-                self::$fillables[$this->builder->getTable()] = $showColumns->isSuccessful() ? (array) $showColumns->getQueryResponse() : [];
+                self::$viewable[$this->builder->getTable()] = $showColumns->isSuccessful() ? (array) $showColumns->getQueryResponse() : [];
             }
 
-            $newModelCollection->setFillable(self::$fillables[$this->builder->getTable()]);
+            $newModelCollection->setViewable(self::$viewable[$this->builder->getTable()]);
 
             $changes = $newModelCollection->map(function (Model $newModel) use ($oldModelCollection) {
                 $oldModel = $oldModelCollection->find(function (Model $m) use ($newModel) {
                     return $newModel->validate($newModel->getPrimaryKey())->isEqual($m->getValue($m->getPrimaryKey()));
                 });
                 $this->builder->setOrWhere($newModel->getPrimaryKey(), $newModel->getValue($newModel->getPrimaryKey()));
-                return array_diff_assoc((array) $newModel->getObject($newModel->hasFillable()), (array) $oldModel->getObject($oldModel->hasFillable()));
+                return array_diff_assoc((array) $newModel->getObject($newModel->hasViewable()), (array) $oldModel->getObject($oldModel->hasViewable()));
             });
 
             $commonColumns = [];

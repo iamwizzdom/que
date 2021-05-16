@@ -108,33 +108,34 @@ class ModelCollection implements QueArrayAccess
     }
 
     /**
-     * @param bool $onlyFillable
+     * @param bool $onlyViewable
      * @return array
      */
-    public function getArray(bool $onlyFillable = false): array {
+    public function getArray(bool $onlyViewable = false): array {
         $list = [];
-        foreach ($this->models as $model) $list[] = $model->getArray($onlyFillable);
+        foreach ($this->models as $model) $list[] = $model->getArray($onlyViewable);
         return $list;
     }
 
-    public function addFillable(string $fillable): void
+    public function addViewable(string $viewable): void
     {
-        // TODO: Implement addFillable() method.
-        foreach ($this->models as $model) $model->addFillable($fillable);
+        // TODO: Implement addViewable() method.
+        foreach ($this->models as $model) $model->addViewable($viewable);
     }
 
-    public function setFillable(array $fillables): void
+    public function setViewable(array $viewable): void
     {
-        // TODO: Implement setFillable() method.
-        foreach ($this->models as $model) $model->setFillable($fillables);
+        // TODO: Implement setViewable() method.
+        foreach ($this->models as $model) $model->setViewable($viewable);
     }
 
     /**
+     * @param bool $onlyViewable
      * @return object
      */
-    public function getObject(): object {
+    public function getObject(bool $onlyViewable = false): object {
         $list = new \stdClass();
-        foreach ($this->models as $key => $model) $list->{$key} = $model->getObject();
+        foreach ($this->models as $key => $model) $list->{$key} = $model->getObject($onlyViewable);
         return $list;
     }
 

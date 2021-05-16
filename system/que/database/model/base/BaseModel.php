@@ -31,7 +31,7 @@ abstract class BaseModel implements Model
     /**
      * @var array
      */
-    protected array $fillable = [];
+    protected array $viewable = [];
 
     /**
      * @var array
@@ -96,10 +96,10 @@ abstract class BaseModel implements Model
     /**
      * @inheritDoc
      */
-    public function &getObject(bool $onlyFillable = false): object
+    public function &getObject(bool $onlyViewable = false): object
     {
         // TODO: Implement getObject() method.
-        if ($onlyFillable) $object = Obj::extract_by_keys((object) (array) $this->object, $this->fillable);
+        if ($onlyViewable) $object = Obj::extract_by_keys((object) (array) $this->object, $this->viewable);
         else $object = &$this->object;
         return $object;
     }
@@ -127,30 +127,30 @@ abstract class BaseModel implements Model
     /**
      * @inheritDoc
      */
-    #[Pure] public function getArray(bool $onlyFillable = false): array
+    #[Pure] public function getArray(bool $onlyViewable = false): array
     {
         // TODO: Implement getArray() method.
         $arr = object_to_array(Obj::exclude((object) (array) $this->object, ...$this->hidden));
-        foreach ($arr as $k => $d) if ($d instanceof Model) $arr[$k] = $d->getArray($onlyFillable);
-        return $onlyFillable ? Arr::extract_by_keys($arr, $this->fillable) : $arr;
+        foreach ($arr as $k => $d) if ($d instanceof Model) $arr[$k] = $d->getArray($onlyViewable);
+        return $onlyViewable ? Arr::extract_by_keys($arr, $this->viewable) : $arr;
     }
 
-    public function hasFillable(): bool
+    public function hasViewable(): bool
     {
-        // TODO: Implement hasFillable() method.
-        return !empty($this->fillable);
+        // TODO: Implement hasViewable() method.
+        return !empty($this->viewable);
     }
 
-    public function addFillable(string $fillable): void
+    public function addViewable(string $viewable): void
     {
-        // TODO: Implement addFillable() method.
-        $this->fillable[] = $fillable;
+        // TODO: Implement addViewable() method.
+        $this->viewable[] = $viewable;
     }
 
-    public function setFillable(array $fillables): void
+    public function setViewable(array $viewable): void
     {
-        // TODO: Implement setFillable() method.
-        $this->fillable = $fillables;
+        // TODO: Implement setViewable() method.
+        $this->viewable = $viewable;
     }
 
     /**
