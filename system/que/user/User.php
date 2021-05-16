@@ -301,6 +301,12 @@ class User implements QueArrayAccess
         self::flush();
     }
 
+    public function has($key): bool
+    {
+        // TODO: Implement has() method.
+        return $this->offsetExists($key);
+    }
+
     public function __get(string $name)
     {
         // TODO: Implement __get() method.
