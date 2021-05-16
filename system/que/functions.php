@@ -2891,6 +2891,18 @@ function base_url(string $url = null, bool $forceUrl = false): string
 }
 
 /**
+ * @param string|null $uri
+ * @param bool $forceUrl
+ * @return string
+ */
+function asset(string $uri = null, bool $forceUrl = false): string
+{
+    $uri = ltrim($uri, '/');
+    $uri = ltrim($uri, '\\');
+    return base_url("template/asset/$uri", $forceUrl);
+}
+
+/**
  * This function returns the current uri arguments
  * @param null $arg
  * @param null $default
