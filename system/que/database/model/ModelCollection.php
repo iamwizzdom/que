@@ -19,6 +19,7 @@ use que\http\HTTP;
 use que\support\Arr;
 use que\support\interfaces\QueArrayAccess;
 use que\support\Obj;
+use que\template\Pagination;
 
 class ModelCollection implements QueArrayAccess
 {
@@ -28,6 +29,14 @@ class ModelCollection implements QueArrayAccess
      */
     private array $models = [];
 
+    /**
+     * @var string|null
+     */
+    public ?string $query_tag = null;
+
+    /**
+     * @var bool
+     */
     private bool $static;
 
     /**
@@ -93,9 +102,11 @@ class ModelCollection implements QueArrayAccess
      * ModelCollection constructor.
      * @param array $models
      * @param bool $static
+     * @param string|null $query_tag
      */
-    public function __construct(array $models, bool $static = false)
+    public function __construct(array $models, ?string $query_tag = null, bool $static = false)
     {
+        $this->query_tag = $query_tag;
         $this->static = $static;
         foreach ($models as $model) {
             if (!$model instanceof Model) throw new QueRuntimeException(
@@ -105,6 +116,14 @@ class ModelCollection implements QueArrayAccess
 
             $this->addModel($model);
         }
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getLinks(): ?string
+    {
+        return $this->query_tag ? Pagination::getInstance()->getLinks($this->query_tag) : null;
     }
 
     /**

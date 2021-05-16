@@ -1003,6 +1003,8 @@ class QueryBuilder implements Builder
             self::$primaryKeys[$this->builder->getTable()] = $showTable->isSuccessful() ? $showTable->getQueryResponse() : 'id';
         }
 
+        $query_tag = null;
+
         if ($this->pagination['status'] === true) {
 
             $this->builder->setQueryType(DriverQueryBuilder::COUNT);
@@ -1029,7 +1031,7 @@ class QueryBuilder implements Builder
             $limit = [(int) (($this->pagination['page'] - 1) * $this->pagination['perPage']), (int) $this->pagination['perPage']];
             $this->builder->setLimit($limit);
 
-            Pagination::getInstance()->add($paginator, $this->pagination['tag']);
+            Pagination::getInstance()->add($paginator, $query_tag = $this->pagination['tag']);
 
             $this->pagination['status'] = false;
         }
@@ -1054,7 +1056,7 @@ class QueryBuilder implements Builder
             }
         }
 
-        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()]);
+        return new QueryResponse($response, $this->builder->getQueryType(), $this->builder->getTable(), self::$primaryKeys[$this->builder->getTable()], $query_tag);
     }
 
     /**

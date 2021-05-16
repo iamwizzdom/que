@@ -51,20 +51,24 @@ class QueryResponse
      */
     private int $query_type;
 
+    public ?string $query_tag = null;
+
     /**
      * QueryResponse constructor.
      * @param DriverResponse $response
      * @param int $query_type
      * @param string $table
      * @param string $primaryKey
+     * @param string|null $query_tag
      */
-    public function __construct(DriverResponse $response, int $query_type, string $table, string $primaryKey)
+    public function __construct(DriverResponse $response, int $query_type, string $table, string $primaryKey, ?string $query_tag = null)
     {
         $this->setDriverResponse($response);
         $this->setQueryType($query_type);
         $this->setTable($table);
         $this->setPrimaryKey($primaryKey);
         $this->setModelKey(config("database.default.model"));
+        $this->query_tag = $query_tag;
     }
 
     /**
@@ -125,7 +129,7 @@ class QueryResponse
 
             $response = $this->getQueryResponseWithModel(null, $primaryKey);
             if (empty($response)) return null;
-            return $response instanceof ModelCollection ? $response : new ModelCollection([$response]);
+            return $response instanceof ModelCollection ? $response : new ModelCollection([$response], $this->query_tag);
 
         } catch (QueRuntimeException $e) {
             throw new QueRuntimeException($e->getMessage(), $e->getTitle(), $e->getCode(), $e->getHttpCode(),
@@ -197,7 +201,7 @@ class QueryResponse
             return new $this->modelName($row, $this->getTable(), $primaryKey);
         });
 
-        return new ModelCollection($response);
+        return new ModelCollection($response, $this->query_tag);
     }
 
     /**
