@@ -1,3 +1,5 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta property="og:title" content="{$header.title}">
 <meta property="og:site_name" content="{$header.name}">
 <meta property="og:description" content="{$header.desc}">
