@@ -22,7 +22,7 @@ return [
             'title' => '',
             'name' => '',
             'desc' => '',
-            'fav_icon' => '',
+            'favicon' => '',
             'icon' => '',
             'logo' => [
                 'small' => [

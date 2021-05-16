@@ -17,4 +17,4 @@
 {include 'css.tpl'}
 
 <!--Favicon-->
-<link rel="shortcut icon" type="image/png" href="{$header.fav_icon}"/>
+<link rel="shortcut icon" type="image/png" href="{$header.favicon}"/>
