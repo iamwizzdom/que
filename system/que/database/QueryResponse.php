@@ -121,15 +121,14 @@ class QueryResponse
 
     /**
      * @param string|null $primaryKey
-     * @return ModelCollection|null
+     * @return ModelCollection
      */
-    public function getAllWithModel(string $primaryKey = null): ?ModelCollection
+    public function getAllWithModel(string $primaryKey = null): ModelCollection
     {
         try {
 
             $response = $this->getQueryResponseWithModel(null, $primaryKey);
-            if (empty($response)) return null;
-            return $response instanceof ModelCollection ? $response : new ModelCollection([$response], $this->query_tag);
+            return $response instanceof ModelCollection ? $response : new ModelCollection($response !== null ? [$response] : [], $this->query_tag);
 
         } catch (QueRuntimeException $e) {
             throw new QueRuntimeException($e->getMessage(), $e->getTitle(), $e->getCode(), $e->getHttpCode(),
