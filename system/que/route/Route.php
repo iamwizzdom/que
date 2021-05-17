@@ -184,7 +184,7 @@ final class Route extends Router
                 if ($method = $route->getModuleMethod()) {
 
                     if (!method_exists($instance, $method)) throw new RouteException(
-                        "The {$this->getClassName($instance)}::{$method} method bound to this route does not exist.",
+                        "The {$this->getClassName($instance)}::$method method bound to this route does not exist.",
                         "Route Error", HTTP::NOT_FOUND);
 
                     $instance->{$method}(self::$http->input());
@@ -231,8 +231,7 @@ final class Route extends Router
                 break;
             default:
                 throw new RouteException(
-                    "The module bound to this route is registered as a web module but does not implement " .
-                    "a valid web module interface"
+                    "The module bound to this route is registered as a web module but does not implement a valid web module interface"
                 );
         }
 
@@ -380,7 +379,7 @@ final class Route extends Router
     #[Pure] private function getClassName(object $instance): string
     {
         $name = get_class($instance);
-        return $name ? $name : '';
+        return $name ?: '';
     }
 
     /**
