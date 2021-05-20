@@ -106,8 +106,6 @@ class Validation
             throw new InvalidStructureException('Invalid token signature');
         }
 
-        log_err(['seg' => $elements]);
-
         return $elements;
     }
 
