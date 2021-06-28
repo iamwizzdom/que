@@ -85,7 +85,7 @@ class Upload extends Manager implements Page, Receiver
 
             if ($validate->hasError()) {
 
-                if ($file->getFileInfo('name')) $file->unlink($file->getFileInfo('name') ?? '');
+                if ($file->getFileInfo()?->getName()) $file->unlink($file->getFileInfo()->getName() ?? '');
 
                 throw $this->bulkException("An error occurred while validating the inputted data, " .
                     "please fix the error(s) below and try again.", "Upload failed");

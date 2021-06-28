@@ -463,6 +463,30 @@ class ModelCollection implements QueArrayAccess
     public function jsonSerialize()
     {
         // TODO: Implement jsonSerialize() method.
+
+        if ($this->query_tag !== null) {
+
+            $pagination = Pagination::getInstance();
+            $paginator = $pagination->getPaginator($this->query_tag);
+
+            if ($paginator !== null) {
+                return [
+                    'pagination' => [
+                        'next_page_url' => $paginator->getNextPageUrl(true),
+                        'prev_page_url' => $paginator->getPrevPageUrl(true),
+                        'current_page_url' => $paginator->getCurrentPageUrl(),
+                        'next_page' => $paginator->getNextPage(),
+                        'prev_page' => $paginator->getPrevPage(),
+                        'current_page' => $paginator->getCurrentPage(),
+                        'total_pages' => $paginator->getTotalPages(),
+                        'total_records' => $paginator->getTotalRecords(),
+                        'per_page' => $paginator->getPerPage(),
+                    ],
+                    'data' => $this->models
+                ];
+            }
+        }
+
         return $this->models;
     }
 

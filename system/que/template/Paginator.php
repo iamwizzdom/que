@@ -2,6 +2,7 @@
 
 namespace que\template;
 
+use Exception;
 use que\http\request\Request;
 
 class Paginator
@@ -191,12 +192,12 @@ class Paginator
     /**
      * @param $size
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function limit($size)
     {
         return [
-            (($this->getPage() - 1) * $size),
+            (($this->getCurrentPage() - 1) * $size),
             $size
         ];
     }
@@ -210,9 +211,9 @@ class Paginator
      * </code>
      *
      * @return integer Returns the current page's number
-     * @throws \Exception
+     * @throws Exception
      */
-    public function getPage()
+    public function getCurrentPage(): int
     {
         // unless page was not specifically set through the "set_page" method
         if (!$this->_properties['page_set']) {
@@ -238,11 +239,11 @@ class Paginator
         // if showing records in reverse order we must know the total number of records and the number of records per page
         // *before* calling the "get_page" method
         if ($this->_properties['reverse'] && $this->_properties['records'] == '') {
-            throw new \Exception('When showing records in reverse order you must specify the total number of records (by calling the "records" method) *before* the first use of the "get_page" method!', E_USER_ERROR);
+            throw new Exception('When showing records in reverse order you must specify the total number of records (by calling the "records" method) *before* the first use of the "get_page" method!', E_USER_ERROR);
         }
 
         if ($this->_properties['reverse'] && $this->_properties['records_per_page'] == '') {
-            throw new \Exception('When showing records in reverse order you must specify the number of records per page (by calling the "records_per_page" method) *before* the first use of the "get_page" method!', E_USER_ERROR);
+            throw new Exception('When showing records in reverse order you must specify the number of records per page (by calling the "records_per_page" method) *before* the first use of the "get_page" method!', E_USER_ERROR);
         }
         // get the total number of pages
         $this->_properties['total_pages'] = $this->getTotalPages();
@@ -502,12 +503,12 @@ class Paginator
      *            Default is FALSE.
      *
      * @return void|string
-     * @throws \Exception
+     * @throws Exception
      */
     public function render($return = true)
     {
         // get some properties of the class
-        $this->getPage();
+        $this->getCurrentPage();
 
         // if there is a single page, or no pages at all, don't display anything
         if ($this->_properties['total_pages'] <= 1)
@@ -520,26 +521,26 @@ class Paginator
             // if "next page" and "previous page" links are to be shown to the left of the links to individual pages
             if ($this->_properties['navigation_position'] == 'left')
                 // first show next/previous and then page links
-                $output .= $this->_show_next() . $this->_show_previous() . $this->_show_pages();
+                $output .= $this->getNextPageUrl() . $this->getPrevPageUrl() . $this->getPages();
             // if "next page" and "previous page" links are to be shown to the right of the links to individual pages
             elseif ($this->_properties['navigation_position'] == 'right')
-                $output .= $this->_show_pages() . $this->_show_next() . $this->_show_previous();
+                $output .= $this->getPages() . $this->getNextPageUrl() . $this->getPrevPageUrl();
             // if "next page" and "previous page" links are to be shown on the outside of the links to individual pages
             else
-                $output .= $this->_show_next() . $this->_show_pages() . $this->_show_previous();
+                $output .= $this->getNextPageUrl() . $this->getPages() . $this->getPrevPageUrl();
             // if we're showing records in natural order
         } else {
 
             // if "next page" and "previous page" links are to be shown to the left of the links to individual pages
             if ($this->_properties['navigation_position'] == 'left')
                 // first show next/previous and then page links
-                $output .= $this->_show_previous() . $this->_show_next() . $this->_show_pages();
+                $output .= $this->getPrevPageUrl() . $this->getNextPageUrl() . $this->getPages();
             // if "next page" and "previous page" links are to be shown to the right of the links to individual pages
             elseif ($this->_properties['navigation_position'] == 'right')
-                $output .= $this->_show_pages() . $this->_show_previous() . $this->_show_next();
+                $output .= $this->getPages() . $this->getPrevPageUrl() . $this->getNextPageUrl();
             // if "next page" and "previous page" links are to be shown on the outside of the links to individual pages
             else
-                $output .= $this->_show_previous() . $this->_show_pages() . $this->_show_next();
+                $output .= $this->getPrevPageUrl() . $this->getPages() . $this->getNextPageUrl();
         }
         // finish generating the output
         $output .= '</ul></div>';
@@ -743,16 +744,34 @@ class Paginator
     }
 
     /**
+     * Generates the "current page" link.
+     *
+     * @access private
+     * @return string
+     */
+    public function getCurrentPageUrl(): string
+    {
+        // get the total number of pages
+        $this->_properties['total_pages'] = $this->getTotalPages();
+        return $this->_build_uri($this->_properties['page']);
+    }
+
+    /**
      * Generates the "next page" link, depending on whether the pagination links are shown in natural or reversed order.
      *
      * @access private
      * @param bool $returnUrl
      * @return string
      */
-    public function _show_next(bool $returnUrl = false)
+    public function getNextPageUrl(bool $returnUrl = false): string
     {
-        if ($returnUrl === true && ($this->_properties['always_show_navigation'] || $this->_properties['total_pages'] > $this->_properties['selectable_pages']))
+        // get the total number of pages
+        $this->_properties['total_pages'] = $this->getTotalPages();
+
+        if ($returnUrl === true) {
+            if (!($this->_properties['always_show_navigation'] || $this->_properties['total_pages'] > $this->_properties['selectable_pages'])) return '#';
             return (($this->_properties['total_pages'] == 0 || ($this->_properties['page'] == $this->_properties['total_pages'])) ? '#' : $this->_build_uri($this->_properties['page'] + 1));
+        }
 
         $output = '';
         // if "always_show_navigation" is TRUE or
@@ -771,12 +790,24 @@ class Paginator
     }
 
     /**
+     * @return int
+     */
+    public function getNextPage(): int
+    {
+        // get the total number of pages
+        $this->_properties['total_pages'] = $this->getTotalPages();
+
+        if (!($this->_properties['always_show_navigation'] || $this->_properties['total_pages'] > $this->_properties['selectable_pages'])) return 0;
+        return (($this->_properties['total_pages'] == 0 || ($this->_properties['page'] == $this->_properties['total_pages'])) ? 0 : ($this->_properties['page'] + 1));
+    }
+
+    /**
      * Generates the pagination links (minus "next" and "previous"), depending on whether the pagination links are shown
      * in natural or reversed order.
      *
      * @access private
      */
-    private function _show_pages()
+    private function getPages()
     {
         $output = '';
         // if the total number of pages is lesser than the number of selectable pages
@@ -870,11 +901,15 @@ class Paginator
      * @param bool $returnUrl
      * @return string
      */
-    public function _show_previous(bool $returnUrl = false)
+    public function getPrevPageUrl(bool $returnUrl = false): string
     {
+        // get the total number of pages
+        $this->_properties['total_pages'] = $this->getTotalPages();
 
-        if ($returnUrl === true && ($this->_properties['always_show_navigation'] || $this->_properties['total_pages'] > $this->_properties['selectable_pages']))
+        if ($returnUrl === true) {
+            if (!($this->_properties['always_show_navigation'] || $this->_properties['total_pages'] > $this->_properties['selectable_pages'])) return '#';
             return ($this->_properties['page'] <= 1 ? '#' : $this->_build_uri($this->_properties['page'] - 1));
+        }
 
         $output = '';
         // if "always_show_navigation" is TRUE or
@@ -890,5 +925,17 @@ class Paginator
                 ' rel="prev">' . ($this->_properties['reverse'] ? $this->_properties['next'] : $this->_properties['previous']) . '</a></li>';
         // return the resulting string
         return $output;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPrevPage(): int
+    {
+        // get the total number of pages
+        $this->_properties['total_pages'] = $this->getTotalPages();
+
+        if (!($this->_properties['always_show_navigation'] || $this->_properties['total_pages'] > $this->_properties['selectable_pages'])) return 0;
+        return ($this->_properties['page'] <= 1 ? 0 : ($this->_properties['page'] - 1));
     }
 }

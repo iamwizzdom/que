@@ -58,9 +58,9 @@ class Pagination
 
     /**
      * @param string $tag
-     * @return mixed|Paginator|null
+     * @return Paginator|null
      */
-    public function getPaginator(string $tag)
+    public function getPaginator(string $tag): ?Paginator
     {
         return self::$paginators[$tag] ?? null;
     }
@@ -76,7 +76,7 @@ class Pagination
             throw new QueRuntimeException("Undefined Tag: No Database Query was found paginated with the tag '{$tag}'",
                 "Pagination Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
-        return self::$paginators[$tag]->_show_next($returnUrl);
+        return self::$paginators[$tag]->getNextPageUrl($returnUrl);
     }
 
     /**
@@ -90,7 +90,7 @@ class Pagination
             throw new QueRuntimeException("Undefined Tag: No Database Query was found paginated with the tag '{$tag}'",
                 "Pagination Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
 
-        return self::$paginators[$tag]->_show_previous($returnUrl);
+        return self::$paginators[$tag]->getPrevPageUrl($returnUrl);
     }
 
     /**
