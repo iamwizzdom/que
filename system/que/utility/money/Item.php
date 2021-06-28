@@ -404,7 +404,7 @@ class Item implements JsonSerializable {
      */
     private function assertSameCurrency(Item $a, Item $b){
         if($a->getCurrency() != $b->getCurrency()){
-            throw new Exception("Currency Missmatch");
+            throw new Exception("Currency Mismatch");
         }
     }
 
