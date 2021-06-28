@@ -274,7 +274,8 @@ final class Route extends Router
                 "Failed to output response", "Output Error",
                 HTTP::NO_CONTENT, PreviousException::getInstance(1));
 
-            if (!self::$http->_header()->has('Accept')) self::$http->_header()->set('Content-Type', mime_type_from_extension('json'), true);
+            if (!self::$http->_header()->has('Accept') || (self::$http->_header()->get('Accept') == '*/*'))
+                self::$http->_header()->set('Content-Type', mime_type_from_extension('json'), true);
 
             echo $data;
 
@@ -284,7 +285,8 @@ final class Route extends Router
                 "Failed to output response", "Output Error",
                 HTTP::NO_CONTENT, PreviousException::getInstance(1));
 
-            if (!self::$http->_header()->has('Accept')) self::$http->_header()->set('Content-Type', mime_type_from_extension('json'), true);
+            if (!self::$http->_header()->has('Accept') || (self::$http->_header()->get('Accept') == '*/*'))
+                self::$http->_header()->set('Content-Type', mime_type_from_extension('json'), true);
 
             echo $data;
 
@@ -299,12 +301,14 @@ final class Route extends Router
 
         } elseif ($response instanceof Html) {
 
-            if (!self::$http->_header()->has('Accept')) self::$http->_header()->set('Content-Type', mime_type_from_extension('html'), true);
+            if (!self::$http->_header()->has('Accept') || (self::$http->_header()->get('Accept') == '*/*'))
+                self::$http->_header()->set('Content-Type', mime_type_from_extension('html'), true);
             echo $response->getHtml();
 
         } elseif ($response instanceof Plain) {
 
-            if (!self::$http->_header()->has('Accept')) self::$http->_header()->set('Content-Type', mime_type_from_extension('txt'), true);
+            if (!self::$http->_header()->has('Accept') || (self::$http->_header()->get('Accept') == '*/*'))
+                self::$http->_header()->set('Content-Type', mime_type_from_extension('txt'), true);
             echo $response->getData();
 
         } elseif (is_array($response)) {
@@ -330,7 +334,8 @@ final class Route extends Router
             if (!$data) throw new RouteException("Failed to output response", "Output Error",
                 HTTP::NO_CONTENT, PreviousException::getInstance(1));
 
-            if (!self::$http->_header()->has('Accept')) self::$http->_header()->set('Content-Type', mime_type_from_extension('json'), true);
+            if (!self::$http->_header()->has('Accept') || (self::$http->_header()->get('Accept') == '*/*'))
+                self::$http->_header()->set('Content-Type', mime_type_from_extension('json'), true);
 
             echo $data;
 
