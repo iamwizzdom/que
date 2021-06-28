@@ -208,15 +208,14 @@ class File extends FileBase
             return false;
         }
 
-        $this->fileInfo['name'] = $files['name'];
-        $this->fileInfo['dir'] = self::ROOT_DIR . $this->uploadDir;
-        $this->fileInfo['path'] = self::ROOT_DIR . $this->uploadDir . $files['name'];
-        $this->fileInfo['full_path'] = $this->storageDir . $this->uploadDir . $files['name'];
-        $this->fileInfo['url'] = base_url($this->fileInfo['path']);
-        $this->fileInfo['ext'] = $ext;
-        $this->fileInfo['size'] = $files['size'];
-        $this->fileInfo['type'] = $files['type'];
-        $this->fileInfo['hash'] = sha1_file($this->fileInfo['full_path']);
+        $this->fileInfo = new FileInfo();
+        $this->fileInfo->setName($files['name']);
+        $this->fileInfo->setDir((self::ROOT_DIR . $this->uploadDir));
+        $this->fileInfo->setPath((self::ROOT_DIR . $this->uploadDir . $files['name']));
+        $this->fileInfo->setFullPath(($this->storageDir . $this->uploadDir . $files['name']));
+        $this->fileInfo->setExt($ext);
+        $this->fileInfo->setSize($files['size']);
+        $this->fileInfo->setType($files['type']);
 
         return true;
     }
@@ -285,15 +284,14 @@ class File extends FileBase
             }
 
             $uploaded[] = $files['name'][$current];
-            $this->fileInfo[$current]['name'] = $files['name'][$current];
-            $this->fileInfo[$current]['dir'] = self::ROOT_DIR . $this->uploadDir;
-            $this->fileInfo[$current]['path'] = self::ROOT_DIR . $this->uploadDir . $files['name'][$current];
-            $this->fileInfo[$current]['full_path'] = $this->storageDir . $this->uploadDir . $files['name'][$current];
-            $this->fileInfo[$current]['url'] = base_url($this->fileInfo[$current]['path']);
-            $this->fileInfo[$current]['ext'] = $ext;
-            $this->fileInfo[$current]['size'] = $files['size'][$current];
-            $this->fileInfo[$current]['type'] = $files['type'][$current];
-            $this->fileInfo[$current]['hash'] = sha1_file($this->fileInfo[$current]['full_path']);
+            $this->fileInfoMulti[$current] = new FileInfo();
+            $this->fileInfoMulti[$current]->setName($files['name'][$current]);
+            $this->fileInfoMulti[$current]->setDir((self::ROOT_DIR . $this->uploadDir));
+            $this->fileInfoMulti[$current]->setPath((self::ROOT_DIR . $this->uploadDir . $files['name'][$current]));
+            $this->fileInfoMulti[$current]->setFullPath(($this->storageDir . $this->uploadDir . $files['name'][$current]));
+            $this->fileInfoMulti[$current]->setExt($ext);
+            $this->fileInfoMulti[$current]->setSize($files['size'][$current]);
+            $this->fileInfoMulti[$current]->setType($files['type'][$current]);
         }
 
         return true;
@@ -350,7 +348,7 @@ class File extends FileBase
     public function readFileMulti($name) {
 
         if (!$this->files->_isset($name))
-            throw new QueException("No file was uploaded with the name {$name}", "Read File");
+            throw new QueException("No file was uploaded with the name '{$name}'", "Read File");
 
         $files = $this->files[$name];
         $count = count($files['name']) - 1;
@@ -411,7 +409,7 @@ class File extends FileBase
     public function getTmpNameMulti($name) {
 
         if (!$this->files->_isset($name))
-            throw new QueException("No file was uploaded with the name {$name}", "Read File");
+            throw new QueException("No file was uploaded with the name '{$name}'", "Read File");
 
         $files = $this->files[$name];
         $count = count($files['name']) - 1;

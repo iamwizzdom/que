@@ -18,9 +18,13 @@ abstract class FileBase
     protected array $allowedExtensions = [];
     protected array $allowedMimeType = [];
     protected bool $formatName = true;
-    protected array $fileInfo = [];
+    protected ?FileInfo $fileInfo = null;
+    /**
+     * @var FileInfo[]
+     */
+    protected array $fileInfoMulti = [];
     protected array $errors = [];
-    private $fileName = null;
+    private ?string $fileName = null;
 
     /**
      * @param $key
@@ -70,22 +74,18 @@ abstract class FileBase
     }
 
     /**
-     * @param null $key
-     * @return array|mixed|null
+     * @return FileInfo|null
      */
-    public function getFileInfo($key = null) {
-        if (empty($key)) return $this->fileInfo;
-        return $this->fileInfo[$key] ?? null;
+    public function getFileInfo() {
+        return $this->fileInfo;
     }
 
     /**
-     * @param int $pos
-     * @param null $key
-     * @return array|mixed|null
+     * @param int $index
+     * @return FileInfo|null
      */
-    public function getMultiFileInfo(int $pos, $key = null) {
-        if (empty($key)) return $this->fileInfo;
-        return $this->fileInfo[$pos][$key] ?? null;
+    public function getMultiFileInfo(int $index) {
+        return $this->fileInfoMulti[$index] ?? null;
     }
 
     /**

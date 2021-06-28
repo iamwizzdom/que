@@ -171,15 +171,14 @@ class Base64File extends FileBase
 
         unlink($files['tmp_name']);
 
-        $this->fileInfo['name'] = $files['name'];
-        $this->fileInfo['dir'] = self::ROOT_DIR . $this->uploadDir;
-        $this->fileInfo['path'] = self::ROOT_DIR . $this->uploadDir . $files['name'];
-        $this->fileInfo['full_path'] = $this->storageDir . $this->uploadDir . $files['name'];
-        $this->fileInfo['url'] = base_url($this->fileInfo['path']);
-        $this->fileInfo['ext'] = $files['ext'];
-        $this->fileInfo['size'] = $files['size'];
-        $this->fileInfo['type'] = $files['type'];
-        $this->fileInfo['hash'] = sha1_file($this->fileInfo['full_path']);
+        $this->fileInfo = new FileInfo();
+        $this->fileInfo->setName($files['name']);
+        $this->fileInfo->setDir((self::ROOT_DIR . $this->uploadDir));
+        $this->fileInfo->setPath((self::ROOT_DIR . $this->uploadDir . $files['name']));
+        $this->fileInfo->setFullPath(($this->storageDir . $this->uploadDir . $files['name']));
+        $this->fileInfo->setExt($files['ext']);
+        $this->fileInfo->setSize($files['size']);
+        $this->fileInfo->setType($files['type']);
 
         return true;
     }
