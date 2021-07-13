@@ -365,10 +365,11 @@ abstract class BaseModel implements Model
     /**
      * @inheritDoc
      */
-    #[Pure] public function getBool($key, bool $default = false): bool
+    #[Pure] public function getBool($key, bool $default = null): ?bool
     {
         // TODO: Implement getBool() method.
-        return (bool) $this->getInt($key, $default);
+        $value = $this->getValue($key, $default);
+        return $value !== null ? (bool) $value : null;
     }
 
     /**
@@ -452,7 +453,7 @@ abstract class BaseModel implements Model
         // TODO: Implement refresh() method.
         $data = db()->find($this->getTable(), $this->getValue($this->getPrimaryKey()), $this->getPrimaryKey());
         if (!$data->isSuccessful()) return false;
-        $this->object = (object) $data->getFirst();
+        $this->object = $data->getFirst();
         $this->setUp();
         return true;
     }

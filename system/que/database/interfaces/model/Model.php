@@ -167,10 +167,10 @@ interface Model extends QueArrayAccess
 
     /**
      * @param $key
-     * @param bool $default
-     * @return bool
+     * @param bool|null $default
+     * @return bool|null
      */
-    public function getBool($key, bool $default = false): bool;
+    public function getBool($key, bool $default = null): ?bool;
 
     /**
      * @param $key
