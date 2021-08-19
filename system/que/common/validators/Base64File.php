@@ -53,7 +53,7 @@ class Base64File extends FileBase
             $data = $matches[2];
         }
 
-        $tmpName = tempnam(sys_get_temp_dir(), sha1($name));
+        $tmpName = tempnam(ini_get('upload_tmp_dir') ?: sys_get_temp_dir(), sha1($name));
 
         file_put_contents($tmpName, base64_decode($data));
 
