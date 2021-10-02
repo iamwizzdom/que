@@ -121,14 +121,16 @@ class QueryResponse
 
     /**
      * @param string|null $primaryKey
+     * @param bool $withPagination
      * @return ModelCollection
      */
-    public function getAllWithModel(string $primaryKey = null): ModelCollection
+    public function getAllWithModel(string $primaryKey = null, bool $withPagination = false): ModelCollection
     {
         try {
 
             $response = $this->getQueryResponseWithModel(null, $primaryKey);
-            return $response instanceof ModelCollection ? $response : new ModelCollection($response !== null ? [$response] : [], $this->query_tag);
+            return $response instanceof ModelCollection ? $response : new ModelCollection(
+                $response !== null ? [$response] : [], $this->query_tag, $withPagination);
 
         } catch (QueRuntimeException $e) {
             throw new QueRuntimeException($e->getMessage(), $e->getTitle(), $e->getCode(), $e->getHttpCode(),

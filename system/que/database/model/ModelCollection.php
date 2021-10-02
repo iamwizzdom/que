@@ -37,6 +37,11 @@ class ModelCollection implements QueArrayAccess
     /**
      * @var bool
      */
+    private bool $withPagination;
+
+    /**
+     * @var bool
+     */
     private bool $static;
 
     /**
@@ -65,12 +70,14 @@ class ModelCollection implements QueArrayAccess
         // TODO: Implement offsetSet() method.
         if ($this->static) throw new QueRuntimeException(
             "You cannot add an item to a static " . self::class,
-            "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+            "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR,
+            PreviousException::getInstance(1));
 
         if (!$value instanceof Model) throw new QueRuntimeException(
             self::class . " expects an instance of " .
             Model::class . " got " . (is_object($value) ? get_class($value) : gettype($value)) . " instead",
-        "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+        "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR,
+            PreviousException::getInstance(1));
 
         $this->models[$offset] = $value;
     }
@@ -101,18 +108,22 @@ class ModelCollection implements QueArrayAccess
     /**
      * ModelCollection constructor.
      * @param array $models
-     * @param bool $static
      * @param string|null $query_tag
+     * @param bool $withPagination
+     * @param bool $static
      */
-    public function __construct(array $models, ?string $query_tag = null, bool $static = false)
+    public function __construct(array $models, ?string $query_tag = null,
+                                bool $withPagination = false, bool $static = false)
     {
-        $this->query_tag = $query_tag;
         $this->static = $static;
+        $this->query_tag = $query_tag;
+        $this->withPagination = $withPagination;
         foreach ($models as $model) {
             if (!$model instanceof Model) throw new QueRuntimeException(
                 self::class . " expects an instance of " .
                 Model::class . " got " . (is_object($model) ? get_class($model) : gettype($model)) . " instead",
-                "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+                "Que Runtime Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR,
+                PreviousException::getInstance(1));
 
             $this->addModel($model);
         }
@@ -464,7 +475,7 @@ class ModelCollection implements QueArrayAccess
     {
         // TODO: Implement jsonSerialize() method.
 
-        if ($this->query_tag !== null) {
+        if ($this->query_tag !== null && $this->withPagination) {
 
             $pagination = Pagination::getInstance();
             $paginator = $pagination->getPaginator($this->query_tag);
