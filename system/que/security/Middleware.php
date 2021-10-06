@@ -21,7 +21,7 @@ abstract class Middleware extends MiddlewareResponse implements interfaces\Middl
 
     /**
      * @param Input $input
-     * @return $this|MiddlewareResponse
+     * @return MiddlewareResponse
      */
     public function handle(Input $input): MiddlewareResponse
     {
