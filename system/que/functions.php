@@ -149,8 +149,8 @@ function str_to_word_array(string $string): array
  * @param string $haystack
  * ending at the first occurrence of
  * @param string $needle
- * @param int $extra | This defines a number of extra strings
- * to subtract from the the first occurrence of $needle
+ * @param int $extra - This defines a number of extra strings
+ * to subtract from the first occurrence of $needle
  * @return bool|string
  */
 #[Pure] function str_end_at(string $haystack, string $needle, int $extra = 0): bool|string
