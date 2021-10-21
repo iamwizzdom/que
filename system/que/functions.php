@@ -19,6 +19,7 @@ use que\security\interfaces\RoutePermission;
 use que\session\Session;
 use que\support\Arr;
 use que\support\Config;
+use que\support\Env;
 use que\template\Composer;
 use que\template\Form;
 use que\template\Pagination;
@@ -2273,6 +2274,16 @@ function data_set(mixed &$target, array|string $key, mixed $value, $overwrite = 
 function config(string $offset, $default = null): mixed
 {
     return Config::get($offset, $default);
+}
+
+/**
+ * @param string $offset
+ * @param null $default
+ * @return mixed
+ */
+function env(string $offset, $default = null): mixed
+{
+    return Env::get($offset, $default);
 }
 
 /**

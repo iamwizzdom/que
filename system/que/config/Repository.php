@@ -87,30 +87,28 @@ class Repository implements ArrayAccess
      *
      * @param $offset
      * @param null $default
-     * @return mixed|null
+     * @return mixed
      */
-    public function get($offset, $default = null)
+    public function get($offset, $default = null): mixed
     {
         return Arr::get($this->repository, $offset, $default);
     }
 
     /**
      * Remove an item from the config array
-     *
      * @param $offset
-     * @return $this
      */
     public function remove($offset)
     {
-        return $this->set($offset, null);
+        Arr::unset($this->repository, $offset);
     }
 
     /**
-     * Get all of the configuration items for the application.
+     * Get all the configuration items for the application.
      *
      * @return array
      */
-    public function all()
+    public function all(): array
     {
         return $this->repository;
     }
@@ -121,10 +119,10 @@ class Repository implements ArrayAccess
      * The file name should be the config key and the value
      * should be the return value from the file
      *
-     * @param array|string $files : The full path to the files
+     * @param array|string $files  The full path to the files
      * @param null $offset
      */
-    public function load($files, $offset = null)
+    public function load(array|string $files, $offset = null)
     {
         if (is_array($files)) {
 

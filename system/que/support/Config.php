@@ -22,11 +22,11 @@ class Config
     }
 
     /**
-     * Get all of the configuration items for the application.
+     * Get all the configuration items for the application.
      *
      * @return array
      */
-    public static function all()
+    public static function all(): array
     {
         return Repository::getInstance()->get("config");
     }
@@ -36,9 +36,10 @@ class Config
      *
      * @param $key
      * @param null $default
-     * @return mixed|null
+     * @return mixed
      */
-    public static function get($key, $default = null) {
+    public static function get($key, $default = null): mixed
+    {
         return Repository::getInstance()->get("config.{$key}", $default);
     }
 
@@ -49,7 +50,8 @@ class Config
      * @param null $value
      * @return Repository
      */
-    public static function set($key, $value) {
+    public static function set($key, $value): Repository
+    {
         return Repository::getInstance()->set("config.{$key}", $value);
     }
 
