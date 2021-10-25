@@ -43,9 +43,18 @@ class Env
 
             list($name, $value) = explode('=', $line, 2);
             $name = trim($name);
-            $value = trim($value);
-            $value = trim($value, '"');
-            $value = trim($value, "'");
+
+            $value = match (strtolower(trim($value))) {
+                'true', '(true)' => true,
+                'false', '(false)' => false,
+                'empty', '(empty)' => '',
+                'null', '(null)' => null,
+                default => trim($value),
+            };
+
+            if (preg_match('/\A([\'"])(.*)\1\z/', $value, $matches)) {
+                $value = $matches[2];
+            }
 
             if (!array_key_exists($name, $_SERVER) && !array_key_exists($name, $_ENV)) {
                 putenv(sprintf('%s=%s', $name, $value));
