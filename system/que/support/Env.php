@@ -2,7 +2,9 @@
 
 namespace que\support;
 
+use InvalidArgumentException;
 use que\config\Repository;
+use RuntimeException;
 
 class Env
 {
@@ -21,7 +23,7 @@ class Env
     public function __construct(string $path)
     {
         if(!file_exists($path)) {
-            throw new \InvalidArgumentException(sprintf('%s does not exist', $path));
+            throw new InvalidArgumentException(sprintf('%s does not exist', $path));
         }
         $this->path = $path;
         $this->repository = Repository::getInstance();
@@ -30,7 +32,7 @@ class Env
     public function load() :void
     {
         if (!is_readable($this->path)) {
-            throw new \RuntimeException(sprintf('%s file is not readable', $this->path));
+            throw new RuntimeException(sprintf('%s file is not readable', $this->path));
         }
 
         $env = [];
@@ -56,11 +58,15 @@ class Env
                 $value = $matches[2];
             }
 
-            if (!array_key_exists($name, $_SERVER) && !array_key_exists($name, $_ENV)) {
+            if (!array_key_exists($name, $_ENV)) {
                 putenv(sprintf('%s=%s', $name, $value));
                 $_ENV[$name] = $value;
+            }
+
+            if (!array_key_exists($name, $_SERVER)) {
                 $_SERVER[$name] = $value;
             }
+
             $env[$name] = $value;
         }
         $this->repository->set('env', $env);
@@ -85,7 +91,7 @@ class Env
      */
     public static function get($key, $default = null): mixed
     {
-        return Repository::getInstance()->get("env.{$key}", $default);
+        return Repository::getInstance()->get("env.$key", $default);
     }
 
     /**
@@ -97,7 +103,7 @@ class Env
      */
     public static function set($key, $value): Repository
     {
-        return Repository::getInstance()->set("env.{$key}", $value);
+        return Repository::getInstance()->set("env.$key", $value);
     }
 
     /**
@@ -107,6 +113,6 @@ class Env
      */
     public static function unset($key)
     {
-        Repository::getInstance()->remove("env.{$key}");
+        Repository::getInstance()->remove("env.$key");
     }
 }
