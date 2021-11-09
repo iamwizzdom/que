@@ -9,3 +9,4 @@
 /app/error/
 /app/lab/
 /system/que/cache/
+composer.lock

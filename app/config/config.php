@@ -22,7 +22,7 @@ const AUTOLOAD_PATH = [
 const AUTOLOAD_CACHE_PATH = (QUE_PATH . '/cache');
 
 const AUTOLOAD_REQUIRE = [
-    APP_PATH . '/vendor/autoload.php',
+    APP_ROOT_PATH . '/vendor/autoload.php',
     QUE_PATH . '/vendor/autoload.php',
     QUE_PATH . '/constants.php',
     QUE_PATH . '/functions.php',
