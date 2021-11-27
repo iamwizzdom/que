@@ -31,7 +31,7 @@ return [
         | to use as your default driver for all database work.
         |
         */
-        'driver' => 'mysql',
+        'driver' => env('DB_DRIVER'),
 
         /*
         |--------------------------------------------------------------------------
@@ -110,27 +110,27 @@ return [
             /*
              | database name
              */
-            'dbname' => 'que',
+            'dbname' => env('DB_DATABASE'),
 
             /*
              | db username
              */
-            'username' => 'root',
+            'username' => env('DB_USERNAME'),
 
             /*
              | db password
              */
-            'password' => '',
+            'password' => env('DB_PASSWORD'),
 
             /*
              | host / ip address
              */
-            'host' => 'localhost',
+            'host' => env('DB_HOST'),
 
             /*
              | MySQL port
              */
-            'port' => null,
+            'port' => env('DB_PORT'),
 
             /*
              | The MySQL Unix socket (shouldn't be used with host or port).
@@ -157,7 +157,8 @@ return [
             /*
              * Database timezone
              */
-            'timezone'  => '+00:00',
+//            'timezone'  => '+00:00',
+            'timezone'  => null,
 
             /*
              | Set for PDO::MYSQL SSL connection

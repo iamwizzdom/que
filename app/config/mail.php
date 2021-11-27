@@ -17,19 +17,18 @@ return [
     |
     */
     'address' => [
-        'reply' => '',
-        'default' => ''
+        'reply' => env('MAIL_FROM_ADDRESS'),
+        'default' => env('MAIL_REPLY_ADDRESS')
     ],
     'smtp' => [
-        'host' => '',
-        'port' => '',
-        'user' => '',
-        'pass' => '',
-        'transport' => '',
-        'timeout' => 100,
-        'debug' => '',
+        'host' => env('MAIL_HOST'),
+        'port' => env('MAIL_PORT'),
+        'username' => env('MAIL_USERNAME'),
+        'password' => env('MAIL_PASSWORD'),
+        'transport' => env('MAIL_ENCRYPTION'),
+        'timeout' => 120,
+        'debug' => !LIVE,
         'options' => [
-
             'ssl' => [
                 'verify_peer' => false,
                 'verify_peer_name' => false,

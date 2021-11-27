@@ -19,9 +19,9 @@ return [
 
     'app' => [
         'header' => [
-            'title' => '',
-            'name' => '',
-            'desc' => '',
+            'title' => env('APP_TITLE'),
+            'name' => env('APP_NAME'),
+            'desc' => env('APP_DESC'),
             'favicon' => '',
             'icon' => '',
             'logo' => [

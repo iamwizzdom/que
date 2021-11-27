@@ -26,25 +26,25 @@ return [
     | or [bool](false) to disable session timeout for each session to last forever,
     | until the user logs out (if a logout feature is provided)
     */
-    'timeout' => true,
+    'timeout' => env('SESSION_TIMEOUT', true),
 
     /*
     | Specifies the time in seconds in which the session should expire
     */
-    'timeout_time' => 3600,
+    'timeout_time' => env('SESSION_TIMEOUT_TIME', 3600),
 
     /*
     | Set to [bool](true) to enable session regeneration in which data is spooled
     | from the database to refresh session data after a specified time,
     | or [bool](false) to disable session regeneration for each session to remain the same forever.
     */
-    'regeneration' => true,
+    'regeneration' => env('SESSION_REGEN', false),
 
     /*
     | Specifies the time in seconds in which the session data should
     | be regenerated
     */
-    'regeneration_time' => 1800,
+    'regeneration_time' => env('SESSION_REGEN_TIME', 1800),
 
     /*
     | Specifies the partition name for que sessions

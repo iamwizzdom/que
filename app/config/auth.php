@@ -137,7 +137,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | Here you specify the db model keys to be used to provide user authentication.
-    | Note: Theses model keys must be registered in your database config.
+    | Note: These model keys must be registered in your database config.
     |
     */
     'providers' => [

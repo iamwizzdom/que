@@ -27,12 +27,12 @@ return [
         /*
          | Memcached host ip address
          */
-        'host' => '127.0.0.1',
+        'host' => env('MEMCACHED_HOST'),
 
         /*
          | Memcached port
          */
-        'port' => 11211,
+        'port' => env('MEMCACHED_PORT'),
 
         /*
          | Set to [bool](true) to enable memcached, otherwise [bool](false) to disable
@@ -45,12 +45,12 @@ return [
         /*
          | Redis host ip address
          */
-        'host' => '127.0.0.1',
+        'host' => env('REDIS_HOST'),
 
         /*
          | Redis port
          */
-        'port' => 6379,
+        'port' => env('REDIS_PORT'),
 
         /*
          | Set to [bool](true) to enable redis, otherwise [bool](false) to disable
@@ -59,7 +59,7 @@ return [
     ],
 
     /**
-     * @Note: For optimum performance make sure to enable either memcached or redis;
+     * @Note - For optimum performance make sure to enable either memcached or redis;
      * better still, have them both enabled.
      * However, if both are disabled, Que will fallback to its native caching system (QueKip)
      */
