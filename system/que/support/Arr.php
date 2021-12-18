@@ -227,14 +227,12 @@ class Arr
     /**
      * @param array $array
      * @param callable $callback
+     * @param int $mode
      * @return array
      */
-    public static function filter(array $array, callable $callback)
+    public static function filter(array $array, callable $callback, int $mode = 0)
     {
-        foreach ($array as $key => $item) {
-            if (!$callback($item)) self::unset($array, $key);
-        }
-        return $array;
+       return array_filter($array, $callback, $mode);
     }
 
     /**
