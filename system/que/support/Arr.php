@@ -225,6 +225,19 @@ class Arr
     }
 
     /**
+     * @param $array
+     * @param callable $callback
+     * @return mixed
+     */
+    public static function filter($array, callable $callback)
+    {
+        foreach ($array as $key => $item) {
+            if (!$callback($item)) self::unset($array, $key);
+        }
+        return $array;
+    }
+
+    /**
      * @param array $main
      * @param string ...$exclude
      * @return array
