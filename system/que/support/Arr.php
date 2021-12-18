@@ -143,6 +143,17 @@ class Arr
     }
 
     /**
+     * An alias of the ::set method.
+     * @param $array
+     * @param $key
+     * @param $value
+     * @return array|mixed
+     */
+    public static function push(&$array, $key, $value) {
+        return static::set($array, $key, $value);
+    }
+
+    /**
      * @param array $data
      * @return string
      */
