@@ -124,6 +124,7 @@ abstract class RuntimeError
             $isFile = is_file("{$tmpPath}/{$tmpFIle}");
             $composer->resetTmpDir($isFile ? $tmpPath : (QUE_PATH . "/error/tmp"));
             $composer->setTmpFileName($isFile ? $tmpFIle : "error.tpl");
+            $composer->header(['title' => $error['title']]);
             $composer->data($error);
             $composer->dataExtra(['live' => LIVE || ini_get('display_errors') == "Off"]);
             beginning:
