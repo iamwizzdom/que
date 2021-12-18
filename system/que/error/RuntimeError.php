@@ -38,7 +38,7 @@ abstract class RuntimeError
 
         if (ob_get_contents()) ob_clean();
 
-        if (LIVE or ini_get('display_errors') == "Off") {
+        if (LIVE || ini_get('display_errors') == "Off") {
 
             $error = [
                 'title' => sprintf("%s Error", config('template.app.header.name')),
@@ -125,6 +125,7 @@ abstract class RuntimeError
             $composer->resetTmpDir($isFile ? $tmpPath : (QUE_PATH . "/error/tmp"));
             $composer->setTmpFileName($isFile ? $tmpFIle : "error.tpl");
             $composer->data($error);
+            $composer->dataExtra(['live' => LIVE || ini_get('display_errors') == "Off"]);
             beginning:
             try {
                 $composer->prepare()->renderWithSmarty();
