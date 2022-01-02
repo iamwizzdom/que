@@ -166,6 +166,40 @@ class Redis
     }
 
     /**
+     * @param $key
+     * @param ...$values
+     * @return false|int
+     */
+    public function rPush($key, ...$values) {
+        return $this->redis->rPush("{$this->session_id}-$key", ...$values);
+    }
+
+    /**
+     * @param $key
+     * @param ...$values
+     * @return false|int
+     */
+    public function lPush($key, ...$values) {
+        return $this->redis->lPush("{$this->session_id}-$key", ...$values);
+    }
+
+    /**
+     * @param $key
+     * @return bool|mixed
+     */
+    public function rPop($key) {
+        return $this->redis->rPop("{$this->session_id}-$key");
+    }
+
+    /**
+     * @param $key
+     * @return bool|mixed
+     */
+    public function lPop($key) {
+        return $this->redis->lPop("{$this->session_id}-$key");
+    }
+
+    /**
      * @param mixed ...$keys
      * @return int
      */
