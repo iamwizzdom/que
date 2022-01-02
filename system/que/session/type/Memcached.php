@@ -19,17 +19,17 @@ class Memcached
     /**
      * @var mixed
      */
-    private $session_id;
+    private mixed $session_id;
 
     /**
      * @var mixed
      */
-    private $host;
+    private mixed $host;
 
     /**
      * @var mixed
      */
-    private $port;
+    private mixed $port;
 
     /**
      * @var bool
@@ -44,7 +44,7 @@ class Memcached
     /**
      * @var \Memcached|Memcache
      */
-    private $memcached;
+    private Memcache|\Memcached $memcached;
 
     /**
      * @var array
@@ -144,9 +144,10 @@ class Memcached
     /**
      * @param $key
      * @param null $default
-     * @return array|mixed
+     * @return mixed
      */
-    public function get($key, $default = null) {
+    public function get($key, $default = null): mixed
+    {
         $data = Arr::get($this->pointer, $key, $default);
         if ($data == $default) return $data;
         if (isset($data['expire']) && is_numeric($data['expire']) && APP_TIME > (int) $data['expire']) {
@@ -191,10 +192,11 @@ class Memcached
      * with the $session_id param, while the current session id
      * will be returned if no session id is passed
      *
-     * @param string $session_id
+     * @param string|null $session_id
      * @return string|null
      */
-    public function session_id(string $session_id = null) {
+    public function session_id(string $session_id = null): ?string
+    {
         if (is_null($session_id)) return $this->session_id;
         if ($this->session_id == $session_id) return $this->session_id;
         $this->session_id = $session_id;
@@ -208,7 +210,8 @@ class Memcached
      * @param string $session_id
      * @return string
      */
-    public function reset_session_id(string $session_id) {
+    public function reset_session_id(string $session_id): string
+    {
         if ($this->session_id == $session_id) return $this->session_id;
         $old_pointer = $this->pointer;
         $this->session_destroy();
@@ -221,7 +224,8 @@ class Memcached
     /**
      * This method will destroy the current session
      */
-    public function session_destroy() {
+    public function session_destroy(): bool
+    {
         if ($this->memcached->delete($this->session_id)){
             $this->pointer = [];
             return true;

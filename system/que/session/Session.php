@@ -148,18 +148,17 @@ class Session
         if (self::$sessionState == self::SESSION_STARTED) {
 
             $cache_config = (array) config('cache', []);
-            $files = $this->getFiles();
-            $queKip = $this->getQueKip();
-            $memcached = null;
-            $redis = null;
 
-            if (($cache_config['memcached']['enable'] ?? false) === true) $memcached = $this->getMemcached();
-            if (($cache_config['redis']['enable'] ?? false) === true) $redis = $this->getRedis();
+            $this->getFiles()->session_destroy();
+            $this->getQueKip()->session_destroy();
 
-            $files->session_destroy();
-            $queKip->session_destroy();
-            if ($memcached) $memcached->session_destroy();
-            if ($redis) $redis->session_destroy();
+            if (($cache_config['memcached']['enable'] ?? false) === true) {
+                $this->getMemcached()->session_destroy();
+            }
+
+            if (($cache_config['redis']['enable'] ?? false) === true) {
+                $this->getRedis()->session_destroy();
+            }
 
             $this->regenerateID();
 

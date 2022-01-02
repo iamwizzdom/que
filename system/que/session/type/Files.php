@@ -64,11 +64,11 @@ class Files implements QueArrayAccess
      * with the $session_id param, while the current session id
      * will be returned if no session id is passed
      *
-     * @param string $session_id
+     * @param string|null $session_id
      * @return string
      */
-    public function session_id(string $session_id): string {
-        if (is_null($session_id)) return $this->session_id;
+    public function session_id(?string $session_id): string {
+        if (empty($session_id)) return $this->session_id;
         if ($this->session_id == $session_id) return $this->session_id;
         $_SESSION[$this->session_id = $session_id] ??= [];
         $this->pointer = &$_SESSION[$session_id];
@@ -169,7 +169,7 @@ class Files implements QueArrayAccess
     public function offsetGet(mixed $offset): mixed
     {
         // TODO: Implement offsetGet() method.
-        return isset($this->pointer[$offset]) ? $this->pointer[$offset] : null;
+        return $this->pointer[$offset] ?? null;
     }
 
     /**
