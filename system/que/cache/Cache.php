@@ -77,6 +77,14 @@ class Cache
     }
 
     /**
+     * @return string
+     */
+    public function using(): string
+    {
+        return $this->using;
+    }
+
+    /**
      * @param string $use
      */
     public function use(#[ExpectedValues(['memcached', 'redis', 'quekip'])] string $use) {
