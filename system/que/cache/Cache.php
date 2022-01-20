@@ -83,7 +83,7 @@ class Cache
 
         if ($use == 'memcached' && !isset($this->memcached)) {
             throw new QueRuntimeException("Can't use memcached, memcached is disabled from config.",
-                "Redis Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR,
+                "Memcached Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR,
                 PreviousException::getInstance(1));
         }
 
