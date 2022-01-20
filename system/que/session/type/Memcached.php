@@ -53,11 +53,11 @@ class Memcached
 
     /**
      * Memcached constructor.
-     * @param string $session_id
+     * @param string|null $session_id
      */
-    protected function __construct(string $session_id)
+    protected function __construct(?string $session_id)
     {
-        $this->session_id = $session_id;
+        $this->session_id = $session_id ?: 'cache';
 
         if (!isset($this->memcached)) {
 
@@ -81,10 +81,10 @@ class Memcached
     }
 
     /**
-     * @param string $session_id
+     * @param string|null $session_id
      * @return Memcached
      */
-    public static function getInstance(string $session_id): Memcached
+    public static function getInstance(string $session_id = null): Memcached
     {
         if (!isset(self::$instance))
             self::$instance = new self($session_id);
@@ -170,6 +170,56 @@ class Memcached
         ]);
         if (!($status = $this->write_data())) Arr::unset($this->pointer, $key);
         return $status;
+    }
+
+    /**
+     * @param $key
+     * @param ...$values
+     * @return bool
+     */
+    public function rPush($key, ...$values) {
+        $list = $this->memcached->get($key);
+        if (empty($list)) {
+            $list = [];
+        }
+        return $this->memcached->set($key, [...$list, ...$values]);
+    }
+
+    /**
+     * @param $key
+     * @param ...$values
+     * @return false|int
+     */
+    public function lPush($key, ...$values) {
+        $list = $this->memcached->get($key);
+        if (empty($list)) {
+            $list = [];
+        }
+        return $this->memcached->set($key, [...$values, ...$list]);
+    }
+
+    /**
+     * @param $key
+     * @return bool|mixed
+     */
+    public function rPop($key) {
+        $list = $this->memcached->get($key);
+        if (empty($list)) return false;
+        $value = array_pop($list);
+        $this->memcached->set($key, $list);
+        return $value;
+    }
+
+    /**
+     * @param $key
+     * @return bool|mixed
+     */
+    public function lPop($key) {
+        $list = $this->memcached->get($key);
+        if (empty($list)) return false;
+        $value = array_shift($list);
+        $this->memcached->set($key, $list);
+        return $value;
     }
 
     /**

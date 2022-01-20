@@ -38,9 +38,9 @@ class QueKip
 
     /**
      * QueKip constructor.
-     * @param $session_id
+     * @param string|null $session_id
      */
-    protected function __construct(string $session_id)
+    protected function __construct(?string $session_id)
     {
         $this->session_id = $session_id;
         $this->sessionFilePath = ((string) config('cache.quekip.save_path') ?:  session_save_path()) ?: (QUE_PATH . '/cache/session');
@@ -58,10 +58,10 @@ class QueKip
     }
 
     /**
-     * @param string $session_id
+     * @param string|null $session_id
      * @return QueKip
      */
-    public static function getInstance(string $session_id): QueKip
+    public static function getInstance(string $session_id = null): QueKip
     {
         if (!isset(self::$instance))
             self::$instance = new self($session_id);
@@ -107,6 +107,70 @@ class QueKip
             'expire' => $expire !== null ? (APP_TIME + $expire) : null
         ]);
         return $this->write_data() !== false;
+    }
+
+    /**
+     * @param $key
+     * @param ...$values
+     * @return bool
+     */
+    public function rPush($key, ...$values) {
+        $sessionID = $this->session_id;
+        $this->session_id('cache');
+        $list = $this->get($key);
+        if (empty($list)) {
+            $list = [];
+        }
+        $status = $this->set($key, [...$list, ...$values]);
+        $this->session_id($sessionID);
+        return $status;
+    }
+
+    /**
+     * @param $key
+     * @param ...$values
+     * @return false|int
+     */
+    public function lPush($key, ...$values) {
+        $sessionID = $this->session_id;
+        $this->session_id('cache');
+        $list = $this->get($key);
+        if (empty($list)) {
+            $list = [];
+        }
+        $status = $this->set($key, [...$values, ...$list]);
+        $this->session_id($sessionID);
+        return $status;
+    }
+
+    /**
+     * @param $key
+     * @return bool|mixed
+     */
+    public function rPop($key) {
+        $sessionID = $this->session_id;
+        $this->session_id('cache');
+        $list = $this->get($key);
+        if (empty($list)) return false;
+        $value = array_pop($list);
+        $this->set($key, $list);
+        $this->session_id($sessionID);
+        return $value;
+    }
+
+    /**
+     * @param $key
+     * @return bool|mixed
+     */
+    public function lPop($key) {
+        $sessionID = $this->session_id;
+        $this->session_id('cache');
+        $list = $this->get($key);
+        if (empty($list)) return false;
+        $value = array_shift($list);
+        $this->set($key, $list);
+        $this->session_id($sessionID);
+        return $value;
     }
 
     /**
@@ -162,8 +226,8 @@ class QueKip
      * @return bool
      */
     public function session_destroy(): bool {
-        $fileName = sha1($this->session_id);
-        $filePath = "{$this->sessionFilePath}/quekip/que_session_{$fileName}.tmp";
+        $fileName = $this->session_id && $this->session_id != 'cache' ? ('session_' . sha1($this->session_id)) : 'cache';
+        $filePath = "{$this->sessionFilePath}/quekip/que_$fileName.tmp";
         if (!is_file($filePath)) return false;
         if (unlink($filePath)){
             $this->pointer = [];
@@ -184,12 +248,12 @@ class QueKip
             }
         }
 
-        $fileName = sha1($this->session_id);
+        $fileName = $this->session_id && $this->session_id != 'cache' ? ('session_' . sha1($this->session_id)) : 'cache';
 
-        if (!is_file("{$this->sessionFilePath}/quekip/que_session_{$fileName}.tmp"))
-            $this->create_file("{$this->sessionFilePath}/quekip/que_session_{$fileName}.tmp");
+        if (!is_file("{$this->sessionFilePath}/quekip/que_$fileName.tmp"))
+            $this->create_file("{$this->sessionFilePath}/quekip/que_$fileName.tmp");
 
-        if (($cache = @file_get_contents("{$this->sessionFilePath}/quekip/que_session_{$fileName}.tmp")) === false)
+        if (($cache = @file_get_contents("{$this->sessionFilePath}/quekip/que_$fileName.tmp")) === false)
             throw new QueRuntimeException("Unable to read from quekip cache file!", "QueKip Error",
                 E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(5));
 
@@ -211,12 +275,12 @@ class QueKip
             }
         }
 
-        $fileName = sha1($this->session_id);
+        $fileName = $this->session_id && $this->session_id != 'cache' ? ('session_' . sha1($this->session_id)) : 'cache';
 
-        if (!is_file("{$this->sessionFilePath}/quekip/que_session_{$fileName}.tmp"))
-            $this->create_file("{$this->sessionFilePath}/quekip/que_session_{$fileName}.tmp");
+        if (!is_file("{$this->sessionFilePath}/quekip/que_$fileName.tmp"))
+            $this->create_file("{$this->sessionFilePath}/quekip/que_$fileName.tmp");
 
-        if (($status = file_put_contents("{$this->sessionFilePath}/quekip/que_session_{$fileName}.tmp",
+        if (($status = file_put_contents("{$this->sessionFilePath}/quekip/que_$fileName.tmp",
             serialize($this->pointer))) === false) throw new QueRuntimeException("Unable to write to quekip cache file!",
             "QueKip Error", E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(5));
 

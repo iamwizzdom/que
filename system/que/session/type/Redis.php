@@ -50,9 +50,9 @@ class Redis
      */
     private array $pointer = [];
 
-    protected function __construct(string $session_id)
+    protected function __construct(?string $session_id)
     {
-        $this->session_id = $session_id;
+        $this->session_id = $session_id ?: 'cache';
 
         if (!isset($this->redis)) {
 
@@ -76,10 +76,10 @@ class Redis
     }
 
     /**
-     * @param string $session_id
+     * @param string|null $session_id
      * @return Redis
      */
-    public static function getInstance(string $session_id): Redis
+    public static function getInstance(string $session_id = null): Redis
     {
         if (!isset(self::$instance))
             self::$instance = new self($session_id);
@@ -132,7 +132,7 @@ class Redis
      * @return bool
      */
     public function isset($key): bool {
-        return Arr::isset($this->pointer, $key);
+        return Arr::isset($this->pointer, $key) || $this->redis->exists($key);
     }
 
     /**
@@ -171,7 +171,7 @@ class Redis
      * @return false|int
      */
     public function rPush($key, ...$values) {
-        return $this->redis->rPush("{$this->session_id}-$key", ...$values);
+        return $this->redis->rPush($key, ...$values);
     }
 
     /**
@@ -180,7 +180,7 @@ class Redis
      * @return false|int
      */
     public function lPush($key, ...$values) {
-        return $this->redis->lPush("{$this->session_id}-$key", ...$values);
+        return $this->redis->lPush($key, ...$values);
     }
 
     /**
@@ -188,7 +188,7 @@ class Redis
      * @return bool|mixed
      */
     public function rPop($key) {
-        return $this->redis->rPop("{$this->session_id}-$key");
+        return $this->redis->rPop($key);
     }
 
     /**
@@ -196,7 +196,7 @@ class Redis
      * @return bool|mixed
      */
     public function lPop($key) {
-        return $this->redis->lPop("{$this->session_id}-$key");
+        return $this->redis->lPop($key);
     }
 
     /**
@@ -206,10 +206,13 @@ class Redis
     public function del(...$keys): int {
         $count = 0;
         foreach ($keys as $key) {
-            Arr::unset($this->pointer, $key);
-            $count++;
+            if (Arr::isset($this->pointer, $key)) {
+                Arr::unset($this->pointer, $key);
+                $count++;
+            }
         }
         if ($count > 0) $this->write_data();
+        else return $this->redis->del(...$keys);
         return $count;
     }
 
