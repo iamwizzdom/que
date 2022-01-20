@@ -12,14 +12,13 @@ define('APP_ROOT_FOLDER', basename(APP_ROOT_PATH)); // Your app root folder name
 const APP_PACKAGE_NAME = APP_ROOT_FOLDER;
 const APP_PATH = (APP_ROOT_PATH . '/app');
 const QUE_PATH = (APP_ROOT_PATH . '/system/que');
+const CACHE_PATH = (QUE_PATH . '/cache/files');
 define('APP_HOST', APP_SCHEME . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost'));
 
 //autoload defines
 const AUTOLOAD_PATH = [
     APP_PATH, QUE_PATH
 ];
-
-const AUTOLOAD_CACHE_PATH = (QUE_PATH . '/cache');
 
 const AUTOLOAD_REQUIRE = [
     APP_ROOT_PATH . '/vendor/autoload.php',

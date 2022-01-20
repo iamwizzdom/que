@@ -8,5 +8,5 @@
 /app/storage/
 /app/error/
 /app/lab/
-/system/que/cache/
+/system/que/cache/files
 composer.lock

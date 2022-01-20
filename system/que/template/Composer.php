@@ -557,7 +557,7 @@ class Composer
 
         $smarty = SmartyEngine::getInstance();
         $smarty->setTmpDir($this->getTmpDir());
-        $smarty->setCacheDir((QUE_PATH . "/cache/tmp/smarty"));
+        $smarty->setCacheDir((CACHE_PATH . "/tmp/smarty"));
         $smarty->setTmpFileName($this->getTmpFileName());
         $smarty->setContext($this->getContext());
 

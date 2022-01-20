@@ -50,7 +50,7 @@ class CacheAutoload
      * where CacheAutoload stores a cache of all file paths
      * @var string
      */
-    private static string $cache_file_path = AUTOLOAD_CACHE_PATH . "/autoload.json";
+    private static string $cache_file_path = CACHE_PATH . "/autoload.json";
 
     /**
      * This property defines the project package name
