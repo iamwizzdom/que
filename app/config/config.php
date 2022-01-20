@@ -29,7 +29,7 @@ const AUTOLOAD_REQUIRE = [
 ];
 
 const AUTOLOAD_EXCLUDE = [
-    'que/cache',
+    'que/cache/files',
     'app/storage',
     'app/template',
     'que/assets',
