@@ -1,5 +1,7 @@
 <?php
 
+namespace que\cache;
+
 use JetBrains\PhpStorm\ExpectedValues;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
