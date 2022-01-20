@@ -1,9 +1,9 @@
 <?php
 
+use que\cache\Cache;
 use que\common\exception\PreviousException;
 use que\common\exception\QueException;
 use que\http\HTTP;
-use que\support\Arr;
 
 /**
  * Created by PhpStorm.
@@ -15,9 +15,9 @@ use que\support\Arr;
 class Events
 {
     /**
-     * @var array
+     * @var Cache
      */
-    private array $events = [];
+    private Cache $cache;
 
     /**
      * @var Events
@@ -26,6 +26,7 @@ class Events
 
     protected function __construct()
     {
+        $this->cache = Cache::getInstance();
     }
 
     private function __clone()
@@ -54,7 +55,7 @@ class Events
      */
     public function has(string $event): bool
     {
-        return isset($this->events[$event]);
+        return $this->cache->isset($event);
     }
 
     /**
@@ -64,10 +65,7 @@ class Events
      */
     public function push(string $event, callable $listener, bool $runOnce = false)
     {
-        $this->events[$event][] = [
-            'runOnce' => $runOnce,
-            'listener' => $listener
-        ];
+        $this->cache->rPush($event, ['runOnce' => $runOnce, 'listener' => $listener]);
     }
 
     /**
@@ -82,21 +80,12 @@ class Events
                 HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(2));
         }
 
-        $events = $this->events[$event];
-
-        foreach ($events as $key => $eventItem) {
+        while ($eventItem = $this->cache->lPop($event)) {
             $runOnce = $eventItem['runOnce'];
             $listener = $eventItem['listener'];
             $listener(...$params);
-            if ($runOnce) unset($events[$key]);
+            if (!$runOnce) $this->push($event, $listener);
         }
-
-        if (empty($events)) {
-            unset($this->events[$event]);
-            return;
-        }
-
-        $this->events[$event] = $events;
     }
 
     /**
