@@ -1,69 +1,95 @@
-<?php return array (
-  'root' => 
-  array (
-    'pretty_version' => 'dev-master',
-    'version' => 'dev-master',
-    'aliases' => 
-    array (
+<?php return array(
+    'root' => array(
+        'pretty_version' => 'dev-master',
+        'version' => 'dev-master',
+        'type' => 'library',
+        'install_path' => __DIR__ . '/../../',
+        'aliases' => array(),
+        'reference' => '513beb8326c43fcd11cef6865ee351f8d5fbe69b',
+        'name' => '__root__',
+        'dev' => true,
     ),
-    'reference' => 'c4fc7e39bdd750034bf700da286372138011ebdf',
-    'name' => '__root__',
-  ),
-  'versions' => 
-  array (
-    '__root__' => 
-    array (
-      'pretty_version' => 'dev-master',
-      'version' => 'dev-master',
-      'aliases' => 
-      array (
-      ),
-      'reference' => 'c4fc7e39bdd750034bf700da286372138011ebdf',
+    'versions' => array(
+        '__root__' => array(
+            'pretty_version' => 'dev-master',
+            'version' => 'dev-master',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
+            'reference' => '513beb8326c43fcd11cef6865ee351f8d5fbe69b',
+            'dev_requirement' => false,
+        ),
+        'jeremeamia/superclosure' => array(
+            'pretty_version' => '2.4.0',
+            'version' => '2.4.0.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../jeremeamia/superclosure',
+            'aliases' => array(),
+            'reference' => '5707d5821b30b9a07acfb4d76949784aaa0e9ce9',
+            'dev_requirement' => false,
+        ),
+        'nikic/php-parser' => array(
+            'pretty_version' => 'v4.13.2',
+            'version' => '4.13.2.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../nikic/php-parser',
+            'aliases' => array(),
+            'reference' => '210577fe3cf7badcc5814d99455df46564f3c077',
+            'dev_requirement' => false,
+        ),
+        'phpmailer/phpmailer' => array(
+            'pretty_version' => 'v6.4.0',
+            'version' => '6.4.0.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../phpmailer/phpmailer',
+            'aliases' => array(),
+            'reference' => '050d430203105c27c30efd1dce7aa421ad882d01',
+            'dev_requirement' => false,
+        ),
+        'smarty/smarty' => array(
+            'pretty_version' => 'v3.1.39',
+            'version' => '3.1.39.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../smarty/smarty',
+            'aliases' => array(),
+            'reference' => 'e27da524f7bcd7361e3ea5cdfa99c4378a7b5419',
+            'dev_requirement' => false,
+        ),
+        'symfony/polyfill-ctype' => array(
+            'pretty_version' => 'v1.22.1',
+            'version' => '1.22.1.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../symfony/polyfill-ctype',
+            'aliases' => array(),
+            'reference' => 'c6c942b1ac76c82448322025e084cadc56048b4e',
+            'dev_requirement' => false,
+        ),
+        'symfony/polyfill-mbstring' => array(
+            'pretty_version' => 'v1.22.1',
+            'version' => '1.22.1.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../symfony/polyfill-mbstring',
+            'aliases' => array(),
+            'reference' => '5232de97ee3b75b0360528dae24e73db49566ab1',
+            'dev_requirement' => false,
+        ),
+        'symfony/polyfill-php56' => array(
+            'pretty_version' => 'v1.20.0',
+            'version' => '1.20.0.0',
+            'type' => 'metapackage',
+            'install_path' => NULL,
+            'aliases' => array(),
+            'reference' => '54b8cd7e6c1643d78d011f3be89f3ef1f9f4c675',
+            'dev_requirement' => false,
+        ),
+        'twig/twig' => array(
+            'pretty_version' => 'v3.3.0',
+            'version' => '3.3.0.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../twig/twig',
+            'aliases' => array(),
+            'reference' => '1f3b7e2c06cc05d42936a8ad508ff1db7975cdc5',
+            'dev_requirement' => false,
+        ),
     ),
-    'phpmailer/phpmailer' => 
-    array (
-      'pretty_version' => 'v6.4.0',
-      'version' => '6.4.0.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => '050d430203105c27c30efd1dce7aa421ad882d01',
-    ),
-    'smarty/smarty' => 
-    array (
-      'pretty_version' => 'v3.1.39',
-      'version' => '3.1.39.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => 'e27da524f7bcd7361e3ea5cdfa99c4378a7b5419',
-    ),
-    'symfony/polyfill-ctype' => 
-    array (
-      'pretty_version' => 'v1.22.1',
-      'version' => '1.22.1.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => 'c6c942b1ac76c82448322025e084cadc56048b4e',
-    ),
-    'symfony/polyfill-mbstring' => 
-    array (
-      'pretty_version' => 'v1.22.1',
-      'version' => '1.22.1.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => '5232de97ee3b75b0360528dae24e73db49566ab1',
-    ),
-    'twig/twig' => 
-    array (
-      'pretty_version' => 'v3.3.0',
-      'version' => '3.3.0.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => '1f3b7e2c06cc05d42936a8ad508ff1db7975cdc5',
-    ),
-  ),
 );

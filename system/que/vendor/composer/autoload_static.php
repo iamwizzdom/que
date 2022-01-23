@@ -7,8 +7,8 @@ namespace Composer\Autoload;
 class ComposerStaticInit1c33a4207aabd74eea5b4f773f1b6ce8
 {
     public static $files = array (
-        '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
         '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
+        '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -20,9 +20,11 @@ class ComposerStaticInit1c33a4207aabd74eea5b4f773f1b6ce8
         array (
             'Symfony\\Polyfill\\Mbstring\\' => 26,
             'Symfony\\Polyfill\\Ctype\\' => 23,
+            'SuperClosure\\' => 13,
         ),
         'P' => 
         array (
+            'PhpParser\\' => 10,
             'PHPMailer\\PHPMailer\\' => 20,
         ),
     );
@@ -39,6 +41,14 @@ class ComposerStaticInit1c33a4207aabd74eea5b4f773f1b6ce8
         'Symfony\\Polyfill\\Ctype\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-ctype',
+        ),
+        'SuperClosure\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/jeremeamia/superclosure/src',
+        ),
+        'PhpParser\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/nikic/php-parser/lib/PhpParser',
         ),
         'PHPMailer\\PHPMailer\\' => 
         array (
