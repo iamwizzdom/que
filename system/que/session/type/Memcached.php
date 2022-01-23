@@ -86,8 +86,13 @@ class Memcached
      */
     public static function getInstance(string $session_id = null): Memcached
     {
-        if (!isset(self::$instance))
+        if (!isset(self::$instance)) {
             self::$instance = new self($session_id);
+        } else {
+            if (self::$instance->session_id() != $session_id) {
+                self::$instance->session_id($session_id);
+            }
+        }
 
         return self::$instance;
     }
@@ -204,7 +209,12 @@ class Memcached
      */
     public function rPop($key) {
         $list = $this->memcached->get($key);
-        if (empty($list)) return false;
+        if (empty($list)) {
+            if ($this->isset($key)) {
+                $this->delete($key);
+            }
+            return false;
+        }
         $value = array_pop($list);
         $this->memcached->set($key, $list);
         return $value;
@@ -216,7 +226,12 @@ class Memcached
      */
     public function lPop($key) {
         $list = $this->memcached->get($key);
-        if (empty($list)) return false;
+        if (empty($list)) {
+            if ($this->isset($key)) {
+                $this->delete($key);
+            }
+            return false;
+        }
         $value = array_shift($list);
         $this->memcached->set($key, $list);
         return $value;

@@ -81,8 +81,13 @@ class Redis
      */
     public static function getInstance(string $session_id = null): Redis
     {
-        if (!isset(self::$instance))
+        if (!isset(self::$instance)) {
             self::$instance = new self($session_id);
+        } else {
+            if (self::$instance->session_id() != $session_id) {
+                self::$instance->session_id($session_id);
+            }
+        }
 
         return self::$instance;
     }
@@ -171,7 +176,9 @@ class Redis
      * @return false|int
      */
     public function rPush($key, ...$values) {
-        return $this->redis->rPush($key, ...$values);
+        return $this->redis->rPush($key, ...Arr::callback($values, function ($value) {
+            return serialize($value);
+        }));
     }
 
     /**
@@ -180,7 +187,9 @@ class Redis
      * @return false|int
      */
     public function lPush($key, ...$values) {
-        return $this->redis->lPush($key, ...$values);
+        return $this->redis->lPush($key, ...Arr::callback($values, function ($value) {
+            return serialize($value);
+        }));
     }
 
     /**
@@ -188,7 +197,7 @@ class Redis
      * @return bool|mixed
      */
     public function rPop($key) {
-        return $this->redis->rPop($key);
+        return unserialize($this->redis->rPop($key));
     }
 
     /**
@@ -196,7 +205,7 @@ class Redis
      * @return bool|mixed
      */
     public function lPop($key) {
-        return $this->redis->lPop($key);
+        return unserialize($this->redis->lPop($key));
     }
 
     /**
