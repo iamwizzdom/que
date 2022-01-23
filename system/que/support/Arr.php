@@ -34,11 +34,7 @@ class Arr
      */
     public static function exists($array, $key): bool
     {
-        if ($array instanceof ArrayAccess) {
-            return $array->offsetExists($key);
-        }
-
-        return array_key_exists($key, $array);
+        return array_has_key($array, $key);
     }
 
     /**
@@ -226,6 +222,16 @@ class Arr
 
     /**
      * @param array $array
+     * @param int $flag
+     * @return array
+     */
+    public static function unique(array $array, int $flag = SORT_STRING)
+    {
+       return array_unique($array, $flag);
+    }
+
+    /**
+     * @param array $array
      * @param callable $callback
      * @param int $mode
      * @return array
@@ -333,7 +339,7 @@ class Arr
      * @return bool
      */
     public static function isset(array $array, $offset) {
-        return array_has_key($array, $offset);
+        return static::has($array, $offset);
     }
 
     /**
