@@ -6,7 +6,9 @@ use JetBrains\PhpStorm\ExpectedValues;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use que\http\HTTP;
+use que\session\type\Memcached;
 use que\session\type\QueKip;
+use que\session\type\Redis;
 
 /**
  * Created by PhpStorm.
@@ -28,14 +30,14 @@ class Cache
     private QueKip $queKip;
 
     /**
-     * @var \que\session\type\Redis
+     * @var Redis
      */
-    private \que\session\type\Redis $redis;
+    private Redis $redis;
 
     /**
-     * @var \que\session\type\Memcached
+     * @var Memcached
      */
-    private \que\session\type\Memcached $memcached;
+    private Memcached $memcached;
 
     private string $using = 'quekip';
 
@@ -44,16 +46,16 @@ class Cache
         $cache_config = (array) config('cache', []);
 
         if (($cache_config['memcached']['enable'] ?? false) === true) {
-            $this->memcached = \que\session\type\Memcached::getInstance();
+            $this->memcached = Memcached::getInstance('cache');
             $this->using = 'memcached';
         }
 
         if (($cache_config['redis']['enable'] ?? false) === true) {
-            $this->redis = \que\session\type\Redis::getInstance();
+            $this->redis = Redis::getInstance('cache');
             $this->using = 'redis';
         }
 
-        $this->queKip = QueKip::getInstance();
+        $this->queKip = QueKip::getInstance('cache', true);
     }
 
     private function __clone()
