@@ -27,6 +27,11 @@ class QueKip
     private static QueKip $instance;
 
     /**
+     * @var QueKip
+     */
+    private static QueKip $sessionlessInstance;
+
+    /**
      * @var array
      */
     private array $pointer = [];
@@ -59,13 +64,30 @@ class QueKip
 
     /**
      * @param string|null $session_id
+     * @param bool $sessionless
      * @return QueKip
      */
-    public static function getInstance(string $session_id = null): QueKip
+    public static function getInstance(string $session_id = null, bool $sessionless = false): QueKip
     {
-        if (!isset(self::$instance))
-            self::$instance = new self($session_id);
-        return self::$instance;
+        if (!$sessionless) {
+            if (!isset(self::$instance)) {
+                self::$instance = new self($session_id);
+            } else {
+                if (self::$instance->session_id() != $session_id) {
+                    self::$instance->session_id($session_id);
+                }
+            }
+            return self::$instance;
+        }
+
+        if (!isset(self::$sessionlessInstance)) {
+            self::$sessionlessInstance = new self($session_id);
+        } else {
+            if (self::$sessionlessInstance->session_id() != $session_id) {
+                self::$sessionlessInstance->session_id($session_id);
+            }
+        }
+        return self::$sessionlessInstance;
     }
 
     /**
@@ -117,10 +139,7 @@ class QueKip
     public function rPush($key, ...$values) {
         $sessionID = $this->session_id;
         $this->session_id('cache');
-        $list = $this->get($key);
-        if (empty($list)) {
-            $list = [];
-        }
+        $list = $this->get($key, []);
         $status = $this->set($key, [...$list, ...$values]);
         $this->session_id($sessionID);
         return $status;
@@ -134,10 +153,7 @@ class QueKip
     public function lPush($key, ...$values) {
         $sessionID = $this->session_id;
         $this->session_id('cache');
-        $list = $this->get($key);
-        if (empty($list)) {
-            $list = [];
-        }
+        $list = $this->get($key, []);
         $status = $this->set($key, [...$values, ...$list]);
         $this->session_id($sessionID);
         return $status;
@@ -151,7 +167,12 @@ class QueKip
         $sessionID = $this->session_id;
         $this->session_id('cache');
         $list = $this->get($key);
-        if (empty($list)) return false;
+        if (empty($list)) {
+            if ($this->isset($key)) {
+                $this->delete($key);
+            }
+            return false;
+        }
         $value = array_pop($list);
         $this->set($key, $list);
         $this->session_id($sessionID);
@@ -166,7 +187,12 @@ class QueKip
         $sessionID = $this->session_id;
         $this->session_id('cache');
         $list = $this->get($key);
-        if (empty($list)) return false;
+        if (empty($list)) {
+            if ($this->isset($key)) {
+                $this->delete($key);
+            }
+            return false;
+        }
         $value = array_shift($list);
         $this->set($key, $list);
         $this->session_id($sessionID);
