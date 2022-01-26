@@ -139,6 +139,7 @@ class QueKip
     public function rPush($key, ...$values) {
         $sessionID = $this->session_id;
         $this->session_id('cache');
+        $this->refresh();
         $list = $this->get($key, []);
         $status = $this->set($key, [...$list, ...$values]);
         $this->session_id($sessionID);
@@ -153,6 +154,7 @@ class QueKip
     public function lPush($key, ...$values) {
         $sessionID = $this->session_id;
         $this->session_id('cache');
+        $this->refresh();
         $list = $this->get($key, []);
         $status = $this->set($key, [...$values, ...$list]);
         $this->session_id($sessionID);
@@ -166,6 +168,7 @@ class QueKip
     public function rPop($key) {
         $sessionID = $this->session_id;
         $this->session_id('cache');
+        $this->refresh();
         $list = $this->get($key);
         if (empty($list)) {
             if ($this->isset($key)) {
@@ -186,6 +189,7 @@ class QueKip
     public function lPop($key) {
         $sessionID = $this->session_id;
         $this->session_id('cache');
+        $this->refresh();
         $list = $this->get($key);
         if (empty($list)) {
             if ($this->isset($key)) {
@@ -260,6 +264,10 @@ class QueKip
             return true;
         }
         return false;
+    }
+
+    public function refresh(): void {
+        $this->fetch_data();
     }
 
     private function fetch_data() {

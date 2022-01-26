@@ -269,6 +269,10 @@ class Redis
         return false;
     }
 
+    public function refresh(): void {
+        $this->fetch_data();
+    }
+
     private function fetch_data() {
         $data = $this->redis->get($this->session_id);
         $this->pointer = !empty($data) && is_string($data) ? json_decode($data, true) : [];

@@ -298,6 +298,10 @@ class Memcached
         return false;
     }
 
+    public function refresh(): void {
+        $this->fetch_data();
+    }
+
     private function fetch_data() {
         $this->pointer = $this->memcached->get($this->session_id) ?: [];
     }

@@ -202,4 +202,12 @@ class Cache
             default => $this->queKip->delete(...$keys)
         };
     }
+
+    public function refresh(): void {
+        match ($this->using) {
+            'redis' => $this->redis->refresh(),
+            'memcached' => $this->memcached->refresh(),
+            default => $this->queKip->refresh()
+        };
+    }
 }
