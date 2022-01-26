@@ -34,6 +34,10 @@ class Header implements QueArrayAccess
      */
     #[Pure] protected function __construct()
     {
+        if (!function_exists('getallheaders')) {
+            $this->pointer = [];
+            return;
+        }
         $header = getallheaders();
         $this->pointer = is_array($header) ? $header : [];
     }

@@ -380,7 +380,7 @@ class Request implements QueArrayAccess
         } elseif ($host = headers('X-Forwarded-Host')) {
             goto PROCEED;
         } elseif (!$host = headers('HOST')) {
-            return server('SERVER_PORT');
+            return server('SERVER_PORT', 80);
         }
 
         PROCEED:
