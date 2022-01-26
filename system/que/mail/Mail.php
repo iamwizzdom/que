@@ -52,7 +52,12 @@ class Mail {
     /**
      * @var string
      */
-    private $subject ='';
+    private $subject = '';
+
+    /**
+     * @var string
+     */
+    private $body = '';
 
     /**
      * @var string
@@ -213,6 +218,22 @@ class Mail {
     public function setSubject(string $subject): void
     {
         $this->subject = $subject;
+    }
+
+    /**
+     * @return string
+     */
+    public function getBody(): string
+    {
+        return $this->body;
+    }
+
+    /**
+     * @param string $body
+     */
+    public function setBody(string $body): void
+    {
+        $this->body = $body;
     }
 
     /**

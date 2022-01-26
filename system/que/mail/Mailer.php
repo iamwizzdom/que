@@ -136,8 +136,13 @@ class Mailer
         if (!$this->composer instanceof Composer)
             throw new QueException("Composer not set. Mail cannot be prepared without composer.", "Mailer error");
 
-        $mail->AltBody = $this->parse($mail->getBodyPath(), $mail->getData(), $compose_using);
-        $mail->MsgHTML = $this->parse($mail->getHtmlPath(), $mail->getData(), $compose_using);
+        if (!empty($mail->getBodyPath())) {
+            $mail->AltBody = $this->parse($mail->getBodyPath(), $mail->getData(), $compose_using);
+        }
+
+        if (!empty($mail->getHtmlPath())) {
+            $mail->MsgHTML = $this->parse($mail->getHtmlPath(), $mail->getData(), $compose_using);
+        }
 
     }
 
@@ -157,7 +162,7 @@ class Mailer
         if (!$mail instanceof Mail)
             throw new QueException("Data found in mailer queue with key '{$key}' seems not to be a valid mail", "Mailer error");
 
-        if (!(isset($mail->AltBody) && !empty($mail->AltBody)) || !(isset($mail->MsgHTML) && !empty($mail->MsgHTML)))
+        if ((!(isset($mail->AltBody) && !empty($mail->AltBody)) || !(isset($mail->MsgHTML) && !empty($mail->MsgHTML))) && empty($mail->getBody()))
             throw new QueException("Mail found in mailer queue with key '{$key}' seems not to be prepared. You can't dispatch an unprepared mail.", "Mailer error");
 
         try {
@@ -187,8 +192,12 @@ class Mailer
                 $this->mail->addBCC($bcc['email'], $bcc['name']);
             }
 
-            $this->mail->AltBody = $mail->AltBody;
-            $this->mail->MsgHTML($mail->MsgHTML);
+            if (isset($mail->AltBody)) $this->mail->AltBody = $mail->AltBody;
+            if (isset($mail->MsgHTML)) $this->mail->msgHTML($mail->MsgHTML);
+
+            if (!isset($mail->AltBody) && !isset($mail->MsgHTML) && !empty($mail->getBody())) {
+                $this->mail->Body = $mail->getBody();
+            }
 
             foreach ($mail->getAttachment() as $attachment) {
                 $this->mail->addAttachment($attachment['path'], $attachment['name'],
@@ -200,7 +209,7 @@ class Mailer
                     $attachment['encoding'], $attachment['type'], $attachment['disposition']);
             }
 
-            $status = (bool) $this->mail->Send();
+            $status = $this->mail->Send();
 
             if (LIVE && !$status) log_err([$mail->getKey() => "Mail Error: {$this->mail->ErrorInfo}"]);
 
