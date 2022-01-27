@@ -655,8 +655,7 @@ abstract class BaseModel implements Model
      * @return static
      */
     public static function cast(Model $model): self {
-        $modelName = get_called_class();
-        return new $modelName($model->getObject(), $model->getTable(), $model->getPrimaryKey());
+        return new static($model->getObject(), $model->getTable(), $model->getPrimaryKey());
     }
 
     public function __clone(): void
