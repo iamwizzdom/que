@@ -90,7 +90,7 @@ class DB extends Connect
 
         if (!$this->isTransEnabled()) return false;
         elseif ($this->getTransDepth() > 0) {
-            $this->transDepth++;
+            self::$transDepth++;
             return true;
         }
 
@@ -98,7 +98,7 @@ class DB extends Connect
 
         if ($this->trans_begin()) {
             $this->setTransSuccessful(true);
-            $this->transDepth++;
+            self::$transDepth++;
             return true;
         }
 
@@ -127,7 +127,7 @@ class DB extends Connect
     {
         if (!$this->isTransEnabled() || $this->getTransDepth() <= 0) return false;
         elseif ($this->getTransDepth() > 1 || $this->commit()) {
-            $this->transDepth--;
+            $this->broadcastTransComplete(self::$transDepth--);
             return true;
         }
         return false;
@@ -140,7 +140,7 @@ class DB extends Connect
     {
         if (!$this->isTransEnabled() || $this->getTransDepth() <= 0) return false;
         elseif ($this->getTransDepth() > 1 || $this->rollback()) {
-            $this->transDepth--;
+            self::$transDepth--;
             return true;
         }
         return false;
@@ -149,17 +149,17 @@ class DB extends Connect
     /**
      * @return bool
      */
-    public function transRollBackAll()
+    public function transRollBackAll(): bool
     {
         if ($this->getTransDepth() > 0) $this->setTransSuccessful(false);
-        $depth = null; $count = 0;
+        $success = true; $count = 0;
         while ($this->getTransDepth() > 0) {
             $depth = $this->getTransDepth();
-            $this->transRollBack();
+            if (!$this->transRollBack()) $success = false;
             if ($depth === $this->getTransDepth()) break;
             if ($this->getTransDepth() == ++$count) break;
         }
-        return $depth !== null;
+        return $success === true && $count > 0;
     }
 
     /**

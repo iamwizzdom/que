@@ -2,6 +2,7 @@
 
 namespace que\database\connection;
 
+use JetBrains\PhpStorm\Pure;
 use que\common\exception\PreviousException;
 use que\common\exception\QueRuntimeException;
 use que\database\interfaces\drivers\Driver;
@@ -44,7 +45,12 @@ abstract class Connect
     /**
      * @var int
      */
-    protected int $transDepth = 0;
+    protected static int $transDepth = 0;
+
+    /**
+     * @var callable[]
+     */
+    private static array $transListeners = [];
 
     /**
      * @return Driver
@@ -79,7 +85,7 @@ abstract class Connect
      * @param $class
      * @return string
      */
-    private function getDriverName($class)
+    private function getDriverName($class): string
     {
         return get_class($class);
     }
@@ -133,7 +139,7 @@ abstract class Connect
      */
     protected function getTransDepth(): int
     {
-        return $this->transDepth;
+        return self::$transDepth;
     }
 
     /**
@@ -150,6 +156,14 @@ abstract class Connect
     public function setTransEnabled(bool $transEnabled): void
     {
         $this->transEnabled = $transEnabled;
+    }
+
+    /**
+     * @return bool
+     */
+    #[Pure] public static function hasOnGoingTrans(): bool
+    {
+        return self::$transDepth > 0;
     }
 
     /**
@@ -198,6 +212,23 @@ abstract class Connect
     protected function setTransFailed(bool $transFailed): void
     {
         $this->transFailed = $transFailed;
+    }
+
+    /**
+     * @param callable $listener
+     */
+    public static function addTransListener(callable $listener) {
+        self::$transListeners[self::$transDepth][] = $listener;
+    }
+
+    /**
+     * @param int $index
+     */
+    protected function broadcastTransComplete(int $index) {
+        if (!isset(self::$transListeners[$index])) return;
+        foreach (self::$transListeners[$index] as $listener) {
+            $listener();
+        }
     }
 
     /**
