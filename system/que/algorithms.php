@@ -100,6 +100,7 @@ function insertion_sort(array $init_arr)
  */
 function binary_search(array $arr, int $left, int $right, $search)
 {
+
     if (!is_numeric_array($arr))
         throw new QueRuntimeException("binary_search expects a numeric array");
 

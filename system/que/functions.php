@@ -1296,9 +1296,8 @@ function array_identical(array $array1, array $array2): bool
  * @return bool
  */
 #[Pure] function is_numeric_array(array $array): bool {
-    foreach ($array as $value)
-        if (!is_numeric($value)) return false;
-    return true;
+    $keys = array_keys($array);
+    return array_keys($keys) === $keys;
 }
 
 /**
@@ -1594,9 +1593,7 @@ function in_object($needle, object $object, bool $strict = false): bool {
  * @return bool
  */
 #[Pure] function is_numeric_object(object $object): bool {
-    foreach ($object as $value)
-        if (!is_numeric($value)) return false;
-    return true;
+    return is_numeric_array((array) $object);
 }
 
 /**
