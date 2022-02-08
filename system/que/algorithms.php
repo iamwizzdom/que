@@ -12,7 +12,7 @@ use que\utility\pattern\heap\Heap;
  *
  * @modifier [Wisdom Emenike](https://github.com/iamwizzdom)
  */
-function fisher_yates_shuffle(array $arr, int $repeat = 1)
+function fisher_yates_shuffle(array $arr, int $repeat = 1): array
 {
     for ($v = 0; $v < $repeat; $v++) {
         $n = count($arr);
@@ -73,7 +73,7 @@ function bubble_sort(array $arr, bool $reverse = false): array
  * @param array $init_arr
  * @return array
  */
-function insertion_sort(array $init_arr)
+function insertion_sort(array $init_arr): array
 {
     for ($i = 0; $i < count($init_arr); $i++) {
         $val = $init_arr[$i];
@@ -98,7 +98,7 @@ function insertion_sort(array $init_arr)
  * @return float
  * @throws RunTimeException
  */
-function binary_search(array $arr, int $left, int $right, $search)
+function binary_search(array $arr, int $left, int $right, $search): float
 {
 
     if (!is_numeric_array($arr))
@@ -130,16 +130,16 @@ function binary_search(array $arr, int $left, int $right, $search)
  * making only one exchange for every pass through the list.
  *
  * @param array $data
- * @return array|mixed
+ * @return array
  */
-function selection_sort(array $data)
+function selection_sort(array $data): array
 {
     if (!function_exists('swap_positions')) {
         function swap_positions($data1, $left, $right)
         {
-            $backup_old_data_right_value = $data1[$right];
+            $rightData = $data1[$right];
             $data1[$right] = $data1[$left];
-            $data1[$left] = $backup_old_data_right_value;
+            $data1[$left] = $rightData;
             return $data1;
         }
     }
@@ -159,7 +159,7 @@ function selection_sort(array $data)
  * @param array $array
  * @return array
  */
-function merge_sort(array $array)
+function merge_sort(array $array): array
 {
     if (!function_exists('merge')) {
         function merge($left, $right)
@@ -201,10 +201,10 @@ function merge_sort(array $array)
  * @param Heap $heap
  * @return array
  */
-function heap_sort(Heap $heap)
+function heap_sort(Heap $heap): array
 {
     $size = $heap->getSize();
-    // "shift" all nodes, except lowest level as it has no children
+    // "shift" all nodes, except the lowest level as it has no children
     for ($j = (int)($size/2) - 1; $j >= 0; $j--) $heap->bubbleDown($j);
 
     // sort the heap
