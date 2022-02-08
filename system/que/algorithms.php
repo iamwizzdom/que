@@ -6,23 +6,23 @@ use que\utility\pattern\heap\Heap;
 /**
  * This is a simple fisher yates shuffle algorithm, but modified to also shuffle associative arrays
  *
- * @param array $init_arr -- This is the array to be shuffled
+ * @param array $arr -- This is the array to be shuffled
  * @param int $repeat -- This is the number of times you want the array to be shuffled
  * @return array
  *
  * @modifier [Wisdom Emenike](https://github.com/iamwizzdom)
  */
-function fisher_yates_shuffle(array $init_arr, int $repeat = 1)
+function fisher_yates_shuffle(array $arr, int $repeat = 1)
 {
     for ($v = 0; $v < $repeat; $v++) {
-        $n = count($init_arr);
-        $keys = array_keys($init_arr);
+        $n = count($arr);
+        $keys = array_keys($arr);
         for ($i = ($n - 1); $i >= 1; $i--) {
             $j = $keys[mt_rand(0, ($n - 1))];
-            list($init_arr[$j], $init_arr[$keys[$i]]) = array($init_arr[$keys[$i]], $init_arr[$j]);
+            list($arr[$j], $arr[$keys[$i]]) = array($arr[$keys[$i]], $arr[$j]);
         }
     }
-    return $init_arr;
+    return $arr;
 }
 
 /**
