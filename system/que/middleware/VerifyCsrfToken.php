@@ -72,6 +72,6 @@ class VerifyCsrfToken extends Middleware
             ) if (!empty($token = $input->get($key))) break;
         }
 
-        CSRF::getInstance()->validateToken((!is_null($token) ? $token : ""));
+        CSRF::getInstance()->validateToken(($token ?: ""));
     }
 }

@@ -10,6 +10,7 @@ namespace que\security;
 
 use Exception;
 use que\common\exception\QueException;
+use que\http\request\Request;
 use que\session\type\Files;
 use que\session\Session;
 use que\support\Arr;
@@ -61,7 +62,12 @@ class CSRF
     public function validateToken(string $token): bool
     {
 
-        if (empty($token) || strcmp($token, $this->getToken()) != 0) {
+        if (empty($token) && Request::getMethod() == Request::METHOD_GET) {
+            return true;
+        }
+
+        if (strcmp($token, $this->getToken()) != 0) {
+            if (empty($token)) throw new QueException('Cross Site Request Forgery (CSRF) are forbidden. [No Token Passed]', 'CSRF Error');
             $decodedToken = $this->decodeToken($token);
             if (!$this->isValidToken($decodedToken)) throw new QueException('Cross Site Request Forgery (CSRF) are forbidden. [Invalid Token]', 'CSRF Error');
             if (!$this->isValidSignature($decodedToken)) throw new QueException('Cross Site Request Forgery (CSRF) are forbidden. [Invalid Signature]', 'CSRF Error');
