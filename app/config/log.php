@@ -6,6 +6,9 @@
  * Time: 11:55 PM
  */
 
+use que\error\log\transport\ConsoleTransport;
+use que\error\log\transport\FileTransport;
+
 return [
     /*
     |--------------------------------------------------------------------------
@@ -18,5 +21,10 @@ return [
     'error' => [
         'path' => APP_PATH . "/error/log",
         'filename' => null
+    ],
+    'transport' => [
+        PapertrailTransport::class,
+        ConsoleTransport::class,
+        FileTransport::class
     ]
 ];
