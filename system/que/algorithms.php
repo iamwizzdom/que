@@ -70,21 +70,21 @@ function bubble_sort(array $arr, bool $reverse = false): array
 /**
  * This is a simple insertion sort algorithm
  *
- * @param array $init_arr
+ * @param array $arr
  * @return array
  */
-function insertion_sort(array $init_arr): array
+function insertion_sort(array $arr): array
 {
-    for ($i = 0; $i < count($init_arr); $i++) {
-        $val = $init_arr[$i];
+    for ($i = 0; $i < count($arr); $i++) {
+        $val = $arr[$i];
         $j = $i - 1;
-        while ($j >= 0 && $init_arr[$j] > $val) {
-            $init_arr[$j + 1] = $init_arr[$j];
+        while ($j >= 0 && $arr[$j] > $val) {
+            $arr[$j + 1] = $arr[$j];
             $j--;
         }
-        $init_arr[$j + 1] = $val;
+        $arr[$j + 1] = $val;
     }
-    return $init_arr;
+    return $arr;
 }
 
 /**
@@ -92,74 +92,76 @@ function insertion_sort(array $init_arr): array
  * It returns location of x in given array otherwise -1
  *
  * @param array $arr
- * @param int $left
- * @param int $right
  * @param $search
  * @return float
  * @throws RunTimeException
  */
-function binary_search(array $arr, int $left, int $right, $search): float
+function binary_search(array $arr, $search): float
 {
-
     if (!is_numeric_array($arr))
         throw new QueRuntimeException("binary_search expects a numeric array");
 
-    if ($right < $left)
-        throw new QueRuntimeException("binary_search expects right to be greater than or equal to left");
+    if (!function_exists('b_search')) {
+        function b_search($arr, $search, $left, $right): float|int
+        {
+            if ($right < $left) return -1;
 
-    $mid = ($left + ($right - $left) / 2);
+            $mid = ($left + ($right - $left) / 2);
 
-    // If the element is present
-    // at the middle itself
-    if ($arr[$mid] == $search)
-        return floor($mid);
+            // If the element is present
+            // at the middle itself
+            if ($arr[$mid] == $search)
+                return floor($mid);
 
-    // If element is smaller than
-    // mid, then it can only be
-    // present in left subarray
-    if ($arr[$mid] > $search)
-        return binary_search($arr, $left, $mid - 1, $search);
+            // If element is smaller than
+            // mid, then it can only be
+            // present in left subarray
+            if ($arr[$mid] > $search)
+                return b_search($arr, $search, $left, $mid - 1);
 
-    // Else the element can only
-    // be present in right subarray
-    return binary_search($arr, $mid + 1, $right, $search);
+            // Else the element can only
+            // be present in right subarray
+            return b_search($arr, $search, $mid + 1, $right);
+        }
+    }
+    return b_search($arr, $search, 0, count($arr));
 }
 
 /**
  * The selection sort is similar to the bubble sort only it improves it by
  * making only one exchange for every pass through the list.
  *
- * @param array $data
+ * @param array $arr
  * @return array
  */
-function selection_sort(array $data): array
+function selection_sort(array $arr): array
 {
     if (!function_exists('swap_positions')) {
-        function swap_positions($data1, $left, $right)
+        function swap_positions($data, $left, $right)
         {
-            $rightData = $data1[$right];
-            $data1[$right] = $data1[$left];
-            $data1[$left] = $rightData;
-            return $data1;
+            $rightData = $data[$right];
+            $data[$right] = $data[$left];
+            $data[$left] = $rightData;
+            return $data;
         }
     }
 
-    for ($i = 0; $i < count($data) - 1; $i++) {
+    for ($i = 0; $i < count($arr) - 1; $i++) {
         $min = $i;
-        for ($j = $i + 1; $j < count($data); $j++)
-            if ($data[$j] < $data[$min]) $min = $j;
-        $data = swap_positions($data, $i, $min);
+        for ($j = $i + 1; $j < count($arr); $j++)
+            if ($arr[$j] < $arr[$min]) $min = $j;
+        $arr = swap_positions($arr, $i, $min);
     }
-    return $data;
+    return $arr;
 }
 
 /**
  * This is a simple merge sort algorithm
  *
- * @param array $array
+ * @param array $arr
  * @return array
  */
-function merge_sort(array $array): array
+function merge_sort(array $arr): array
 {
     if (!function_exists('merge')) {
         function merge($left, $right)
@@ -186,10 +188,10 @@ function merge_sort(array $array): array
         }
     }
 
-    if (count($array) == 1) return $array;
-    $mid = count($array) / 2;
-    $left = array_slice($array, 0, $mid);
-    $right = array_slice($array, $mid);
+    if (count($arr) == 1) return $arr;
+    $mid = count($arr) / 2;
+    $left = array_slice($arr, 0, $mid);
+    $right = array_slice($arr, $mid);
     $left = merge_sort($left);
     $right = merge_sort($right);
     return merge($left, $right);
