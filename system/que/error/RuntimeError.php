@@ -30,8 +30,8 @@ abstract class RuntimeError
      * @param string $error_title
      * @param int $http_code
      */
-    public static function render($error_level, $error_message, $error_file = "", $error_line = "",
-                                  $error_trace = [], $error_title = "Que Runtime Error",
+    public static function render($error_level, $error_message, string $error_file = "", string $error_line = "",
+                                  array $error_trace = [], string $error_title = "Que Runtime Error",
                                   int $http_code = HTTP::INTERNAL_SERVER_ERROR) {
 
         if (self::$hasError === true) return; else self::$hasError = true;
@@ -66,10 +66,9 @@ abstract class RuntimeError
             return is_string($value) ? utf8_encode($value) : $value;
         });
 
-        log_error($error_message, $error_file, (int) $error_line, $error_level,
-            $error_trace, HTTP::getInstance()->getHttpStatusTxt($http_code) . " [{$http_code}]");
+        logger('error', $error_message, $error_file, (int) $error_line, $error_trace, $error_level);
 
-        if (PHP_SAPI == 'cli') die(debug_print($error, true));
+        if (PHP_SAPI == 'cli') die();
 
         http()->http_response_code($http_code);
 
