@@ -1,5 +1,6 @@
 <?php
 
+use JetBrains\PhpStorm\ExpectedValues;
 use JetBrains\PhpStorm\Pure;
 use que\common\exception\PreviousException;
 use que\common\exception\QueException;
@@ -8,7 +9,7 @@ use que\common\exception\RouteException;
 use que\common\time\Time;
 use que\common\validator\Track;
 use que\database\DB;
-use que\error\Logger;
+use que\error\log\Logger;
 use que\error\RuntimeError;
 use que\http\HTTP;
 use que\http\request\Request;
@@ -586,9 +587,7 @@ function get_date(string $format, string $date, string $default = ''): string {
     try {
         $dateTime = new DateTime($date);
     } catch (Exception $e) {
-        log_error($e->getMessage(), $e->getFile(), $e->getLine(),
-            E_USER_NOTICE, $e->getTrace(),
-            \http()->getHttpStatusTxt($http_code = HTTP::INTERNAL_SERVER_ERROR) . " [{$http_code}]");
+        log_error($e->getMessage(), $e);
         $dateTime = false;
     }
     return $dateTime ? $dateTime->format($format) : $default;
@@ -1282,7 +1281,7 @@ function array_equal(array $array1, array $array2): bool
  * @param array $array2
  * @return bool
  */
-function array_identical(array $array1, array $array2): bool
+#[Pure] function array_identical(array $array1, array $array2): bool
 {
     if (array_size($array1) != array_size($array2)) return false;
     foreach ($array1 as $value)
@@ -1304,7 +1303,7 @@ function array_identical(array $array1, array $array2): bool
  * @param array $arr
  * @return int
  */
-function array_size(array $arr): int
+#[Pure] function array_size(array $arr): int
 {
     return array_is_accessible($arr) ? count($arr) : 0;
 }
@@ -2939,37 +2938,131 @@ function track_token(): string
 }
 
 /**
- * An alias of
- * @param $message
- * @param null $status
- * @return bool|int @see log_error()
+ * @param string|mixed ...$message
+ * @return array
  */
-function log_err($message, $status = null): bool|int
+function get_log_msg_trace(string|array|Exception ...$message): array
 {
-    $backtrace = debug_backtrace();
-    return log_error($message, $backtrace[0]['file'], $backtrace[0]['line'],
-        E_USER_NOTICE, array_exclude($backtrace, 0),
-        \http()->getHttpStatusTxt($http_code = ($status ?: HTTP::INTERNAL_SERVER_ERROR)) . " [{$http_code}]");
+    if (isset($message[1]) && is_string($message[1])) {
+        $message[0] = "$message[0]: " . $message[1];
+    }
+
+    $exception = $message[2] ?? ($message[1] ?? null);
+    if ($exception instanceof Exception) {
+        if ($message[1] instanceof Exception) {
+            $message[0] = "$message[0]: " . $exception->getMessage();
+        }
+        $backtrace = [
+            'file' => $exception->getFile(),
+            'line' => $exception->getLine(),
+            'trace' => $exception->getTrace()
+        ];
+    } else {
+        $trace = debug_backtrace();
+        $backtrace = [
+            'file' => $trace[1]['file'],
+            'line' => $trace[1]['line'],
+            'trace' => array_exclude($trace, 0, 1)
+        ];
+    }
+    return [$message[0], $backtrace];
 }
 
 /**
- * @param mixed $message
+ * An alias of logger
+ * @param string ...$message
+ * @return bool|int
+ * @see logger()
+ */
+function log_error(string|array|Exception ...$message): bool|int
+{
+    list($message, $backtrace) = get_log_msg_trace(...$message);
+    return logger('error', $message, $backtrace['file'],
+        $backtrace['line'], $backtrace['trace'], E_USER_ERROR);
+}
+
+/**
+ * An alias of logger
+ * @param string ...$message
+ * @return bool|int
+ * @see logger()
+ */
+function log_warning(string|array|Exception ...$message): bool|int
+{
+    list($message, $backtrace) = get_log_msg_trace(...$message);
+    return logger('warning', $message, $backtrace['file'],
+        $backtrace['line'], $backtrace['trace'], E_USER_WARNING);
+}
+
+/**
+ * An alias of logger
+ * @param string ...$message
+ * @return bool|int
+ * @see logger()
+ */
+function log_info(string|array|Exception ...$message): bool|int
+{
+    list($message, $backtrace) = get_log_msg_trace(...$message);
+    return logger('info', $message, $backtrace['file'],
+        $backtrace['line'], $backtrace['trace'], E_USER_NOTICE);
+}
+
+/**
+ * An alias of logger
+ * @param string ...$message
+ * @return bool|int
+ * @see logger()
+ */
+function log_debug(string|array|Exception ...$message): bool|int
+{
+    list($message, $backtrace) = get_log_msg_trace(...$message);
+    return logger('debug', $message, $backtrace['file'],
+        $backtrace['line'], $backtrace['trace'], E_USER_NOTICE);
+}
+
+/**
+ * An alias of logger
+ * @param string ...$message
+ * @return bool|int
+ * @see logger()
+ */
+function log_default(string|array|Exception ...$message): bool|int
+{
+    list($message, $backtrace) = get_log_msg_trace(...$message);
+    return logger('default', $message, $backtrace['file'],
+        $backtrace['line'], $backtrace['trace'], E_USER_NOTICE);
+}
+
+/**
+ * @param string $type
+ * @param string $message
  * @param string $file
  * @param int $line
- * @param $level
  * @param array $trace
- * @param mixed $status
+ * @param int $level
  * @param string|null $destination - directory to store logs
  * @return bool|int
  */
-function log_error(mixed $message, string $file, int $line, $level,
-                   array $trace, $status = 'error', string $destination = null): bool|int
+function logger(#[ExpectedValues(['error', 'warning', 'info', 'debug', 'default'])] string $type,
+                string $message, string $file, int $line,
+                array $trace, int $level, string $destination = null): bool|int
 {
-    return Logger::getInstance()
-        ->setMessage($message)->setFile($file)
-        ->setLine($line)->setStatus($status)
-        ->setLevel($level)->setTrace($trace)
-        ->setDestination($destination)->log();
+    $logger = match ($type) {
+        'error' => Logger::error(),
+        'warning' => Logger::warning(),
+        'info' => Logger::info(),
+        'debug' => Logger::debug(),
+        default => Logger::default()
+    };
+
+    return $logger
+        ->setMessage($message)
+        ->setFile($file)
+        ->setLine($line)
+        ->setLevel($level)
+        ->setTrace($trace)
+        ->setDestination($destination)
+        ->log();
 }
 
 /**
