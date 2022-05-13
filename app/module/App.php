@@ -1,5 +1,6 @@
 <?php
 
+use que\common\structure\Api;
 use que\http\input\Input;
 use que\http\output\response\Html;
 use que\http\output\response\Json;
@@ -13,9 +14,8 @@ use que\http\output\response\Plain;
  * Time: 1:07 AM
  */
 
-class App implements \que\common\structure\Api
+class App implements Api
 {
-
     /**
      * This method will run when the module is accessed
      * @param Input $input
@@ -24,10 +24,11 @@ class App implements \que\common\structure\Api
      * @recommendation When returning an array, the returned array should have an index 'code' which will define
      * the HTTP response code (optional)
      */
-    public function process(Input $input)
+    public function process(Input $input): array|Json|Jsonp|Html|Plain
     {
         // TODO: Implement process() method.
-
         return http()->output()->json($input['route.params'], 201, JSON_PRETTY_PRINT);
     }
+
+
 }

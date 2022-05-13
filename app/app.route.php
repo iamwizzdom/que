@@ -8,8 +8,8 @@ require 'app.settings.php';
 Route::register()->web(function (RouteEntry $entry) {
     $entry->allowPatchRequest()->allowGetRequest();
     $entry->setUri('/');
-//    $entry->forbidCSRF();
-    $entry->setMiddleware("user.auth");
+    $entry->forbidCSRF();
+//    $entry->setMiddleware("user.auth");
     $entry->setModule(View::class);
 });
 
@@ -25,7 +25,8 @@ Route::register()->api(function (RouteEntry $entry) {
     $entry->setUri('api');
     $entry->forbidCSRF();
     $entry->setModule(App::class);
-    $entry->setMiddleware('user.auth');
+    $entry->requireLogin(true);
+//    $entry->setMiddleware('user.auth');
 });
 
 Route::init();
