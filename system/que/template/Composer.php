@@ -9,6 +9,7 @@
 namespace que\template;
 
 use JetBrains\PhpStorm\ArrayShape;
+use JetBrains\PhpStorm\ExpectedValues;
 use JetBrains\PhpStorm\Pure;
 use que\common\exception\PreviousException;
 use que\common\exception\QueException;
@@ -100,6 +101,16 @@ class Composer
      * @var bool
      */
     private bool $prepared = false;
+
+    /**
+     * @var bool
+     */
+    private bool $preventPreparation = false;
+
+    /**
+     * @var string|null
+     */
+    private ?string $renderWith = null;
 
     protected function __construct(bool $singleton)
     {
@@ -459,6 +470,22 @@ class Composer
     }
 
     /**
+     * @return bool
+     */
+    public function isPreventPreparation(): bool
+    {
+        return $this->preventPreparation;
+    }
+
+    /**
+     * @param bool $preventPreparation
+     */
+    public function setPreventPreparation(bool $preventPreparation): void
+    {
+        $this->preventPreparation = $preventPreparation;
+    }
+
+    /**
      * @param bool $ignoreDefaultCss
      * @param bool $ignoreDefaultScript
      * @param bool $ignoreDefaultHeader
@@ -466,6 +493,11 @@ class Composer
      */
     public function prepare(bool $ignoreDefaultCss = false, bool $ignoreDefaultScript = false, bool $ignoreDefaultHeader = false): self
     {
+        if ($this->isPreventPreparation()) {
+            throw new QueRuntimeException(
+                'Composer could not be prepared, it is currently prevented.', 'Composer error',
+                E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+        }
 
         $this->http_header();
         $this->http_data();
@@ -543,17 +575,45 @@ class Composer
     }
 
     /**
+     * @param string $renderWith
+     */
+    public function setRenderWith(#[ExpectedValues(['smarty', 'twig'])]string $renderWith): void
+    {
+        $this->renderWith = $renderWith;
+    }
+
+    public function render(bool $returnAsString = false, #[ExpectedValues(['smarty', 'twig'])]string $renderWith = null): bool|string|null
+    {
+        if ($renderWith) $this->setRenderWith($renderWith);
+
+        if ($this->renderWith === null) {
+            throw new QueRuntimeException(
+                "You must first specify the templating engine to use for rendering.",
+                'Composer error', E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR,
+                PreviousException::getInstance(1)
+            );
+        }
+
+        if ($this->renderWith == 'smarty') {
+            return $this->renderWithSmarty($returnAsString);
+        }
+
+        return $this->renderWithTwig($returnAsString);
+    }
+
+    /**
      * This will render your template using the smarty templating engine
      * @param bool $returnAsString
      * @return bool|string|null
      */
     public function renderWithSmarty(bool $returnAsString = false): bool|string|null
     {
-        if ($returnAsString) ob_start();
 
         if (!$this->isPrepared()) throw new QueRuntimeException(
             "The current template '{$this->getTmpFileName()}' is not prepared for rending. You cannot render an unprepared template.",
             'Composer error', E_USER_ERROR, HTTP::INTERNAL_SERVER_ERROR, PreviousException::getInstance(1));
+
+        if ($returnAsString) ob_start();
 
         $smarty = SmartyEngine::getInstance();
         $smarty->setTmpDir($this->getTmpDir());

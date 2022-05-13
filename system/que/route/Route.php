@@ -28,6 +28,7 @@ use que\http\output\response\Plain;
 use que\http\request\Request;
 use que\security\interfaces\RoutePermission;
 use que\template\Composer;
+use tidy;
 
 final class Route extends Router
 {
@@ -118,8 +119,6 @@ final class Route extends Router
         if (empty($route) || !$route instanceof RouteEntry)
             throw new RouteException(sprintf("%s is an invalid url", current_url()), "Route Error", HTTP::NOT_FOUND);
 
-        self::handleRequestMiddleware($route);
-
         $origins = $route->getAllowedOrigins();
 
         self::$http->_header()->setBulk([
@@ -131,11 +130,40 @@ final class Route extends Router
         ], false);
 
         $contentType = self::$http->_header()->get("Accept", $route->getContentType());
+
         if (!empty($contentType)) {
             $contentType = explode(',', $contentType);
-            if (isset($contentType[0])) self::$http->_header()->set('Content-Type', $contentType[0], true);
+            if (isset($contentType[0])) self::$http->_header()->set('Content-Type', $contentType[0]);
             elseif (self::$http->_header()->has('Accept')) self::$http->_header()->_unset("Accept");
         } elseif (self::$http->_header()->has('Accept')) self::$http->_header()->_unset("Accept");
+
+        $middlewareResponse = self::handleRouteMiddleware($route);
+
+        if (!empty($middlewareResponse)) {
+
+            if ($route->getType() == "web") {
+                if ($middlewareResponse instanceof Composer) {
+                    die($middlewareResponse->render(true));
+                } elseif ($middlewareResponse instanceof Html) {
+                    die($middlewareResponse->getHtml());
+                } elseif ($middlewareResponse instanceof Plain) {
+                    die($middlewareResponse->getData());
+                }
+            } elseif ($route->getType() == "api") {
+                $response = $this->handleApiResponse($middlewareResponse);
+
+                if ($response === null) {
+                    throw new RouteException(
+                        "Sorry, the API module bound to this route did not return a valid response"
+                    );
+                }
+
+                die($response);
+            } elseif ($route->getType() == "resource" && $middlewareResponse === true) {
+                die();
+            }
+
+        }
 
         if (empty($module = $route->getModule())) throw new RouteException(
             "This route is not bound to a module\n", "Route Error", HTTP::NOT_FOUND);
@@ -181,48 +209,51 @@ final class Route extends Router
             case $instance instanceof Info:
             case $instance instanceof Page:
 
+                $input = self::$http->input();
+
                 if ($method = $route->getModuleMethod()) {
 
                     if (!method_exists($instance, $method)) throw new RouteException(
                         "The {$this->getClassName($instance)}::$method method bound to this route does not exist.",
                         "Route Error", HTTP::NOT_FOUND);
 
-                    $instance->{$method}(self::$http->input());
+                    $instance->{$method}($input);
 
                 } else {
 
                     if ($instance instanceof Add) {
 
-                        if (self::$method === "GET") $instance->onLoad(self::$http->input());
-                        else $instance->onReceive(self::$http->input());
+                        if (self::$method === "GET") $instance->onLoad($input);
+                        else $instance->onReceive($input);
 
                     } elseif ($instance instanceof Edit) {
 
-                        if (self::$method === "GET") $instance->onLoad(self::$http->input(), $instance->info(self::$http->input()));
-                        else $instance->onReceive(self::$http->input(), $instance->info(self::$http->input()));
+                        if (self::$method === "GET") $instance->onLoad($input, $instance->info($input));
+                        else $instance->onReceive($input, $instance->info($input));
 
                     } elseif ($instance instanceof Info) {
 
-                        if (self::$method === "GET") $instance->onLoad(self::$http->input(), $instance->info(self::$http->input()));
+                        if (self::$method === "GET") $instance->onLoad($input, $instance->info($input));
                         else {
 
-                            if (!$instance instanceof Receiver) throw new RouteException(sprintf(
-                                "The module bound to this route is not compatible with the %s request method. Compatible method: GET",
-                                self::$method), "Route Error", HTTP::METHOD_NOT_ALLOWED);
+                            if (!$instance instanceof Receiver) throw new RouteException(
+                                sprintf("The module bound to this route is not compatible with the %s request method. Compatible method: GET", self::$method),
+                                "Route Error", HTTP::METHOD_NOT_ALLOWED
+                            );
 
-                            $instance->onReceive(self::$http->input(), $instance->info(self::$http->input()));
+                            $instance->onReceive($input, $instance->info($input));
                         }
 
                     } elseif ($instance instanceof Page) {
 
-                        if (self::$method === "GET") $instance->onLoad(self::$http->input());
+                        if (self::$method === "GET") $instance->onLoad($input);
                         else {
 
                             if (!$instance instanceof Receiver) throw new RouteException(sprintf(
                                 "The module bound to this route is not compatible with the %s request method. Compatible method: GET",
                                 self::$method), "Route Error", HTTP::METHOD_NOT_ALLOWED);
 
-                            $instance->onReceive(self::$http->input());
+                            $instance->onReceive($input);
                         }
 
                     }
@@ -268,81 +299,15 @@ final class Route extends Router
 
         } else $response = $instance->process(self::$http->input());
 
-        if ($response instanceof Json) {
+        $response = $this->handleApiResponse($response);
 
-            if (!$data = $response->getJson()) throw new RouteException(
-                "Failed to output response", "Output Error",
-                HTTP::NO_CONTENT, PreviousException::getInstance(1));
+        if ($response === null) {
+            throw new RouteException(
+                "Sorry, the API module bound to this route did not return a valid response"
+            );
+        }
 
-            if (!self::$http->_header()->has('Accept') || (self::$http->_header()->get('Accept') == '*/*'))
-                self::$http->_header()->set('Content-Type', mime_type_from_extension('json'), true);
-
-            echo $data;
-
-        } elseif ($response instanceof JsonSerializable) {
-
-            if (!$data = Json::encode($response)) throw new RouteException(
-                "Failed to output response", "Output Error",
-                HTTP::NO_CONTENT, PreviousException::getInstance(1));
-
-            if (!self::$http->_header()->has('Accept') || (self::$http->_header()->get('Accept') == '*/*'))
-                self::$http->_header()->set('Content-Type', mime_type_from_extension('json'), true);
-
-            echo $data;
-
-        } elseif ($response instanceof Jsonp) {
-
-            if (!$data = $response->getJsonp()) throw new RouteException(
-                "Failed to output response", "Output Error",
-                HTTP::NO_CONTENT, PreviousException::getInstance(1));
-
-            self::$http->_header()->set('Content-Type', mime_type_from_extension('js'), true);
-            echo $data;
-
-        } elseif ($response instanceof Html) {
-
-            if (!self::$http->_header()->has('Accept') || (self::$http->_header()->get('Accept') == '*/*'))
-                self::$http->_header()->set('Content-Type', mime_type_from_extension('html'), true);
-            echo $response->getHtml();
-
-        } elseif ($response instanceof Plain) {
-
-            if (!self::$http->_header()->has('Accept') || (self::$http->_header()->get('Accept') == '*/*'))
-                self::$http->_header()->set('Content-Type', mime_type_from_extension('txt'), true);
-            echo $response->getData();
-
-        } elseif (is_array($response)) {
-
-            if (isset($response['code']) && is_numeric($response['code']))
-                self::$http->http_response_code(intval($response['code']));
-
-            $option = Json::DEFAULT_OPTION;
-            $depth = Json::DEFAULT_DEPTH;
-
-            if (isset($response['option']) && is_numeric($response['option'])) {
-                $option = intval($response['option']);
-                unset($response['option']);
-            }
-
-            if (isset($response['depth']) && is_numeric($response['depth'])) {
-                $depth = intval($response['depth']);
-                unset($response['depth']);
-            }
-
-            $data = Json::encode($response, $option, $depth);
-
-            if (!$data) throw new RouteException("Failed to output response", "Output Error",
-                HTTP::NO_CONTENT, PreviousException::getInstance(1));
-
-            if (!self::$http->_header()->has('Accept') || (self::$http->_header()->get('Accept') == '*/*'))
-                self::$http->_header()->set('Content-Type', mime_type_from_extension('json'), true);
-
-            echo $data;
-
-        } else throw new RouteException(
-            "Sorry, the API module bound to this route did not return a valid response"
-        );
-
+        echo $response;
     }
 
 
@@ -378,13 +343,94 @@ final class Route extends Router
     }
 
     /**
+     * @param $response
+     * @return tidy|string|null
+     * @throws RouteException
+     */
+    private function handleApiResponse($response): tidy|string|null
+    {
+        if ($response instanceof Json) {
+
+            if (!$data = $response->getJson()) throw new RouteException(
+                "Failed to output response", "Output Error",
+                HTTP::NO_CONTENT, PreviousException::getInstance(1));
+
+            if (!self::$http->_header()->has('Accept') || (self::$http->_header()->get('Accept') == '*/*'))
+                self::$http->_header()->set('Content-Type', mime_type_from_extension('json'), true);
+
+            return $data;
+
+        } elseif ($response instanceof JsonSerializable) {
+
+            if (!$data = Json::encode($response)) throw new RouteException(
+                "Failed to output response", "Output Error",
+                HTTP::NO_CONTENT, PreviousException::getInstance(1));
+
+            if (!self::$http->_header()->has('Accept') || (self::$http->_header()->get('Accept') == '*/*'))
+                self::$http->_header()->set('Content-Type', mime_type_from_extension('json'), true);
+
+            return $data;
+
+        } elseif ($response instanceof Jsonp) {
+
+            if (!$data = $response->getJsonp()) throw new RouteException(
+                "Failed to output response", "Output Error",
+                HTTP::NO_CONTENT, PreviousException::getInstance(1));
+
+            self::$http->_header()->set('Content-Type', mime_type_from_extension('js'));
+            return $data;
+
+        } elseif ($response instanceof Html) {
+
+            if (!self::$http->_header()->has('Accept') || (self::$http->_header()->get('Accept') == '*/*'))
+                self::$http->_header()->set('Content-Type', mime_type_from_extension('html'));
+            return $response->getHtml();
+
+        } elseif ($response instanceof Plain) {
+
+            if (!self::$http->_header()->has('Accept') || (self::$http->_header()->get('Accept') == '*/*'))
+                self::$http->_header()->set('Content-Type', mime_type_from_extension('txt'));
+            return $response->getData();
+
+        } elseif (is_array($response)) {
+
+            if (isset($response['code']) && is_numeric($response['code']))
+                self::$http->http_response_code(intval($response['code']));
+
+            $option = Json::DEFAULT_OPTION;
+            $depth = Json::DEFAULT_DEPTH;
+
+            if (isset($response['option']) && is_numeric($response['option'])) {
+                $option = intval($response['option']);
+                unset($response['option']);
+            }
+
+            if (isset($response['depth']) && is_numeric($response['depth'])) {
+                $depth = intval($response['depth']);
+                unset($response['depth']);
+            }
+
+            $data = Json::encode($response, $option, $depth);
+
+            if (!$data) throw new RouteException("Failed to output response", "Output Error",
+                HTTP::NO_CONTENT, PreviousException::getInstance(1));
+
+            if (!self::$http->_header()->has('Accept') || (self::$http->_header()->get('Accept') == '*/*'))
+                self::$http->_header()->set('Content-Type', mime_type_from_extension('json'));
+
+            return $data;
+
+        }
+        return null;
+    }
+
+    /**
      * @param object $instance
      * @return string
      */
     #[Pure] private function getClassName(object $instance): string
     {
-        $name = get_class($instance);
-        return $name ?: '';
+        return get_class($instance) ?: 'Unknown';
     }
 
     /**

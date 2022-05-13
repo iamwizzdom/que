@@ -4,6 +4,7 @@
 namespace que\route;
 
 
+use JetBrains\PhpStorm\ExpectedValues;
 use que\http\request\Request;
 
 class RouteEntry
@@ -138,7 +139,7 @@ class RouteEntry
     /**
      * @param string $type
      */
-    public function setType(string $type)
+    public function setType(#[ExpectedValues(['web', 'api', 'resource'])]string $type): void
     {
         $this->type = $type;
     }

@@ -25,7 +25,7 @@ abstract class MiddlewareResponse
     /**
      * @var string
      */
-    private ?string $title = "Middleware Error";
+    private ?string $title = "WebMiddleware Error";
 
     /**
      * @var string|array|JsonSerializable|Json|Jsonp|Html|Plain

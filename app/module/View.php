@@ -1,8 +1,11 @@
 <?php
 
+use app\job\SendMailJob;
 use que\common\manager\Manager;
 use que\common\structure\Page;
 use que\http\input\Input;
+use que\route\RouteEntry;
+use que\security\interfaces\RoutePermission;
 use que\template\Composer;
 
 /**
@@ -12,7 +15,7 @@ use que\template\Composer;
  * Time: 1:16 AM
  */
 
-class View extends Manager implements Page, \que\security\interfaces\RoutePermission
+class View extends Manager implements Page, RoutePermission
 {
 
     /**
@@ -24,9 +27,10 @@ class View extends Manager implements Page, \que\security\interfaces\RoutePermis
     {
         // TODO: Implement onLoad() method.
         current_route()->setTitle('Welcome Que');
+        SendMailJob::dispatch('wisdomemenike');
+        log_info('Now passing data to composer');
         $this->composer()->data([
             'hello' => 'Hello world, Welcome to Que'
-//            'hello' => 'Welcome to Que'
         ]);
     }
 
@@ -42,10 +46,11 @@ class View extends Manager implements Page, \que\security\interfaces\RoutePermis
         $composer->prepare()->renderWithSmarty();
     }
 
+
     /**
      * @inheritDoc
      */
-    public function hasPermission(\que\route\RouteEntry $route): bool
+    public function hasPermission(RouteEntry $route): bool
     {
         // TODO: Implement hasPermission() method.
         return true;

@@ -2,27 +2,25 @@
 
 namespace que\route;
 
-use que\common\exception\PreviousException;
+use Exception;
+use JetBrains\PhpStorm\Pure;
 use que\common\exception\RouteException;
 use que\http\HTTP;
 use que\http\input\Input;
-use que\http\output\response\Html;
-use que\http\output\response\Json;
-use que\http\output\response\Jsonp;
-use que\http\output\response\Plain;
+use que\security\ApiMiddleware;
 use que\security\interfaces\Middleware;
-use que\security\MiddlewareResponse;
-use que\support\Num;
-use que\utility\random\UUID;
+use que\security\GlobalMiddleware;
+use que\security\ResourceMiddleware;
+use que\security\WebMiddleware;
 
 abstract class RouteInspector
 {
 
     /**
      * @param RouteEntry $entry
-     * @return array|string[]
+     * @return array
      */
-    public static function getRouteArgs(RouteEntry $entry)
+    public static function getRouteArgs(RouteEntry $entry): array
     {
         if (preg_match_all("/{(.*?)}/", $entry->getUri(), $matches)) {
             return array_map(function ($m) {
@@ -36,7 +34,8 @@ abstract class RouteInspector
      * @param RouteEntry $entry
      * @return bool
      */
-    public static function routeHasArgs(RouteEntry $entry) {
+    public static function routeHasArgs(RouteEntry $entry): bool
+    {
         return preg_match('/{(.*?)}/', $entry->getUri()) == 1;
     }
 
@@ -45,7 +44,8 @@ abstract class RouteInspector
      * @param $token2
      * @return bool
      */
-    protected static function matchTokens($token1, $token2) {
+    #[Pure] protected static function matchTokens($token1, $token2): bool
+    {
         if (array_size($token1) != array_size($token2)) return false;
         foreach ($token1 as $key => $value) {
             if (!array_key_exists($key, $token2)) return false;
@@ -101,7 +101,8 @@ abstract class RouteInspector
      * @param bool $nullable
      * @throws RouteException
      */
-    public static function validateArgDataType(string $regex, $value, int $position, bool $nullable = false) {
+    public static function validateArgDataType(string $regex, $value, int $position, bool $nullable = false): void
+    {
 
         $expected = []; $position = Num::to_word(($position + 1));
 
@@ -131,7 +132,7 @@ abstract class RouteInspector
                 }
 
                 if (!($nullable && is_null($value)) && !preg_match($expression, $value)) {
-                    $expected[] = $expect ?: "regex {$expression}";
+                    $expected[] = $expect ?: "regex $expression";
                     throw new RouteException("Failed");
                 }
             } catch (RouteException $e) {
@@ -151,188 +152,138 @@ abstract class RouteInspector
 
     /**
      * @param RouteEntry $route
+     * @return mixed
      * @throws RouteException
+     * @throws Exception
      */
-    public static function handleRequestMiddleware(RouteEntry $route) {
+    public static function handleRouteMiddleware(RouteEntry $route): mixed
+    {
+        $middlewares = self::getGlobalMiddlewares();
 
-        $middlewareStack = self::getGlobalMiddlewareStack();
+        self::addRouteMiddlewares($route, $middlewares);
 
-        $routeMiddlewares = self::getRouteMiddlewareStack($route);
+        if (!empty($middlewares)) {
 
-        foreach ($routeMiddlewares as $routeMiddleware) $middlewareStack[] = $routeMiddleware;
+            $index = 0;
+            $next = function () use (&$index) {
+                $index++;
+            };
 
-        if (!empty($middlewareStack)) {
-
-            self::linkMiddleware($middlewareStack);
-
-            $middleware = current($middlewareStack);
-
-            if ($middleware instanceof Middleware) {
-
-                $middlewareResponse = $middleware->handle(Input::getInstance());
-
-                if ($middlewareResponse instanceof MiddlewareResponse) {
-
-                    if ($middlewareResponse->hasAccess() === false) {
-
-                        $http = \http();
-
-                        $response = $middlewareResponse->getResponse();
-
-                        if ($response instanceof Json) {
-
-                            $data = $response->getData();
-                            $data['title'] = ($data['title'] ? $data['title'] : $middlewareResponse->getTitle());
-                            $response->setData($data);
-
-                            if (!$data = $response->getJson()) throw new RouteException(
-                                "Failed to output response", "Output Error",
-                                HTTP::NO_CONTENT, PreviousException::getInstance(1));
-
-                            $code = $middlewareResponse->getResponseCode();
-                            if (!$code) $code = $response->getData()['code'] ?? 0;
-                            if (!$code) $code = http_response_code();
-                            $http->http_response_code($code ?: HTTP::OK);
-
-                            $http->_header()->set('Content-Type', mime_type_from_extension('json'), true);
-                            echo $data;
-                            exit();
-
-                        } elseif ($response instanceof Jsonp) {
-
-                            $data = $response->getData();
-                            $data['title'] = ($data['title'] ? $data['title'] : $middlewareResponse->getTitle());
-                            $response->setData($data);
-
-                            if (!$data = $response->getJsonp()) throw new RouteException(
-                                "Failed to output response", "Output Error",
-                                HTTP::NO_CONTENT, PreviousException::getInstance(1));
-
-                            $http->http_response_code($middlewareResponse->getResponseCode());
-                            $http->_header()->set('Content-Type', mime_type_from_extension('js'), true);
-                            echo $data;
-                            exit();
-
-                        } elseif ($response instanceof Html) {
-
-                            $code = $middlewareResponse->getResponseCode();
-                            if (!$code) $code = $response->getData()['code'] ?? 0;
-                            if (!$code) $code = http_response_code();
-                            $http->http_response_code($code ?: HTTP::OK);
-
-                            $http->_header()->set('Content-Type', mime_type_from_extension('html'), true);
-                            echo $response->getHtml();
-                            exit();
-
-                        } elseif ($response instanceof Plain) {
-
-                            $http->_header()->set('Content-Type', mime_type_from_extension('txt'), true);
-                            echo $response->getData();
-                            exit();
-
-                        } elseif (is_array($response)) {
-
-                            if (isset($response['title'])) {
-                                $response['title'] = ($response['title'] ? $response['title'] : $middlewareResponse->getTitle());
-                            }
-
-                            if (is_numeric($response['code'] ?? null)) $http->http_response_code(intval($response['code']));
-                            else {
-                                $code = $middlewareResponse->getResponseCode();
-                                if (!$code) $code = http_response_code();
-                                $http->http_response_code($code ?: HTTP::OK);
-                            }
-
-                            $option = 0; $depth = 512;
-
-                            if (is_numeric($response['option'] ?? null)) {
-                                $option = intval($response['option']);
-                                unset($response['option']);
-                            }
-
-                            if (is_numeric($response['depth'] ?? null)) {
-                                $depth = intval($response['depth']);
-                                unset($response['depth']);
-                            }
-
-                            $data = json_encode($response, $option, $depth);
-                            if (!$data) throw new RouteException("Failed to output response", "Output Error",
-                                HTTP::NO_CONTENT, PreviousException::getInstance(1));
-
-                            $http->_header()->set('Content-Type', mime_type_from_extension('js'), true);
-                            echo $data;
-                            exit();
-                        }
-
-                        throw new RouteException($response, $middlewareResponse->getTitle(), $middlewareResponse->getResponseCode());
+            function handler ($middlewares, Input $input, &$index, $next) {
+                $currentIndex = $index;
+                try {
+                    $middleware = $middlewares[$index] ?? null;
+                    if (empty($middleware)) {
+                        return null;
                     }
+                    $response = $middleware->handle($input, $next);
+                    if ($index === $currentIndex) {
+                        $index = 0;
+                        return $response;
+                    }
+                    return handler($middlewares, $input, $index, $next) ?: $response;
+                } catch (Exception $e) {
+                    $index = 0;
+                    throw $e;
                 }
-            }
-        }
-    }
+            };
 
-    private static function linkMiddleware(array $middlewareStack) {
-        $currentMiddleware = current($middlewareStack); $next = null;
-        for ($i = 1; $i < count($middlewareStack); $i++) {
-            if ($next === null) $next = $currentMiddleware->setNext($middlewareStack[$i]);
-            else $next = $next->setNext($middlewareStack[$i]);
+            return handler($middlewares, \http()->input(), $index, $next);
         }
+        return null;
     }
 
     /**
      * @return array
      * @throws RouteException
      */
-    private static function getGlobalMiddlewareStack() {
+    private static function getGlobalMiddlewares(): array {
 
-        $globalMiddleware = (array) config('middleware.global', []);
+        $globalMiddlewares = (array) config('middleware.global', []);
 
-        $stack = [];
+        $list = [];
 
-        foreach ($globalMiddleware as $middleware) {
+        foreach ($globalMiddlewares as $middleware) {
 
             $middleware = new $middleware();
 
-            if ($middleware instanceof Middleware) {
-                $stack[] = $middleware;
+            if ($middleware instanceof GlobalMiddleware) {
+                $list[] = $middleware;
                 continue;
             }
 
-            throw new RouteException("The registered global middleware [{$middleware}] is invalid",
+            throw new RouteException("The registered global middleware [$middleware] is invalid",
                 "Middleware Error", HTTP::INTERNAL_SERVER_ERROR);
         }
 
-        return $stack;
+        return $list;
     }
 
     /**
      * @param RouteEntry $route
-     * @return array
+     * @param array $middlewares
+     * @return void
      * @throws RouteException
      */
-    private static function getRouteMiddlewareStack(RouteEntry $route) {
+    private static function addRouteMiddlewares(RouteEntry $route, array &$middlewares): void
+    {
 
         $routeMiddleware = (array) config('middleware.route', []);
-
-        $stack = [];
 
         foreach ($route->getMiddleware() as $target) {
 
             if (!isset($routeMiddleware[$target]))
-                throw new RouteException("The target route middleware [{$target}] does not exist",
+                throw new RouteException("The target route middleware [$target] does not exist",
                     "Middleware Error", HTTP::INTERNAL_SERVER_ERROR);
 
             $middleware = new $routeMiddleware[$target]();
 
-            if ($middleware instanceof Middleware) {
-                $stack[] = $middleware;
+            if ($route->getType() == 'web' && $middleware instanceof WebMiddleware) {
+                $middlewares[] = $middleware;
                 continue;
             }
 
-            throw new RouteException("The target route middleware [{$target}] is invalid",
+            if ($route->getType() == 'api' && $middleware instanceof ApiMiddleware) {
+                $middlewares[] = $middleware;
+                continue;
+            }
+
+            if ($route->getType() == 'resource' && $middleware instanceof ResourceMiddleware) {
+                $middlewares[] = $middleware;
+                continue;
+            }
+
+            if ($middleware instanceof Middleware) {
+                $middlewareType = self::getMiddlewareType($middleware);
+                throw new RouteException(
+                    "Sorry, you cannot bind $middlewareType middleware [$target] to {$route->getType()} route",
+                    "Middleware Error", HTTP::INTERNAL_SERVER_ERROR
+                );
+            }
+
+            throw new RouteException("The target route middleware [$target] is invalid",
                 "Middleware Error", HTTP::INTERNAL_SERVER_ERROR);
         }
 
-        return $stack;
+    }
+
+    /**
+     * @param Middleware $middleware
+     * @return string
+     */
+    private static function getMiddlewareType(Middleware $middleware): string
+    {
+        if ($middleware instanceof WebMiddleware) {
+            return 'web';
+        }
+
+        if ($middleware instanceof ApiMiddleware) {
+            return 'API';
+        }
+
+        if ($middleware instanceof ResourceMiddleware) {
+            return 'resource';
+        }
+        return 'unknown';
     }
 }

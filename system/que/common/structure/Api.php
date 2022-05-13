@@ -26,6 +26,6 @@ interface Api
      * the HTTP response code (optional)
      * @note Que will run this method for you automatically
      */
-    public function process(Input $input);
+    public function process(Input $input): array|Json|Jsonp|Html|Plain;
 
 }

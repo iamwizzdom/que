@@ -24,7 +24,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Global HTTP Middleware
+    | Global HTTP WebMiddleware
     |--------------------------------------------------------------------------
     |
     | Here are a list of middleware that run during every request to your application
@@ -46,7 +46,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Route Middleware
+    | Route WebMiddleware
     |--------------------------------------------------------------------------
     |
     | Here are a list of middleware you can assign to an individual route or a group
