@@ -3,6 +3,6 @@
         "phpmailer/phpmailer": "~6.1",
         "twig/twig": "~3.0",
         "smarty/smarty": "~3.1",
-        "jeremeamia/superclosure": "^2.4"
+        "opis/closure": "^3.6"
     }
 }

@@ -203,7 +203,231 @@ require "../../../app/app.settings.php";
 //    print_r($matches);
 //} else echo "Not match";
 
+//declare(ticks=1);
+//
+//$pid = pcntl_fork();
+//if ($pid == -1) {
+//    die("could not fork");
+//} else if ($pid) {
+//    exit(); // we are the parent
+//} else {
+//    // we are the child
+//}
 
-echo "\n" . ($end = microtime(true));
-echo "\n" . ($end - $start);
+// detach from the controlling terminal
+//if (posix_setsid() == -1) {
+//    die("could not detach from terminal");
+//}
+
+// setup signal handlers
+//pcntl_signal(SIGTERM, "sig_handler");
+//pcntl_signal(SIGHUP, "sig_handler");
+
+//$cache = \que\cache\Cache::getInstance();
+
+// loop forever performing tasks
+//while (1) {
+//    // do something interesting here
+//    $queue = $cache->lPop('jobs_from_que');
+//    if ($queue) {
+//        echo "\nProcessing job\n";
+//        $queue = unserialize($queue);
+//        debug_print($queue);
+//        $queue->handle();
+//        echo "\nJob processed\n";
+//    }
+////    echo 'Error: ' . $mail->getError();
+////
+////    echo "Completed task: ${task_id}.\n";
+//
+//}
+
+//function sig_handler($signo)
+//{
+//
+//    switch ($signo) {
+//        case SIGTERM:
+//            // handle shutdown tasks
+//            exit;
+//            break;
+//        case SIGHUP:
+//            // handle restart tasks
+//            break;
+//        default:
+//            // handle all signals
+//    }
+//
+//}
+
+function query_filter($query, $field, $data) {
+    return array_filter($data, function ($e) use ($query, $field) {
+            return stripos($e[$field], $query) !== false;
+        }, ARRAY_FILTER_USE_KEY);
+}
+
+$data = [
+    [
+        'id' => 11,
+        'scientific_name' => 'Phacelia scopulina (A. Nelson) J.T. Howell var. scopulina',
+        'common_name' => 'Debeque Phacelia',
+        'family' => 'Hydrophyllaceae'
+    ],
+    [
+        'id' => 12,
+        'scientific_name' => 'Pogonatum urnigerum (Hedw.) P. Beauv.',
+        'common_name' => 'Pogonatum Moss',
+        'family' => 'Polytrichaceae'
+    ],
+    [
+        'id' => 13,
+        'scientific_name' => 'Phacelia infundibuliformis Torr.',
+        'common_name' => 'Rio Grande Phacelia',
+        'family' => 'Hydrophyllaceae'
+    ],
+    [
+        'id' => 14,
+        'scientific_name' => 'Campylium halleri (Hedw.) Lindb.',
+        'common_name' => 'Haller\'s Campylium Moss',
+        'family' => 'Amblystegiaceae'
+    ]
+];
+
+//$res = query_filter("moss", "common_name", $data);
+//
+//debug_print($res);
+
+//function shorten_path($path) {
+//    $arr = explode('/', $path);
+//    $s = [];
+//
+//    foreach ($arr as $str) {
+//        if ($str == '.' || strlen($str) == 0) {
+//            continue;
+//        } elseif ($str == '..') {
+//            if (count($s) > 0) {
+//                array_pop($s);
+//            }
+//        } else {
+//            array_push($s, $str);
+//        }
+//    }
+//
+//    $res = "";
+//    while (count($s) > 0) {
+//        $res .= ("/" . array_shift($s));
+//    }
+//
+//    if (strlen($res) == 0) {
+//        return '/';
+//    }
+//    return $res;
+//}
+
+//function shorten_path($path) {
+//    $st = [];
+//
+//    $res = "/";
+//
+//    $size = strlen($path);
+//
+//    $arr = explode('/', $path);
+//
+//    for ($i = 0; $i < $size; $i++) {
+//        $dir = "";
+//
+//        while ($i < $size && ($arr[$i] ?? null) == '/') {
+//            $i++;
+//        }
+//
+//        while ($i < $size && isset($arr[$i]) && $arr[$i] != '/') {
+//            $dir .= $arr[$i];
+//            $i++;
+//        }
+//
+//        if ($dir == '..') {
+//            if (count($st) != 0) {
+//                array_pop($st);
+//            }
+//        } elseif ($dir == '.') {
+//            continue;
+//        } elseif (strlen($dir) != 0) {
+//            array_push($st, $dir);
+//        }
+//
+//        $_st = [];
+//
+//        while (count($st) != 0) {
+//            array_push($_st, $st[count($st) - 1]);
+//            array_pop($st);
+//        }
+//
+//        while (count($_st) > 0) {
+//            if (count($_st) != 1) {
+//                $res .= ($_st[count($_st) - 1] . "/");
+//            } else {
+//                $res .= $_st[count($_st) - 1];
+//            }
+//            array_pop($_st);
+//        }
+//
+//        return $res;
+//    }
+//}
+
+
+//function shorten_path($path) {
+//    $st = [];
+//    $arr = explode('/', $path);
+//    foreach ($arr as $i) {
+//        if ($i == '..') {
+//            if (count($st) > 1) {
+//                array_pop($st);
+//            } else {
+//                continue;
+//            }
+//        } elseif ($i == '.') {
+//            continue;
+//        } elseif (!empty($i)) {
+//            array_push($st, $i);
+//        }
+//    }
+//
+//    if (count($st) == 1) {
+//        return '/';
+//    }
+//    return join('/', $st);
+//}
+
+function shorten_path($path) {
+    $st = [];
+    $arr = explode('/', $path);
+    $size = 0;
+    foreach ($arr as $i) {
+        if ($i == '' || $i == '.' || $i == '..') {
+            if ($i == '..' && $size > 0) {
+                $size--;
+            }
+            continue;
+        }
+        $st[$size++] = $i;
+    }
+
+    if ($size == 0) {
+        return '/';
+    }
+
+    $res = '';
+    for ($n = 0; $n < $size; $n++) {
+        $res .= '/' . $st[$n];
+    }
+    return $res;
+}
+$str = "../../foo/../test/../test/../foo//bar/./baz";
+$res = shorten_path($str);
+debug_print($res);
+
+echo "\n\nStarted at: $start\n";
+$end = microtime(true);
+echo "Ended at: $end\n";
+echo "Time diff: " . ($end - $start);
 

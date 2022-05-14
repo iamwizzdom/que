@@ -1,12 +1,12 @@
 <?php
 
+use Opis\Closure\SerializableClosure;
 use que\cache\Cache;
 use que\common\exception\PreviousException;
 use que\common\exception\QueException;
 use que\http\HTTP;
 use que\support\Arr;
 use que\utility\hash\Hash;
-use SuperClosure\Serializer;
 
 /**
  * Created by PhpStorm.
@@ -23,18 +23,12 @@ class Events
     private Cache $cache;
 
     /**
-     * @var Serializer
-     */
-    private Serializer $serializer;
-
-    /**
      * @var Events
      */
     private static Events $instance;
 
     protected function __construct()
     {
-        $this->serializer = new Serializer();
         $this->cache = Cache::getInstance();
     }
 
@@ -75,7 +69,7 @@ class Events
      */
     public function push(string $event, callable|string $listener, string|int|null $flag, bool $runOnce = false)
     {
-        $listener = is_string($listener) ? $listener : $this->serializer->serialize($listener);
+        $listener = is_string($listener) ? $listener : serialize(new SerializableClosure($listener));
         $this->cache->rPush($event, ['runOnce' => $runOnce, 'listener' => $listener, 'flag' => $flag]);
     }
 
@@ -106,7 +100,7 @@ class Events
             if (isset($executed[$hash])) continue;
 
             $runOnce = $eventItem['runOnce'];
-            $listener = $this->serializer->unserialize($eventItem['listener']);
+            $listener = unserialize($eventItem['listener']);
             $listener(...$params);
             $executed[$hash] = true;
             if (!$runOnce) {
