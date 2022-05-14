@@ -5,7 +5,7 @@
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => 'f4693a6f1bde5130671a65d7ee435fe8a8f06a36',
+        'reference' => 'b63f89d2fc4479c70fd766970f0a16e95de3013f',
         'name' => '__root__',
         'dev' => true,
     ),
@@ -16,7 +16,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => 'f4693a6f1bde5130671a65d7ee435fe8a8f06a36',
+            'reference' => 'b63f89d2fc4479c70fd766970f0a16e95de3013f',
             'dev_requirement' => false,
         ),
         'opis/closure' => array(
@@ -38,12 +38,12 @@
             'dev_requirement' => false,
         ),
         'smarty/smarty' => array(
-            'pretty_version' => 'v3.1.44',
-            'version' => '3.1.44.0',
+            'pretty_version' => 'v4.1.0',
+            'version' => '4.1.0.0',
             'type' => 'library',
             'install_path' => __DIR__ . '/../smarty/smarty',
             'aliases' => array(),
-            'reference' => '99085d8dc65eeb5e55ae3cba74d3dc6b3bb0205e',
+            'reference' => '9e0536de18b53ba193364291ef0303b0ab9903e1',
             'dev_requirement' => false,
         ),
         'symfony/polyfill-ctype' => array(
